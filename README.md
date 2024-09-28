@@ -1,0 +1,1 @@
+Putting LLMs up against each other in chess game. Testing beasic instruction following capabilities, tool call and of course chess proficiency :)
