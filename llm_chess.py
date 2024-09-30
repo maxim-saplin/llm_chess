@@ -10,30 +10,15 @@ import cairosvg
 import io
 import numpy as np
 from typing_extensions import Annotated
-import os
 from dotenv import load_dotenv
+from utils import get_llms
 
 load_dotenv()
 
-llm_config_white = {
-    "api_type": "azure",
-    "model": os.environ["AZURE_OPENAI_DEPLOYMENT_W"],
-    "api_key": os.environ["AZURE_OPENAI_KEY_W"],
-    "base_url": os.environ["AZURE_OPENAI_ENDPOINT_W"],
-    "api_version": os.environ["AZURE_OPENAI_VERSION_W"],
-}
-
-llm_config_black = {
-    "api_type": "azure",
-    "model": os.environ["AZURE_OPENAI_DEPLOYMENT_B"],
-    "api_key": os.environ["AZURE_OPENAI_KEY_B"],
-    "base_url": os.environ["AZURE_OPENAI_ENDPOINT_B"],
-    "api_version": os.environ["AZURE_OPENAI_VERSION_B"],
-}
-
-
-# Disabling LLM caching to avoid loops, also since the game is dyanmic caching doesn't make sense
-llm_config_white["cache_seed"] = llm_config_black["cache_seed"] = None
+llm_config_white, llm_config_black = get_llms()
+max_turns = (
+    100  # maximum number of conversation turns in upper level chat between players
+)
 
 # Init chess board
 
@@ -219,10 +204,10 @@ try:
     chat_result = player_black.initiate_chat(
         player_white,
         message="Let's play chess! Your move.",
-        max_turns=3,
+        max_turns=max_turns,
     )
 except Exception as e:
-    print("\033[91mФпуте уxecution was halted due to error.\033[0m")
+    print("\033[91mExecution was halted due to error.\033[0m")
     print(f"Exception details: {e}")
 
 if len(frames) > 0:
