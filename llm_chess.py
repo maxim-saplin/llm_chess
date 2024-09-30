@@ -1,11 +1,14 @@
+import time
 import chess
 import chess.svg
 from pprint import pprint
 from autogen import ConversableAgent, register_function, gather_usage_summary
+from moviepy.editor import ImageSequenceClip
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import cairosvg
 import io
+import numpy as np
 from typing_extensions import Annotated
 import os
 from dotenv import load_dotenv
@@ -36,6 +39,8 @@ llm_config_white["cache_seed"] = llm_config_black["cache_seed"] = None
 
 board = chess.Board()
 made_move = False
+frames = []
+fig = plt.figure()
 
 
 def did_make_move(msg):
@@ -54,11 +59,28 @@ def display_board(board, move):
         fill={move.from_square: "gray"},
         size=200,
     )
-    png_data = cairosvg.svg2png(bytestring=svg.encode("utf-8"))
+    png_data = cairosvg.svg2png(bytestring=svg.encode("utf-8"), dpi=200)
     img = mpimg.imread(io.BytesIO(png_data), format="png")
+
+    # Display the image
     plt.imshow(img)
     plt.axis("off")
+    fig = plt.gcf()
+    fig.set_dpi(200)
     plt.pause(0.1)
+
+    # Convert the image to a NumPy array for video frames
+    fig.canvas.draw()
+    io_buf = io.BytesIO()
+    fig.savefig(io_buf, format="raw", dpi=200)
+    io_buf.seek(0)
+    frame = np.reshape(
+        np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
+        newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1),
+    )
+    global frames
+    frames.append(frame)
+
     plt.clf()
 
 
@@ -193,17 +215,42 @@ player_black.register_nested_chats(
 
 # The Game
 
-chat_result = player_black.initiate_chat(
-    player_white,
-    message="Let's play chess! Your move.",
-    max_turns=100,
-)
+try:
+    chat_result = player_black.initiate_chat(
+        player_white,
+        message="Let's play chess! Your move.",
+        max_turns=3,
+    )
+except Exception as e:
+    print("\033[91mФпуте уxecution was halted due to error.\033[0m")
+    print(f"Exception details: {e}")
 
-print(f"\n\n\n Completed game\n{chat_result.cost} \n\n")
-print(f"Number of turns taken: {len(chat_result.chat_history)/2}")
+if len(frames) > 0:
+    clip = ImageSequenceClip(frames, fps=1)
+    clip.write_videofile(
+        f"llm_chess_{time.strftime('%H:%M_%d.%m.%Y')}.mp4", codec="libx264"
+    )
+else:
+    print("No frames to save to a video file")
+
+print("\033[92m\nCOMPLETED THE GAME\n\033[0m")
+
+if hasattr(chat_result, "cost"):
+    print(f"\n\n\n COST\n{chat_result.cost} \n\n")
+
+if hasattr(chat_result, "chat_history"):
+    print(f"Number of turns taken: {len(chat_result.chat_history)/2}")
+
 print("\nCosts per agent:\n")
-pprint(gather_usage_summary([player_white]))
-pprint(gather_usage_summary([player_black]))
-pprint(gather_usage_summary([board_proxy]))
+white_summary = gather_usage_summary([player_white])
+black_summary = gather_usage_summary([player_black])
+board_summary = gather_usage_summary([board_proxy])
 
-input("Press any key to quit...")
+if white_summary:
+    pprint(white_summary)
+if black_summary:
+    pprint(black_summary)
+if board_summary:
+    pprint(board_summary)
+
+# input("Press any key to quit...")
