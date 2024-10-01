@@ -114,13 +114,16 @@ def make_move(
 
 # Agents
 
+common_prompt = "First call get_current_board() to get the current view of the board. "
+"Next call get_legal_moves() to get a list of legal moves. "
+"Then call make_move(move) to make a move. "
+
 player_white = ConversableAgent(
     name="Player_White",
     system_message="You are a professional chess player and you play as white. "
-    "First call get_current_board(). "
-    "Next call get_legal_moves(), to get a list of legal moves. "
-    "Then call make_move(move) to make a move. ",
+    + common_prompt,
     llm_config=llm_config_white,
+    is_termination_msg=lambda msg: "you won" in msg["content"].lower(),
 )
 
 player_black = ConversableAgent(
@@ -128,9 +131,7 @@ player_black = ConversableAgent(
     system_message="You are a professional chess player and you play as white. "
     # For quick testing uncomment to give another model advantage and keep the match forever
     # "Although you know well the rules you are bad at chess and lose quickly. "
-    "First call get_current_board(). "
-    "Next call get_legal_moves(), to get a list of legal moves. "
-    "Then call make_move(move) to make a move. ",
+    + common_prompt,
     llm_config=llm_config_black,
     is_termination_msg=lambda msg: "you won" in msg["content"].lower(),
 )
@@ -170,7 +171,7 @@ for caller in [player_white, player_black]:
         description="Call this tool to make a move.",
     )
 
-pprint(player_black.llm_config["tools"])
+# pprint(player_black.llm_config["tools"])
 
 # Nested Chats
 
