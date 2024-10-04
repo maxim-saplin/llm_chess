@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def get_llms():
+def get_llms_autogen():
     llm_config_white = {
         "api_type": "azure",
         "model": os.environ["AZURE_OPENAI_DEPLOYMENT_W"],
