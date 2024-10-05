@@ -1,8 +1,9 @@
 import time
+from typing import Any, Dict, List, Optional, Union
 import chess
 import chess.svg
 from pprint import pprint
-from autogen import ConversableAgent, gather_usage_summary
+from autogen import Agent, ConversableAgent, gather_usage_summary
 from moviepy.editor import ImageSequenceClip
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -68,7 +69,7 @@ def get_legal_moves() -> Annotated[str, "A list of legal moves in UCI format"]:
         global made_move
         made_move = True
         return "You won!"
-    return "Legal moves: " + ",".join([str(move) for move in board.legal_moves])
+    return ",".join([str(move) for move in board.legal_moves])
 
 
 def get_current_board() -> (
@@ -92,7 +93,7 @@ def make_move(
 termination_messages = ["You won!", "I won!", "It's a tie!"]
 moved_condition = "moved"
 too_much_errors_condition = "errors"
-termination_conditions = termination_messages + [
+termination_conditions = [msg.lower() for msg in termination_messages] + [
     moved_condition,
     too_much_errors_condition,
 ]
@@ -107,36 +108,43 @@ Respond with the [action] or [termination message] if the game is finished ({', 
 player_white = ConversableAgent(
     name="Player_White",
     # Not using system message as some LLMs can ignore it
+    system_message="",
     description="You are a professional chess player and you play as white. "
     + common_prompt,
     llm_config=llm_config_white,
     is_termination_msg=lambda msg: any(
-        term_msg.lower() in msg["content"].lower()
+        term_msg == msg["content"].lower().strip()
         for term_msg in termination_conditions
     ),
+    human_input_mode="NEVER",
 )
 
 player_black = ConversableAgent(
     name="Player_Black",
+    system_message="",
     description="You are a professional chess player and you play as black. "
     + common_prompt,
     llm_config=llm_config_black,
-    is_termination_msg=lambda msg: "you won" in msg["content"].lower(),
+    is_termination_msg=lambda msg: any(
+        term_msg == msg["content"].lower().strip()
+        for term_msg in termination_conditions
+    ),
+    human_input_mode="NEVER",
 )
-
-# Register reply functions
 
 failed_action_attempts = 0
 
-for player in [player_white, player_black]:
 
-    def auto_reply(recipient, messages, sender, config):
-        # if "callback" in config and config["callback"] is not None:
-        #     callback = config["callback"]
-        #     callback(sender, recipient, messages[-1])
-        print(f"Messages sent to: {recipient.name} | num messages: {len(messages)}")
-
-        action_choice = messages[-1].lower().strip()
+# This fu..ing Autogen drives me crazy, some spagetti code with broken logic and common sense...
+# Spend hours debuging circular loops in termination message and prompt and figuring out None is not good for system message
+class AutoReplyAgent(ConversableAgent):
+    def generate_reply(
+        self,
+        messages: Optional[List[Dict[str, Any]]] = None,
+        sender: Optional["Agent"] = None,
+        **kwargs: Any,
+    ) -> Union[str, Dict, None]:
+        action_choice = messages[-1]["content"].lower().strip()
 
         reply = ""
         global failed_action_attempts
@@ -161,30 +169,45 @@ for player in [player_white, player_black]:
             if failed_action_attempts >= max_failed_attempts:
                 reply = too_much_errors_condition
 
-        return False, reply
+        return reply
 
-    player.register_reply(
-        [ConversableAgent, None],
-        reply_func=auto_reply,
-        config={"callback": None},
-    )
+
+proxy_agent = AutoReplyAgent(
+    name="Proxy",
+    human_input_mode="NEVER",
+    llm_config=llm_config_white,
+    is_termination_msg=lambda msg: any(
+        term_msg == msg["content"].lower().strip()
+        for term_msg in termination_conditions
+    ),
+)
+
+
+# for player in [player_white, player_black]:
+#     proxy_agent.register_reply(
+#         player,
+#         reply_func=auto_reply,
+#         # config={"callback": None},
+#     )
 
 # The Game
 
 try:
     current_turn = 0
 
-    while current_turn < max_game_turns and not board.is_game_over:
+    while current_turn < max_game_turns and not board.is_game_over():
         for player in [player_white, player_black]:
             failed_action_attempts = 0
-            chat_result = player.initiate_chat(
-                player,
+            chat_result = proxy_agent.initiate_chat(
+                recipient=player,
                 message=player.description,
                 max_turns=max_llm_turns,
             )
             print(chat_result.summary)
             pprint(chat_result.cost)
             player.clear_history()
+            proxy_agent.clear_history()
+        current_turn += 1
 
 
 except Exception as e:
