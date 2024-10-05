@@ -17,6 +17,7 @@ from utils import get_llms_autogen
 load_dotenv()
 
 llm_config_white, llm_config_black = get_llms_autogen()
+llm_config_white = llm_config_black
 max_game_turns = (
     100  # maximum number of game turns (a turn is when both players make a moved)
 )
@@ -91,11 +92,11 @@ def make_move(
 # Agents
 
 termination_messages = ["You won!", "I won!", "It's a tie!"]
-moved_condition = "moved"
-too_much_errors_condition = "errors"
+moved_condition = "Move done, switching player"
+too_many_failed_actions = "Too many wrong actions, interrupting"
 termination_conditions = [msg.lower() for msg in termination_messages] + [
-    moved_condition,
-    too_much_errors_condition,
+    moved_condition.lower(),
+    too_many_failed_actions.lower(),
 ]
 
 common_prompt = f"""Now is your turn to make a move. Before making a move you can pick one of 3 actions:
@@ -104,6 +105,11 @@ common_prompt = f"""Now is your turn to make a move. Before making a move you ca
     - 'make_move <UCI formatted move>' when you are ready complete your turn (e.g., 'make_move e2e4')
 Respond with the [action] or [termination message] if the game is finished ({', '.join(termination_messages)}).
 """
+
+invalid_action_message = (
+    "Invalid action. Pick one, reply exactly with the name and space delimetted argument: "
+    "get_current_board, get_legal_moves, make_move <UCI formatted move>"
+)
 
 player_white = ConversableAgent(
     name="Player_White",
@@ -150,9 +156,9 @@ class AutoReplyAgent(ConversableAgent):
         global failed_action_attempts
 
         # Use a switch statement to call the corresponding function
-        if action_choice == "get_current_board":
+        if "get_current_board" in action_choice:
             reply = get_current_board()
-        elif action_choice == "get_legal_moves":
+        elif "get_legal_moves" in action_choice:
             reply = get_legal_moves()
         elif action_choice.startswith("make_move"):
             try:
@@ -161,13 +167,15 @@ class AutoReplyAgent(ConversableAgent):
                 make_move(move)
                 reply = moved_condition
             except Exception as e:
-                print(f"Failed to make move: {e}")
+                reply = f"Failed to make move: {e}"
                 failed_action_attempts += 1
         else:
-            print("Invalid action. Please choose a valid action.")
+            reply = invalid_action_message
             failed_action_attempts += 1
-            if failed_action_attempts >= max_failed_attempts:
-                reply = too_much_errors_condition
+
+        if failed_action_attempts >= max_failed_attempts:
+            print(reply)
+            reply = too_many_failed_actions
 
         return reply
 
@@ -193,9 +201,9 @@ proxy_agent = AutoReplyAgent(
 # The Game
 
 try:
-    current_turn = 0
+    current_move = 0
 
-    while current_turn < max_game_turns and not board.is_game_over():
+    while current_move < max_game_turns and not board.is_game_over():
         for player in [player_white, player_black]:
             failed_action_attempts = 0
             chat_result = proxy_agent.initiate_chat(
@@ -203,11 +211,18 @@ try:
                 message=player.description,
                 max_turns=max_llm_turns,
             )
-            print(chat_result.summary)
-            pprint(chat_result.cost)
+            current_move += 1
+            last_message = chat_result.summary
+            print(f"\033[94mMOVE {current_move}\033[0m")
+            print(f"\033[94mLast Message: {last_message}\033[0m")
+            print(
+                f"\033[94mPrompt Tokens: {chat_result.cost['usage_including_cached_inference']['gpt-4o-mini']['prompt_tokens']}\033[0m"
+            )
+            print(
+                f"\033[94mCompletion Tokens: {chat_result.cost['usage_including_cached_inference']['gpt-4o-mini']['completion_tokens']}\033[0m"
+            )
             player.clear_history()
             proxy_agent.clear_history()
-        current_turn += 1
 
 
 except Exception as e:
