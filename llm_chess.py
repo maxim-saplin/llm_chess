@@ -16,13 +16,14 @@ from utils import get_llms_autogen
 load_dotenv()
 
 llm_config_white, llm_config_black = get_llms_autogen()
-max_turns = (
-    100  # maximum number of conversation turns in upper level chat between players
+max_game_turns = (
+    100  # maximum number of game turns (a turn is when both players make a moved)
 )
+max_llm_turns = 10  # how many turns can an LLM make while making a move
+max_failed_attempts = 3  # number of wrong replies/actions before halting the game and giving the player a loss
 
 # Init chess board
 board = chess.Board()
-made_move = False
 frames = []
 fig = plt.figure()
 
@@ -89,6 +90,12 @@ def make_move(
 # Agents
 
 termination_messages = ["You won!", "I won!", "It's a tie!"]
+moved_condition = "moved"
+too_much_errors_condition = "errors"
+termination_conditions = termination_messages + [
+    moved_condition,
+    too_much_errors_condition,
+]
 
 common_prompt = f"""Now is your turn to make a move. Before making a move you can pick one of 3 actions:
     - 'get_current_board' to get the schema and current status of the board
@@ -99,69 +106,86 @@ Respond with the [action] or [termination message] if the game is finished ({', 
 
 player_white = ConversableAgent(
     name="Player_White",
-    system_message="You are a professional chess player and you play as white. "
+    # Not using system message as some LLMs can ignore it
+    description="You are a professional chess player and you play as white. "
     + common_prompt,
     llm_config=llm_config_white,
     is_termination_msg=lambda msg: any(
-        term_msg.lower() in msg["content"].lower() for term_msg in termination_messages
+        term_msg.lower() in msg["content"].lower()
+        for term_msg in termination_conditions
     ),
 )
 
 player_black = ConversableAgent(
     name="Player_Black",
-    system_message="You are a professional chess player and you play as black. "
+    description="You are a professional chess player and you play as black. "
     + common_prompt,
     llm_config=llm_config_black,
     is_termination_msg=lambda msg: "you won" in msg["content"].lower(),
 )
+
+# Register reply functions
+
+failed_action_attempts = 0
+
+for player in [player_white, player_black]:
+
+    def auto_reply(recipient, messages, sender, config):
+        # if "callback" in config and config["callback"] is not None:
+        #     callback = config["callback"]
+        #     callback(sender, recipient, messages[-1])
+        print(f"Messages sent to: {recipient.name} | num messages: {len(messages)}")
+
+        action_choice = messages[-1].lower().strip()
+
+        reply = ""
+        global failed_action_attempts
+
+        # Use a switch statement to call the corresponding function
+        if action_choice == "get_current_board":
+            reply = get_current_board()
+        elif action_choice == "get_legal_moves":
+            reply = get_legal_moves()
+        elif action_choice.startswith("make_move"):
+            try:
+                # Extract the move from the response
+                move = action_choice.split()[-1]
+                make_move(move)
+                reply = moved_condition
+            except Exception as e:
+                print(f"Failed to make move: {e}")
+                failed_action_attempts += 1
+        else:
+            print("Invalid action. Please choose a valid action.")
+            failed_action_attempts += 1
+            if failed_action_attempts >= max_failed_attempts:
+                reply = too_much_errors_condition
+
+        return False, reply
+
+    player.register_reply(
+        [ConversableAgent, None],
+        reply_func=auto_reply,
+        config={"callback": None},
+    )
 
 # The Game
 
 try:
     current_turn = 0
 
-    while current_turn < max_turns:
+    while current_turn < max_game_turns and not board.is_game_over:
         for player in [player_white, player_black]:
             failed_action_attempts = 0
-            max_failed_attempts = 3
-            action = player.initiate_chat(
-                player_white if player == player_black else player_black,
-                message=common_prompt,
-                max_turns=1,
+            chat_result = player.initiate_chat(
+                player,
+                message=player.description,
+                max_turns=max_llm_turns,
             )
+            print(chat_result.summary)
+            pprint(chat_result.cost)
+            player.clear_history()
 
-            # Parse the response to get the chosen action
-            action_choice = action.lower().strip()
-
-            # Use a switch statement to call the corresponding function
-            if action_choice == "get_current_board":
-                print(get_current_board())
-                failed_action_attempts = 0
-            elif action_choice == "get_legal_moves":
-                print(get_legal_moves())
-                failed_action_attempts = 0
-            elif action_choice.startswith("make_move"):
-                try:
-                    # Extract the move from the response
-                    move = action_choice.split()[-1]
-                    print(make_move(move))
-                    failed_action_attempts = 0
-                except Exception as e:
-                    print(f"Failed to make move: {e}")
-                    failed_action_attempts += 1
-            else:
-                print("Invalid action. Please choose a valid action.")
-                failed_action_attempts += 1
-
-            # Check for termination condition
-            if (
-                "you won" in action_choice
-                or failed_action_attempts >= max_failed_attempts
-            ):
-                if failed_action_attempts >= max_failed_attempts:
-                    print("Too many failed attempts. Ending the game.")
-                break
-        current_turn += 1
 
 except Exception as e:
     print("\033[91mExecution was halted due to error.\033[0m")
