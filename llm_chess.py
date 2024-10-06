@@ -213,14 +213,6 @@ proxy_agent = AutoReplyAgent(
     is_termination_msg=is_termination_message,
 )
 
-
-# for player in [player_white, player_black]:
-#     proxy_agent.register_reply(
-#         player,
-#         reply_func=auto_reply,
-#         # config={"callback": None},
-#     )
-
 # The Game
 
 # Initialize fields dynamically
