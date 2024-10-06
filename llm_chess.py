@@ -17,7 +17,7 @@ from typing_extensions import Annotated
 # Global params
 
 use_random_player = True  # if True the randomm player will be assinged to White player, it will randomly pick any legal move in every turn
-max_game_turns = 10  # maximum number of game moves before terminating
+max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions before halting the game and giving the player a loss
 throttle_delay_moves = 1  # some LLM provider might thorttle frequent API reuqests, make a delay (in seconds) between moves
@@ -227,7 +227,7 @@ player_black.wrong_actions = 0
 try:
     current_move = 0
 
-    while current_move < max_game_turns and not board.is_game_over() and not game_over:
+    while current_move < max_game_moves and not board.is_game_over() and not game_over:
         for player in [player_white, player_black]:
             failed_action_attempts = 0
             chat_result = proxy_agent.initiate_chat(
@@ -281,7 +281,7 @@ try:
             proxy_agent.clear_history()
             time.sleep(throttle_delay_moves)
 
-    if not reason and current_move >= max_game_turns:
+    if not reason and current_move >= max_game_moves:
         winner = "NONE"
         reason = "Max moves reached"
 
