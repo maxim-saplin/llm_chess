@@ -4,10 +4,14 @@ import traceback
 from typing import Any, Dict, List, Optional, Union
 import chess
 import chess.svg
-from pprint import pprint
-from autogen import Agent, ConversableAgent, gather_usage_summary
+from autogen import Agent, ConversableAgent
 
-from utils import get_llms_autogen, display_board, save_video
+from utils import (
+    generate_game_stats,
+    get_llms_autogen,
+    display_board,
+    display_store_game_video_and_stats,
+)
 from typing_extensions import Annotated
 
 # Global params
@@ -17,6 +21,7 @@ max_game_turns = 10  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions before halting the game and giving the player a loss
 throttle_delay_moves = 1  # some LLM provider might thorttle frequent API reuqests, make a delay (in seconds) between moves
+time_started = time.strftime("%H:%M_%d.%m.%Y")
 
 # LLM
 
@@ -147,7 +152,6 @@ random_player = RandomPlayer(
     name="Random_Player",
     system_message="",
     description="You are a random chess player.",
-    llm_config=llm_config_white,
     human_input_mode="NEVER",
     is_termination_msg=is_termination_message,
 )
@@ -209,7 +213,6 @@ class AutoReplyAgent(ConversableAgent):
 proxy_agent = AutoReplyAgent(
     name="Proxy",
     human_input_mode="NEVER",
-    llm_config=llm_config_white,
     is_termination_msg=is_termination_message,
 )
 
@@ -290,25 +293,16 @@ except Exception as e:
     winner = "NONE"
     reason = "ERROR OCCURED"
 
-save_video(f"llm_chess_{time.strftime('%H:%M_%d.%m.%Y')}.mp4")
+game_stats = generate_game_stats(
+    time_started,
+    winner,
+    reason,
+    current_move,
+    player_white,
+    player_black,
+    llm_config_white,
+    llm_config_black,
+)
 
-print("\033[92m\nGAME OVER\n\033[0m")
-print(f"\033[92m{winner} wins due to {reason}.\033[0m")
-print(f"\033[92mNumber of moves made: {current_move}\033[0m")
-print("\nWrong Moves (LLM asked to make illegal/impossible move):")
-print(f"Player White: {player_white.wrong_moves}")
-print(f"Player Black: {player_black.wrong_moves}")
-
-print("\nWrong Actions (LLM responded with non parseable message):")
-print(f"Player White: {player_white.wrong_actions}")
-print(f"Player Black: {player_black.wrong_actions}")
-
-print("\nCosts per agent (white and black):\n")
-white_summary = gather_usage_summary([player_white])
-black_summary = gather_usage_summary([player_black])
-
-if white_summary:
-    pprint(white_summary["usage_excluding_cached_inference"])
-if black_summary:
-    pprint(black_summary["usage_excluding_cached_inference"])
+display_store_game_video_and_stats(game_stats)
 # input("Press any key to quit...")
