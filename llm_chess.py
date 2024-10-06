@@ -6,65 +6,28 @@ import chess
 import chess.svg
 from pprint import pprint
 from autogen import Agent, ConversableAgent, gather_usage_summary
-from moviepy.editor import ImageSequenceClip
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import cairosvg
-import io
-import numpy as np
+
+from utils import get_llms_autogen, display_board, save_video
 from typing_extensions import Annotated
-from dotenv import load_dotenv
-from utils import get_llms_autogen
 
-load_dotenv()
+# Global params
 
-llm_config_white, llm_config_black = get_llms_autogen()
-llm_config_white = llm_config_black
 use_random_player = True  # if True the randomm player will be assinged to White player, it will randomly pick any legal move in every turn
-max_game_turns = 200  # maximum number of game moves before terminating
+max_game_turns = 10  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions before halting the game and giving the player a loss
 throttle_delay_moves = 1  # some LLM provider might thorttle frequent API reuqests, make a delay (in seconds) between moves
+
+# LLM
+
+llm_config_white, llm_config_black = get_llms_autogen()
+llm_config_white = llm_config_black  # Quick hack to use same model
 
 # Init chess board
 board = chess.Board()
 game_over = False
 winner = None
 reason = None
-frames = []
-fig = plt.figure()
-
-
-def display_board(board, move):
-    svg = chess.svg.board(
-        board,
-        arrows=[(move.from_square, move.to_square)],
-        fill={move.from_square: "gray"},
-        size=200,
-    )
-    png_data = cairosvg.svg2png(bytestring=svg.encode("utf-8"), dpi=200)
-    img = mpimg.imread(io.BytesIO(png_data), format="png")
-
-    # Display the image
-    plt.imshow(img)
-    plt.axis("off")
-    fig = plt.gcf()
-    fig.set_dpi(200)
-    plt.pause(0.1)
-
-    # Convert the image to a NumPy array for video frames
-    fig.canvas.draw()
-    io_buf = io.BytesIO()
-    fig.savefig(io_buf, format="raw", dpi=200)
-    io_buf.seek(0)
-    frame = np.reshape(
-        np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
-        newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1),
-    )
-    global frames
-    frames.append(frame)
-
-    plt.clf()
 
 
 # Actions
@@ -279,7 +242,7 @@ try:
             )
             current_move += 1
             last_message = chat_result.summary
-            print(f"\033[94mMOVE {current_move}\033[0m")
+            print(f"\033[94mMADE OVE {current_move}\033[0m")
             print(f"\033[94mLast Message: {last_message}\033[0m")
             _, last_usage = list(
                 chat_result.cost["usage_including_cached_inference"].items()
@@ -318,7 +281,7 @@ try:
             elif last_message.lower().strip() != move_was_made.lower().strip():
                 game_over = True
                 winner = "NONE"
-                reason = f"Unknown issue, {player_white.name if player == player_white else player_white.name} failed to make a move"
+                reason = f"Unknown issue, {player.name} failed to make a move"
             player.clear_history()
             proxy_agent.clear_history()
             time.sleep(throttle_delay_moves)
@@ -335,13 +298,7 @@ except Exception as e:
     winner = "NONE"
     reason = "ERROR OCCURED"
 
-if frames:
-    clip = ImageSequenceClip(frames, fps=1)
-    clip.write_videofile(
-        f"llm_chess_{time.strftime('%H:%M_%d.%m.%Y')}.mp4", codec="libx264"
-    )
-else:
-    print("No frames to save to a video file")
+save_video(f"llm_chess_{time.strftime('%H:%M_%d.%m.%Y')}.mp4")
 
 print("\033[92m\nGAME OVER\n\033[0m")
 print(f"\033[92m{winner} wins due to {reason}.\033[0m")

@@ -15,7 +15,7 @@ from utils import get_llms_autogen
 
 load_dotenv()
 
-llm_config_white, llm_config_white = get_llms_autogen()
+llm_config_white, llm_config_black = get_llms_autogen()
 max_turns = (
     100  # maximum number of conversation turns in upper level chat between players
 )
