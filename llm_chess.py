@@ -16,7 +16,7 @@ from typing_extensions import Annotated
 
 # Global params
 
-use_random_player = True  # if True the randomm player will be assinged to White player, it will randomly pick any legal move in every turn
+use_random_player = True  # if True the randomm player will be assinged to White player, it will randomly pick any legal move and make it
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions before halting the game and giving the player a loss
@@ -255,9 +255,7 @@ try:
                 winner = (
                     player_black.name if player == player_white else player_white.name
                 )
-                reason = (
-                    "Opponent chose wrong actions to many times failing to make a move"
-                )
+                reason = f"{player.name} chose wrong actions to many times failing to make a move"
             elif board.is_game_over():
                 game_over = True
                 if board.is_checkmate():
