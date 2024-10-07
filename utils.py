@@ -88,8 +88,6 @@ def generate_game_stats(
                 if isinstance(player_white.llm_config, dict)
                 else "N/A"
             ),
-            "material_count": player_white.material_count,
-            "material_count": player_black.material_count,
         },
         "material_count": material_count,
         "player_black": {

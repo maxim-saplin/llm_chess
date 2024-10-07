@@ -31,7 +31,7 @@ make_move_action = "make_move"
 
 llm_config_white, llm_config_black = get_llms_autogen()
 # llm_config_white = llm_config_black  # Quick hack to use same model
-llm_config_black = llm_config_white
+# llm_config_black = llm_config_white
 
 # Init chess board
 material_count = {"white": 0, "black": 0}
