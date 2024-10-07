@@ -9,6 +9,8 @@ Putting LLMs up against each other in chess game. Testing basic instruction foll
  - Set LLM params in .env file (API key, etc.) for both white and black player agents
     - Azure Open AI i used buy default, modify `utils.py` to use a different provider that is supported by [Autogen](https://microsoft.github.io/autogen/docs/topics/llm_configuration/)
  - Check configs (see next)
+ - `pip install -r requirements.txt`
+    - Optionally create a VENV
  - Run `llm_chess.py`
     - llm_chess_tool_call.py is older version relying on native tool call support, not maintained, keeping JIC
 
