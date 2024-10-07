@@ -16,7 +16,7 @@ from typing_extensions import Annotated
 
 
 use_random_player = True  # if True the randomm player will be assinged to White player, it will randomly pick any legal move and make it
-max_game_moves = 5  # maximum number of game moves before terminating
+max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions before halting the game and giving the player a loss
 throttle_delay_moves = 1  # some LLM provider might thorttle frequent API reuqests, make a delay (in seconds) between moves
