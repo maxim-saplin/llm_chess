@@ -1,12 +1,12 @@
 import time
-import random
 import traceback
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict
 import chess
 import chess.svg
-from autogen import Agent, ConversableAgent
-
+from autogen import ConversableAgent
+from custom_agents import RandomPlayer, AutoReplyAgent
 from utils import (
+    calculate_material_count,
     generate_game_stats,
     get_llms_autogen,
     display_board,
@@ -14,14 +14,18 @@ from utils import (
 )
 from typing_extensions import Annotated
 
-# Global params
 
 use_random_player = True  # if True the randomm player will be assinged to White player, it will randomly pick any legal move and make it
-max_game_moves = 200  # maximum number of game moves before terminating
+max_game_moves = 5  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions before halting the game and giving the player a loss
 throttle_delay_moves = 1  # some LLM provider might thorttle frequent API reuqests, make a delay (in seconds) between moves
-time_started = time.strftime("%H:%M_%d.%m.%Y")
+time_started = time.strftime("%Y.%m.%d_%H:%M")
+
+# Action names
+get_current_board_action = "get_current_board"
+get_legal_moves_action = "get_legal_moves"
+make_move_action = "make_move"
 
 # LLM
 
@@ -29,6 +33,7 @@ llm_config_white, llm_config_black = get_llms_autogen()
 llm_config_white = llm_config_black  # Quick hack to use same model
 
 # Init chess board
+material_count = {"white": 0, "black": 0}
 board = chess.Board()
 game_over = False
 winner = None
@@ -66,19 +71,24 @@ def make_move(
 
 # termination_messages = ["You won!", "I won!", "It's a tie!"]
 move_was_made = "Move made, switching player"
-too_many_failed_actions = "Too many wrong actions, interrupting"
+too_many_failed_actions_message = "Too many wrong actions, interrupting"
 termination_conditions = [
     move_was_made.lower(),
-    too_many_failed_actions.lower(),
+    too_many_failed_actions_message.lower(),
 ]
 
-common_prompt = """Now is your turn to make a move. Before making a move you can pick one of 3 actions:
-    - 'get_current_board' to get the schema and current status of the board
-    - 'get_legal_moves' to get a UCI formatted list of available moves
-    - 'make_move <UCI formatted move>' when you are ready complete your turn (e.g., 'make_move e2e4')
+# Action names
+get_current_board_action = "get_current_board"
+get_legal_moves_action = "get_legal_moves"
+make_move_action = "make_move"
+
+
+common_prompt = f"""Now is your turn to make a move. Before making a move you can pick one of 3 actions:
+    - '{get_current_board_action}' to get the schema and current status of the board
+    - '{get_legal_moves_action}' to get a UCI formatted list of available moves
+    - '{make_move_action} <UCI formatted move>' when you are ready to complete your turn (e.g., '{make_move_action} e2e4')
 Respond with the action.
 """
-# Respond with the [action] or [termination message] if the game is finished ({', '.join(termination_messages)}).
 
 invalid_action_message = (
     "Invalid action. Pick one, reply exactly with the name and space delimetted argument: "
@@ -121,32 +131,6 @@ player_black = ConversableAgent(
 failed_action_attempts = 0
 
 
-class RandomPlayer(ConversableAgent):
-    def generate_reply(
-        self,
-        messages: Optional[List[Dict[str, Any]]] = None,
-        sender: Optional["Agent"] = None,
-        **kwargs: Any,
-    ) -> Union[str, Dict, None]:
-        # Termination
-        if self._is_termination_msg(messages[-1]):
-            return None
-
-        last_message = messages[-1]["content"].lower().strip()
-
-        try:
-            legal_moves = last_message.split(",")
-            if legal_moves:
-                random_move = random.choice(legal_moves)
-                if chess.Move.from_uci(random_move).uci() == random_move:
-                    return f"make_move {random_move}"
-                return "get_legal_moves"
-        except Exception:
-            return "get_legal_moves"
-
-        return "get_legal_moves"
-
-
 # Instantiate RandomPlayer
 random_player = RandomPlayer(
     name="Random_Player",
@@ -154,65 +138,27 @@ random_player = RandomPlayer(
     description="You are a random chess player.",
     human_input_mode="NEVER",
     is_termination_msg=is_termination_message,
+    make_move_action=make_move_action,
+    get_legal_moves_action=get_legal_moves_action,
 )
 
 if use_random_player:
     player_white = random_player
-
-
-# TODO, try out self-reflection by giving some of the agent ability to evaluate several moves,
-# i.e. add 4th "consider" action which will engage LLM to make few turns duscissing the board
-# and next move, can be same agent with LLM config and generate_reply() method deciding when
-# to hand over the contorol
-class AutoReplyAgent(ConversableAgent):
-    def __init__(self, max_failed_attempts: int, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.max_failed_attempts = max_failed_attempts
-        self.failed_action_attempts = 0
-
-    def generate_reply(
-        self,
-        messages: Optional[List[Dict[str, Any]]] = None,
-        sender: Optional["Agent"] = None,
-        **kwargs: Any,
-    ) -> Union[str, Dict, None]:
-        if self._is_termination_msg(messages[-1]):
-            return None
-        action_choice = messages[-1]["content"].lower().strip()
-
-        reply = ""
-
-        # Use a switch statement to call the corresponding function
-        if "get_current_board" in action_choice:
-            reply = get_current_board()
-        elif "get_legal_moves" in action_choice:
-            reply = get_legal_moves()
-        elif action_choice.startswith("make_move"):
-            try:
-                move = action_choice.split()[-1]
-                make_move(move)
-                reply = move_was_made
-            except Exception as e:
-                reply = f"Failed to make move: {e}"
-                self.failed_action_attempts += 1
-                sender.wrong_moves += 1
-        else:
-            reply = invalid_action_message
-            self.failed_action_attempts += 1
-            sender.wrong_actions += 1
-
-        if self.failed_action_attempts >= self.max_failed_attempts:
-            print(reply)
-            reply = too_many_failed_actions
-
-        return reply
-
 
 proxy_agent = AutoReplyAgent(
     name="Proxy",
     human_input_mode="NEVER",
     is_termination_msg=is_termination_message,
     max_failed_attempts=max_failed_attempts,
+    get_current_board=get_current_board,
+    get_legal_moves=get_legal_moves,
+    make_move=make_move,
+    move_was_made_message=move_was_made,
+    invalid_action_message=invalid_action_message,
+    too_many_failed_actions_message=too_many_failed_actions_message,
+    get_current_board_action=get_current_board_action,
+    get_legal_moves_action=get_legal_moves_action,
+    make_move_action=make_move_action,
 )
 
 # The Game
@@ -220,6 +166,7 @@ proxy_agent = AutoReplyAgent(
 for player in [player_white, player_black]:
     player.wrong_moves = 0
     player.wrong_actions = 0
+    player.material_count = {"white": 0, "black": 0}
 
 try:
     current_move = 0
@@ -234,11 +181,19 @@ try:
             )
             current_move += 1
             last_message = chat_result.summary
-            print(f"\033[94mMADE OVE {current_move}\033[0m")
+            print(f"\033[94mMADE MOVE {current_move}\033[0m")
             print(f"\033[94mLast Message: {last_message}\033[0m")
             _, last_usage = list(
                 chat_result.cost["usage_including_cached_inference"].items()
             )[-1]
+
+            white_material, black_material = calculate_material_count(board)
+            print(
+                f"\033[94mMaterial Count - White: {white_material}, Black: {black_material}\033[0m"
+            )
+            material_count["white"] = white_material
+            material_count["black"] = black_material
+
             prompt_tokens = (
                 last_usage["prompt_tokens"] if isinstance(last_usage, dict) else 0
             )
@@ -247,7 +202,10 @@ try:
             )
             print(f"\033[94mPrompt Tokens: {prompt_tokens}\033[0m")
             print(f"\033[94mCompletion Tokens: {completion_tokens}\033[0m")
-            if last_message.lower().strip() == too_many_failed_actions.lower().strip():
+            if (
+                last_message.lower().strip()
+                == too_many_failed_actions_message.lower().strip()
+            ):
                 game_over = True
                 winner = (
                     player_black.name if player == player_white else player_white.name
@@ -272,7 +230,6 @@ try:
                 game_over = True
                 winner = "NONE"
                 reason = f"Unknown issue, {player.name} failed to make a move"
-            player.clear_history()
             proxy_agent.clear_history()
             time.sleep(throttle_delay_moves)
             if game_over:
@@ -297,8 +254,7 @@ game_stats = generate_game_stats(
     current_move,
     player_white,
     player_black,
-    llm_config_white,
-    llm_config_black,
+    material_count,
 )
 
 display_store_game_video_and_stats(game_stats)

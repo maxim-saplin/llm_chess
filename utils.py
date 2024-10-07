@@ -12,6 +12,29 @@ import numpy as np
 from moviepy.editor import ImageSequenceClip
 import chess.svg
 
+
+# Material values: pawn = 1, knight = 3, bishop = 3, rook = 5, queen = 9
+def calculate_material_count(board):
+    piece_values = {
+        chess.PAWN: 1,
+        chess.KNIGHT: 3,
+        chess.BISHOP: 3,
+        chess.ROOK: 5,
+        chess.QUEEN: 9,
+    }
+    white_material = sum(
+        piece_values.get(piece.piece_type, 0)
+        for piece in board.piece_map().values()
+        if piece.color == chess.WHITE
+    )
+    black_material = sum(
+        piece_values.get(piece.piece_type, 0)
+        for piece in board.piece_map().values()
+        if piece.color == chess.BLACK
+    )
+    return white_material, black_material
+
+
 load_dotenv()
 
 
@@ -45,8 +68,7 @@ def generate_game_stats(
     current_move: int,
     player_white: Any,
     player_black: Any,
-    llm_config_white: dict,
-    llm_config_black: dict,
+    material_count: dict,
 ) -> dict:
     """Generate game statistics."""
     white_summary = gather_usage_summary([player_white])
@@ -66,7 +88,10 @@ def generate_game_stats(
                 if isinstance(player_white.llm_config, dict)
                 else "N/A"
             ),
+            "material_count": player_white.material_count,
+            "material_count": player_black.material_count,
         },
+        "material_count": material_count,
         "player_black": {
             "name": player_black.name,
             "wrong_moves": player_black.wrong_moves,
@@ -157,6 +182,10 @@ def display_store_game_video_and_stats(game_stats):
     print("\nWrong Actions (LLM responded with non parseable message):")
     print(f"Player White: {game_stats['player_white']['wrong_actions']}")
     print(f"Player Black: {game_stats['player_black']['wrong_actions']}")
+
+    print("\nMaterial Count:")
+    print(f"Player White: {game_stats['material_count']['white']}")
+    print(f"Player Black: {game_stats['material_count']['black']}")
 
     print("\nCosts per agent (white and black):\n")
     if white_summary:
