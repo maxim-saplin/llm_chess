@@ -4,7 +4,7 @@ from typing import Any, Dict
 import chess
 import chess.svg
 from autogen import ConversableAgent
-from custom_agents import RandomPlayer, AutoReplyAgent
+from custom_agents import RandomPlayerAgent, AutoReplyAgent
 from utils import (
     calculate_material_count,
     generate_game_stats,
@@ -30,7 +30,8 @@ make_move_action = "make_move"
 # LLM
 
 llm_config_white, llm_config_black = get_llms_autogen()
-llm_config_white = llm_config_black  # Quick hack to use same model
+# llm_config_white = llm_config_black  # Quick hack to use same model
+llm_config_black = llm_config_white
 
 # Init chess board
 material_count = {"white": 0, "black": 0}
@@ -132,7 +133,7 @@ failed_action_attempts = 0
 
 
 # Instantiate RandomPlayer
-random_player = RandomPlayer(
+random_player = RandomPlayerAgent(
     name="Random_Player",
     system_message="",
     description="You are a random chess player.",

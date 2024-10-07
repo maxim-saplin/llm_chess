@@ -4,7 +4,7 @@ from autogen import ConversableAgent
 from typing import Any, Dict, List, Optional, Union
 
 
-class RandomPlayer(ConversableAgent):
+class RandomPlayerAgent(ConversableAgent):
     """
     A random chess player agent that selects moves randomly from legal options.
 
