@@ -1,15 +1,16 @@
 Putting LLMs up against each other in chess game. Testing basic instruction following capabilities and of course chess proficiency :)
 
-- llm_chessp.py runs the game, collects the results, records video
-    - llm_chess_tool_call.py - older version relying on native tool call support
+- `llm_chessp.py` runs the game, collects the results, records video
+    
 
 ## Running
  - Decide if you would like to put one LLM against the other OR a random player (chaos monkey picking randome move out of a list of legal moves provided to it)
     - Set `use_random_player` to True to make make random player play white and LLM play black
  - Set LLM params in .env file (API key, etc.) for both white and black player agents
+    - Azure Open AI i used buy default, modify `utils.py` to use a different provider that is supported by [Autogen](https://microsoft.github.io/autogen/docs/topics/llm_configuration/)
  - Check configs (see next)
  - Run `llm_chess.py`
-
+    - llm_chess_tool_call.py is older version relying on native tool call support, not maintained, keeping JIC
 
 ## Configs
 
