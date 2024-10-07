@@ -165,21 +165,22 @@ if use_random_player:
 # and next move, can be same agent with LLM config and generate_reply() method deciding when
 # to hand over the contorol
 class AutoReplyAgent(ConversableAgent):
+    def __init__(self, max_failed_attempts: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.max_failed_attempts = max_failed_attempts
+        self.failed_action_attempts = 0
+
     def generate_reply(
         self,
         messages: Optional[List[Dict[str, Any]]] = None,
         sender: Optional["Agent"] = None,
         **kwargs: Any,
     ) -> Union[str, Dict, None]:
-        # Termination, who could have guessed, fucking Autogen
         if self._is_termination_msg(messages[-1]):
             return None
-        # if messages[-1]["name"] == self.name:
-        #     return None
         action_choice = messages[-1]["content"].lower().strip()
 
         reply = ""
-        global failed_action_attempts
 
         # Use a switch statement to call the corresponding function
         if "get_current_board" in action_choice:
@@ -188,22 +189,19 @@ class AutoReplyAgent(ConversableAgent):
             reply = get_legal_moves()
         elif action_choice.startswith("make_move"):
             try:
-                # Extract the move from the response
                 move = action_choice.split()[-1]
                 make_move(move)
                 reply = move_was_made
-            # TODO, stats, wrong moves per player (not accounted in wwrong actions)
             except Exception as e:
                 reply = f"Failed to make move: {e}"
-                failed_action_attempts += 1
+                self.failed_action_attempts += 1
                 sender.wrong_moves += 1
         else:
             reply = invalid_action_message
-            failed_action_attempts += 1
+            self.failed_action_attempts += 1
             sender.wrong_actions += 1
 
-        # TODO, stats, wrong actions per player
-        if failed_action_attempts >= max_failed_attempts:
+        if self.failed_action_attempts >= self.max_failed_attempts:
             print(reply)
             reply = too_many_failed_actions
 
@@ -214,22 +212,21 @@ proxy_agent = AutoReplyAgent(
     name="Proxy",
     human_input_mode="NEVER",
     is_termination_msg=is_termination_message,
+    max_failed_attempts=max_failed_attempts,
 )
 
 # The Game
 
-# Initialize fields dynamically
-player_white.wrong_moves = 0
-player_white.wrong_actions = 0
-player_black.wrong_moves = 0
-player_black.wrong_actions = 0
+for player in [player_white, player_black]:
+    player.wrong_moves = 0
+    player.wrong_actions = 0
 
 try:
     current_move = 0
 
     while current_move < max_game_moves and not board.is_game_over() and not game_over:
         for player in [player_white, player_black]:
-            failed_action_attempts = 0
+            proxy_agent.failed_action_attempts = 0
             chat_result = proxy_agent.initiate_chat(
                 recipient=player,
                 message=player.description,
@@ -250,7 +247,7 @@ try:
             )
             print(f"\033[94mPrompt Tokens: {prompt_tokens}\033[0m")
             print(f"\033[94mCompletion Tokens: {completion_tokens}\033[0m")
-            if last_message.lower().strip() == too_many_failed_actions:
+            if last_message.lower().strip() == too_many_failed_actions.lower().strip():
                 game_over = True
                 winner = (
                     player_black.name if player == player_white else player_white.name
@@ -278,6 +275,8 @@ try:
             player.clear_history()
             proxy_agent.clear_history()
             time.sleep(throttle_delay_moves)
+            if game_over:
+                break
 
     if not reason and current_move >= max_game_moves:
         winner = "NONE"
