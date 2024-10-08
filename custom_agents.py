@@ -1,4 +1,5 @@
 import random
+import re
 import chess
 from autogen import ConversableAgent
 from typing import Any, Dict, List, Optional, Union
@@ -110,19 +111,21 @@ class AutoReplyAgent(ConversableAgent):
             reply = self.get_current_board()
         elif self.get_legal_moves_action in action_choice:
             reply = self.get_legal_moves()
-        elif action_choice.startswith(self.make_move_action):
-            try:
-                move = action_choice.split()[-1]
-                self.make_move(move)
-                reply = self.move_was_made
-            except Exception as e:
-                reply = f"Failed to make move: {e}"
-                self.failed_action_attempts += 1
-                sender.wrong_moves += 1
         else:
-            reply = self.invalid_action_message
-            self.failed_action_attempts += 1
-            sender.wrong_actions += 1
+            match = re.search(rf"{self.make_move_action} (\S{{4}})", action_choice)
+            if match:
+                try:
+                    move = match.group(1)
+                    self.make_move(move)
+                    reply = self.move_was_made
+                except Exception as e:
+                    reply = f"Failed to make move: {e}"
+                    self.failed_action_attempts += 1
+                    sender.wrong_moves += 1
+            else:
+                reply = self.invalid_action_message
+                self.failed_action_attempts += 1
+                sender.wrong_actions += 1
 
         if self.failed_action_attempts >= self.max_failed_attempts:
             print(reply)

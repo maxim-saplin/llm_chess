@@ -86,7 +86,7 @@ Move made, switching player
 
 ### Problems with instructuin following
 
-!NOTE, not touching prompts, changin parsing logic to be more relaxed, logs before 08.10.2024 are more strict with wrong moves stats
+!NOTE, not touching prompts, changin parsing logic to be more relaxed, logs before 08.10.2024 (first 8) are more strict with wrong moves stats
 
 Original kick-off prompt:
 ```
@@ -123,11 +123,13 @@ Player_Black (to Proxy):
 ```json
 make_move g8f6
 ``` 
-
-
---------------------------------------------------------------------------------
-Invalid action. Pick one, reply exactly with the name and space delimetted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
-Proxy (to Player_Black):
-
-Too many wrong actions, interrupting
+```
+OR
+```
+```json
+{
+  "action": "make_move",
+  "move": "a8b8"
+}
+```
 ```
