@@ -132,3 +132,5 @@ class AutoReplyAgent(ConversableAgent):
             reply = self.too_many_failed_actions
 
         return reply
+
+class ChessEnginePlayerAgent(ConversableAgent):
