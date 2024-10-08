@@ -39,6 +39,11 @@ load_dotenv()
 
 
 def get_llms_autogen():
+    # NOTE, if Azure type is used Autogen removes dots from model name,
+    # If that is an issues (i.e. you are using LLM gateway that works like Azure but accupts model names with dots)
+    # You better disable this in Autogen source code 'oia/client.py'
+    #  if openai_config["azure_deployment"] is not None:
+    #         openai_config["azure_deployment"] = openai_config["azure_deployment"].replace(".", "")
     llm_config_white = {
         "api_type": "azure",
         "model": os.environ["AZURE_OPENAI_DEPLOYMENT_W"],

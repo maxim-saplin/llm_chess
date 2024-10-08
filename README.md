@@ -81,3 +81,53 @@ make_move f8g8
 Proxy (to Player_Black):
 
 Move made, switching player
+
+## Model Zoo
+
+### Problems with instructuin following
+
+!NOTE, not touching prompts, changin parsing logic to be more relaxed, logs before 08.10.2024 are more strict with wrong moves stats
+
+Original kick-off prompt:
+```
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of 3 actions:
+    - 'get_current_board' to get the schema and current status of the board
+    - 'get_legal_moves' to get a UCI formatted list of available moves
+    - 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+Respond with the action.
+```
+And the failure message:
+```
+Invalid action. Pick one, reply exactly with the name and space delimetted argument: "get_current_board, get_legal_moves, make_move <UCI formatted move>
+```
+
+- GPT-4o, GPT-4o mini, gemini-1.5-pro-preview-0409 worked fine with the ogirinal prompts and exact match logic for make_move
+- Claude 3.5 Sonnet failed to reply with simple string always adding verbosity
+```
+Proxy (to Player_Black):
+
+Invalid action. Pick one, reply exactly with the name and space delimetted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I apologize for the continued confusion. Let me provide the correct format for the move I want to make:
+
+make_move c7c5
+```
+
+- Gemini-1.5-flash-001 alaways wrapped answers in JSON:
+```
+Player_Black (to Proxy):
+
+```json
+make_move g8f6
+``` 
+
+
+--------------------------------------------------------------------------------
+Invalid action. Pick one, reply exactly with the name and space delimetted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+Proxy (to Player_Black):
+
+Too many wrong actions, interrupting
+```
