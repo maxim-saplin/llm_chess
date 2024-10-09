@@ -2,6 +2,7 @@ import random
 import re
 import chess
 from autogen import ConversableAgent
+from sunfish import Searcher, Position, render, pst
 from typing import Any, Dict, List, Optional, Union
 
 
@@ -34,7 +35,7 @@ class RandomPlayerAgent(ConversableAgent):
         if self._is_termination_msg(messages[-1]):
             return None
 
-        last_message = messages[-1]["content"].lower().strip()
+        last_message = messages[-1]["content"].strip()
 
         try:
             legal_moves = last_message.split(",")
@@ -133,4 +134,81 @@ class AutoReplyAgent(ConversableAgent):
 
         return reply
 
+
 class ChessEnginePlayerAgent(ConversableAgent):
+    """
+    A chess player agent that uses the Sunfish engine to select moves.
+
+    Attributes:
+        make_move_action (str): The action string for making a move.
+        get_current_board_action (str): The action string for getting legal moves.
+    """
+
+    def __init__(
+        self,
+        make_move_action: str,
+        get_current_board_action: str,
+        is_white: bool,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.make_move_action = make_move_action
+        self.get_current_board_action = get_current_board_action
+        self.is_white = is_white
+        self.searcher = Searcher()
+
+    def fen_to_sunfish(self, board: str) -> str:
+        # board = re.sub(r"\d", (lambda m: "." * int(m.group(0))), board)
+        # board = list(21 * " " + "  ".join(board.split("/")) + 21 * " ")
+        # board[9::10] = ["\n"] * 12
+        # board = "".join(board)
+
+        # wc = ("Q" in castling, "K" in castling)
+        # bc = ("k" in castling, "q" in castling)
+        # ep = sunfish.parse(enpas) if enpas != "-" else 0
+
+        parts = board.split()
+        board_part = parts[0]
+        board = re.sub(r"\d", (lambda m: "." * int(m.group(0))), board_part)
+        board = list(21 * " " + "  ".join(board.split("/")) + 21 * " ")
+        board[9::10] = ["\n"] * 12
+        board = "".join(board)
+
+        score = sum(pst[c][i] for i, c in enumerate(board) if c.isupper())
+        score -= sum(
+            pst[c.upper()][119 - i] for i, c in enumerate(board) if c.islower()
+        )
+        pos = Position(board, score, (True, True), (True, True), 0, 0)
+        return pos if self.is_white else pos.rotate()
+
+    def generate_reply(
+        self,
+        messages: Optional[List[Dict[str, Any]]] = None,
+        sender: Optional[ConversableAgent] = None,
+        **kwargs: Any,
+    ) -> Union[str, Dict, None]:
+        last_message = messages[-1]["content"].lower().strip()
+
+        try:
+            # Convert the FEN to Sunfish format
+            sunfish_position = self.fen_to_sunfish(last_message)
+
+            # Use Sunfish to propose a move
+            best_move = None
+            for _, _, _, move in self.searcher.search([sunfish_position]):
+                best_move = move
+                break
+
+            # Make the move
+            if best_move:
+                move_str = f"{render(best_move.i)}{render(best_move.j)}{best_move.prom.lower()}"
+                return f"{self.make_move_action} {move_str}"
+            else:
+                raise "No best move"
+
+        except Exception:
+            # Request the board state if parsing fails
+            return self.get_current_board_action
+
+        return self.get_legal_moves_action

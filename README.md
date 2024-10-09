@@ -18,7 +18,9 @@ Putting LLMs up against each other in chess game. Testing basic instruction foll
 
 Adjust the global configs at `llm_chess.py`.
 
-- `use_random_player`: A boolean flag that determines if the Random Player Agent is assigned to play as the white player. If set to `True`, the Random Player will make random legal moves.
+- `white_player_type`: Determines the type of player controlling the white pieces. Options include `RANDOM_PLAYER`, `LLM_WHITE`, `LLM_BLACK`, and `CHESS_ENGINE_PLAYER`.
+- `black_player_type`: Determines the type of player controlling the black pieces. Options include `RANDOM_PLAYER`, `LLM_WHITE`, `LLM_BLACK`, and `CHESS_ENGINE_PLAYER`.
+- `use_fen_board`: A boolean indicating whether to use the FEN format for board representation. Default is `True`.
 - `max_game_moves`: An integer specifying the maximum number of moves allowed in a game before it is automatically terminated. Default is 200.
 - Constrains for a single move (LLM dialogs if LLM agent is used)
     - `max_llm_turns`: An integer indicating the maximum number of conversation turns (pairs of user/assistant messages) an LLM can take while deciding and making a move. Default is 10.

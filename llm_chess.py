@@ -1,10 +1,11 @@
 import time
 import traceback
 from typing import Any, Dict
+from enum import Enum
 import chess
 import chess.svg
 from autogen import ConversableAgent
-from custom_agents import RandomPlayerAgent, AutoReplyAgent
+from custom_agents import RandomPlayerAgent, AutoReplyAgent, ChessEnginePlayerAgent
 from utils import (
     calculate_material_count,
     generate_game_stats,
@@ -15,7 +16,18 @@ from utils import (
 from typing_extensions import Annotated
 
 
-use_random_player = True  # if True the randomm player will be assinged to White player, it will randomly pick any legal move and make it
+class PlayerType(Enum):
+    LLM_WHITE = 1  # Represents a white player controlled by an LLM
+    LLM_BLACK = 2  # Represents a black player controlled by an LLM
+    RANDOM_PLAYER = 3  # Represents a player making random moves
+    CHESS_ENGINE_PLAYER = (
+        4  # Represents a player using a chess engine, FEN board is required
+    )
+
+
+white_player_type = PlayerType.RANDOM_PLAYER
+black_player_type = PlayerType.CHESS_ENGINE_PLAYER
+use_fen_board = True  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions before halting the game and giving the player a loss
@@ -52,10 +64,14 @@ def get_legal_moves() -> Annotated[str, "A list of legal moves in UCI format"]:
     return ",".join([str(move) for move in board.legal_moves])
 
 
+if black_player_type == PlayerType.CHESS_ENGINE_PLAYER and not use_fen_board:
+    print("Warning: Chess engine player selected but FEN board is not used.")
+
+
 def get_current_board() -> (
     Annotated[str, "A text representation of the current board state"]
 ):
-    return board.unicode()
+    return board.fen() if use_fen_board else board.unicode()
 
 
 def make_move(
@@ -97,6 +113,9 @@ invalid_action_message = (
 )
 
 
+# This fu..ing Autogen drives me crazy, some spagetti code with broken logic and common sense...
+# Spend hours debuging circular loops in termination message and prompt and figuring out None is not good for system message
+# Termination approach is hoooooorible
 def is_termination_message(msg: Dict[str, Any]) -> bool:
     return any(
         term_msg == msg["content"].lower().strip()
@@ -104,7 +123,7 @@ def is_termination_message(msg: Dict[str, Any]) -> bool:
     )
 
 
-player_white = ConversableAgent(
+llm_white = ConversableAgent(
     name="Player_White",
     # Not using system message as some LLMs can ignore it
     system_message="",
@@ -115,10 +134,8 @@ player_white = ConversableAgent(
     human_input_mode="NEVER",
 )
 
-# This fu..ing Autogen drives me crazy, some spagetti code with broken logic and common sense...
-# Spend hours debuging circular loops in termination message and prompt and figuring out None is not good for system message
-# Termination approach is hoooooorible
-player_black = ConversableAgent(
+
+llm_black = ConversableAgent(
     name="Player_Black",
     system_message="",
     description="You are a professional chess player and you play as black. "
@@ -128,11 +145,6 @@ player_black = ConversableAgent(
     human_input_mode="NEVER",
 )
 
-
-failed_action_attempts = 0
-
-
-# Instantiate RandomPlayer
 random_player = RandomPlayerAgent(
     name="Random_Player",
     system_message="",
@@ -143,16 +155,24 @@ random_player = RandomPlayerAgent(
     get_legal_moves_action=get_legal_moves_action,
 )
 
-if use_random_player:
-    player_white = random_player
+chess_engine_player = ChessEnginePlayerAgent(
+    name="Chess_Engine_Player",
+    system_message="",
+    description="You are a chess player using the Sunfish engine.",
+    human_input_mode="NEVER",
+    is_termination_msg=is_termination_message,
+    make_move_action=make_move_action,
+    get_current_board_action=get_current_board_action,
+    is_white=white_player_type == PlayerType.CHESS_ENGINE_PLAYER,
+)
 
 proxy_agent = AutoReplyAgent(
     name="Proxy",
     human_input_mode="NEVER",
     is_termination_msg=is_termination_message,
     max_failed_attempts=max_failed_attempts,
-    get_current_board=get_current_board,
     get_legal_moves=get_legal_moves,
+    get_current_board=get_current_board,
     make_move=make_move,
     move_was_made_message=move_was_made,
     invalid_action_message=invalid_action_message,
@@ -163,6 +183,21 @@ proxy_agent = AutoReplyAgent(
 )
 
 # The Game
+
+player_white = {
+    PlayerType.RANDOM_PLAYER: random_player,
+    PlayerType.LLM_WHITE: llm_white,
+    PlayerType.LLM_BLACK: llm_black,
+    PlayerType.CHESS_ENGINE_PLAYER: chess_engine_player,
+}.get(white_player_type)
+
+player_black = {
+    PlayerType.RANDOM_PLAYER: random_player,
+    PlayerType.LLM_WHITE: llm_white,
+    PlayerType.LLM_BLACK: llm_black,
+    PlayerType.CHESS_ENGINE_PLAYER: chess_engine_player,
+}.get(black_player_type)
+
 
 for player in [player_white, player_black]:
     player.wrong_moves = 0
