@@ -2,7 +2,8 @@ import random
 import re
 import chess
 from autogen import ConversableAgent
-from sunfish import Searcher, Position, render, pst
+from sunfish import Searcher, Position, parse, render, pst
+import sunfish
 from typing import Any, Dict, List, Optional, Union
 
 
@@ -162,9 +163,9 @@ class ChessEnginePlayerAgent(ConversableAgent):
         self.searcher = Searcher()
 
     def fen_to_sunfish(self, board: str) -> str:
-        # Split the FEN string to get the board part
+        # Split the FEN string to get the board part and other components
         parts = board.split()
-        board_part = parts[0]
+        board_part, color, castling, enpas = parts[0], parts[1], parts[2], parts[3]
 
         # Replace numbers with dots to represent empty squares
         board = re.sub(r"\d", lambda m: "." * int(m.group(0)), board_part)
@@ -174,11 +175,25 @@ class ChessEnginePlayerAgent(ConversableAgent):
         board[9::10] = ["\n"] * 12
         board = "".join(board)
 
+        # Calculate castling rights
+        wc = ("Q" in castling, "K" in castling)
+        bc = ("k" in castling, "q" in castling)
+
+        # Calculate en passant square
+        ep = parse(enpas) if enpas != "-" else 0
+
+        # Calculate the score
         score = sum(pst[c][i] for i, c in enumerate(board) if c.isupper())
         score -= sum(
             pst[c.upper()][119 - i] for i, c in enumerate(board) if c.islower()
         )
-        pos = Position(board, score, (True, True), (True, True), 0, 0)
+
+        # Adjust score based on the player's color
+        if color == "b":
+            score = -score
+
+        # Create the position
+        pos = Position(board, score, wc, bc, ep, 0)
         return pos if self.is_white else pos.rotate()
 
     def move_to_uci(self, move):
