@@ -138,22 +138,38 @@ OR
 
 ## Random Player (white) vs Cheess Engine (black), moves to complete game
 
-Chess engine (Sunfish) always either won or yeilded stalemate with dominance in pieces (material count)
+Simulating 1000 games of a chess engine against show that with chess engine it takes around 100 moves to complete the game, chess engine dominates judging by ammount of material (weighted sum of piaces standing at the board)
 
-8 - checkmate
-44 - stalemate (Material Count: Player White 0,Player Black 38)
-18 - checkmate
-124 - stalemate (Material Count: Player White 0, Player Black 57)
-170 - stalemate (Material Count: Player White 0, Player Black 27)
-32 - checkmate
-54 - stalemate (Material Count: Player White 0, Player Black 36)
-12 - checkmate
-38 - checkmate
-74 - stalemate (Material Count: Player White 1, Player Black 14)
-64 - stalemate (Material Count: Player White 0, Player Black 35)
-175 - fivefold repetition (Material Count: Player White 0, Player Black 58)
-103 - fivefold repetition (Material Count: Player White 0, Player Black 31)
-50 - stalemate (Material Count: Player White 0, Player Black 34)
-44 - checkmate
-175 - fivefold repetition (Material Count: Player White 1, Player Black 52)
-54 - stalemate (Material Count: Player White 0, Player Black 29)
+{
+    "total_games": 1000,
+    "white_wins": 0,
+    "black_wins": 190,
+    "draws": 810,
+    "total_moves": 99252,
+    "reasons": {
+        "Checkmate": 190,
+        "Stalemate": 406,
+        "Max moves reached": 34,
+        "Fivefold repetition": 370
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 1183,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "avg_material": 1.183,
+        "std_dev_material": 4.750587235182518
+    },
+    "player_black": {
+        "name": "Chess_Engine_Player_Black",
+        "model": "",
+        "total_material": 39549,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "avg_material": 39.549,
+        "std_dev_material": 9.469597260299524
+    },
+    "average_moves": 99.252,
+    "std_dev_moves": 51.129705091490045
+}
