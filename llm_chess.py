@@ -25,7 +25,7 @@ class PlayerType(Enum):
     )
 
 
-white_player_type = PlayerType.RANDOM_PLAYER
+white_player_type = PlayerType.CHESS_ENGINE_PLAYER
 black_player_type = PlayerType.CHESS_ENGINE_PLAYER
 use_fen_board = True  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
 max_game_moves = 200  # maximum number of game moves before terminating
@@ -154,17 +154,6 @@ random_player = RandomPlayerAgent(
     get_legal_moves_action=get_legal_moves_action,
 )
 
-chess_engine_player = ChessEnginePlayerAgent(
-    name="Chess_Engine_Player",
-    system_message="",
-    description="You are a chess player using the Sunfish engine.",
-    human_input_mode="NEVER",
-    is_termination_msg=is_termination_message,
-    make_move_action=make_move_action,
-    get_current_board_action=get_current_board_action,
-    is_white=white_player_type == PlayerType.CHESS_ENGINE_PLAYER,
-)
-
 proxy_agent = AutoReplyAgent(
     name="Proxy",
     human_input_mode="NEVER",
@@ -184,17 +173,35 @@ proxy_agent = AutoReplyAgent(
 # The Game
 
 player_white = {
-    PlayerType.RANDOM_PLAYER: random_player,
     PlayerType.LLM_WHITE: llm_white,
     PlayerType.LLM_BLACK: llm_black,
-    PlayerType.CHESS_ENGINE_PLAYER: chess_engine_player,
+    PlayerType.RANDOM_PLAYER: random_player,
+    PlayerType.CHESS_ENGINE_PLAYER: ChessEnginePlayerAgent(
+        name="Chess_Engine_Player_White",
+        system_message="",
+        description="You are a chess player using the Sunfish engine.",
+        human_input_mode="NEVER",
+        is_termination_msg=is_termination_message,
+        make_move_action=make_move_action,
+        get_current_board_action=get_current_board_action,
+        is_white=True,
+    ),
 }.get(white_player_type)
 
 player_black = {
-    PlayerType.RANDOM_PLAYER: random_player,
     PlayerType.LLM_WHITE: llm_white,
     PlayerType.LLM_BLACK: llm_black,
-    PlayerType.CHESS_ENGINE_PLAYER: chess_engine_player,
+    PlayerType.RANDOM_PLAYER: random_player,
+    PlayerType.CHESS_ENGINE_PLAYER: ChessEnginePlayerAgent(
+        name="Chess_Engine_Player_Black",
+        system_message="",
+        description="You are a chess player using the Sunfish engine.",
+        human_input_mode="NEVER",
+        is_termination_msg=is_termination_message,
+        make_move_action=make_move_action,
+        get_current_board_action=get_current_board_action,
+        is_white=False,
+    ),
 }.get(black_player_type)
 
 
