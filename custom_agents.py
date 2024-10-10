@@ -2,7 +2,7 @@ import random
 import re
 import chess
 from autogen import ConversableAgent
-from sunfish import Searcher, Position, render, pst
+from sunfish import Move, Searcher, Position, render, pst
 from typing import Any, Dict, List, Optional, Union
 
 
@@ -159,18 +159,14 @@ class ChessEnginePlayerAgent(ConversableAgent):
         self.searcher = Searcher()
 
     def fen_to_sunfish(self, board: str) -> str:
-        # board = re.sub(r"\d", (lambda m: "." * int(m.group(0))), board)
-        # board = list(21 * " " + "  ".join(board.split("/")) + 21 * " ")
-        # board[9::10] = ["\n"] * 12
-        # board = "".join(board)
-
-        # wc = ("Q" in castling, "K" in castling)
-        # bc = ("k" in castling, "q" in castling)
-        # ep = sunfish.parse(enpas) if enpas != "-" else 0
-
+        # Split the FEN string to get the board part
         parts = board.split()
         board_part = parts[0]
-        board = re.sub(r"\d", (lambda m: "." * int(m.group(0))), board_part)
+
+        # Replace numbers with dots to represent empty squares
+        board = re.sub(r"\d", lambda m: "." * int(m.group(0)), board_part)
+
+        # Convert the board to the Sunfish format
         board = list(21 * " " + "  ".join(board.split("/")) + 21 * " ")
         board[9::10] = ["\n"] * 12
         board = "".join(board)
@@ -188,21 +184,30 @@ class ChessEnginePlayerAgent(ConversableAgent):
         sender: Optional[ConversableAgent] = None,
         **kwargs: Any,
     ) -> Union[str, Dict, None]:
-        last_message = messages[-1]["content"].lower().strip()
+        if self._is_termination_msg(messages[-1]):
+            return None
+
+        last_message = messages[-1]["content"]
 
         try:
             # Convert the FEN to Sunfish format
             sunfish_position = self.fen_to_sunfish(last_message)
 
             # Use Sunfish to propose a move
+            searcher = Searcher()
             best_move = None
-            for _, _, _, move in self.searcher.search([sunfish_position]):
-                best_move = move
-                break
+            for _, gamma, score, move in searcher.search([sunfish_position]):
+                if score >= gamma:
+                    best_move = move
+                    break
 
             # Make the move
             if best_move:
-                move_str = f"{render(best_move.i)}{render(best_move.j)}{best_move.prom.lower()}"
+                move_str = (
+                    f"{render(119 - best_move.i)}{render(119 - best_move.j)}"  # Mirror if playing as black
+                    if not self.is_white
+                    else f"{render(best_move.i)}{render(best_move.j)}"
+                )
                 return f"{self.make_move_action} {move_str}"
             else:
                 raise "No best move"

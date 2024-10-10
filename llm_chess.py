@@ -17,8 +17,8 @@ from typing_extensions import Annotated
 
 
 class PlayerType(Enum):
-    LLM_WHITE = 1  # Represents a white player controlled by an LLM
-    LLM_BLACK = 2  # Represents a black player controlled by an LLM
+    LLM_WHITE = 1  # Represents a white player controlled by an LLM and using *_W config keys from .env
+    LLM_BLACK = 2  # Represents a black player controlled by an LLM and using *_B config keys from .env
     RANDOM_PLAYER = 3  # Represents a player making random moves
     CHESS_ENGINE_PLAYER = (
         4  # Represents a player using a chess engine, FEN board is required
@@ -31,7 +31,7 @@ use_fen_board = True  # Whther to use graphical UNICODE representation board OR 
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions before halting the game and giving the player a loss
-throttle_delay_moves = 1  # some LLM provider might thorttle frequent API reuqests, make a delay (in seconds) between moves
+throttle_delay_moves = 0  # some LLM provider might thorttle frequent API reuqests, make a delay (in seconds) between moves
 time_started = time.strftime("%Y.%m.%d_%H:%M")
 
 # Action names
