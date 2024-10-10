@@ -173,3 +173,92 @@ Simulating 1000 games of a chess engine against show that with chess engine it t
     "average_moves": 99.252,
     "std_dev_moves": 51.129705091490045
 }
+
+## Can LLM discernt Unicode encoded pieces?
+
+Prompt:
+```
+Please name chess pieces and their colors
+
+♕ ♔ ♗ ♘ ♖ ♙
+♛ ♚ ♝ ♞ ♜ ♟
+```
+
+### Claude 3.5 Sonnet - YES
+
+```
+Here are the chess pieces and their colors:
+White pieces: ♕ Queen ♔ King ♗ Bishop ♘ Knight ♖ Rook ♙ Pawn
+Black pieces: ♛ Queen ♚ King ♝ Bishop ♞ Knight ♜ Rook ♟ Pawn
+In a standard chess set, one player uses the white pieces, and the other player uses the black pieces. Each side starts with 16 pieces: 1 king, 1 queen, 2 rooks, 2 knights, 2 bishops, and 8 pawns.
+```
+
+### Gemini 1.5 Flash - YES
+
+```
+Here are the chess pieces and their colors:
+
+**White Pieces:**
+
+* ♕ Queen
+* ♔ King
+* ♗ Bishop
+* ♘ Knight
+* ♖ Rook
+* ♙ Pawn
+
+**Black Pieces:**
+
+* ♛ Queen
+* ♚ King
+* ♝ Bishop
+* ♞ Knight
+* ♜ Rook
+* ♟ Pawn 
+
+```
+
+### Gemini 1.5 Pro - YES
+
+```
+White Pieces
+
+♕: White Queen
+♔: White King
+♗: White Bishop
+♘: White Knight
+♖: White Rook
+♙: White Pawn
+Black Pieces
+
+♛: Black Queen
+♚: Black King
+♝: Black Bishop
+♞: Black Knight
+♜: Black Rook
+♟: Black Pawn
+```
+
+### GPT-4o mini 2024-07-18 - YES
+
+```
+In chess, the pieces are typically divided into two colors: white and black. Here’s a breakdown of the pieces and their corresponding colors:
+
+White Pieces:
+
+♕ - White Queen
+♔ - White King
+♗ - White Bishop
+♘ - White Knight
+♖ - White Rook
+♙ - White Pawn
+Black Pieces:
+
+♛ - Black Queen
+♚ - Black King
+♝ - Black Bishop
+♞ - Black Knight
+♜ - Black Rook
+♟ - Black Pawn
+Each player controls one color and aims to checkmate the opponent's king.
+```
