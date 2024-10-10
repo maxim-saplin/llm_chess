@@ -114,7 +114,9 @@ class AutoReplyAgent(ConversableAgent):
             reply = self.get_legal_moves()
         else:
             # E.g. make_move e2e4 OR make_move c2c1r
-            match = re.search(rf"{self.make_move_action} (\S{{4,5}})", action_choice)
+            match = re.search(
+                rf"{self.make_move_action} ([a-zA-Z0-9]{{4,5}})", action_choice
+            )
             if match:
                 try:
                     move = match.group(1)
