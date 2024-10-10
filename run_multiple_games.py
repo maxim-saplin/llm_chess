@@ -5,7 +5,7 @@ from llm_chess import run
 
 # Parameters
 NUM_REPETITIONS = 10  # Set the number of games to run
-LOG_FOLDER = "_logs/_10.10.2024_anthropic.claude-v3-haiku_VS_RANDOM"  # Set the folder to store logs
+LOG_FOLDER = "_logs/_10.10.2024_anthropic.claude-v3-haiku_VS_RANDOM_fen_board"  # Set the folder to store logs
 
 
 def run_games(num_repetitions, log_folder=LOG_FOLDER):
