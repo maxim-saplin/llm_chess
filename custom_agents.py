@@ -2,7 +2,7 @@ import random
 import re
 import chess
 from autogen import ConversableAgent
-from sunfish import Move, Searcher, Position, render, pst
+from sunfish import Searcher, Position, render, pst
 from typing import Any, Dict, List, Optional, Union
 
 
@@ -113,7 +113,8 @@ class AutoReplyAgent(ConversableAgent):
         elif self.get_legal_moves_action in action_choice:
             reply = self.get_legal_moves()
         else:
-            match = re.search(rf"{self.make_move_action} (\S{{4}})", action_choice)
+            # E.g. make_move e2e4 OR make_move c2c1r
+            match = re.search(rf"{self.make_move_action} (\S{{4,5}})", action_choice)
             if match:
                 try:
                     move = match.group(1)
@@ -138,6 +139,8 @@ class AutoReplyAgent(ConversableAgent):
 class ChessEnginePlayerAgent(ConversableAgent):
     """
     A chess player agent that uses the Sunfish engine to select moves.
+    Since it doesn't use move history, jsut the board state it must be inferior
+    to a propper move selection accouinting for move history
 
     Attributes:
         make_move_action (str): The action string for making a move.
@@ -178,6 +181,14 @@ class ChessEnginePlayerAgent(ConversableAgent):
         pos = Position(board, score, (True, True), (True, True), 0, 0)
         return pos if self.is_white else pos.rotate()
 
+    def move_to_uci(self, move):
+        if move is None:
+            return "(none)"
+        i, j = move.i, move.j
+        if not self.is_white:
+            i, j = 119 - i, 119 - j
+        return render(i) + render(j) + move.prom.lower()
+
     def generate_reply(
         self,
         messages: Optional[List[Dict[str, Any]]] = None,
@@ -203,11 +214,7 @@ class ChessEnginePlayerAgent(ConversableAgent):
 
             # Make the move
             if best_move:
-                move_str = (
-                    f"{render(119 - best_move.i)}{render(119 - best_move.j)}"  # Mirror if playing as black
-                    if not self.is_white
-                    else f"{render(best_move.i)}{render(best_move.j)}"
-                )
+                move_str = self.move_to_uci(move)
                 return f"{self.make_move_action} {move_str}"
             else:
                 raise "No best move"

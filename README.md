@@ -135,3 +135,25 @@ OR
 }
 ```
 ```
+
+## Random Player (white) vs Cheess Engine (black), moves to complete game
+
+Chess engine (Sunfish) always either won or yeilded stalemate with dominance in pieces (material count)
+
+8 - checkmate
+44 - stalemate (Material Count: Player White 0,Player Black 38)
+18 - checkmate
+124 - stalemate (Material Count: Player White 0, Player Black 57)
+170 - stalemate (Material Count: Player White 0, Player Black 27)
+32 - checkmate
+54 - stalemate (Material Count: Player White 0, Player Black 36)
+12 - checkmate
+38 - checkmate
+74 - stalemate (Material Count: Player White 1, Player Black 14)
+64 - stalemate (Material Count: Player White 0, Player Black 35)
+175 - fivefold repetition (Material Count: Player White 0, Player Black 58)
+103 - fivefold repetition (Material Count: Player White 0, Player Black 31)
+50 - stalemate (Material Count: Player White 0, Player Black 34)
+44 - checkmate
+175 - fivefold repetition (Material Count: Player White 1, Player Black 52)
+54 - stalemate (Material Count: Player White 0, Player Black 29)

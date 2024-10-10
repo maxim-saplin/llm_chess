@@ -58,9 +58,7 @@ reason = None
 
 def get_legal_moves() -> Annotated[str, "A list of legal moves in UCI format"]:
     if board.legal_moves.count() == 0:
-        global made_move
-        made_move = True
-        return "You won!"
+        return None
     return ",".join([str(move) for move in board.legal_moves])
 
 
@@ -82,6 +80,7 @@ def make_move(
     global made_move
     made_move = True
     display_board(board, move)
+    print(",".join([str(move) for move in board.legal_moves]))
 
 
 # Agents
@@ -258,10 +257,10 @@ try:
                 elif board.is_insufficient_material():
                     winner = "NONE"
                     reason = "Insufficient material"
-                # elif board.is_seventyfive_moves():
-                #     reason = "Seventy-five moves rule"
-                # elif board.is_fivefold_repetition():
-                #     reason = "Fivefold repetition"
+                elif board.is_seventyfive_moves():
+                    reason = "Seventy-five moves rule"
+                elif board.is_fivefold_repetition():
+                    reason = "Fivefold repetition"
             elif last_message.lower().strip() != move_was_made.lower().strip():
                 game_over = True
                 winner = "NONE"
