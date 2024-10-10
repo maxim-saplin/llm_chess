@@ -14,6 +14,9 @@ import chess.svg
 
 
 # Material values: pawn = 1, knight = 3, bishop = 3, rook = 5, queen = 9
+# The maximum total material in chess is 39 for each player
+
+
 def calculate_material_count(board):
     piece_values = {
         chess.PAWN: 1,
@@ -163,15 +166,22 @@ def save_video(filename):
         print("No frames to save to a video file")
 
 
-def display_store_game_video_and_stats(game_stats):
+def display_store_game_video_and_stats(game_stats, log_dir="_logs"):
     white_summary = gather_usage_summary([game_stats["player_white"]])
     black_summary = gather_usage_summary([game_stats["player_black"]])
 
-    log_dir = "_logs"
     video_dir = f"{log_dir}/videos"
     os.makedirs(video_dir, exist_ok=True)
 
     log_filename = f"{log_dir}/{game_stats['time_started']}.json"
+    if os.path.exists(
+        log_filename
+    ):  # if running automated games they can complete within same second
+        base, ext = os.path.splitext(log_filename)
+        import time
+
+        timestamp = int(time.time() * 1000)
+        log_filename = f"{base}_{timestamp}{ext}"
     with open(log_filename, "w") as log_file:
         json.dump(game_stats, log_file, indent=4)
     save_video(f"{video_dir}/{game_stats['time_started']}.mp4")
