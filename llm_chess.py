@@ -26,7 +26,7 @@ class PlayerType(Enum):
 
 
 white_player_type = PlayerType.RANDOM_PLAYER
-black_player_type = PlayerType.CHESS_ENGINE_PLAYER
+black_player_type = PlayerType.LLM_BLACK
 use_fen_board = True  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many turns can an LLM make while making a move
