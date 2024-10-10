@@ -3,7 +3,6 @@ import re
 import chess
 from autogen import ConversableAgent
 from sunfish import Searcher, Position, parse, render, pst
-import sunfish
 from typing import Any, Dict, List, Optional, Union
 
 
@@ -220,8 +219,10 @@ class ChessEnginePlayerAgent(ConversableAgent):
             sunfish_position = self.fen_to_sunfish(last_message)
 
             # Use Sunfish to propose a move
+
             searcher = Searcher()
             best_move = None
+
             for _, gamma, score, move in searcher.search([sunfish_position]):
                 if score >= gamma:
                     best_move = move
