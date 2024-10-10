@@ -4,8 +4,8 @@ import statistics  # Import the statistics module
 from llm_chess import run
 
 # Parameters
-NUM_REPETITIONS = 10  # Set the number of games to run
-LOG_FOLDER = "_logs/_10.10.2024_anthropic.claude-v3-haiku_VS_RANDOM_fen_board"  # Set the folder to store logs
+NUM_REPETITIONS = 1000  # Set the number of games to run
+LOG_FOLDER = "_logs/_10.10.2024_rand_vs_rand"  # Set the folder to store logs
 
 
 def run_games(num_repetitions, log_folder=LOG_FOLDER):

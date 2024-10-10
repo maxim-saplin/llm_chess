@@ -174,6 +174,41 @@ Simulating 1000 games of a chess engine against show that with chess engine it t
     "std_dev_moves": 51.129705091490045
 }
 
+## Random vs Random
+
+{
+    "total_games": 1000,
+    "white_wins": 105,
+    "black_wins": 0,
+    "draws": 895,
+    "total_moves": 190073,
+    "reasons": {
+        "Max moves reached": 886,
+        "Checkmate": 105,
+        "Stalemate": 9
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 10555,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "avg_material": 10.555,
+        "std_dev_material": 7.228224001940049
+    },
+    "player_black": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 11076,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "avg_material": 11.076,
+        "std_dev_material": 7.491217680880882
+    },
+    "average_moves": 190.073,
+    "std_dev_moves": 32.05006829755403
+}
+
 ## Can LLM discernt Unicode encoded pieces?
 
 Prompt:
