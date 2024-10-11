@@ -8,8 +8,10 @@ from autogen import ConversableAgent
 from custom_agents import (
     RandomPlayerAgent,
     AutoReplyAgent,
-    ChessEngineSunfishPlayerAgent,
+    ChessEngineSunfishAgent,
+    ChessEngineStockfishAgent,
 )
+
 from utils import (
     calculate_material_count,
     generate_game_stats,
@@ -24,13 +26,14 @@ class PlayerType(Enum):
     LLM_WHITE = 1  # Represents a white player controlled by an LLM and using *_W config keys from .env
     LLM_BLACK = 2  # Represents a black player controlled by an LLM and using *_B config keys from .env
     RANDOM_PLAYER = 3  # Represents a player making random moves
-    CHESS_ENGINE_PLAYER = (
-        4  # Represents a player using a chess engine, FEN board is required
-    )
+    CHESS_ENGINE_SUNFISH = 4
+    CHESS_ENGINE_STOCKFISH = 5
 
+
+stockfish_path = "/opt/homebrew/bin/stockfish"
 
 white_player_type = PlayerType.RANDOM_PLAYER
-black_player_type = PlayerType.RANDOM_PLAYER
+black_player_type = PlayerType.CHESS_ENGINE_STOCKFISH
 use_fen_board = True  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many turns can an LLM make while making a move
@@ -178,7 +181,7 @@ def run(log_dir="_logs", save_logs=True):
         PlayerType.LLM_WHITE: llm_white,
         PlayerType.LLM_BLACK: llm_black,
         PlayerType.RANDOM_PLAYER: random_player,
-        PlayerType.CHESS_ENGINE_PLAYER: ChessEngineSunfishPlayerAgent(
+        PlayerType.CHESS_ENGINE_SUNFISH: ChessEngineSunfishAgent(
             name="Chess_Engine_Player_White",
             system_message="",
             description="You are a chess player using the Sunfish engine.",
@@ -188,13 +191,18 @@ def run(log_dir="_logs", save_logs=True):
             get_current_board_action=get_current_board_action,
             is_white=True,
         ),
+        PlayerType.CHESS_ENGINE_STOCKFISH: ChessEngineStockfishAgent(
+            board=board,
+            time_limit=0.1,
+            stockfish_path=stockfish_path,
+        ),
     }.get(white_player_type)
 
     player_black = {
         PlayerType.LLM_WHITE: llm_white,
         PlayerType.LLM_BLACK: llm_black,
         PlayerType.RANDOM_PLAYER: random_player,
-        PlayerType.CHESS_ENGINE_PLAYER: ChessEngineSunfishPlayerAgent(
+        PlayerType.CHESS_ENGINE_SUNFISH: ChessEngineSunfishAgent(
             name="Chess_Engine_Player_Black",
             system_message="",
             description="You are a chess player using the Sunfish engine.",
@@ -203,6 +211,11 @@ def run(log_dir="_logs", save_logs=True):
             make_move_action=make_move_action,
             get_current_board_action=get_current_board_action,
             is_white=False,
+        ),
+        PlayerType.CHESS_ENGINE_STOCKFISH: ChessEngineStockfishAgent(
+            board=board,
+            time_limit=0.1,
+            stockfish_path=stockfish_path,
         ),
     }.get(black_player_type)
 

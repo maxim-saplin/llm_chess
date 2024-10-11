@@ -138,7 +138,7 @@ class AutoReplyAgent(ConversableAgent):
         return reply
 
 
-class ChessEngineSunfishPlayerAgent(ConversableAgent):
+class ChessEngineSunfishAgent(ConversableAgent):
     """
     A chess player agent that uses the Sunfish engine to select moves.
     Since it doesn't use move history, jsut the board state it must be inferior
@@ -244,7 +244,7 @@ class ChessEngineSunfishPlayerAgent(ConversableAgent):
         return self.get_legal_moves_action
 
 
-class StockfishAgent:
+class ChessEngineStockfishAgent:
     def __init__(
         self, board, time_limit=0.1, stockfish_path="/opt/homebrew/bin/stockfish"
     ):

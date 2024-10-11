@@ -18,8 +18,8 @@ Putting LLMs up against each other in chess game. Testing basic instruction foll
 
 Adjust the global configs at `llm_chess.py`.
 
-- `white_player_type`: Determines the type of player controlling the white pieces. Options include `RANDOM_PLAYER`, `LLM_WHITE`, `LLM_BLACK`, and `CHESS_ENGINE_PLAYER`.
-- `black_player_type`: Determines the type of player controlling the black pieces. Options include `RANDOM_PLAYER`, `LLM_WHITE`, `LLM_BLACK`, and `CHESS_ENGINE_PLAYER`.
+- `white_player_type`: Determines the type of player controlling the white pieces. Options include `RANDOM_PLAYER`, `LLM_WHITE`, `LLM_BLACK`, `CHESS_ENGINE_SUNFISH`, and `CHESS_ENGINE_STOCKFISH`.
+- `black_player_type`: Determines the type of player controlling the black pieces. Options include `RANDOM_PLAYER`, `LLM_WHITE`, `LLM_BLACK`, `CHESS_ENGINE_SUNFISH`, and `CHESS_ENGINE_STOCKFISH`.
 - `use_fen_board`: A boolean indicating whether to use the FEN format for board representation. Default is `True`.
 - `max_game_moves`: An integer specifying the maximum number of moves allowed in a game before it is automatically terminated. Default is 200.
 - Constrains for a single move (LLM dialogs if LLM agent is used)
@@ -35,6 +35,9 @@ These settings are used to configure the game environment and control the flow o
 - LLM Player Agent (instantiated from Autogen's standard ConversiableAgent) is used to evaluate the board and make moves on behalf of one of the players (white or black)
 - Random Player Agent (custom RandomPlayerAgent) requests for a list of legal moves, randomly picks one and than makes a moive. Always plays as white
 - Proxy Agent (custom AutoReplyAgent) is used to kick-off conversation with player agent, provides a list of available actions (get_current_board, get_legal_moves, make_move)
+- Chess Engine Players:
+  - Sunfish: A simple Python engine.
+  - Stockfish: A powerful engine requiring separate installation.
 
 ## Sample Dialog Happenning within a Single Move
 
@@ -145,6 +148,7 @@ OR
     - Requires separate installation and properly defining path with python-chess
         - On macOS I installed it via `brew install stockfish`
         - Path to Stockfish is identified via `where stockfish` yielding `/opt/homebrew/bin/stockfish`
+        - Set the path in `llm_chess.py`.
 
 Below is some stats simulating many games (1000) and collecting stats to get an idea of a baseline for LLM players palying against random player
 
