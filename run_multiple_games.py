@@ -10,7 +10,7 @@ LOG_FOLDER = (
 )
 STORE_INDIVIDUAL_LOGS = True
 
-## ALSO CHECK INDIVUDAL PARAMS AT `llm_chess.py`
+# ALSO CHECK INDIVUDAL PARAMS AT `llm_chess.py`
 
 
 def run_games(num_repetitions, log_folder=LOG_FOLDER):
