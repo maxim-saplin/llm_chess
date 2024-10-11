@@ -4,6 +4,7 @@ Putting LLMs up against each other in chess game. Testing basic instruction foll
     
 
 ## Running
+
  - Decide if you would like to put one LLM against the other OR a random player (chaos monkey picking randome move out of a list of legal moves provided to it)
     - Set `use_random_player` to True to make make random player play white and LLM play black
  - Set LLM params in .env file (API key, etc.) for both white and black player agents
@@ -13,6 +14,18 @@ Putting LLMs up against each other in chess game. Testing basic instruction foll
     - Optionally create a VENV
  - Run `llm_chess.py`
     - llm_chess_tool_call.py is older version relying on native tool call support, not maintained, keeping JIC
+
+### Multiple Games and Aggregation of Results
+
+The `run_multiple_games.py` script allows you to execute multiple chess games between different agents and aggregate the results.
+
+To run multiple games:
+- Adjust the `NUM_REPETITIONS` variable to set the number of games you want to simulate.
+- The results, including win/loss statistics and material counts, are aggregated and can be analyzed to understand the strengths and weaknesses of each player type.
+- Aggregate log and logs for individual games (if `STORE_INDIVIDUAL_LOGS` is set to True) can be stored in the specified `LOG_FOLDER` for further inspection.
+
+This feature is used to compare different kinds of players and generalize the findings. For LLM playes 10 games were used, for random/chess engine players 1000 games, some states is provided below.
+
 
 ## Configs
 

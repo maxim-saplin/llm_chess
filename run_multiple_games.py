@@ -4,9 +4,11 @@ import statistics  # Import the statistics module
 from llm_chess import run
 
 # Parameters
-NUM_REPETITIONS = 1000  # Set the number of games to run
-LOG_FOLDER = "_logs/_11.10.2024_rand_vs_stockfish"  # Set the folder to store logs
-STORE_INDIVIDUAL_LOGS = False
+NUM_REPETITIONS = 10  # Set the number of games to run
+LOG_FOLDER = (
+    "_logs/_11.10.2024_anthropic.claude-v3-5-sonnet"  # Set the folder to store logs
+)
+STORE_INDIVIDUAL_LOGS = True
 
 
 def run_games(num_repetitions, log_folder=LOG_FOLDER):

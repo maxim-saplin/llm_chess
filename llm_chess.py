@@ -33,13 +33,13 @@ class PlayerType(Enum):
 stockfish_path = "/opt/homebrew/bin/stockfish"
 
 white_player_type = PlayerType.RANDOM_PLAYER
-black_player_type = PlayerType.CHESS_ENGINE_STOCKFISH
+black_player_type = PlayerType.LLM_BLACK
 use_fen_board = True  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions before halting the game and giving the player a loss
 throttle_delay_moves = 0  # some LLM provider might thorttle frequent API reuqests, make a delay (in seconds) between moves
-visualize_board = False  # You can skip board visualization to speed up execution
+visualize_board = True  # You can skip board visualization to speed up execution
 
 
 def run(log_dir="_logs", save_logs=True):
@@ -86,8 +86,6 @@ def run(log_dir="_logs", save_logs=True):
     ) -> Annotated[str, "Result of the move."]:
         move = chess.Move.from_uci(move)
         board.push_uci(str(move))
-        global made_move
-        made_move = True
         if visualize_board:
             display_board(board, move)
         # print(",".join([str(move) for move in board.legal_moves]))
