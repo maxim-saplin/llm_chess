@@ -34,7 +34,7 @@ stockfish_path = "/opt/homebrew/bin/stockfish"
 
 white_player_type = PlayerType.RANDOM_PLAYER
 black_player_type = PlayerType.LLM_BLACK
-use_fen_board = True  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
+use_fen_board = False  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many conversation turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions (e.g. picking non existing action) before stopping the game and giving a loss
