@@ -250,7 +250,7 @@ class ChessEngineStockfishAgent(ConversableAgent):
         self,
         board,
         make_move_action: str,
-        time_limit=0.1,
+        time_limit=0.01,
         stockfish_path="/opt/homebrew/bin/stockfish",
         *args,
         **kwargs,

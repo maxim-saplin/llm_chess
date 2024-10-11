@@ -39,7 +39,7 @@ max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions before halting the game and giving the player a loss
 throttle_delay_moves = 0  # some LLM provider might thorttle frequent API reuqests, make a delay (in seconds) between moves
-visualize_board = True  # You can skip board visualization to speed up execution
+visualize_board = False  # You can skip board visualization to speed up execution
 
 
 def run(log_dir="_logs", save_logs=True):
@@ -195,7 +195,6 @@ def run(log_dir="_logs", save_logs=True):
             name="Chess_Engine_Stockfish_White",
             board=board,
             make_move_action=make_move_action,
-            time_limit=0.1,
             stockfish_path=stockfish_path,
             is_termination_msg=is_termination_message,
         ),
@@ -219,7 +218,6 @@ def run(log_dir="_logs", save_logs=True):
             name="Chess_Engine_Stockfish_Black",
             board=board,
             make_move_action=make_move_action,
-            time_limit=0.1,
             stockfish_path=stockfish_path,
             is_termination_msg=is_termination_message,
         ),

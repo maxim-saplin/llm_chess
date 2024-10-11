@@ -5,7 +5,7 @@ from llm_chess import run
 
 # Parameters
 NUM_REPETITIONS = 1000  # Set the number of games to run
-LOG_FOLDER = "_logs/_10.10.2024_rand_vs_rand"  # Set the folder to store logs
+LOG_FOLDER = "_logs/_11.10.2024_rand_vs_stockfish"  # Set the folder to store logs
 STORE_INDIVIDUAL_LOGS = False
 
 

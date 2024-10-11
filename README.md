@@ -121,23 +121,7 @@ I apologize for the continued confusion. Let me provide the correct format for t
 make_move c7c5
 ```
 
-- Gemini-1.5-flash-001 alaways wrapped answers in JSON:
-```
-Player_Black (to Proxy):
-
-```json
-make_move g8f6
-``` 
-```
-OR
-```
-```json
-{
-  "action": "make_move",
-  "move": "a8b8"
-}
-```
-```
+- Gemini-1.5-flash-001 alaways wrapped answers in JSON code blocks (while not asked)
 
 ## Random and Chess Engine Players
 
@@ -152,10 +136,45 @@ OR
 
 Below is some stats simulating many games (1000) and collecting stats to get an idea of a baseline for LLM players palying against random player
 
-### Random Player (white) vs Cheess Engine (black, Sunfish), moves to complete game
+### Random Player (white) vs Cheess Engine (black, Stockfish, time per move 0.01s)
+
+```json
+{
+    "total_games": 1000,
+    "white_wins": 0,
+    "black_wins": 1000,
+    "draws": 0,
+    "total_moves": 32368,
+    "reasons": {
+        "Checkmate": 1000
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 21006,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "avg_material": 21.006,
+        "std_dev_material": 9.191324411881263
+    },
+    "player_black": {
+        "name": "Chess_Engine_Stockfish_Black",
+        "model": "",
+        "total_material": 38214,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "avg_material": 38.214,
+        "std_dev_material": 3.77391659240721
+    },
+    "average_moves": 32.368,
+    "std_dev_moves": 13.554050622905622
+}
+```
+
+### Random Player (white) vs Cheess Engine (black, Sunfish)
 
 Simulating 1000 games of a chess engine against show that with chess engine it takes around 100 moves to complete the game, chess engine dominates judging by ammount of material (weighted sum of piaces standing at the board)
-
+```json
 {
     "total_games": 1000,
     "white_wins": 0,
@@ -189,9 +208,11 @@ Simulating 1000 games of a chess engine against show that with chess engine it t
     "average_moves": 99.252,
     "std_dev_moves": 51.129705091490045
 }
+```
 
 ### Random vs Random
 
+```json
 {
     "total_games": 1000,
     "white_wins": 105,
@@ -224,6 +245,7 @@ Simulating 1000 games of a chess engine against show that with chess engine it t
     "average_moves": 190.073,
     "std_dev_moves": 32.05006829755403
 }
+```
 
 ## Can LLM discernt Unicode encoded pieces?
 
