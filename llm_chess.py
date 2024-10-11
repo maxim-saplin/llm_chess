@@ -41,7 +41,7 @@ display_board_after_move = (
 )
 
 
-def run(log_dir="_logs"):
+def run(log_dir="_logs", save_logs=True):
 
     time_started = time.strftime("%Y.%m.%d_%H:%M")
 
@@ -305,7 +305,7 @@ def run(log_dir="_logs"):
         material_count,
     )
 
-    display_store_game_video_and_stats(game_stats, log_dir)
+    display_store_game_video_and_stats(game_stats, log_dir, save_logs)
     return game_stats, player_white, player_black
 
 

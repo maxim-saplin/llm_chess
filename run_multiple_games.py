@@ -6,6 +6,7 @@ from llm_chess import run
 # Parameters
 NUM_REPETITIONS = 1000  # Set the number of games to run
 LOG_FOLDER = "_logs/_10.10.2024_rand_vs_rand"  # Set the folder to store logs
+STORE_INDIVIDUAL_LOGS = False
 
 
 def run_games(num_repetitions, log_folder=LOG_FOLDER):
@@ -38,7 +39,9 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
 
     for _ in range(num_repetitions):
         # Call the run function and get the game stats
-        game_stats, player_white, player_black = run(log_dir=LOG_FOLDER)
+        game_stats, player_white, player_black = run(
+            log_dir=LOG_FOLDER, save_logs=STORE_INDIVIDUAL_LOGS
+        )
 
         moves_list.append(game_stats["number_of_moves"])  # Track moves
         aggregate_data["total_games"] += 1
