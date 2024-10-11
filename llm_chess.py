@@ -39,9 +39,7 @@ max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions before halting the game and giving the player a loss
 throttle_delay_moves = 0  # some LLM provider might thorttle frequent API reuqests, make a delay (in seconds) between moves
-display_board_after_move = (
-    False  # You can skip board visualization to speed up execution
-)
+visualize_board = True  # You can skip board visualization to speed up execution
 
 
 def run(log_dir="_logs", save_logs=True):
@@ -73,8 +71,10 @@ def run(log_dir="_logs", save_logs=True):
             return None
         return ",".join([str(move) for move in board.legal_moves])
 
-    if black_player_type == PlayerType.CHESS_ENGINE_PLAYER and not use_fen_board:
-        print("Warning: Chess engine player selected but FEN board is not used.")
+    if black_player_type == PlayerType.CHESS_ENGINE_SUNFISH and not use_fen_board:
+        print(
+            "Warning: Chess engine SUNFISH is selected but FEN board is not used. It will fail"
+        )
 
     def get_current_board() -> (
         Annotated[str, "A text representation of the current board state"]
@@ -88,7 +88,7 @@ def run(log_dir="_logs", save_logs=True):
         board.push_uci(str(move))
         global made_move
         made_move = True
-        if display_board_after_move:
+        if visualize_board:
             display_board(board, move)
         # print(",".join([str(move) for move in board.legal_moves]))
 
@@ -182,7 +182,7 @@ def run(log_dir="_logs", save_logs=True):
         PlayerType.LLM_BLACK: llm_black,
         PlayerType.RANDOM_PLAYER: random_player,
         PlayerType.CHESS_ENGINE_SUNFISH: ChessEngineSunfishAgent(
-            name="Chess_Engine_Player_White",
+            name="Chess_Engine_Sunfish_White",
             system_message="",
             description="You are a chess player using the Sunfish engine.",
             human_input_mode="NEVER",
@@ -192,9 +192,12 @@ def run(log_dir="_logs", save_logs=True):
             is_white=True,
         ),
         PlayerType.CHESS_ENGINE_STOCKFISH: ChessEngineStockfishAgent(
+            name="Chess_Engine_Stockfish_White",
             board=board,
+            make_move_action=make_move_action,
             time_limit=0.1,
             stockfish_path=stockfish_path,
+            is_termination_msg=is_termination_message,
         ),
     }.get(white_player_type)
 
@@ -203,7 +206,7 @@ def run(log_dir="_logs", save_logs=True):
         PlayerType.LLM_BLACK: llm_black,
         PlayerType.RANDOM_PLAYER: random_player,
         PlayerType.CHESS_ENGINE_SUNFISH: ChessEngineSunfishAgent(
-            name="Chess_Engine_Player_Black",
+            name="Chess_Engine_Sunfish_Black",
             system_message="",
             description="You are a chess player using the Sunfish engine.",
             human_input_mode="NEVER",
@@ -213,9 +216,12 @@ def run(log_dir="_logs", save_logs=True):
             is_white=False,
         ),
         PlayerType.CHESS_ENGINE_STOCKFISH: ChessEngineStockfishAgent(
+            name="Chess_Engine_Stockfish_Black",
             board=board,
+            make_move_action=make_move_action,
             time_limit=0.1,
             stockfish_path=stockfish_path,
+            is_termination_msg=is_termination_message,
         ),
     }.get(black_player_type)
 

@@ -1,6 +1,7 @@
 import random
 import re
 import chess
+import chess.engine
 from autogen import ConversableAgent
 from sunfish import Searcher, Position, parse, render, pst
 from typing import Any, Dict, List, Optional, Union
@@ -244,16 +245,30 @@ class ChessEngineSunfishAgent(ConversableAgent):
         return self.get_legal_moves_action
 
 
-class ChessEngineStockfishAgent:
+class ChessEngineStockfishAgent(ConversableAgent):
     def __init__(
-        self, board, time_limit=0.1, stockfish_path="/opt/homebrew/bin/stockfish"
+        self,
+        board,
+        make_move_action: str,
+        time_limit=0.1,
+        stockfish_path="/opt/homebrew/bin/stockfish",
+        *args,
+        **kwargs,
     ):
+        super().__init__(*args, **kwargs)
         self.board = board
+        self.make_move_action = make_move_action
         self.stockfish_path = stockfish_path
         self.time_limit = time_limit
 
-    def generate_reply(self) -> str:
-        import chess.engine
+    def generate_reply(
+        self,
+        messages: Optional[List[Dict[str, Any]]] = None,
+        sender: Optional[ConversableAgent] = None,
+        **kwargs: Any,
+    ) -> Union[str, Dict, None]:
+        if self._is_termination_msg(messages[-1]):
+            return None
 
         try:
             with chess.engine.SimpleEngine.popen_uci(self.stockfish_path) as engine:
@@ -261,7 +276,7 @@ class ChessEngineStockfishAgent:
                     self.board, chess.engine.Limit(time=self.time_limit)
                 )
                 move = result.move
-                return f"make_move {move.uci()}"
+                return f"{self.make_move_action} {move.uci()}"
         except Exception as e:
             print(f"Error using Stockfish: {e}")
             return None
