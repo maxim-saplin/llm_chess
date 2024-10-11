@@ -102,6 +102,10 @@ Move made, switching player
 
 ## Model Zoo
 
+### Model vs Random Player
+
+I have conducted a number of games putting LLM (playing with black) against a Random Player (as white), typically 10 games with a cap of 200 moves.
+
 ### Problems with instructuin following
 
 !NOTE, not touching prompts, changin parsing logic to be more relaxed, logs before 08.10.2024 (first 8) are more strict with wrong moves stats
