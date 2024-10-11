@@ -136,7 +136,19 @@ OR
 ```
 ```
 
-## Random Player (white) vs Cheess Engine (black), moves to complete game
+## Random and Chess Engine Players
+
+- Random players requests for all legal moves and randomly picks one thus always making valid moves
+- Chess engines 
+ - Simple no dependency Pyhton engine Sunfish (https://github.com/thomasahle/sunfish)
+ - Powerful Stockfish
+    - Requires separate installation and properly defining path with python-chess
+        - On macOS I installed it via `brew install stockfish`
+        - Path to Stockfish is identified via `where stockfish` yielding `/opt/homebrew/bin/stockfish`
+
+Below is some stats simulating many games (1000) and collecting stats to get an idea of a baseline for LLM players palying against random player
+
+### Random Player (white) vs Cheess Engine (black, Sunfish), moves to complete game
 
 Simulating 1000 games of a chess engine against show that with chess engine it takes around 100 moves to complete the game, chess engine dominates judging by ammount of material (weighted sum of piaces standing at the board)
 
@@ -174,7 +186,7 @@ Simulating 1000 games of a chess engine against show that with chess engine it t
     "std_dev_moves": 51.129705091490045
 }
 
-## Random vs Random
+### Random vs Random
 
 {
     "total_games": 1000,

@@ -138,7 +138,7 @@ class AutoReplyAgent(ConversableAgent):
         return reply
 
 
-class ChessEnginePlayerAgent(ConversableAgent):
+class ChessEngineSunfishPlayerAgent(ConversableAgent):
     """
     A chess player agent that uses the Sunfish engine to select moves.
     Since it doesn't use move history, jsut the board state it must be inferior
@@ -242,3 +242,26 @@ class ChessEnginePlayerAgent(ConversableAgent):
             return self.get_current_board_action
 
         return self.get_legal_moves_action
+
+
+class StockfishAgent:
+    def __init__(
+        self, board, time_limit=0.1, stockfish_path="/opt/homebrew/bin/stockfish"
+    ):
+        self.board = board
+        self.stockfish_path = stockfish_path
+        self.time_limit = time_limit
+
+    def generate_reply(self) -> str:
+        import chess.engine
+
+        try:
+            with chess.engine.SimpleEngine.popen_uci(self.stockfish_path) as engine:
+                result = engine.play(
+                    self.board, chess.engine.Limit(time=self.time_limit)
+                )
+                move = result.move
+                return f"make_move {move.uci()}"
+        except Exception as e:
+            print(f"Error using Stockfish: {e}")
+            return None

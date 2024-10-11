@@ -5,7 +5,11 @@ from enum import Enum
 import chess
 import chess.svg
 from autogen import ConversableAgent
-from custom_agents import RandomPlayerAgent, AutoReplyAgent, ChessEnginePlayerAgent
+from custom_agents import (
+    RandomPlayerAgent,
+    AutoReplyAgent,
+    ChessEngineSunfishPlayerAgent,
+)
 from utils import (
     calculate_material_count,
     generate_game_stats,
@@ -174,7 +178,7 @@ def run(log_dir="_logs"):
         PlayerType.LLM_WHITE: llm_white,
         PlayerType.LLM_BLACK: llm_black,
         PlayerType.RANDOM_PLAYER: random_player,
-        PlayerType.CHESS_ENGINE_PLAYER: ChessEnginePlayerAgent(
+        PlayerType.CHESS_ENGINE_PLAYER: ChessEngineSunfishPlayerAgent(
             name="Chess_Engine_Player_White",
             system_message="",
             description="You are a chess player using the Sunfish engine.",
@@ -190,7 +194,7 @@ def run(log_dir="_logs"):
         PlayerType.LLM_WHITE: llm_white,
         PlayerType.LLM_BLACK: llm_black,
         PlayerType.RANDOM_PLAYER: random_player,
-        PlayerType.CHESS_ENGINE_PLAYER: ChessEnginePlayerAgent(
+        PlayerType.CHESS_ENGINE_PLAYER: ChessEngineSunfishPlayerAgent(
             name="Chess_Engine_Player_Black",
             system_message="",
             description="You are a chess player using the Sunfish engine.",
