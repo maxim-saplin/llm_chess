@@ -106,6 +106,8 @@ Move made, switching player
 
 I have conducted a number of games putting LLM (playing with black) against a Random Player (as white), typically 10 games with a cap of 200 moves.
 
+## 
+
 ### Problems with instructuin following
 
 !NOTE, not touching prompts, changin parsing logic to be more relaxed, logs before 08.10.2024 (first 8) are more strict with wrong moves stats
@@ -139,6 +141,59 @@ make_move c7c5
 ```
 
 - Gemini-1.5-flash-001 alaways wrapped answers in JSON code blocks (while not asked)
+
+#### Example of a Model (gemini-1.5-pro-preview-0409) Failing to Pick a Valid Move
+
+```
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of 3 actions:
+        - 'get_current_board' to get the schema and current status of the board
+        - 'get_legal_moves' to get a UCI formatted list of available moves
+        - 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+    Respond with the action.
+    
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board 
+
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ♞ ♝ ♛ ♚ ♝ ⭘ ⭘
+⭘ ♟ ♟ ♟ ♟ ⭘ ⭘ ♜
+♟ ⭘ ⭘ ⭘ ⭘ ♟ ♟ ♟
+♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♞
+⭘ ⭘ ⭘ ♙ ⭘ ♙ ⭘ ⭘
+⭘ ♙ ♘ ⭘ ⭘ ♘ ⭘ ⭘
+♖ ⭘ ♙ ⭘ ♙ ⭘ ♙ ♙
+⭘ ⭘ ♗ ♕ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves 
+
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+f8g7,e8f7,b8c6,a8a7,h7h8,h7g7,h7f7,h5g7,h5f4,h5g3,e7e6,d7d6,c7c6,b7b6,g6g5,f6f5,e7e5,d7d5,c7c5,b7b5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move h7h6 
+
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2N2/R1P1P1PP/2BQKB1R b Kq - 2 8
+```
 
 ## Random and Chess Engine Players
 
