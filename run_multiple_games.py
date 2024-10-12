@@ -5,10 +5,10 @@ from llm_chess import run
 
 # Parameters
 NUM_REPETITIONS = 10  # Set the number of games to run
-LOG_FOLDER = "_logs/_11.10.2024_gpt-4o-mini-2024-07-18"  # Set the folder to store logs
+LOG_FOLDER = "_logs/_12.10.2024_gpt-4o-2024-08-06"  # Set the folder to store logs
 STORE_INDIVIDUAL_LOGS = True
 
-# ALSO CHECK INDIVUDAL PARAMS AT `llm_chess.py`
+# ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`
 
 
 def run_games(num_repetitions, log_folder=LOG_FOLDER):
