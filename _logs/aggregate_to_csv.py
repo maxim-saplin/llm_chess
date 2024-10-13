@@ -20,6 +20,7 @@ def aggregate_results_to_csv(
         "llm_std_dev_material",
         "rand_avg_material",
         "rand_std_dev_material",
+        "material_dfff_llm_minus_rand",
         "average_moves",
         "std_dev_moves",
     ]
@@ -47,6 +48,8 @@ def aggregate_results_to_csv(
                             data["player_black"]["std_dev_material"],
                             data["player_white"]["avg_material"],
                             data["player_white"]["std_dev_material"],
+                            data["player_black"]["avg_material"]
+                            - data["player_white"]["avg_material"],
                             data["average_moves"],
                             data["std_dev_moves"],
                         ]
