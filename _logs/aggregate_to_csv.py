@@ -21,8 +21,8 @@ def aggregate_results_to_csv(
         "rand_avg_material",
         "rand_std_dev_material",
         "material_diff_llm_minus_rand",
-        "wrong_actions_per_move",
-        "wrong_moves_per_move",
+        "wrong_actions_per_100moves",
+        "wrong_moves_per_100moves",
         "average_moves",
         "std_dev_moves",
     ]
@@ -37,11 +37,11 @@ def aggregate_results_to_csv(
                     model_name = data["player_black"]["model"]
                     print(f"Model: {model_name}")
                     total_moves = data["total_moves"]
-                    wrong_actions_per_move = (
-                        data["player_black"]["wrong_actions"] / total_moves
+                    wrong_actions_per_100moves = (
+                        data["player_black"]["wrong_actions"] / total_moves * 100
                     )
-                    wrong_moves_per_move = (
-                        data["player_black"]["wrong_moves"] / total_moves
+                    wrong_moves_per_100moves = (
+                        data["player_black"]["wrong_moves"] / total_moves * 100
                     )
                     material_diff = (
                         data["player_black"]["avg_material"]
@@ -63,13 +63,14 @@ def aggregate_results_to_csv(
                             data["player_white"]["avg_material"],
                             data["player_white"]["std_dev_material"],
                             material_diff,
+                            wrong_actions_per_100moves,
+                            wrong_moves_per_100moves,
                             data["average_moves"],
-                            wrong_actions_per_move,
-                            wrong_moves_per_move,
                             data["std_dev_moves"],
                         ]
                     )
 
+    csv_data.sort(key=lambda x: x[0])  # Sort by model_name
     print(f"Total records: {len(csv_data)}")
     with open(output_csv, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
