@@ -20,7 +20,9 @@ def aggregate_results_to_csv(
         "llm_std_dev_material",
         "rand_avg_material",
         "rand_std_dev_material",
-        "material_dfff_llm_minus_rand",
+        "material_diff_llm_minus_rand",
+        "wrong_actions_per_move",
+        "wrong_moves_per_move",
         "average_moves",
         "std_dev_moves",
     ]
@@ -34,6 +36,18 @@ def aggregate_results_to_csv(
                     print(f"Processing file: {file_path}")
                     model_name = data["player_black"]["model"]
                     print(f"Model: {model_name}")
+                    total_moves = data["total_moves"]
+                    wrong_actions_per_move = (
+                        data["player_black"]["wrong_actions"] / total_moves
+                    )
+                    wrong_moves_per_move = (
+                        data["player_black"]["wrong_moves"] / total_moves
+                    )
+                    material_diff = (
+                        data["player_black"]["avg_material"]
+                        - data["player_white"]["avg_material"]
+                    )
+
                     csv_data.append(
                         [
                             model_name,
@@ -48,9 +62,10 @@ def aggregate_results_to_csv(
                             data["player_black"]["std_dev_material"],
                             data["player_white"]["avg_material"],
                             data["player_white"]["std_dev_material"],
-                            data["player_black"]["avg_material"]
-                            - data["player_white"]["avg_material"],
+                            material_diff,
                             data["average_moves"],
+                            wrong_actions_per_move,
+                            wrong_moves_per_move,
                             data["std_dev_moves"],
                         ]
                     )
