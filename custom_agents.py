@@ -72,6 +72,7 @@ class AutoReplyAgent(ConversableAgent):
         self,
         get_current_board,
         get_legal_moves,
+        reflect,
         make_move,
         move_was_made_message,
         invalid_action_message,
@@ -79,6 +80,8 @@ class AutoReplyAgent(ConversableAgent):
         max_failed_attempts,
         get_current_board_action,
         get_legal_moves_action,
+        reflect_action,
+        reflection_followup_prompt,
         make_move_action,
         *args,
         **kwargs,
@@ -86,6 +89,7 @@ class AutoReplyAgent(ConversableAgent):
         super().__init__(*args, **kwargs)
         self.get_current_board = get_current_board
         self.get_legal_moves = get_legal_moves
+        self.reflect = reflect
         self.make_move = make_move
         self.move_was_made = move_was_made_message
         self.invalid_action_message = invalid_action_message
@@ -94,6 +98,8 @@ class AutoReplyAgent(ConversableAgent):
         self.failed_action_attempts = 0
         self.get_current_board_action = get_current_board_action
         self.get_legal_moves_action = get_legal_moves_action
+        self.reflect_action = reflect_action
+        self.reflection_followup_prompt = reflection_followup_prompt
         self.make_move_action = make_move_action
 
     def generate_reply(
@@ -111,8 +117,21 @@ class AutoReplyAgent(ConversableAgent):
         # Use a switch statement to call the corresponding function
         if self.get_current_board_action in action_choice:
             reply = self.get_current_board()
+            sender.has_requested_board = True
         elif self.get_legal_moves_action in action_choice:
             reply = self.get_legal_moves()
+            sender.has_requested_board = True
+        elif (
+            len(messages) > 1
+            and messages[-2]["content"].lower().strip() == self.reflect_action
+        ):
+            reply = self.reflection_followup_prompt
+        elif self.reflect_action in action_choice:
+            reply = self.reflect()
+            sender.reflections_used += 1
+            if not sender.has_requested_board:
+                sender.reflections_used_before_board += 1
+
         else:
             # E.g. make_move e2e4 OR make_move c2c1r
             match = re.search(

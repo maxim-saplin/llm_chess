@@ -91,6 +91,8 @@ def generate_game_stats(
             "name": player_white.name,
             "wrong_moves": player_white.wrong_moves,
             "wrong_actions": player_white.wrong_actions,
+            "reflections_used": player_white.reflections_used,
+            "reflections_used_before_board": player_white.reflections_used_before_board,
             "model": (
                 player_white.llm_config["model"]
                 if isinstance(player_white.llm_config, dict)
@@ -102,6 +104,8 @@ def generate_game_stats(
             "name": player_black.name,
             "wrong_moves": player_black.wrong_moves,
             "wrong_actions": player_black.wrong_actions,
+            "reflections_used": player_black.reflections_used,
+            "reflections_used_before_board": player_black.reflections_used_before_board,
             "model": (
                 player_black.llm_config["model"]
                 if isinstance(player_black.llm_config, dict)

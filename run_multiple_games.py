@@ -26,6 +26,8 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
             "wrong_moves": 0,
             "wrong_actions": 0,
             "material_list": [],
+            "reflections_used": 0,
+            "reflections_used_before_board": 0,
         },
         "player_black": {
             "name": "",
@@ -34,6 +36,8 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
             "wrong_moves": 0,
             "wrong_actions": 0,
             "material_list": [],
+            "reflections_used": 0,
+            "reflections_used_before_board": 0,
         },
     }
 
@@ -93,6 +97,20 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
         aggregate_data["player_black"]["wrong_moves"] += game_stats["player_black"][
             "wrong_moves"
         ]
+        aggregate_data["player_white"]["reflections_used"] += game_stats[
+            "player_white"
+        ]["reflections_used"]
+        aggregate_data["player_white"]["reflections_used_before_board"] += game_stats[
+            "player_white"
+        ]["reflections_used_before_board"]
+
+        aggregate_data["player_black"]["reflections_used"] += game_stats[
+            "player_black"
+        ]["reflections_used"]
+        aggregate_data["player_black"]["reflections_used_before_board"] += game_stats[
+            "player_black"
+        ]["reflections_used_before_board"]
+
         aggregate_data["player_black"]["wrong_actions"] += game_stats["player_black"][
             "wrong_actions"
         ]

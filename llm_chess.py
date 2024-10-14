@@ -30,16 +30,17 @@ class PlayerType(Enum):
     CHESS_ENGINE_STOCKFISH = 5
 
 
-stockfish_path = "/opt/homebrew/bin/stockfish"
-
 white_player_type = PlayerType.RANDOM_PLAYER
 black_player_type = PlayerType.LLM_BLACK
+enable_reflection = False  # Whether to offer the LLM time to think and evaluate moves
 use_fen_board = False  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many conversation turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions (e.g. picking non existing action) before stopping the game and giving a loss
 throttle_delay_moves = 1  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
 visualize_board = True  # You can skip board visualization to speed up execution
+
+stockfish_path = "/opt/homebrew/bin/stockfish"
 
 
 def run(log_dir="_logs", save_logs=True):
@@ -103,18 +104,36 @@ def run(log_dir="_logs", save_logs=True):
     # Action names
     get_current_board_action = "get_current_board"
     get_legal_moves_action = "get_legal_moves"
+    reflect_action = "reflect"
     make_move_action = "make_move"
 
     common_prompt = f"""Now is your turn to make a move. Before making a move you can pick one of 3 actions:
         - '{get_current_board_action}' to get the schema and current status of the board
         - '{get_legal_moves_action}' to get a UCI formatted list of available moves
+        - {f"'{reflect_action}' to take a moment to think about your strategy" if enable_reflection else ""}
         - '{make_move_action} <UCI formatted move>' when you are ready to complete your turn (e.g., '{make_move_action} e2e4')
-    Respond with the action.
     """
 
+    reflection_prompt = """Before deciding on the next move you can reflect on you current situation, write down notes and evaluate situation.
+              Here're a few recomendations that you can follow to make a better move decision:
+              - Shortlist the most valuable next moves
+              - Consider how they affect the situation
+              - What could be the next moves from your opponent in each case
+              - Is there any strategy fitting the situation and you choice of moves
+              - Rerank the shortlisted moves based on the previous steps
+              """
+
+    reflection_followup_prompt = (
+        "Now that you reflected please choose any of the valid actions: "
+        f"{get_current_board_action}, {get_legal_moves_action}, {reflect_action}, "
+        f"{make_move_action} <UCI formatted move>"
+    )
+
     invalid_action_message = (
-        "Invalid action. Pick one, reply exactly with the name and space delimetted argument: "
-        "get_current_board, get_legal_moves, make_move <UCI formatted move>"
+        f"Invalid action. Pick one, reply exactly with the name and space delimitted argument: "
+        f"{get_current_board_action}, {get_legal_moves_action}"
+        f"{', ' + reflect_action if enable_reflection else ''}"
+        f", {make_move_action} <UCI formatted move>"
     )
 
     # This fu..ing Autogen drives me crazy, some spagetti code with broken logic and common sense...
@@ -170,10 +189,14 @@ def run(log_dir="_logs", save_logs=True):
         too_many_failed_actions_message=too_many_failed_actions_message,
         get_current_board_action=get_current_board_action,
         get_legal_moves_action=get_legal_moves_action,
+        reflect_action=reflect_action,
+        reflection_followup_prompt=reflection_followup_prompt,
         make_move_action=make_move_action,
     )
 
-    # The Game
+    # Could be a simple prompt passed in to proxy, keeping as action for now
+    def reflect_action(player):
+        return reflection_prompt
 
     player_white = {
         PlayerType.LLM_WHITE: llm_white,
@@ -224,6 +247,9 @@ def run(log_dir="_logs", save_logs=True):
     for player in [player_white, player_black]:
         player.wrong_moves = 0
         player.wrong_actions = 0
+        player.reflections_used = 0
+        player.reflections_used_before_board = 0
+        player.has_requested_board = False
         player.material_count = {"white": 0, "black": 0}
 
     try:
@@ -233,7 +259,6 @@ def run(log_dir="_logs", save_logs=True):
             current_move < max_game_moves and not board.is_game_over() and not game_over
         ):
             for player in [player_white, player_black]:
-                proxy_agent.failed_action_attempts = 0
                 chat_result = proxy_agent.initiate_chat(
                     recipient=player,
                     message=player.description,
@@ -241,6 +266,7 @@ def run(log_dir="_logs", save_logs=True):
                 )
                 current_move += 1
                 last_message = chat_result.summary
+
                 print(f"\033[94mMADE MOVE {current_move}\033[0m")
                 print(f"\033[94mLast Message: {last_message}\033[0m")
                 _, last_usage = list(
