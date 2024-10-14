@@ -121,9 +121,13 @@ class AutoReplyAgent(ConversableAgent):
         elif self.get_legal_moves_action in action_choice:
             reply = self.get_legal_moves()
             sender.has_requested_board = True
-        elif (
-            len(messages) > 1
-            and messages[-2]["content"].lower().strip() == self.reflect_action
+        elif (  # Only return follow-up message if reflection actio is mentioned twice, in the proxy message and in the assistants request
+            sum(
+                1
+                for msg in messages
+                if msg["content"].lower().strip() == self.reflect_action
+            )
+            == 2
         ):
             reply = self.reflection_followup_prompt
         elif self.reflect_action in action_choice:

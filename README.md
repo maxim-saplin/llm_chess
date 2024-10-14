@@ -33,7 +33,8 @@ Adjust the global configs at `llm_chess.py`.
 
 - `white_player_type`: Determines the type of player controlling the white pieces. Options include `RANDOM_PLAYER`, `LLM_WHITE`, `LLM_BLACK`, `CHESS_ENGINE_SUNFISH`, and `CHESS_ENGINE_STOCKFISH`.
 - `black_player_type`: Determines the type of player controlling the black pieces. Options include `RANDOM_PLAYER`, `LLM_WHITE`, `LLM_BLACK`, `CHESS_ENGINE_SUNFISH`, and `CHESS_ENGINE_STOCKFISH`.
-- `use_fen_board`: A boolean indicating whether to use the FEN format for board representation. Default is `True`.
+- `enable_reflection`:  whether to offer the LLM time to think and evaluate moves by giving an extra "relfect" action
+- `use_fen_board`: A boolean indicating whether to use the FEN format for board representation. Default is `False`.
 - `max_game_moves`: An integer specifying the maximum number of moves allowed in a game before it is automatically terminated. Default is 200.
 - Constrains for a single move (LLM dialogs if LLM agent is used)
     - `max_llm_turns`: An integer indicating the maximum number of conversation turns (pairs of user/assistant messages) an LLM can take while deciding and making a move. Default is 10.
@@ -337,6 +338,110 @@ Simulating 1000 games of a chess engine against show that with chess engine it t
     "average_moves": 190.073,
     "std_dev_moves": 32.05006829755403
 }
+```
+
+## Reflection
+
+If enabled (`enable_reflection = True`) an extract action is added to the list of available options offerrin an LLM to reflect on best move generating more tokens and thinking through the best next move.
+
+Sample dialog:
+```
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of 3 actions:
+        - 'get_current_board' to get the schema and current status of the board
+        - 'get_legal_moves' to get a UCI formatted list of available moves
+        - 'do_reflection' to take a moment to think about your strategy
+        - 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+    
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I'll start by checking the current state of the board.
+
+Action: `get_current_board`
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ♙ ♙ ⭘ ⭘ ⭘
+⭘ ♙ ♙ ⭘ ⭘ ♙ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+Let's analyze the board further by checking possible moves.
+
+Action: `get_legal_moves`
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8e7,g8h6,g8f6,f8e7,f8d6,f8c5,f8b4,f8a3,e8e7,e8d7,d8e7,d8d7,d8f6,d8d6,d8g5,d8h4,c8d7,c8e6,c8f5,c8g4,c8h3,b8d7,b8c6,b8a6,h7h6,g7g6,f7f6,c7c6,b7b6,a7a6,e5e4,d5d4,h7h5,g7g5,f7f5,c7c5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I'll think about the best strategy given these options.
+
+Action: `do_reflection`
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Before deciding on the next move you can reflect on your current situation, write down notes and evaluate.
+    Here're a few recomendations that you can follow to make a better move decision:
+    - Shortlist the most valuable next moves
+    - Consider how they affect the situation
+    - What could be the next moves from your opponent in each case
+    - Is there any strategy fitting the situation and you choice of moves
+    - Rerank the shortlisted moves based on the previous steps
+    
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+**Reflection:**
+
+1. **Shortlist Valuable Moves:**
+   - **g8f6**: Develops the knight, controls the center, and targets e4.
+   - **h7h6**: Prepares to fianchetto the bishop or prevents a knight pin on g5.
+   - **c7c5**: Challenges the center and prepares to expand on the queenside.
+
+2. **Immediate Effects:**
+   - **g8f6**: Develops a piece, brings the knight nearer to the center.
+   - **h7h6**: Solidifies kingside but is more of a precautionary move.
+   - **c7c5**: Direct action against the center, preparing for future breaks.
+
+3. **Opponent's Responses:**
+   - **g8f6**: White might continue developing with Nc3 or push e4.
+   - **h7h6**: White might ignore it and proceed with normal development.
+   - **c7c5**: White could opt for dxc5 or develop with Nc3.
+
+4. **Strategy Considerations:**
+   - Aim to control the center and set up a solid defensive position.
+   - Balance between development and maintaining structural integrity.
+
+5. **Rerank Shortlisted Moves:**
+   - **1. g8f6**: Best for development and central control.
+   - **2. c7c5**: Strong challenge to the center.
+   - **3. h7h6**: Defensive but adds limited value immediately.
+
+With that in mind, I’ll proceed with the development strategy.
+
+Action: `make_move g8f6`
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
 ```
 
 ## Can LLM discernt Unicode encoded pieces?

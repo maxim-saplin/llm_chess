@@ -32,12 +32,12 @@ class PlayerType(Enum):
 
 white_player_type = PlayerType.RANDOM_PLAYER
 black_player_type = PlayerType.LLM_BLACK
-enable_reflection = False  # Whether to offer the LLM time to think and evaluate moves
+enable_reflection = True  # Whether to offer the LLM time to think and evaluate moves
 use_fen_board = False  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many conversation turns can an LLM make while making a move
 max_failed_attempts = 3  # number of wrong replies/actions (e.g. picking non existing action) before stopping the game and giving a loss
-throttle_delay_moves = 1  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+throttle_delay = 1  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
 visualize_board = True  # You can skip board visualization to speed up execution
 
 stockfish_path = "/opt/homebrew/bin/stockfish"
@@ -82,6 +82,10 @@ def run(log_dir="_logs", save_logs=True):
     ):
         return board.fen() if use_fen_board else board.unicode()
 
+    # Could be a simple prompt passed in to proxy, keeping as action for now
+    def reflect():
+        return reflection_prompt
+
     def make_move(
         move: Annotated[str, "A move in UCI format."]
     ) -> Annotated[str, "Result of the move."]:
@@ -104,7 +108,7 @@ def run(log_dir="_logs", save_logs=True):
     # Action names
     get_current_board_action = "get_current_board"
     get_legal_moves_action = "get_legal_moves"
-    reflect_action = "reflect"
+    reflect_action = "do_reflection"
     make_move_action = "make_move"
 
     common_prompt = f"""Now is your turn to make a move. Before making a move you can pick one of 3 actions:
@@ -114,14 +118,14 @@ def run(log_dir="_logs", save_logs=True):
         - '{make_move_action} <UCI formatted move>' when you are ready to complete your turn (e.g., '{make_move_action} e2e4')
     """
 
-    reflection_prompt = """Before deciding on the next move you can reflect on you current situation, write down notes and evaluate situation.
-              Here're a few recomendations that you can follow to make a better move decision:
-              - Shortlist the most valuable next moves
-              - Consider how they affect the situation
-              - What could be the next moves from your opponent in each case
-              - Is there any strategy fitting the situation and you choice of moves
-              - Rerank the shortlisted moves based on the previous steps
-              """
+    reflection_prompt = """Before deciding on the next move you can reflect on your current situation, write down notes and evaluate.
+    Here're a few recomendations that you can follow to make a better move decision:
+    - Shortlist the most valuable next moves
+    - Consider how they affect the situation
+    - What could be the next moves from your opponent in each case
+    - Is there any strategy fitting the situation and you choice of moves
+    - Rerank the shortlisted moves based on the previous steps
+    """
 
     reflection_followup_prompt = (
         "Now that you reflected please choose any of the valid actions: "
@@ -183,6 +187,7 @@ def run(log_dir="_logs", save_logs=True):
         max_failed_attempts=max_failed_attempts,
         get_legal_moves=get_legal_moves,
         get_current_board=get_current_board,
+        reflect=reflect,
         make_move=make_move,
         move_was_made_message=move_was_made,
         invalid_action_message=invalid_action_message,
@@ -193,10 +198,6 @@ def run(log_dir="_logs", save_logs=True):
         reflection_followup_prompt=reflection_followup_prompt,
         make_move_action=make_move_action,
     )
-
-    # Could be a simple prompt passed in to proxy, keeping as action for now
-    def reflect_action(player):
-        return reflection_prompt
 
     player_white = {
         PlayerType.LLM_WHITE: llm_white,
@@ -321,7 +322,7 @@ def run(log_dir="_logs", save_logs=True):
                     winner = "NONE"
                     reason = f"Unknown issue, {player.name} failed to make a move"
                 proxy_agent.clear_history()
-                time.sleep(throttle_delay_moves)
+                time.sleep(throttle_delay)
                 if game_over:
                     break
 
