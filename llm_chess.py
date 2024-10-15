@@ -82,10 +82,6 @@ def run(log_dir="_logs", save_logs=True):
     ):
         return board.fen() if use_fen_board else board.unicode()
 
-    # Could be a simple prompt passed in to proxy, keeping as action for now
-    def reflect():
-        return reflection_prompt
-
     def make_move(
         move: Annotated[str, "A move in UCI format."]
     ) -> Annotated[str, "Result of the move."]:
@@ -118,7 +114,7 @@ def run(log_dir="_logs", save_logs=True):
         - '{make_move_action} <UCI formatted move>' when you are ready to complete your turn (e.g., '{make_move_action} e2e4')
     """
 
-    reflection_prompt = """Before deciding on the next move you can reflect on your current situation, write down notes and evaluate.
+    reflect_prompt = """Before deciding on the next move you can reflect on your current situation, write down notes and evaluate.
     Here're a few recomendations that you can follow to make a better move decision:
     - Shortlist the most valuable next moves
     - Consider how they affect the situation
@@ -187,14 +183,14 @@ def run(log_dir="_logs", save_logs=True):
         max_failed_attempts=max_failed_attempts,
         get_legal_moves=get_legal_moves,
         get_current_board=get_current_board,
-        reflect=reflect,
         make_move=make_move,
         move_was_made_message=move_was_made,
         invalid_action_message=invalid_action_message,
         too_many_failed_actions_message=too_many_failed_actions_message,
         get_current_board_action=get_current_board_action,
-        get_legal_moves_action=get_legal_moves_action,
         reflect_action=reflect_action,
+        get_legal_moves_action=get_legal_moves_action,
+        reflect_prompt=reflect_prompt,
         reflection_followup_prompt=reflection_followup_prompt,
         make_move_action=make_move_action,
     )

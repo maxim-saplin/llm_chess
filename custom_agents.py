@@ -72,7 +72,6 @@ class AutoReplyAgent(ConversableAgent):
         self,
         get_current_board,
         get_legal_moves,
-        reflect,
         make_move,
         move_was_made_message,
         invalid_action_message,
@@ -81,15 +80,15 @@ class AutoReplyAgent(ConversableAgent):
         get_current_board_action,
         get_legal_moves_action,
         reflect_action,
-        reflection_followup_prompt,
         make_move_action,
+        reflect_prompt,
+        reflection_followup_prompt,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.get_current_board = get_current_board
         self.get_legal_moves = get_legal_moves
-        self.reflect = reflect
         self.make_move = make_move
         self.move_was_made = move_was_made_message
         self.invalid_action_message = invalid_action_message
@@ -99,8 +98,9 @@ class AutoReplyAgent(ConversableAgent):
         self.get_current_board_action = get_current_board_action
         self.get_legal_moves_action = get_legal_moves_action
         self.reflect_action = reflect_action
-        self.reflection_followup_prompt = reflection_followup_prompt
         self.make_move_action = make_move_action
+        self.reflect_prompt = reflect_prompt
+        self.reflection_followup_prompt = reflection_followup_prompt
 
     def generate_reply(
         self,
@@ -121,17 +121,20 @@ class AutoReplyAgent(ConversableAgent):
         elif self.get_legal_moves_action in action_choice:
             reply = self.get_legal_moves()
             sender.has_requested_board = True
-        elif (  # Only return follow-up message if reflection actio is mentioned twice, in the proxy message and in the assistants request
-            sum(
-                1
-                for msg in messages
-                if msg["content"].lower().strip() == self.reflect_action
-            )
-            == 2
+        elif (
+            # Only return follow-up message if reflection actio is mentioned twice, in the proxy message and in the assistants request
+            # sum(
+            #     1
+            #     for msg in messages
+            #     if self.reflect_action.lower().strip() in msg["content"].lower().strip()
+            # )
+            # == 2
+            messages[-2]["content"]
+            == self.reflect_prompt
         ):
             reply = self.reflection_followup_prompt
         elif self.reflect_action in action_choice:
-            reply = self.reflect()
+            reply = self.reflect_prompt
             sender.reflections_used += 1
             if not sender.has_requested_board:
                 sender.reflections_used_before_board += 1
