@@ -22,6 +22,19 @@ from utils import (
 from typing_extensions import Annotated
 
 
+class TerminationReason(Enum):
+    TOO_MANY_FAILED_ACTIONS = "Too many wrong actions, interrupting"
+    CHECKMATE = "Checkmate"
+    STALEMATE = "Stalemate"
+    INSUFFICIENT_MATERIAL = "Insufficient material"
+    SEVENTYFIVE_MOVES = "Seventy-five moves rule"
+    FIVEFOLD_REPETITION = "Fivefold repetition"
+    MAX_TURNS = "Max turns in single dialog"
+    UNKNOWN_ISSUE = "Unknown issue, failed to make a move"
+    MAX_MOVES = "Max moves reached"
+    ERROR = "ERROR OCCURED"
+
+
 class PlayerType(Enum):
     LLM_WHITE = 1  # Represents a white player controlled by an LLM and using *_W config keys from .env
     LLM_BLACK = 2  # Represents a black player controlled by an LLM and using *_B config keys from .env
@@ -95,10 +108,9 @@ def run(log_dir="_logs", save_logs=True):
 
     # termination_messages = ["You won!", "I won!", "It's a tie!"]
     move_was_made = "Move made, switching player"
-    too_many_failed_actions_message = "Too many wrong actions, interrupting"
     termination_conditions = [
         move_was_made.lower(),
-        too_many_failed_actions_message.lower(),
+        TerminationReason.TOO_MANY_FAILED_ACTIONS.value.lower(),
     ]
 
     # Action names
@@ -187,7 +199,7 @@ def run(log_dir="_logs", save_logs=True):
         make_move=make_move,
         move_was_made_message=move_was_made,
         invalid_action_message=invalid_action_message,
-        too_many_failed_actions_message=too_many_failed_actions_message,
+        too_many_failed_actions_message=TerminationReason.TOO_MANY_FAILED_ACTIONS.value,
         get_current_board_action=get_current_board_action,
         reflect_action=reflect_action,
         get_legal_moves_action=get_legal_moves_action,
@@ -290,7 +302,7 @@ def run(log_dir="_logs", save_logs=True):
                 print(f"\033[94mCompletion Tokens: {completion_tokens}\033[0m")
                 if (
                     last_message.lower().strip()
-                    == too_many_failed_actions_message.lower().strip()
+                    == TerminationReason.TOO_MANY_FAILED_ACTIONS.value.lower().strip()
                 ):
                     game_over = True
                     winner = (
@@ -303,28 +315,28 @@ def run(log_dir="_logs", save_logs=True):
                     game_over = True
                     if board.is_checkmate():
                         winner = player_black.name if board.turn else player_white.name
-                        reason = "Checkmate"
+                        reason = TerminationReason.CHECKMATE.value
                     elif board.is_stalemate():
                         winner = "NONE"
-                        reason = "Stalemate"
+                        reason = TerminationReason.STALEMATE.value
                     elif board.is_insufficient_material():
                         winner = "NONE"
-                        reason = "Insufficient material"
+                        reason = TerminationReason.INSUFFICIENT_MATERIAL.value
                     elif board.is_seventyfive_moves():
-                        reason = "Seventy-five moves rule"
+                        reason = TerminationReason.SEVENTYFIVE_MOVES.value
                     elif board.is_fivefold_repetition():
-                        reason = "Fivefold repetition"
+                        reason = TerminationReason.FIVEFOLD_REPETITION.value
                 if (
                     last_message.lower().strip() != move_was_made.lower().strip()
                     and len(chat_result.chat_history) >= max_llm_turns * 2
                 ):
                     game_over = True
                     winner = "NONE"
-                    reason = "Max turns in single dialog"
+                    reason = TerminationReason.MAX_TURNS.value
                 elif last_message.lower().strip() != move_was_made.lower().strip():
                     game_over = True
                     winner = "NONE"
-                    reason = f"Unknown issue, {player.name} failed to make a move"
+                    reason = TerminationReason.UNKNOWN_ISSUE.value
                 proxy_agent.clear_history()
                 time.sleep(throttle_delay)
                 if game_over:
@@ -332,14 +344,14 @@ def run(log_dir="_logs", save_logs=True):
 
         if not reason and current_move >= max_game_moves:
             winner = "NONE"
-            reason = "Max moves reached"
+            reason = TerminationReason.MAX_MOVES.value
 
     except Exception as e:
         print("\033[91mExecution was halted due to error.\033[0m")
         print(f"Exception details: {e}")
         traceback.print_exc()
         winner = "NONE"
-        reason = "ERROR OCCURED"
+        reason = TerminationReason.ERROR.value
 
     game_stats = generate_game_stats(
         time_started,
