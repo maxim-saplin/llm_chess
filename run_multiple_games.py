@@ -5,7 +5,7 @@ from llm_chess import run
 
 # Parameters
 NUM_REPETITIONS = 10  # Set the number of games to run
-LOG_FOLDER = "_logs/_15.10.2024_gpt-4o-anthropic.claude-v3-5-sonnet_reflection"  # Set the folder to store logs
+LOG_FOLDER = "_logs/_17.10.2024_gpt-4o-mini-2024-07-18_reflection"  # Set the folder to store logs
 STORE_INDIVIDUAL_LOGS = True
 
 # ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`
