@@ -35,7 +35,7 @@ black_player_type = PlayerType.LLM_BLACK
 enable_reflection = True  # Whether to offer the LLM time to think and evaluate moves
 use_fen_board = False  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
 max_game_moves = 200  # maximum number of game moves before terminating
-max_llm_turns = 10  # how many conversation turns can an LLM make while making a move
+max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times
 max_failed_attempts = 3  # number of wrong replies/actions (e.g. picking non existing action) before stopping the game and giving a loss
 throttle_delay = 1  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
 visualize_board = True  # You can skip board visualization to speed up execution
@@ -114,14 +114,15 @@ def run(log_dir="_logs", save_logs=True):
         - '{make_move_action} <UCI formatted move>' when you are ready to complete your turn (e.g., '{make_move_action} e2e4')
     """
 
-    reflect_prompt = """Before deciding on the next move you can reflect on your current situation, write down notes and evaluate.
-    Here're a few recomendations that you can follow to make a better move decision:
-    - Shortlist the most valuable next moves
-    - Consider how they affect the situation
-    - What could be the next moves from your opponent in each case
-    - Is there any strategy fitting the situation and you choice of moves
-    - Rerank the shortlisted moves based on the previous steps
-    """
+    reflect_prompt = (
+        "Before deciding on the next move you can reflect on your current situation, write down notes and evaluate.\n"
+        "Here're a few recommendations that you can follow to make a better move decision:\n"
+        "- Shortlist the most valuable next moves\n"
+        "- Consider how they affect the situation\n"
+        "- What could be the next moves from your opponent in each case\n"
+        "- Is there any strategy fitting the situation and your choice of moves\n"
+        "- Rerank the shortlisted moves based on the previous steps\n"
+    )
 
     reflection_followup_prompt = (
         "Now that you reflected please choose any of the valid actions: "
@@ -313,6 +314,13 @@ def run(log_dir="_logs", save_logs=True):
                         reason = "Seventy-five moves rule"
                     elif board.is_fivefold_repetition():
                         reason = "Fivefold repetition"
+                if (
+                    last_message.lower().strip() != move_was_made.lower().strip()
+                    and len(chat_result.chat_history) >= max_llm_turns * 2
+                ):
+                    game_over = True
+                    winner = "NONE"
+                    reason = "Max turns in single dialog"
                 elif last_message.lower().strip() != move_was_made.lower().strip():
                     game_over = True
                     winner = "NONE"

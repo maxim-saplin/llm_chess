@@ -3,7 +3,7 @@ Putting LLMs up against each other in chess game. Testing basic instruction foll
 - `llm_chessp.py` runs the game, collects the results, records video
     
 
-## Running
+## Running the Games
 
  - Decide if you would like to put one LLM against the other OR a random player (chaos monkey picking randome move out of a list of legal moves provided to it)
     - Set `use_random_player` to True to make make random player play white and LLM play black
@@ -15,19 +15,7 @@ Putting LLMs up against each other in chess game. Testing basic instruction foll
  - Run `llm_chess.py`
     - llm_chess_tool_call.py is older version relying on native tool call support, not maintained, keeping JIC
 
-### Multiple Games and Aggregation of Results
-
-The `run_multiple_games.py` script allows you to execute multiple chess games between different agents and aggregate the results.
-
-To run multiple games:
-- Adjust the `NUM_REPETITIONS` variable to set the number of games you want to simulate.
-- The results, including win/loss statistics and material counts, are aggregated and can be analyzed to understand the strengths and weaknesses of each player type.
-- Aggregate log and logs for individual games (if `STORE_INDIVIDUAL_LOGS` is set to True) can be stored in the specified `LOG_FOLDER` for further inspection.
-
-This feature is used to compare different kinds of players and generalize the findings. For LLM playes 10 games were used, for random/chess engine players 1000 games, some states is provided below.
-
-
-## Configs
+### Configs
 
 Adjust the global configs at `llm_chess.py`.
 
@@ -43,6 +31,17 @@ Adjust the global configs at `llm_chess.py`.
 
 These settings are used to configure the game environment and control the flow of the chess match between the agents.
 
+### Multiple Games and Aggregation of Results
+
+The `run_multiple_games.py` script allows you to execute multiple chess games between different agents and aggregate the results.
+
+To run multiple games:
+- Adjust the `NUM_REPETITIONS` variable to set the number of games you want to simulate.
+- The results, including win/loss statistics and material counts, are aggregated and can be analyzed to understand the strengths and weaknesses of each player type.
+- Aggregate log and logs for individual games (if `STORE_INDIVIDUAL_LOGS` is set to True) can be stored in the specified `LOG_FOLDER` for further inspection.
+
+This feature is used to compare different kinds of players and generalize the findings. For LLM playes 10 games were used, for random/chess engine players 1000 games, some states is provided below.
+
 
 ## Kinds of Agents
 
@@ -55,6 +54,7 @@ These settings are used to configure the game environment and control the flow o
 
 ## Sample Dialog Happenning within a Single Move
 
+```
 Proxy (to Player_Black):
 
 You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of 3 actions:
@@ -100,6 +100,7 @@ make_move f8g8
 Proxy (to Player_Black):
 
 Move made, switching player
+```
 
 ## Model Zoo
 
@@ -107,27 +108,15 @@ Move made, switching player
 
 I have conducted a number of games putting LLM (playing with black) against a Random Player (as white), typically 10 games with a cap of 200 moves.
 
-|------------------------------|-------------|----------------|-----------------|-------|-----------------|-------------------|-----------------|------------------|----------------------|-------------------|-----------------------|------------------------------|----------------------------|--------------------------|---------------|--------------------|
-| model_name                   | total_games | black_llm_wins | white_rand_wins | draws | llm_total_moves | llm_wrong_actions | llm_wrong_moves | llm_avg_material | llm_std_dev_material | rand_avg_material | rand_std_dev_material | material_diff_llm_minus_rand | wrong_actions_per_100moves | wrong_moves_per_100moves | average_moves | std_dev_moves      |
-|------------------------------|-------------|----------------|-----------------|-------|-----------------|-------------------|-----------------|------------------|----------------------|-------------------|-----------------------|------------------------------|----------------------------|--------------------------|---------------|--------------------|
-| anthropic.claude-v3-5-sonnet |          10 |              0 |               6 |     4 |            1482 |                 0 |              21 |             20.5 |    11.76860229593982 |              22.0 |     13.02134998974974 |                         -1.5 |                        0.0 |        1.417004048582996 |         148.2 | 63.056940758157445 |
-|------------------------------|-------------|----------------|-----------------|-------|-----------------|-------------------|-----------------|------------------|----------------------|-------------------|-----------------------|------------------------------|----------------------------|--------------------------|---------------|--------------------|
-| anthropic.claude-v3-haiku+fen|          10 |              0 |               5 |     5 |             982 |               128 |              41 |             26.9 |   12.178761111961357 |              26.7 |     9.855060741681008 |           0.1999999999999993 |         13.034623217922606 |       4.1751527494908345 |          98.2 |   70.9456756179606 |
-|------------------------------|-------------|----------------|-----------------|-------|-----------------|-------------------|-----------------|------------------|----------------------|-------------------|-----------------------|------------------------------|----------------------------|--------------------------|---------------|--------------------|
-| anthropic.claude-v3-haiku    |          10 |              0 |               7 |     3 |             764 |               117 |              65 |             30.1 |   12.653062870309308 |              30.5 |    11.452801695072987 |          -0.3999999999999986 |         15.314136125654452 |        8.507853403141361 |          76.4 |  76.29067221270675 |
-|------------------------------|-------------|----------------|-----------------|-------|-----------------|-------------------|-----------------|------------------|----------------------|-------------------|-----------------------|------------------------------|----------------------------|--------------------------|---------------|--------------------|
-| gemini-1.5-flash-001         |          10 |              0 |              10 |     0 |             126 |                33 |              21 |             38.9 |  0.31622776601683794 |              38.9 |   0.31622776601683794 |                          0.0 |         26.190476190476193 |       16.666666666666664 |          12.6 |  7.366591251499344 |
-|------------------------------|-------------|----------------|-----------------|-------|-----------------|-------------------|-----------------|------------------|----------------------|-------------------|-----------------------|------------------------------|----------------------------|--------------------------|---------------|--------------------|
-| gemini-1.5-pro-preview-0409  |          10 |              0 |               7 |     3 |             857 |                11 |             132 |             25.9 |   11.249197502241858 |              33.2 |     4.984420171338332 |           -7.300000000000004 |         1.2835472578763127 |       15.402567094515755 |          85.7 |  57.24615465009176 |
-|------------------------------|-------------|----------------|-----------------|-------|-----------------|-------------------|-----------------|------------------|----------------------|-------------------|-----------------------|------------------------------|----------------------------|--------------------------|---------------|--------------------|
-| gpt-4-turbo-2024-04-09       |          10 |              0 |               0 |    10 |            2000 |                 1 |               9 |             16.2 |    9.199033765685515 |              14.0 |       6.6332495807108 |           2.1999999999999993 |                       0.05 |      0.44999999999999996 |         200.0 |                0.0 |
-|------------------------------|-------------|----------------|-----------------|-------|-----------------|-------------------|-----------------|------------------|----------------------|-------------------|-----------------------|------------------------------|----------------------------|--------------------------|---------------|--------------------|
-| gpt-4o-2024-08-06            |          10 |              0 |               1 |     9 |            1960 |                 0 |              20 |             12.7 |    7.860590874030329 |              13.5 |    5.7397251192408545 |          -0.8000000000000007 |                        0.0 |       1.0204081632653061 |         196.0 | 12.649110640673518 |
-|------------------------------|-------------|----------------|-----------------|-------|-----------------|-------------------|-----------------|------------------|----------------------|-------------------|-----------------------|------------------------------|----------------------------|--------------------------|---------------|--------------------|
-| gpt-4o-mini-2024-07-18       |          10 |              0 |               5 |     5 |            1480 |               206 |              18 |             21.8 |    12.09958676980334 |              26.6 |      9.22797678559908 |           -4.800000000000001 |         13.918918918918918 |       1.2162162162162162 |         148.0 |  66.83977525063617 |
-|------------------------------|-------------|----------------|-----------------|-------|-----------------|-------------------|-----------------|------------------|----------------------|-------------------|-----------------------|------------------------------|----------------------------|--------------------------|---------------|--------------------|
-| gpt-4o-mini-2024-07-18       |          10 |              0 |               4 |     6 |            1571 |               214 |              17 |             19.0 |   10.561986345169906 |              26.1 |     8.385834616913346 |           -7.100000000000001 |         13.621896880967538 |       1.0821133036282622 |         157.1 |  66.98001360273244 |
-|------------------------------|-------------|----------------|-----------------|-------|-----------------|-------------------|-----------------|------------------|----------------------|-------------------|-----------------------|------------------------------|----------------------------|--------------------------|---------------|--------------------|
+### Logs
+
+Game run results are stored under `_logs` folder.
+
+!NOTES:
+- Logs before 08.10.2024 (first 8) are more strict with wrong moves stats
+- Logs before 16.10.2024 had ambiguous "Unknown issue, Player_Black failed to make a move" reason which often meant that a single dialog took more than 10 turns (20 total messages) and execution was halted, changed to include a more specific reason "Max turns in single dialog"
+- Different configs could be used, directory folder
+- Log `_15.10.2024_gpt-4o-anthropic.claude-v3-5-sonnet_reflectio` had timeout error, aggregate only had 9 out of 10 consistent runs
 
 ### Problems with instructuin following
 
