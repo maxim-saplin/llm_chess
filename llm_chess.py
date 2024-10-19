@@ -23,7 +23,7 @@ from typing_extensions import Annotated
 
 
 class TerminationReason(Enum):
-    TOO_MANY_FAILED_ACTIONS = "Too many wrong actions, interrupting"
+    TOO_MANY_WRONG_ACTIONS = "Too many wrong actions"
     CHECKMATE = "Checkmate"
     STALEMATE = "Stalemate"
     INSUFFICIENT_MATERIAL = "Insufficient material"
@@ -110,7 +110,7 @@ def run(log_dir="_logs", save_logs=True):
     move_was_made = "Move made, switching player"
     termination_conditions = [
         move_was_made.lower(),
-        TerminationReason.TOO_MANY_FAILED_ACTIONS.value.lower(),
+        TerminationReason.TOO_MANY_WRONG_ACTIONS.value.lower(),
     ]
 
     # Action names
@@ -199,7 +199,7 @@ def run(log_dir="_logs", save_logs=True):
         make_move=make_move,
         move_was_made_message=move_was_made,
         invalid_action_message=invalid_action_message,
-        too_many_failed_actions_message=TerminationReason.TOO_MANY_FAILED_ACTIONS.value,
+        too_many_failed_actions_message=TerminationReason.TOO_MANY_WRONG_ACTIONS.value,
         get_current_board_action=get_current_board_action,
         reflect_action=reflect_action,
         get_legal_moves_action=get_legal_moves_action,
@@ -302,7 +302,7 @@ def run(log_dir="_logs", save_logs=True):
                 print(f"\033[94mCompletion Tokens: {completion_tokens}\033[0m")
                 if (
                     last_message.lower().strip()
-                    == TerminationReason.TOO_MANY_FAILED_ACTIONS.value.lower().strip()
+                    == TerminationReason.TOO_MANY_WRONG_ACTIONS.value.lower().strip()
                 ):
                     game_over = True
                     winner = (
@@ -310,7 +310,8 @@ def run(log_dir="_logs", save_logs=True):
                         if player == player_white
                         else player_white.name
                     )
-                    reason = f"{player.name} chose wrong actions to many times failing to make a move"
+                    # reason = f"{player.name} chose wrong actions to many times failing to make a move"
+                    reason = TerminationReason.TOO_MANY_WRONG_ACTIONS.value
                 elif board.is_game_over():
                     game_over = True
                     if board.is_checkmate():
@@ -326,7 +327,7 @@ def run(log_dir="_logs", save_logs=True):
                         reason = TerminationReason.SEVENTYFIVE_MOVES.value
                     elif board.is_fivefold_repetition():
                         reason = TerminationReason.FIVEFOLD_REPETITION.value
-                if (
+                elif (
                     last_message.lower().strip() != move_was_made.lower().strip()
                     and len(chat_result.chat_history) >= max_llm_turns * 2
                 ):
