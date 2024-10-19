@@ -332,7 +332,11 @@ def run(log_dir="_logs", save_logs=True):
                     and len(chat_result.chat_history) >= max_llm_turns * 2
                 ):
                     game_over = True
-                    winner = "NONE"
+                    winner = (
+                        player_black.name
+                        if player == player_white
+                        else player_white.name
+                    )
                     reason = TerminationReason.MAX_TURNS.value
                 elif last_message.lower().strip() != move_was_made.lower().strip():
                     game_over = True
