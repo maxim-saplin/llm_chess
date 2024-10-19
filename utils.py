@@ -48,19 +48,35 @@ def get_llms_autogen():
     #  if openai_config["azure_deployment"] is not None:
     #         openai_config["azure_deployment"] = openai_config["azure_deployment"].replace(".", "")
     llm_config_white = {
-        "api_type": "azure",
-        "model": os.environ["AZURE_OPENAI_DEPLOYMENT_W"],
-        "api_key": os.environ["AZURE_OPENAI_KEY_W"],
-        "base_url": os.environ["AZURE_OPENAI_ENDPOINT_W"],
-        "api_version": os.environ["AZURE_OPENAI_VERSION_W"],
+        "config_list": [
+            {
+                "api_type": "azure",
+                "model": os.environ["AZURE_OPENAI_DEPLOYMENT_W"],
+                "api_key": os.environ["AZURE_OPENAI_KEY_W"],
+                "base_url": os.environ["AZURE_OPENAI_ENDPOINT_W"],
+                "api_version": os.environ["AZURE_OPENAI_VERSION_W"],
+            }
+        ],
+        "temperature": 0.7,
+        "top_p": 1.0,
+        "frequency_penalty": 0.0,
+        "presence_penalty": 0.0,
     }
 
     llm_config_black = {
-        "api_type": "azure",
-        "model": os.environ["AZURE_OPENAI_DEPLOYMENT_B"],
-        "api_key": os.environ["AZURE_OPENAI_KEY_B"],
-        "base_url": os.environ["AZURE_OPENAI_ENDPOINT_B"],
-        "api_version": os.environ["AZURE_OPENAI_VERSION_B"],
+        "config_list": [
+            {
+                "api_type": "azure",
+                "model": os.environ["AZURE_OPENAI_DEPLOYMENT_B"],
+                "api_key": os.environ["AZURE_OPENAI_KEY_B"],
+                "base_url": os.environ["AZURE_OPENAI_ENDPOINT_B"],
+                "api_version": os.environ["AZURE_OPENAI_VERSION_B"],
+            }
+        ],
+        "temperature": 0.7,
+        "top_p": 1.0,
+        "frequency_penalty": 0.0,
+        "presence_penalty": 0.0,
     }
 
     # Disabling LLM caching to avoid loops, also since the game is dynamic caching doesn't make sense
