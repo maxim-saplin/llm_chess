@@ -118,6 +118,18 @@ Game run results are stored under `_logs` folder.
 - Different configs could be used, directory folder
 - Log `_15.10.2024_gpt-4o-anthropic.claude-v3-5-sonnet_reflectio` had timeout error, aggregate only had 9 out of 10 consistent runs
 - After 19.10.2024 setting default hyperparams
+- 19.10.2024, gemini-1.5-flash-001 consistently failed to follow the instructions:
+```
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, do_reflection, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+```json
+{
+  "action": "get_legal_moves"
+}
+```
 
 ### Problems with instructuin following
 
