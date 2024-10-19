@@ -117,6 +117,7 @@ Game run results are stored under `_logs` folder.
 - Logs before 16.10.2024 had ambiguous "Unknown issue, Player_Black failed to make a move" reason which often meant that a single dialog took more than 10 turns (20 total messages) and execution was halted, changed to include a more specific reason "Max turns in single dialog"
 - Different configs could be used, directory folder
 - Log `_15.10.2024_gpt-4o-anthropic.claude-v3-5-sonnet_reflectio` had timeout error, aggregate only had 9 out of 10 consistent runs
+- After 19.10.2024 setting default hyperparams
 
 ### Problems with instructuin following
 

@@ -5,7 +5,7 @@ from llm_chess import run
 
 # Parameters
 NUM_REPETITIONS = 10  # Set the number of games to run
-LOG_FOLDER = "_logs/reflection/_19.10.2024_gpt-4o-mini-2024-07-18"  # Set the folder to store logs
+LOG_FOLDER = "_logs/reflection/_19.10.2024_gpt-4o-mini-2024-07-18_2"  # Set the folder to store logs
 STORE_INDIVIDUAL_LOGS = True
 
 # ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`
@@ -69,7 +69,9 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
         # Update player-specific data
         aggregate_data["player_white"]["name"] = player_white.name
         aggregate_data["player_white"]["model"] = (
-            player_white.llm_config["model"] if player_white.llm_config else ""
+            player_white.llm_config["config_list"][0]["model"]
+            if player_white.llm_config
+            else ""
         )
         aggregate_data["player_white"]["total_material"] += game_stats[
             "material_count"
@@ -86,7 +88,9 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
 
         aggregate_data["player_black"]["name"] = player_black.name
         aggregate_data["player_black"]["model"] = (
-            player_black.llm_config["model"] if player_black.llm_config else ""
+            player_black.llm_config["config_list"][0]["model"]
+            if player_black.llm_config
+            else ""
         )
         aggregate_data["player_black"]["total_material"] += game_stats[
             "material_count"

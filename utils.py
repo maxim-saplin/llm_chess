@@ -110,7 +110,7 @@ def generate_game_stats(
             "reflections_used": player_white.reflections_used,
             "reflections_used_before_board": player_white.reflections_used_before_board,
             "model": (
-                player_white.llm_config["model"]
+                player_white.llm_config["config_list"][0]["model"]
                 if isinstance(player_white.llm_config, dict)
                 else "N/A"
             ),
@@ -123,7 +123,7 @@ def generate_game_stats(
             "reflections_used": player_black.reflections_used,
             "reflections_used_before_board": player_black.reflections_used_before_board,
             "model": (
-                player_black.llm_config["model"]
+                player_black.llm_config["config_list"][0]["model"]
                 if isinstance(player_black.llm_config, dict)
                 else "N/A"
             ),
