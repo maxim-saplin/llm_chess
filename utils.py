@@ -47,42 +47,46 @@ def get_llms_autogen():
     # You better disable this in Autogen source code 'oia/client.py'
     #  if openai_config["azure_deployment"] is not None:
     #         openai_config["azure_deployment"] = openai_config["azure_deployment"].replace(".", "")
-    llm_config_white = {
-        "config_list": [
-            {
-                "api_type": "azure",
-                "model": os.environ["AZURE_OPENAI_DEPLOYMENT_W"],
-                "api_key": os.environ["AZURE_OPENAI_KEY_W"],
-                "base_url": os.environ["AZURE_OPENAI_ENDPOINT_W"],
-                "api_version": os.environ["AZURE_OPENAI_VERSION_W"],
-            }
-        ],
-        "temperature": 0.7,
-        "top_p": 1.0,
-        "frequency_penalty": 0.0,
-        "presence_penalty": 0.0,
-    }
+    model_kinds = [
+        os.environ.get("MODEL_KIND_W", "azure"),
+        os.environ.get("MODEL_KIND_B", "azure"),
+    ]
 
-    llm_config_black = {
-        "config_list": [
-            {
-                "api_type": "azure",
-                "model": os.environ["AZURE_OPENAI_DEPLOYMENT_B"],
-                "api_key": os.environ["AZURE_OPENAI_KEY_B"],
-                "base_url": os.environ["AZURE_OPENAI_ENDPOINT_B"],
-                "api_version": os.environ["AZURE_OPENAI_VERSION_B"],
-            }
-        ],
-        "temperature": 0.7,
-        "top_p": 1.0,
-        "frequency_penalty": 0.0,
-        "presence_penalty": 0.0,
-    }
+    def azure_config(key):
+        return {
+            "api_type": "azure",
+            "model": os.environ[f"AZURE_OPENAI_DEPLOYMENT_{key}"],
+            "api_key": os.environ[f"AZURE_OPENAI_KEY_{key}"],
+            "base_url": os.environ[f"AZURE_OPENAI_ENDPOINT_{key}"],
+            "api_version": os.environ[f"AZURE_OPENAI_VERSION_{key}"],
+        }
 
-    # Disabling LLM caching to avoid loops, also since the game is dynamic caching doesn't make sense
-    llm_config_white["cache_seed"] = llm_config_black["cache_seed"] = None
+    def local_config(key):
+        return {
+            "model": os.environ[f"LOCAL_MODEL_NAME_{key}"],
+            "base_url": os.environ[f"LOCAL_BASE_URL_{key}"],
+        }
 
-    return llm_config_white, llm_config_black
+    def create_config(config_list):
+        return {
+            "config_list": config_list,
+            "temperature": 0.7,
+            "top_p": 1.0,
+            "frequency_penalty": 0.0,
+            "presence_penalty": 0.0,
+        }
+
+    configs = []
+    for kind, key in zip(model_kinds, ["W", "B"]):
+        if kind == "azure":
+            configs.append(create_config([azure_config(key)]))
+        elif kind == "local":
+            configs.append(create_config([local_config(key)]))
+
+    for config in configs:
+        config["cache_seed"] = None
+
+    return configs[0], configs[1]
 
 
 def generate_game_stats(
