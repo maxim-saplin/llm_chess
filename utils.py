@@ -65,6 +65,7 @@ def get_llms_autogen():
         return {
             "model": os.environ[f"LOCAL_MODEL_NAME_{key}"],
             "base_url": os.environ[f"LOCAL_BASE_URL_{key}"],
+            "api_key": "any",
         }
 
     def create_config(config_list):

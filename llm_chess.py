@@ -45,7 +45,7 @@ class PlayerType(Enum):
 
 white_player_type = PlayerType.RANDOM_PLAYER
 black_player_type = PlayerType.LLM_BLACK
-enable_reflection = True  # Whether to offer the LLM time to think and evaluate moves
+enable_reflection = False  # Whether to offer the LLM time to think and evaluate moves
 use_fen_board = False  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times
@@ -119,12 +119,13 @@ def run(log_dir="_logs", save_logs=True):
     reflect_action = "do_reflection"
     make_move_action = "make_move"
 
-    common_prompt = f"""Now is your turn to make a move. Before making a move you can pick one of 3 actions:
-        - '{get_current_board_action}' to get the schema and current status of the board
-        - '{get_legal_moves_action}' to get a UCI formatted list of available moves
-        - {f"'{reflect_action}' to take a moment to think about your strategy" if enable_reflection else ""}
-        - '{make_move_action} <UCI formatted move>' when you are ready to complete your turn (e.g., '{make_move_action} e2e4')
-    """
+    common_prompt = (
+        "Now is your turn to make a move. Before making a move you can pick one of the following actions:\n"
+        f"- '{get_current_board_action}' to get the schema and current status of the board\n"
+        f"- '{get_legal_moves_action}' to get a UCI formatted list of available moves\n"
+        f"{f'- {reflect_action} to take a moment to think about your strategy\n' if enable_reflection else ''}"
+        f"- '{make_move_action} <UCI formatted move>' when you are ready to complete your turn (e.g., '{make_move_action} e2e4')"
+    )
 
     reflect_prompt = (
         "Before deciding on the next move you can reflect on your current situation, write down notes and evaluate.\n"

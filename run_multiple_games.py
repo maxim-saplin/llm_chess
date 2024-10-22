@@ -6,7 +6,8 @@ from llm_chess import run
 # Parameters
 NUM_REPETITIONS = 10  # Set the number of games to run
 LOG_FOLDER = (
-    "_logs/reflection/_20.10.2024_gpt-35-turbo-0125"  # Set the folder to store logs
+    # "_logs/reflection/_20.10.2024_gpt-35-turbo-0125"  # Set the folder to store logs
+    "_logs/_22.10.2024_llama-3.1-nemotron-70b-instruct-hf-4bit"
 )
 STORE_INDIVIDUAL_LOGS = True
 
