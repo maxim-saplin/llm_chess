@@ -154,7 +154,8 @@ make_move c7c5
 ```
 
 - Gemini-1.5-flash-001 alaways wrapped answers in JSON code blocks (while not asked)
-- lama-3.1-nemotron-70b-instruct-hf 4 bit was too verbose failing to make any actions
+- lama-3.1-nemotron-70b-instruct-hf 4 bit was too verbose failing to make any actions (2024.10.22_23:18_lama-3.1-nemotron-70b-instruct-hf.md)
+- gpt-35-turbo-0125 failed to make any moves by not complying with the instructions and reply format (see _23.10.2024_gpt-35-turbo-0125/fail.md)
 
 #### Example of a Model (gemini-1.5-pro-preview-0409) Failing to Pick a Valid Move
 
