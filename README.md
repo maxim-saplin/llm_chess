@@ -108,7 +108,7 @@ Move made, switching player
 
 I have conducted a number of games putting LLM (playing with black) against a Random Player (as white), typically 10 games with a cap of 200 moves.
 
-### Logs
+### Logs/Changes Affecting Evals
 
 Game run results are stored under `_logs` folder.
 
@@ -119,17 +119,7 @@ Game run results are stored under `_logs` folder.
 - Log `_15.10.2024_gpt-4o-anthropic.claude-v3-5-sonnet_reflectio` had timeout error, aggregate only had 9 out of 10 consistent runs
 - After 19.10.2024 setting default hyperparams
 - 19.10.2024, gemini-1.5-flash-001 consistently failed to follow the instructions:
-```
-Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, do_reflection, make_move <UCI formatted move>
-
---------------------------------------------------------------------------------
-Player_Black (to Proxy):
-
-```json
-{
-  "action": "get_legal_moves"
-}
-```
+- 22.10.2024, slightly updated common prompt removing excessive tabs
 
 ### Problems with instructuin following
 
@@ -164,6 +154,7 @@ make_move c7c5
 ```
 
 - Gemini-1.5-flash-001 alaways wrapped answers in JSON code blocks (while not asked)
+- lama-3.1-nemotron-70b-instruct-hf 4 bit was too verbose failing to make any actions
 
 #### Example of a Model (gemini-1.5-pro-preview-0409) Failing to Pick a Valid Move
 
