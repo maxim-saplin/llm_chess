@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Chess Leaderboard</title>
+    <style>
+        @font-face {
+            font-family: 'Web IBM VGA 8x16';
+            font-style: normal;
+            font-weight: 400;
+            src: url(web_ibm_vga_8x16.woff) format('woff');
+        }
+
+        body {
+            background-color: #0000AA;
+            color: #FFFFFF;
+            font-family: "Web IBM VGA 8x16";
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+        }
+        button {
+            width: 100px;
+            margin: 0 5px;
+            padding: 5px;
+            background-color: #C0C0C0;
+            color: #000000;
+            border: 1px solid #808080;
+            /* cursor: url("data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAGAAAAAAAQAMAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAAEAAAABAAAABAAAAAQAAAAEAAAABAAAABAAAAAQAAAAEAAAABAAAAAQAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAAEAAAABAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") 14 0, pointer; */
+            font-family: "Web IBM VGA 8x16";
+            font-size: 16px;
+            position: relative;
+        }
+        button::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            z-index: -1;
+        }
+        button:hover {
+            background-color: #808080;
+            color: #FFFFFF;
+            cursor: pointer;
+            top: 2px;
+            left: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <pre style="font-size: 16px; line-height: 1.0; scale: 1.2; margin-left: -40px;">
+            __       __                    ____     __                               
+            /\ \     /\ \       /'\_/`\    /\  _`\  /\ \                              
+            \ \ \    \ \ \     /\      \   \ \ \/\_\\ \ \___      __    ____    ____  
+             \ \ \  __\ \ \  __\ \ \__\ \   \ \ \/_/_\ \  _ `\  /'__`\ /',__\  /',__\ 
+              \ \ \L\ \\ \ \L\ \\ \ \_/\ \   \ \ \L\ \\ \ \ \ \/\  __//\__, `\/\__, `\
+               \ \____/ \ \____/ \ \_\\ \_\   \ \____/ \ \_\ \_\ \____\/\____/\/\____/
+                \/___/   \/___/   \/_/ \/_/    \/___/   \/_/\/_/\/____/\/___/  \/___/ 
+                                                                                      
+                                                                                      
+        </pre>
+        <p style="font-size: 20px; padding: 20px;">
+            Random Chess Player vs LLM
+        </p>
+        <div class="button-container">
+            <button>Option 1</button>
+            <button>Option 2</button>
+            <button>Option 3</button>
+            <button>Option 4</button>
+        </div>
+    </div>
+</body>
+</html>
