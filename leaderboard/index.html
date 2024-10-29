@@ -34,7 +34,7 @@
             justify-content: center;
         }
         button {
-            width: 100px;
+            width: 160px;
             margin: 0 5px;
             padding: 5px;
             background-color: #C0C0C0;
@@ -55,6 +55,13 @@
             background-color: #000000;
             z-index: -1;
         }
+        button.selected {
+            background-color: green;
+            color: #FFFFFF;
+            cursor: pointer;
+            top: 1px;
+            left: 1px;
+        }
         button:hover {
             background-color: #808080;
             color: #FFFFFF;
@@ -62,11 +69,16 @@
             top: 2px;
             left: 2px;
         }
+        .gh{
+            position: absolute;
+            top: 40px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <pre style="font-size: 16px; line-height: 1.0; scale: 1.2; margin-left: -40px;">
+        <a class="gh" href="https://github.com/maxim-saplin/llm_chess" target="_blank"><img src="gh.png" width="48"/></a>
+        <pre style="font-size: 16px; line-height: 1.0; scale: 1.2; margin-left: -70px;">
             __       __                    ____     __                               
             /\ \     /\ \       /'\_/`\    /\  _`\  /\ \                              
             \ \ \    \ \ \     /\      \   \ \ \/\_\\ \ \___      __    ____    ____  
@@ -81,10 +93,9 @@
             Random Chess Player vs LLM
         </p>
         <div class="button-container">
-            <button>Option 1</button>
-            <button>Option 2</button>
-            <button>Option 3</button>
-            <button>Option 4</button>
+            <button class="selected">Without Reflection</button>
+            <button>With Reflection</button>
+            <button>How it works</button>
         </div>
     </div>
 </body>
