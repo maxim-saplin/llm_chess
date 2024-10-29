@@ -54,6 +54,8 @@ This feature is used to compare different kinds of players and generalize the fi
 
 ## Sample Dialog Happenning within a Single Move
 
+GPT-4o-Mini
+
 ```
 Proxy (to Player_Black):
 
