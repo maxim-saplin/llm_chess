@@ -440,7 +440,7 @@ Proxy (to Player_Black):
 Move made, switching player
 ```
 
-## Can LLM discernt Unicode encoded pieces?
+## Can LLM discern Unicode encoded pieces?
 
 Prompt:
 ```
