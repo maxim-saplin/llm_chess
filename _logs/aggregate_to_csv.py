@@ -4,8 +4,8 @@ import csv
 
 
 def aggregate_results_to_csv(
-    logs_dir="_logs/reflection",
-    output_csv="_logs/reflection/aggregate_results.csv",
+    logs_dir="_logs/no_reflection",
+    output_csv="_logs/no_reflection/aggregate_results.csv",
 ):
     csv_data = []
     headers = [
