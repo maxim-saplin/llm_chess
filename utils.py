@@ -186,6 +186,14 @@ def save_video(filename):
     """Save the captured frames to a video file."""
     if _frames:
         clip = ImageSequenceClip(_frames, fps=1)
+        if os.path.exists(
+            filename
+        ):  # if running automated games they can complete within same second
+            base, ext = os.path.splitext(filename)
+            import time
+
+            timestamp = int(time.time() * 1000)
+            filename = f"{base}_{timestamp}{ext}"
         clip.write_videofile(filename, codec="libx264")
     else:
         print("No frames to save to a video file")
