@@ -4,7 +4,6 @@ from typing import Any, Dict
 from enum import Enum
 import chess
 import chess.svg
-from autogen import ConversableAgent
 from custom_agents import (
     GameAgent,
     RandomPlayerAgent,
@@ -44,13 +43,14 @@ class PlayerType(Enum):
     CHESS_ENGINE_STOCKFISH = 5
 
 
+# Hyper params such as temperature are defined in `utils.py`
 white_player_type = PlayerType.RANDOM_PLAYER
 black_player_type = PlayerType.LLM_BLACK
 enable_reflection = False  # Whether to offer the LLM time to think and evaluate moves
 use_fen_board = False  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times
-max_failed_attempts = 3  # number of wrong replies in a single-move dialog (e.g. picking non existing action) before stopping the game and giving a loss
+max_failed_attempts = 3  # number of wrong replies in a single-move dialog (e.g. non existing action) before stopping the game, giving a loss
 throttle_delay = 1  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
 visualize_board = True  # You can skip board visualization to speed up execution
 
