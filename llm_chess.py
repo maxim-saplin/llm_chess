@@ -6,6 +6,7 @@ import chess
 import chess.svg
 from autogen import ConversableAgent
 from custom_agents import (
+    GameAgent,
     RandomPlayerAgent,
     AutoReplyAgent,
     ChessEngineSunfishAgent,
@@ -49,7 +50,7 @@ enable_reflection = False  # Whether to offer the LLM time to think and evaluate
 use_fen_board = False  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times
-max_failed_attempts = 3  # number of wrong replies/actions (e.g. picking non existing action) before stopping the game and giving a loss
+max_failed_attempts = 3  # number of wrong replies in a single-move dialog (e.g. picking non existing action) before stopping the game and giving a loss
 throttle_delay = 1  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
 visualize_board = True  # You can skip board visualization to speed up execution
 
@@ -159,7 +160,7 @@ def run(log_dir="_logs", save_logs=True):
             for term_msg in termination_conditions
         )
 
-    llm_white = ConversableAgent(
+    llm_white = GameAgent(
         name="Player_White",
         # Not using system message as some LLMs can ignore it
         system_message="",
@@ -170,7 +171,7 @@ def run(log_dir="_logs", save_logs=True):
         human_input_mode="NEVER",
     )
 
-    llm_black = ConversableAgent(
+    llm_black = GameAgent(
         name="Player_Black",
         system_message="",
         description="You are a professional chess player and you play as black. "
@@ -259,7 +260,6 @@ def run(log_dir="_logs", save_logs=True):
         # Reflection counts are global
         player.reflections_used = 0
         player.reflections_used_before_board = 0
-        player.has_requested_board = False
         player.material_count = {"white": 0, "black": 0}
 
     try:
@@ -269,9 +269,13 @@ def run(log_dir="_logs", save_logs=True):
             current_move < max_game_moves and not board.is_game_over() and not game_over
         ):
             for player in [player_white, player_black]:
-                # Wrong actions are counted per move
-                player.wrong_moves = 0
-                player.wrong_actions = 0
+                # Reset player state variables before each move: wrong_moves, wrong_actions, has_requested_board, failed_action_attempts
+                proxy_agent.prep_to_move()
+                player.prep_to_move()
+                # player.wrong_moves = 0
+                # player.wrong_actions = 0
+                # player.has_requested_board = False
+                # proxy_agent.failed_action_attempts = 0
                 chat_result = proxy_agent.initiate_chat(
                     recipient=player,
                     message=player.description,

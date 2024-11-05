@@ -71,7 +71,7 @@ def get_llms_autogen():
     def create_config(config_list):
         return {
             "config_list": config_list,
-            "temperature": 0.7,
+            "temperature": 0.3,
             "top_p": 1.0,
             "frequency_penalty": 0.0,
             "presence_penalty": 0.0,

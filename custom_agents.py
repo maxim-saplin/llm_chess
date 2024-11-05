@@ -7,7 +7,33 @@ from sunfish import Searcher, Position, parse, render, pst
 from typing import Any, Dict, List, Optional, Union
 
 
-class RandomPlayerAgent(ConversableAgent):
+class GameAgent(ConversableAgent):
+    def __init__(
+        self,
+        wrong_moves=0,
+        wrong_actions=0,
+        has_requested_board=False,
+        failed_action_attempts=0,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.wrong_moves = wrong_moves
+        self.wrong_actions = wrong_actions
+        self.has_requested_board = has_requested_board
+        self.failed_action_attempts = failed_action_attempts
+
+    def prep_to_move(self):
+        """
+        Prepares the agent to make a move by resetting relevant state variables.
+        """
+        self.wrong_moves = 0
+        self.wrong_actions = 0
+        self.has_requested_board = False
+        self.failed_action_attempts = 0
+
+
+class RandomPlayerAgent(GameAgent):
     """
     A random chess player agent that selects moves randomly from legal options.
 
@@ -51,7 +77,7 @@ class RandomPlayerAgent(ConversableAgent):
         return self.get_legal_moves_action
 
 
-class AutoReplyAgent(ConversableAgent):
+class AutoReplyAgent(GameAgent):
     """
     An agent that automatically replies based on predefined actions and conditions.
 
@@ -92,9 +118,8 @@ class AutoReplyAgent(ConversableAgent):
         self.make_move = make_move
         self.move_was_made = move_was_made_message
         self.invalid_action_message = invalid_action_message
-        self.too_many_failed_actions = too_many_failed_actions_message
+        self.too_many_failed_actions_message = too_many_failed_actions_message
         self.max_failed_attempts = max_failed_attempts
-        self.failed_action_attempts = 0
         self.get_current_board_action = get_current_board_action
         self.get_legal_moves_action = get_legal_moves_action
         self.reflect_action = reflect_action
@@ -114,7 +139,6 @@ class AutoReplyAgent(ConversableAgent):
 
         reply = ""
 
-        # Use a switch statement to call the corresponding function
         if self.get_current_board_action in action_choice:
             reply = self.get_current_board()
             sender.has_requested_board = True
@@ -159,13 +183,13 @@ class AutoReplyAgent(ConversableAgent):
                 sender.wrong_actions += 1
 
         if self.failed_action_attempts >= self.max_failed_attempts:
-            print(reply)
-            reply = self.too_many_failed_actions
+            print("BREAKING >>> " + reply)
+            reply = self.too_many_failed_actions_message
 
         return reply
 
 
-class ChessEngineSunfishAgent(ConversableAgent):
+class ChessEngineSunfishAgent(GameAgent):
     """
     A chess player agent that uses the Sunfish engine to select moves.
     Since it doesn't use move history, jsut the board state it must be inferior
@@ -271,7 +295,7 @@ class ChessEngineSunfishAgent(ConversableAgent):
         return self.get_legal_moves_action
 
 
-class ChessEngineStockfishAgent(ConversableAgent):
+class ChessEngineStockfishAgent(GameAgent):
     def __init__(
         self,
         board,

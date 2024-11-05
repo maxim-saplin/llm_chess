@@ -31,7 +31,7 @@ Adjust the global configs at `llm_chess.py`.
 
 These settings are used to configure the game environment and control the flow of the chess match between the agents.
 
-### Multiple Games and Aggregation of Results
+### Multiple Games
 
 The `run_multiple_games.py` script allows you to execute multiple chess games between different agents and aggregate the results.
 
@@ -41,6 +41,14 @@ To run multiple games:
 - Aggregate log and logs for individual games (if `STORE_INDIVIDUAL_LOGS` is set to True) can be stored in the specified `LOG_FOLDER` for further inspection.
 
 This feature is used to compare different kinds of players and generalize the findings. For LLM playes 10 games were used, for random/chess engine players 1000 games, some states is provided below.
+
+#### Aggregate Result
+
+When running multiple games individual logs are collectyed in `{date_time}.json` files (e.g. 2024.10.11_17:34.json) which are collected in a directory. After the games are finnished aggregate results are collected in `aggregate_results.csv`.
+
+Notes:
+- "wrong_moves" and "wrong_actions" is a total number of erroneous replies by player (e.g. not following to convention) made in "inner" dialogs bewtween proxy and player. To get the total number of erroneous replies add up the metrics (i.e. `wrong_moves` do not include `wrong_actions`)
+  - A single game is finished if any of the player makes more than `max_failed_attempts` in the inner dialogs (i.e. `wrong_moves` + `wrong_actions` < `max_failed_attempts` - see above config)
 
 
 ## Kinds of Agents
@@ -103,14 +111,7 @@ Proxy (to Player_Black):
 
 Move made, switching player
 ```
-
-## Model Zoo
-
-### Model vs Random Player
-
-I have conducted a number of games putting LLM (playing with black) against a Random Player (as white), typically 10 games with a cap of 200 moves.
-
-### Logs/Changes Affecting Evals
+## Logs/Changes Affecting Evals
 
 Game run results are stored under `_logs` folder.
 
@@ -119,9 +120,17 @@ Game run results are stored under `_logs` folder.
 - Logs before 16.10.2024 had ambiguous "Unknown issue, Player_Black failed to make a move" reason which often meant that a single dialog took more than 10 turns (20 total messages) and execution was halted, changed to include a more specific reason "Max turns in single dialog"
 - Different configs could be used, directory folder
 - Log `_15.10.2024_gpt-4o-anthropic.claude-v3-5-sonnet_reflectio` had timeout error, aggregate only had 9 out of 10 consistent runs
-- After 19.10.2024 setting default hyperparams
+- After 19.10.2024 setting default hyperparams ("temperature": 0.7, "top_p": 1.0, "frequency_penalty": 0.0, "presence_penalty": 0.0,)
 - 19.10.2024, gemini-1.5-flash-001 consistently failed to follow the instructions:
 - 22.10.2024, slightly updated common prompt removing excessive tabs
+- 05.11.2024, fixed bug with wrong action counting (not global per game but per move), set temperature to 0.7, re-ran no_reflection
+
+## Model vs Random Player
+
+I have conducted a number of games putting LLM (playing with black) against a Random Player (as white), typically 10 games with a cap of 200 moves.
+
+
+## Model Zoo
 
 ### Problems with instructuin following
 
