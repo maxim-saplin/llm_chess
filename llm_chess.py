@@ -256,8 +256,7 @@ def run(log_dir="_logs", save_logs=True):
     }.get(black_player_type)
 
     for player in [player_white, player_black]:
-        player.wrong_moves = 0
-        player.wrong_actions = 0
+        # Reflection counts are global
         player.reflections_used = 0
         player.reflections_used_before_board = 0
         player.has_requested_board = False
@@ -270,6 +269,9 @@ def run(log_dir="_logs", save_logs=True):
             current_move < max_game_moves and not board.is_game_over() and not game_over
         ):
             for player in [player_white, player_black]:
+                # Wrong actions are counted per move
+                player.wrong_moves = 0
+                player.wrong_actions = 0
                 chat_result = proxy_agent.initiate_chat(
                     recipient=player,
                     message=player.description,
