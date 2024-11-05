@@ -12,6 +12,7 @@ LOG_FOLDER = (
 STORE_INDIVIDUAL_LOGS = True
 
 # ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`
+# Hyper params such as temp are defined in `utils.py`
 
 
 def run_games(num_repetitions, log_folder=LOG_FOLDER):
