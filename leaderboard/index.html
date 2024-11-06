@@ -44,6 +44,7 @@
             font-family: "Web IBM VGA 8x16";
             font-size: 20px;
             position: relative;
+            cursor: pointer;
         }
 
         button::after {
@@ -60,7 +61,6 @@
         button.selected {
             background-color: green;
             color: #FFFFFF;
-            cursor: pointer;
             top: 1px;
             left: 1px;
         }
@@ -68,7 +68,6 @@
         button:hover {
             background-color: #808080;
             color: #FFFFFF;
-            cursor: pointer;
             top: 2px;
             left: 2px;
         }
@@ -91,6 +90,10 @@
             text-align: left;
         }
 
+        th {
+            cursor: pointer;
+        }
+
         .gh{
             position: absolute;
             top: 40px;
@@ -98,6 +101,8 @@
         }
     </style>
     <script>
+        let currentSortOrder = {}; // To track the current sort order for each column
+
         function showPane(paneId) {
             document.getElementById('leaderboard').style.display = paneId === 'leaderboard' ? 'block' : 'none';
             document.getElementById('how-it-works').style.display = paneId === 'how-it-works' ? 'block' : 'none';
@@ -111,33 +116,101 @@
             fetch('aggregate_results.csv')
                 .then(response => response.text())
                 .then(data => {
-                    const rows = data.trim().split('\n').slice(1); // Skip header
+                    const lines = data.trim().split('\n');
+                    const header = lines[0].split(',');
+
+                    // Create a map of column titles to their indices
+                    const columnIndices = {
+                        model_name: header.indexOf('model_name'),
+                        black_llm_wins: header.indexOf('black_llm_wins'),
+                        draws: header.indexOf('draws'),
+                        material_diff_llm_minus_rand: header.indexOf('material_diff_llm_minus_rand'),
+                        wrong_actions_per_100moves: header.indexOf('wrong_actions_per_100moves'),
+                        wrong_moves_per_100moves: header.indexOf('wrong_moves_per_100moves')
+                    };
+
+                    const rows = lines.slice(1).map(row => row.split(','));
+
+                    // Sort rows by "LLM Material Advantage" in descending order
+                    rows.sort((a, b) => {
+                        const materialA = parseFloat(a[columnIndices.material_diff_llm_minus_rand]);
+                        const materialB = parseFloat(b[columnIndices.material_diff_llm_minus_rand]);
+                        return materialB - materialA;
+                    });
+
                     const tbody = document.querySelector('#leaderboard tbody');
-                    rows.forEach(row => {
-                        const columns = row.split(',');
-                        const model_name = columns[0];
-                        const black_llm_wins = parseInt(columns[1]);
-                        const draws = parseInt(columns[3]);
-                        const material_diff_llm_minus_rand = parseFloat(columns[12]);
-                        const wrong_actions_per_100moves = parseFloat(columns[13]);
-                        const wrong_moves_per_100moves = parseFloat(columns[14]);
+                    rows.forEach(columns => {
+                        const model_name = columns[columnIndices.model_name];
+                        const black_llm_wins = parseInt(columns[columnIndices.black_llm_wins]);
+                        const draws = parseInt(columns[columnIndices.draws]);
+                        const material_diff_llm_minus_rand = parseFloat(columns[columnIndices.material_diff_llm_minus_rand]);
+                        const wrong_actions_per_100moves = parseFloat(columns[columnIndices.wrong_actions_per_100moves]);
+                        const wrong_moves_per_100moves = parseFloat(columns[columnIndices.wrong_moves_per_100moves]);
                         const llm_mistakes_per_100moves = wrong_actions_per_100moves + wrong_moves_per_100moves;
 
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td>${model_name}</td>
-                            <td>${black_llm_wins}</td>
-                            <td>${draws}</td>
                             <td>${material_diff_llm_minus_rand.toFixed(2)}</td>
                             <td>${llm_mistakes_per_100moves.toFixed(2)}</td>
+                            <td>${black_llm_wins}</td>
+                            <td>${draws}</td>
                         `;
                         tbody.appendChild(tr);
+                    });
+
+                    // Add a non-breaking space to all headers
+                    document.querySelectorAll('#leaderboard th').forEach((headerCell) => {
+                        const baseText = headerCell.textContent.trim();
+                        headerCell.innerHTML = `${baseText}&nbsp;&nbsp;`;
+                    });
+                    const materialAdvantageHeader = document.querySelectorAll('#leaderboard th')[1];
+                    materialAdvantageHeader.innerHTML = 'LLM Material Advantage&nbsp;▼';
+                    document.querySelectorAll('#leaderboard th').forEach((headerCell, index) => {
+                        headerCell.addEventListener('click', () => {
+                            sortTable(index);
+                        });
                     });
                 })
                 .catch(error => console.error('Error fetching CSV:', error));
         }
 
-        // Call fetchCSV on page load
+        function sortTable(columnIndex) {
+            const table = document.querySelector('#leaderboard tbody');
+            const rows = Array.from(table.rows);
+            const isNumericColumn = columnIndex !== 0; // Assuming first column is not numeric
+
+            // Determine the current sort order for the column
+            const currentOrder = currentSortOrder[columnIndex] || 'asc';
+            const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+            currentSortOrder[columnIndex] = newOrder;
+
+            rows.sort((a, b) => {
+                const aText = a.cells[columnIndex].textContent;
+                const bText = b.cells[columnIndex].textContent;
+
+                const comparison = isNumericColumn
+                    ? parseFloat(aText) - parseFloat(bText)
+                    : aText.localeCompare(bText);
+
+                return newOrder === 'asc' ? comparison : -comparison;
+            });
+
+            // Append sorted rows
+            rows.forEach(row => table.appendChild(row));
+
+            // Clear all sort indicators
+            document.querySelectorAll('#leaderboard th').forEach((headerCell) => {
+                const baseText = headerCell.textContent.replace(/[▲▼]/g, '').trim();
+                headerCell.innerHTML = `${baseText}&nbsp;&nbsp;`;
+            });
+
+            // Update header text with sorting indicator for the sorted column
+            const sortedHeaderCell = document.querySelectorAll('#leaderboard th')[columnIndex];
+            const baseText = sortedHeaderCell.textContent.replace(/[▲▼]/g, '').trim();
+            const indicator = currentSortOrder[columnIndex] === 'asc' ? '▲' : '▼';
+            sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
+        }
         document.addEventListener('DOMContentLoaded', fetchCSV);
     </script>
 </head>
@@ -166,11 +239,11 @@
             <table border="1" style="margin: 0 auto;">
                 <thead>
                     <tr>
-                        <th>Model Name</th>
-                        <th>LLM Wins</th>
-                        <th>Draws</th>
-                        <th>LLM Material Advantage</th>
-                        <th>LLM Mistakes per 100 Moves</th>
+                        <th>Model Name&nbsp;&nbsp;</th>
+                        <th>LLM Material Advantage&nbsp;&nbsp;</th>
+                        <th>LLM Mistakes per 100 Moves&nbsp;&nbsp;</th>
+                        <th>LLM Wins&nbsp;&nbsp;</th>
+                        <th>Draws&nbsp;&nbsp;</th>
                     </tr>
                 </thead>
                 <tbody>
