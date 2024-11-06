@@ -20,19 +20,20 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             margin: 0;
+            font-size: 20px;
         }
-        .container {
-            text-align: center;
-        }
+
         h1 {
             margin-bottom: 20px;
         }
+
         .button-container {
             display: flex;
             justify-content: center;
+            margin-bottom: 20px;
         }
+
         button {
             width: 160px;
             margin: 0 5px;
@@ -40,11 +41,11 @@
             background-color: #C0C0C0;
             color: #000000;
             border: 1px solid #808080;
-            /* cursor: url("data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAGAAAAAAAQAMAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAAEAAAABAAAABAAAAAQAAAAEAAAABAAAABAAAAAQAAAAEAAAABAAAAAQAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAAEAAAABAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") 14 0, pointer; */
             font-family: "Web IBM VGA 8x16";
-            font-size: 16px;
+            font-size: 20px;
             position: relative;
         }
+
         button::after {
             content: '';
             position: absolute;
@@ -55,6 +56,7 @@
             background-color: #000000;
             z-index: -1;
         }
+
         button.selected {
             background-color: green;
             color: #FFFFFF;
@@ -62,6 +64,7 @@
             top: 1px;
             left: 1px;
         }
+
         button:hover {
             background-color: #808080;
             color: #FFFFFF;
@@ -69,17 +72,79 @@
             top: 2px;
             left: 2px;
         }
+
+        .pane{
+            padding-top: 20px;
+        }
+
+        pre {
+            font-size: 16px;
+            line-height: 1.0;
+            scale: 1.2;
+            margin-left: -70px;
+            padding-top: 50px;
+        }
+        
+        td, th {
+            padding: 10px;
+            font-weight: lighter;
+            text-align: left;
+        }
+
         .gh{
             position: absolute;
             top: 40px;
             image-rendering: crisp-edges;
         }
     </style>
+    <script>
+        function showPane(paneId) {
+            document.getElementById('leaderboard').style.display = paneId === 'leaderboard' ? 'block' : 'none';
+            document.getElementById('how-it-works').style.display = paneId === 'how-it-works' ? 'block' : 'none';
+            document.querySelectorAll('.button-container button').forEach(button => {
+                button.classList.remove('selected');
+            });
+            document.querySelector(`.button-container button[onclick="showPane('${paneId}')"]`).classList.add('selected');
+        }
+
+        function fetchCSV() {
+            fetch('aggregate_results.csv')
+                .then(response => response.text())
+                .then(data => {
+                    const rows = data.trim().split('\n').slice(1); // Skip header
+                    const tbody = document.querySelector('#leaderboard tbody');
+                    rows.forEach(row => {
+                        const columns = row.split(',');
+                        const model_name = columns[0];
+                        const black_llm_wins = parseInt(columns[1]);
+                        const draws = parseInt(columns[3]);
+                        const material_diff_llm_minus_rand = parseFloat(columns[12]);
+                        const wrong_actions_per_100moves = parseFloat(columns[13]);
+                        const wrong_moves_per_100moves = parseFloat(columns[14]);
+                        const llm_mistakes_per_100moves = wrong_actions_per_100moves + wrong_moves_per_100moves;
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${model_name}</td>
+                            <td>${black_llm_wins}</td>
+                            <td>${draws}</td>
+                            <td>${material_diff_llm_minus_rand.toFixed(2)}</td>
+                            <td>${llm_mistakes_per_100moves.toFixed(2)}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Error fetching CSV:', error));
+        }
+
+        // Call fetchCSV on page load
+        document.addEventListener('DOMContentLoaded', fetchCSV);
+    </script>
 </head>
 <body>
-    <div class="container">
-        <a class="gh" href="https://github.com/maxim-saplin/llm_chess" target="_blank"><img src="gh.png" width="48"/></a>
-        <pre style="font-size: 16px; line-height: 1.0; scale: 1.2; margin-left: -70px;">
+    <div>
+        <a class="gh" href="https://github.com/maxim-saplin/llm_chess" target="_blank" hidden="true"><img src="gh.png" width="48"/></a>
+        <pre>
             __       __                    ____     __                               
             /\ \     /\ \       /'\_/`\    /\  _`\  /\ \                              
             \ \ \    \ \ \     /\      \   \ \ \/\_\\ \ \___      __    ____    ____  
@@ -90,13 +155,31 @@
                                                                                       
                                                                                       
         </pre>
-        <p style="font-size: 20px; padding: 20px;">
+        <p>
             Random Chess Player vs LLM
         </p>
         <div class="button-container">
-            <button class="selected">Without Reflection</button>
-            <button>With Reflection</button>
-            <button>How it works</button>
+            <button class="selected" onclick="showPane('leaderboard')">Leaderboard</button>
+            <button onclick="showPane('how-it-works')">How it works</button>
+        </div>
+        <div id="leaderboard" class="pane">
+            <table border="1" style="margin: 0 auto;">
+                <thead>
+                    <tr>
+                        <th>Model Name</th>
+                        <th>LLM Wins</th>
+                        <th>Draws</th>
+                        <th>LLM Material Advantage</th>
+                        <th>LLM Mistakes per 100 Moves</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+        <div id="how-it-works" class="pane" style="display: none;">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
         </div>
     </div>
 </body>
