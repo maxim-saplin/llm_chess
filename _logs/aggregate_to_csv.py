@@ -22,6 +22,7 @@ def aggregate_results_to_csv(
         "rand_avg_material",
         "rand_std_dev_material",
         "material_diff_llm_minus_rand",
+        "material_diff_llm_minus_rand_per_100moves",  # New header
         "wrong_actions_per_100moves",
         "wrong_moves_per_100moves",
         "average_moves",
@@ -49,6 +50,8 @@ def aggregate_results_to_csv(
                         - data["player_white"]["avg_material"]
                     )
 
+                    material_diff_llm_minus_rand_per_100moves = material_diff / total_moves * 100
+
                     csv_data.append(
                         [
                             model_name,
@@ -64,6 +67,7 @@ def aggregate_results_to_csv(
                             data["player_white"]["avg_material"],
                             data["player_white"]["std_dev_material"],
                             material_diff,
+                            material_diff_llm_minus_rand_per_100moves,  # New value
                             wrong_actions_per_100moves,
                             wrong_moves_per_100moves,
                             data["average_moves"],
