@@ -79,9 +79,13 @@
         pre {
             font-size: 16px;
             line-height: 1.0;
-            scale: 1.2;
-            margin-left: -70px;
+            scale: 1.0;
+            margin-left: -120px;
             padding-top: 50px;
+        }
+        
+        p, pre {
+            opacity: 0.75;
         }
         
         td, th {
@@ -92,6 +96,11 @@
 
         th {
             cursor: pointer;
+        }
+
+        td {
+            border-top: 1px solid;
+            opacity: 0.75;
         }
 
         .gh{
@@ -236,7 +245,7 @@
             <button onclick="showPane('how-it-works')">How it works</button>
         </div>
         <div id="leaderboard" class="pane">
-            <table border="1" style="margin: 0 auto;">
+            <table border="0">
                 <thead>
                     <tr>
                         <th>Model Name&nbsp;&nbsp;</th>
