@@ -110,18 +110,6 @@
         }
     </style>
     <script>
-        let currentSortOrder = {}; // To track the current sort order for each column
-
-        function showPane(paneId) {
-            document.getElementById('leaderboard').style.display = paneId === 'leaderboard' ? 'block' : 'none';
-            document.getElementById('how-it-works').style.display = paneId === 'how-it-works' ? 'block' : 'none';
-            document.querySelectorAll('.button-container button').forEach(button => {
-                button.classList.remove('selected');
-            });
-            document.querySelector(`.button-container button[onclick="showPane('${paneId}')"]`).classList.add('selected');
-        }
-        // !!!! Copy Paste aggregate results CSV here
-        function fetchCSV() {
             data = `
 model_name,total_games,black_llm_wins,white_rand_wins,draws,llm_total_moves,llm_wrong_actions,llm_wrong_moves,llm_avg_material,llm_std_dev_material,rand_avg_material,rand_std_dev_material,material_diff_llm_minus_rand,wrong_actions_per_100moves,wrong_moves_per_100moves,average_moves,std_dev_moves
 anthropic.claude-v3-5-sonnet,10,0,3,7,1716,0,3,17.1,9.456919865015951,24.7,9.177871939253311,-7.599999999999998,0.0,0.17482517482517482,171.6,51.18636971347396
@@ -134,25 +122,49 @@ gpt-4o-2024-05-13,10,0,1,9,1923,0,0,11.7,6.18331087147762,15.6,4.033195589934446
 gpt-4o-2024-08-06,10,0,1,9,1945,0,0,14.6,6.703233050799691,16.5,10.865337342004414,-1.9000000000000004,0.0,0.0,194.5,17.392527130926087
 gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519563777,-4.300000000000001,0.25348542458808615,0.5703422053231939,157.8,68.0486753891817
             `
+
+        let currentSortOrder = {}; // To track the current sort order for each column
+        const defaultSortColumnIndex = 1;
+
+
+        function showPane(paneId) {
+            document.getElementById('leaderboard').style.display = paneId === 'leaderboard' ? 'block' : 'none';
+            document.getElementById('how-it-works').style.display = paneId === 'how-it-works' ? 'block' : 'none';
+            document.querySelectorAll('.button-container button').forEach(button => {
+                button.classList.remove('selected');
+            });
+            document.querySelector(`.button-container button[onclick="showPane('${paneId}')"]`).classList.add('selected');
+        }
+        // !!!! Copy Paste aggregate results CSV here
+        function fillTableWithCSV() {
             // fetch('aggregate_results.csv')
             //     .then(response => response.text())
             //     .then(data => {
                     const lines = data.trim().split('\n');
                     const header = lines[0].split(',');
-
-                    // Create a map of column titles to their indices
-                    const columnIndices = {
-                        model_name: header.indexOf('model_name'),
-                        black_llm_wins: header.indexOf('black_llm_wins'),
-                        draws: header.indexOf('draws'),
-                        material_diff_llm_minus_rand: header.indexOf('material_diff_llm_minus_rand'),
-                        wrong_actions_per_100moves: header.indexOf('wrong_actions_per_100moves'),
-                        wrong_moves_per_100moves: header.indexOf('wrong_moves_per_100moves')
-                    };
-
                     const rows = lines.slice(1).map(row => row.split(','));
 
-                    // Sort rows by "LLM Material Advantage" in descending order
+                    const columnIndices = {
+                        model_name: 0,
+                        total_games: 1,
+                        black_llm_wins: 2,
+                        white_rand_wins: 3,
+                        draws: 4,
+                        llm_total_moves: 5,
+                        llm_wrong_actions: 6,
+                        llm_wrong_moves: 7,
+                        llm_avg_material: 8,
+                        llm_std_dev_material: 9,
+                        rand_avg_material: 10,
+                        rand_std_dev_material: 11,
+                        material_diff_llm_minus_rand: 12,
+                        wrong_actions_per_100moves: 13,
+                        wrong_moves_per_100moves: 14,
+                        average_moves: 15,
+                        std_dev_moves: 16
+                    };
+
+                    // Sort rows by "Material Advantage" in descending order
                     rows.sort((a, b) => {
                         const materialA = parseFloat(a[columnIndices.material_diff_llm_minus_rand]);
                         const materialB = parseFloat(b[columnIndices.material_diff_llm_minus_rand]);
@@ -186,7 +198,9 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
                         headerCell.innerHTML = `${baseText}&nbsp;&nbsp;`;
                     });
                     const materialAdvantageHeader = document.querySelectorAll('#leaderboard th')[1];
-                    materialAdvantageHeader.innerHTML = 'LLM Material Advantage&nbsp;▼';
+                    const defaultSortColumnIndex = 1; // Assuming this is defined above
+                    const defaultSortHeader = document.querySelectorAll('#leaderboard th')[defaultSortColumnIndex];
+                    defaultSortHeader.innerHTML = `${defaultSortHeader.textContent.trim()}&nbsp;▼`;
                     document.querySelectorAll('#leaderboard th').forEach((headerCell, index) => {
                         headerCell.addEventListener('click', () => {
                             sortTable(index);
@@ -233,7 +247,7 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
             const indicator = currentSortOrder[columnIndex] === 'asc' ? '▲' : '▼';
             sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
         }
-        document.addEventListener('DOMContentLoaded', fetchCSV);
+        document.addEventListener('DOMContentLoaded', fillTableWithCSV);
     </script>
 </head>
 <body>
@@ -262,9 +276,9 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
                 <thead>
                     <tr>
                         <th>Model Name&nbsp;&nbsp;</th>
-                        <th>LLM Material Advantage&nbsp;&nbsp;</th>
-                        <th>LLM Mistakes per 100 Moves&nbsp;&nbsp;</th>
-                        <th>LLM Wins&nbsp;&nbsp;</th>
+                        <th>Material Advantage&nbsp;&nbsp;</th>
+                        <th>Mistakes per 100 Moves&nbsp;&nbsp;</th>
+                        <th>Wins&nbsp;&nbsp;</th>
                         <th>Draws&nbsp;&nbsp;</th>
                     </tr>
                 </thead>
