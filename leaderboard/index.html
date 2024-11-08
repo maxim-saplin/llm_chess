@@ -144,7 +144,7 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
                     const header = lines[0].split(',');
                     const rows = lines.slice(1).map(row => row.split(','));
 
-                    const columnIndices = {
+                    const csvIndices = {
                         model_name: 0,
                         total_games: 1,
                         black_llm_wins: 2,
@@ -166,19 +166,19 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
 
                     // Sort rows by "Material Advantage" in descending order
                     rows.sort((a, b) => {
-                        const materialA = parseFloat(a[columnIndices.material_diff_llm_minus_rand]);
-                        const materialB = parseFloat(b[columnIndices.material_diff_llm_minus_rand]);
+                        const materialA = parseFloat(a[csvIndices.material_diff_llm_minus_rand]);
+                        const materialB = parseFloat(b[csvIndices.material_diff_llm_minus_rand]);
                         return materialB - materialA;
                     });
 
                     const tbody = document.querySelector('#leaderboard tbody');
                     rows.forEach(columns => {
-                        const model_name = columns[columnIndices.model_name];
-                        const black_llm_wins = parseInt(columns[columnIndices.black_llm_wins]);
-                        const draws = parseInt(columns[columnIndices.draws]);
-                        const material_diff_llm_minus_rand = parseFloat(columns[columnIndices.material_diff_llm_minus_rand]);
-                        const wrong_actions_per_100moves = parseFloat(columns[columnIndices.wrong_actions_per_100moves]);
-                        const wrong_moves_per_100moves = parseFloat(columns[columnIndices.wrong_moves_per_100moves]);
+                        const model_name = columns[csvIndices.model_name];
+                        const black_llm_wins = parseInt(columns[csvIndices.black_llm_wins]);
+                        const draws = parseInt(columns[csvIndices.draws]);
+                        const material_diff_llm_minus_rand = parseFloat(columns[csvIndices.material_diff_llm_minus_rand]);
+                        const wrong_actions_per_100moves = parseFloat(columns[csvIndices.wrong_actions_per_100moves]);
+                        const wrong_moves_per_100moves = parseFloat(columns[csvIndices.wrong_moves_per_100moves]);
                         const llm_mistakes_per_100moves = wrong_actions_per_100moves + wrong_moves_per_100moves;
 
                         const tr = document.createElement('tr');
