@@ -1,7 +1,70 @@
 import os
 import json
 import csv
-from utils import generate_game_stats
+from dataclasses import dataclass, field
+from typing import Dict, Any
+
+
+@dataclass
+class PlayerStats:
+    name: str
+    wrong_moves: int
+    wrong_actions: int
+    reflections_used: int
+    reflections_used_before_board: int
+    model: str
+
+
+@dataclass
+class UsageStats:
+    total_cost: float
+    details: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class GameLog:
+    time_started: str
+    winner: str
+    reason: str
+    number_of_moves: int
+    player_white: PlayerStats
+    player_black: PlayerStats
+    material_count: Dict[str, int]
+    usage_stats: Dict[str, UsageStats]
+
+
+def load_game_log(file_path: str) -> GameLog:
+    with open(file_path, "r") as f:
+        data = json.load(f)
+        white_usage_keys = list(data["usage_stats"]["white"])
+        black_usage_keys = list(data["usage_stats"]["black"])
+        return GameLog(
+            time_started=data["time_started"],
+            winner=data["winner"],
+            reason=data["reason"],
+            number_of_moves=data["number_of_moves"],
+            player_white=PlayerStats(**data["player_white"]),
+            player_black=PlayerStats(**data["player_black"]),
+            material_count=data["material_count"],
+            usage_stats={
+                "white": UsageStats(
+                    total_cost=data["usage_stats"]["white"][white_usage_keys[0]],
+                    details=(
+                        data["usage_stats"]["white"].get(white_usage_keys[1], None)
+                        if len(white_usage_keys) > 1
+                        else None
+                    ),
+                ),
+                "black": UsageStats(
+                    total_cost=data["usage_stats"]["black"][black_usage_keys[0]],
+                    details=(
+                        data["usage_stats"]["black"].get(white_usage_keys[1], None)
+                        if len(white_usage_keys) > 1
+                        else None
+                    ),
+                ),
+            },
+        )
 
 
 def aggregate_models_to_csv(
@@ -15,80 +78,69 @@ def aggregate_models_to_csv(
         for file in files:
             if file.endswith(".json") and not file.endswith("_aggregate_results.json"):
                 file_path = os.path.join(root, file)
-                with open(file_path, "r") as f:
-                    try:
-                        data = json.load(f)
-                        # Use generate_game_stats to parse the game log
-                        game_stats = generate_game_stats(
-                            data["time_started"],
-                            data["winner"],
-                            data["reason"],
-                            data["number_of_moves"],
-                            data["player_white"],
-                            data["player_black"],
-                            data["material_count"],
-                        )
-                        model_name = game_stats["player_black"]["model"]
-                        total_moves = game_stats["number_of_moves"]
-                        material_diff = (
-                            game_stats["material_count"]["black"]
-                            - game_stats["material_count"]["white"]
-                        )
-                        material_diff_llm_minus_rand_per_100moves = (
-                            material_diff / total_moves * 100
-                        )
+                try:
+                    game_log = load_game_log(file_path)
+                    model_name = game_log.player_black.model
+                    total_moves = game_log.number_of_moves
+                    material_diff = (
+                        game_log.material_count["black"]
+                        - game_log.material_count["white"]
+                    )
+                    material_diff_llm_minus_rand_per_100moves = (
+                        material_diff / total_moves * 100
+                    )
 
-                        if model_name not in model_aggregates:
-                            model_aggregates[model_name] = {
-                                "total_games": 0,
-                                "black_wins": 0,
-                                "white_wins": 0,
-                                "draws": 0,
-                                "total_moves": 0,
-                                "wrong_actions": 0,
-                                "wrong_moves": 0,
-                                "sum_avg_material_black": 0,
-                                "sum_avg_material_white": 0,
-                                "sum_squares_avg_material_black": 0,
-                                "sum_squares_avg_material_white": 0,
-                                "sum_avg_moves": 0,
-                                "sum_squares_avg_moves": 0,
-                            }
+                    if model_name not in model_aggregates:
+                        model_aggregates[model_name] = {
+                            "total_games": 0,
+                            "black_wins": 0,
+                            "white_wins": 0,
+                            "draws": 0,
+                            "total_moves": 0,
+                            "wrong_actions": 0,
+                            "wrong_moves": 0,
+                            "sum_avg_material_black": 0,
+                            "sum_avg_material_white": 0,
+                            "sum_squares_avg_material_black": 0,
+                            "sum_squares_avg_material_white": 0,
+                            "sum_avg_moves": 0,
+                            "sum_squares_avg_moves": 0,
+                        }
 
-                        model_aggregates[model_name]["total_games"] += 1
-                        if game_stats["winner"] == "Player_Black":
-                            model_aggregates[model_name]["black_wins"] += 1
-                        elif game_stats["winner"] == "Random_Player":
-                            model_aggregates[model_name]["white_wins"] += 1
-                        else:
-                            model_aggregates[model_name]["draws"] += 1
+                    model_aggregates[model_name]["total_games"] += 1
+                    if game_log.winner == "Player_Black":
+                        model_aggregates[model_name]["black_wins"] += 1
+                    elif game_log.winner == "Random_Player":
+                        model_aggregates[model_name]["white_wins"] += 1
+                    else:
+                        model_aggregates[model_name]["draws"] += 1
 
-                        model_aggregates[model_name]["total_moves"] += total_moves
-                        model_aggregates[model_name]["wrong_actions"] += game_stats[
-                            "player_black"
-                        ]["wrong_actions"]
-                        model_aggregates[model_name]["wrong_moves"] += game_stats[
-                            "player_black"
-                        ]["wrong_moves"]
-                        model_aggregates[model_name]["sum_avg_material_black"] += (
-                            game_stats["material_count"]["black"] * total_moves
-                        )
-                        model_aggregates[model_name]["sum_avg_material_white"] += (
-                            game_stats["material_count"]["white"] * total_moves
-                        )
-                        model_aggregates[model_name][
-                            "sum_squares_avg_material_black"
-                        ] += (game_stats["material_count"]["black"] ** 2) * total_moves
-                        model_aggregates[model_name][
-                            "sum_squares_avg_material_white"
-                        ] += (game_stats["material_count"]["white"] ** 2) * total_moves
-                        model_aggregates[model_name]["sum_avg_moves"] += total_moves
-                        model_aggregates[model_name]["sum_squares_avg_moves"] += (
-                            total_moves**2
-                        )
+                    model_aggregates[model_name]["total_moves"] += total_moves
+                    model_aggregates[model_name][
+                        "wrong_actions"
+                    ] += game_log.player_black.wrong_actions
+                    model_aggregates[model_name][
+                        "wrong_moves"
+                    ] += game_log.player_black.wrong_moves
+                    model_aggregates[model_name]["sum_avg_material_black"] += (
+                        game_log.material_count["black"] * total_moves
+                    )
+                    model_aggregates[model_name]["sum_avg_material_white"] += (
+                        game_log.material_count["white"] * total_moves
+                    )
+                    model_aggregates[model_name]["sum_squares_avg_material_black"] += (
+                        game_log.material_count["black"] ** 2 * total_moves
+                    )
+                    model_aggregates[model_name]["sum_squares_avg_material_white"] += (
+                        game_log.material_count["white"] ** 2 * total_moves
+                    )
+                    model_aggregates[model_name]["sum_avg_moves"] += total_moves
+                    model_aggregates[model_name]["sum_squares_avg_moves"] += (
+                        total_moves**2
+                    )
 
-                    except json.JSONDecodeError:
-                        print(f"Skipping invalid JSON file: {file_path}")
+                except json.JSONDecodeError:
+                    print(f"Skipping invalid JSON file: {file_path}")
 
     headers = [
         "model_name",
