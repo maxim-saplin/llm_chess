@@ -17,11 +17,13 @@
             color: #FFFFFF;
             font-family: "Web IBM VGA 8x16";
             text-align: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             margin: 0;
             font-size: 20px;
+        }
+
+        div.center {
+            width: 1000px;
+            margin: auto;
         }
 
         h1 {
@@ -31,6 +33,7 @@
         .button-container {
             display: flex;
             justify-content: center;
+            margin-top: 40px;
             margin-bottom: 20px;
         }
 
@@ -76,16 +79,37 @@
             padding-top: 20px;
         }
 
-        pre {
+        pre.title {
             font-size: 16px;
             line-height: 1.0;
             scale: 1.0;
-            margin-left: -120px;
             padding-top: 50px;
+        }
+
+        svg { display: block }
+
+        pre.board {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 30px;
+            width: 300px;
+            height: 300px;
+            background-color: black;
+            border: solid white 5px;
+            opacity: 0.85;
+            padding-top: 5px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            line-height: 37px;
         }
         
         p, pre {
             opacity: 0.75;
+        }
+
+        table {
+            margin-bottom: 40px;
         }
         
         td, th {
@@ -137,78 +161,72 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
         }
         // !!!! Copy Paste aggregate results CSV here
         function fillTableWithCSV() {
-            // fetch('aggregate_results.csv')
-            //     .then(response => response.text())
-            //     .then(data => {
-                    const lines = data.trim().split('\n');
-                    const header = lines[0].split(',');
-                    const rows = lines.slice(1).map(row => row.split(','));
+            const lines = data.trim().split('\n');
+            const header = lines[0].split(',');
+            const rows = lines.slice(1).map(row => row.split(','));
 
-                    const csvIndices = {
-                        model_name: 0,
-                        total_games: 1,
-                        black_llm_wins: 2,
-                        white_rand_wins: 3,
-                        draws: 4,
-                        llm_total_moves: 5,
-                        llm_wrong_actions: 6,
-                        llm_wrong_moves: 7,
-                        llm_avg_material: 8,
-                        llm_std_dev_material: 9,
-                        rand_avg_material: 10,
-                        rand_std_dev_material: 11,
-                        material_diff_llm_minus_rand: 12,
-                        wrong_actions_per_100moves: 13,
-                        wrong_moves_per_100moves: 14,
-                        average_moves: 15,
-                        std_dev_moves: 16
-                    };
+            const csvIndices = {
+                model_name: 0,
+                total_games: 1,
+                black_llm_wins: 2,
+                white_rand_wins: 3,
+                draws: 4,
+                llm_total_moves: 5,
+                llm_wrong_actions: 6,
+                llm_wrong_moves: 7,
+                llm_avg_material: 8,
+                llm_std_dev_material: 9,
+                rand_avg_material: 10,
+                rand_std_dev_material: 11,
+                material_diff_llm_minus_rand: 12,
+                wrong_actions_per_100moves: 13,
+                wrong_moves_per_100moves: 14,
+                average_moves: 15,
+                std_dev_moves: 16
+            };
 
-                    // Sort rows by "Material Advantage" in descending order
-                    rows.sort((a, b) => {
-                        const materialA = parseFloat(a[csvIndices.material_diff_llm_minus_rand]);
-                        const materialB = parseFloat(b[csvIndices.material_diff_llm_minus_rand]);
-                        return materialB - materialA;
-                    });
+            // Sort rows by "Material Advantage" in descending order
+            rows.sort((a, b) => {
+                const materialA = parseFloat(a[csvIndices.material_diff_llm_minus_rand]);
+                const materialB = parseFloat(b[csvIndices.material_diff_llm_minus_rand]);
+                return materialB - materialA;
+            });
 
-                    const tbody = document.querySelector('#leaderboard tbody');
-                    rows.forEach(columns => {
-                        const model_name = columns[csvIndices.model_name];
-                        const black_llm_wins = parseInt(columns[csvIndices.black_llm_wins]);
-                        const draws = parseInt(columns[csvIndices.draws]);
-                        const material_diff_llm_minus_rand = parseFloat(columns[csvIndices.material_diff_llm_minus_rand]);
-                        const wrong_actions_per_100moves = parseFloat(columns[csvIndices.wrong_actions_per_100moves]);
-                        const wrong_moves_per_100moves = parseFloat(columns[csvIndices.wrong_moves_per_100moves]);
-                        const llm_mistakes_per_100moves = wrong_actions_per_100moves + wrong_moves_per_100moves;
+            const tbody = document.querySelector('#leaderboard tbody');
+            rows.forEach(columns => {
+                const model_name = columns[csvIndices.model_name];
+                const black_llm_wins = parseInt(columns[csvIndices.black_llm_wins]);
+                const draws = parseInt(columns[csvIndices.draws]);
+                const material_diff_llm_minus_rand = parseFloat(columns[csvIndices.material_diff_llm_minus_rand]);
+                const wrong_actions_per_100moves = parseFloat(columns[csvIndices.wrong_actions_per_100moves]);
+                const wrong_moves_per_100moves = parseFloat(columns[csvIndices.wrong_moves_per_100moves]);
+                const llm_mistakes_per_100moves = wrong_actions_per_100moves + wrong_moves_per_100moves;
 
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${model_name}</td>
-                            <td>${material_diff_llm_minus_rand.toFixed(2)}</td>
-                            <td>${llm_mistakes_per_100moves.toFixed(2)}</td>
-                            <td>${black_llm_wins}</td>
-                            <td>${draws}</td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${model_name}</td>
+                    <td>${material_diff_llm_minus_rand.toFixed(2)}</td>
+                    <td>${llm_mistakes_per_100moves.toFixed(2)}</td>
+                    <td>${black_llm_wins}</td>
+                    <td>${draws}</td>
+                `;
+                tbody.appendChild(tr);
+            });
 
-                    // Add a non-breaking space to all headers
-                    document.querySelectorAll('#leaderboard th').forEach((headerCell) => {
-                        const baseText = headerCell.textContent.trim();
-                        headerCell.innerHTML = `${baseText}&nbsp;&nbsp;`;
-                    });
-                    const materialAdvantageHeader = document.querySelectorAll('#leaderboard th')[1];
-                    const defaultSortColumnIndex = 1; // Assuming this is defined above
-                    const defaultSortHeader = document.querySelectorAll('#leaderboard th')[defaultSortColumnIndex];
-                    defaultSortHeader.innerHTML = `${defaultSortHeader.textContent.trim()}&nbsp;▼`;
-                    document.querySelectorAll('#leaderboard th').forEach((headerCell, index) => {
-                        headerCell.addEventListener('click', () => {
-                            sortTable(index);
-                        });
-                    });
-                
-            // })
-            //     .catch(error => console.error('Error fetching CSV:', error));
+            // Add a non-breaking space to all headers
+            document.querySelectorAll('#leaderboard th').forEach((headerCell) => {
+                const baseText = headerCell.textContent.trim();
+                headerCell.innerHTML = `${baseText}&nbsp;&nbsp;`;
+            });
+            const materialAdvantageHeader = document.querySelectorAll('#leaderboard th')[1];
+            const defaultSortColumnIndex = 1; // Assuming this is defined above
+            const defaultSortHeader = document.querySelectorAll('#leaderboard th')[defaultSortColumnIndex];
+            defaultSortHeader.innerHTML = `${defaultSortHeader.textContent.trim()}&nbsp;▼`;
+            document.querySelectorAll('#leaderboard th').forEach((headerCell, index) => {
+                headerCell.addEventListener('click', () => {
+                    sortTable(index);
+                });
+            });
         }
 
         function sortTable(columnIndex) {
@@ -247,26 +265,67 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
             const indicator = currentSortOrder[columnIndex] === 'asc' ? '▲' : '▼';
             sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
         }
-        document.addEventListener('DOMContentLoaded', fillTableWithCSV);
+        document.addEventListener('DOMContentLoaded', () => {
+            fillTableWithCSV();
+            fetchAndAnimateBoard();
+        });
+
+        function fetchAndAnimateBoard() {
+            fetch('moves.txt')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    const boardStates = data.trim().split('-\n');
+                    let currentIndex = 0;
+
+                    let interval = 1000; // Initial interval in milliseconds
+
+                    function animateBoard() {
+                        document.querySelector('pre.board').textContent = boardStates[currentIndex].trim();
+                        currentIndex = (currentIndex + 1) % boardStates.length;
+
+                        // Decrease the interval progressively
+                        interval = Math.max(100, interval - 50); // Decrease by 50ms, but not less than 100ms
+
+                        setTimeout(animateBoard, interval);
+                    }
+
+                    animateBoard(); // Start the animation
+                })
+                .catch(error => {
+                    console.error('Error fetching moves.txt:', error);
+                });
+        }
     </script>
 </head>
 <body>
-    <div>
+    <div class="center">
         <a class="gh" href="https://github.com/maxim-saplin/llm_chess" target="_blank" hidden="true"><img src="gh.png" width="48"/></a>
-        <pre>
-            __       __                    ____     __                               
-            /\ \     /\ \       /'\_/`\    /\  _`\  /\ \                              
-            \ \ \    \ \ \     /\      \   \ \ \/\_\\ \ \___      __    ____    ____  
-             \ \ \  __\ \ \  __\ \ \__\ \   \ \ \/_/_\ \  _ `\  /'__`\ /',__\  /',__\ 
-              \ \ \L\ \\ \ \L\ \\ \ \_/\ \   \ \ \L\ \\ \ \ \ \/\  __//\__, `\/\__, `\
-               \ \____/ \ \____/ \ \_\\ \_\   \ \____/ \ \_\ \_\ \____\/\____/\/\____/
-                \/___/   \/___/   \/_/ \/_/    \/___/   \/_/\/_/\/____/\/___/  \/___/ 
-                                                                                      
-                                                                                      
+        <pre class="title">
+ __       __                    ____     __                               
+/\ \     /\ \       /'\_/`\    /\  _``. /\ \                              
+\ \ \    \ \ \     /\      \   \ \ \/\_\\ \ \___      __    ____    ____  
+ \ \ \  __\ \ \  __\ \ \__\ \   \ \ \/_/_\ \  _ `\  /'__`\ /',__\  /',__\ 
+  \ \ \L\ \\ \ \L\ \\ \ \_/\ \   \ \ \L\ \\ \ \ \ \/\  __//\__, `\/\__, `\
+   \ \____/ \ \____/ \ \_\\ \_\   \ \____/ \ \_\ \_\ \____\/\____/\/\____/
+    \/___/   \/___/   \/_/ \/_/    \/___/   \/_/\/_/\/____/\/___/  \/___/ 
+
         </pre>
-        <p>
-            Random Chess Player vs LLM
-        </p>
+        Random Player (White)
+        <pre class="board">
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+o o o o o o o o
+o o o o o o o o
+o o o ♙ o o o o
+o o o o o o o o
+♙ ♙ ♙ o ♙ ♙ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖</pre>
+        LLM Player (Black)
         <div class="button-container">
             <button class="selected" onclick="showPane('leaderboard')">Leaderboard</button>
             <button onclick="showPane('how-it-works')">How it works</button>
