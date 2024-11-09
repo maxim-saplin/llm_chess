@@ -289,7 +289,7 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
                         currentIndex = (currentIndex + 1) % boardStates.length;
 
                         // Decrease the interval progressively
-                        interval = Math.max(100, interval - 50); // Decrease by 50ms, but not less than 100ms
+                        interval = Math.max(50, interval - 25); // Decrease by 25ms, but not less than 50ms
 
                         setTimeout(animateBoard, interval);
                     }
@@ -315,6 +315,21 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
     \/___/   \/___/   \/_/ \/_/    \/___/   \/_/\/_/\/____/\/___/  \/___/ 
 
         </pre>
+        <p style="display: block; width: 700px; margin:auto; text-align: justify; padding-bottom: 40px;">
+            Can a Large Language Model play chess? You can prompt it to make
+            a move based on the board state, hint it with legal moves. You will find that 
+            an LLM can move pieces, even provide sound comments on why it made a certain move
+            and what tactic or strategy it followed.
+            <br/><br/>
+            But can LLMs actually make any meaningful moves and win in a chess game? Why don't
+            we put them up against a random player (i.e., a bot that randomly picks any move from a list of 
+            legal moves for the current position). After all, the models are called Foundational Models for
+            a reason; they have the knowledge of the entire Internet, can (supposedly) reason, and pass
+            numerous math evaluations and PhD-level exams. What could be easier for an LLM than to score a victory over
+            a chaos monkey?
+            <br/><br/>
+            Let's find out ツ
+        </p>
         Random Player (White)
         <pre class="board">
 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
