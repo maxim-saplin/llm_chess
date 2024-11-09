@@ -51,7 +51,10 @@ use_fen_board = False  # Whther to use graphical UNICODE representation board OR
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times
 max_failed_attempts = 3  # count of wrong replies in a single-move dialog (e.g. non existing action) before stopping the game, giving a loss
-throttle_delay = 0  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+throttle_delay = 1  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+random_print_board = (
+    True  # if set to True teh random player will also print it's board to Console
+)
 visualize_board = True  # You can skip board visualization to speed up execution
 
 stockfish_path = "/opt/homebrew/bin/stockfish"
@@ -189,6 +192,9 @@ def run(log_dir="_logs", save_logs=True):
         is_termination_msg=is_termination_message,
         make_move_action=make_move_action,
         get_legal_moves_action=get_legal_moves_action,
+        get_current_board_action=(
+            get_current_board_action if random_print_board else None
+        ),
     )
 
     proxy_agent = AutoReplyAgent(

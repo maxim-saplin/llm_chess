@@ -40,18 +40,22 @@ class RandomPlayerAgent(GameAgent):
     Attributes:
         make_move_action (str): The action string for making a move.
         get_legal_moves_action (str): The action string for getting legal moves.
+        get_current_board_action (Optional[str]): Set to action name if you want board printed while random player makes moves
     """
 
     def __init__(
         self,
         make_move_action: str,
         get_legal_moves_action: str,
+        get_current_board_action: Optional[str] = None,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.make_move_action = make_move_action
         self.get_legal_moves_action = get_legal_moves_action
+        self.get_current_board_action = get_current_board_action
+        self.flip_flag = True
 
     def generate_reply(
         self,
@@ -67,10 +71,17 @@ class RandomPlayerAgent(GameAgent):
         try:
             legal_moves = last_message.split(",")
             if legal_moves:
+                if self.flip_flag and self.get_current_board_action:
+                    self.flip_flag = False
+                    return self.get_current_board_action
+
                 random_move = random.choice(legal_moves)
-                if chess.Move.from_uci(random_move).uci() == random_move:
-                    return f"{self.make_move_action} {random_move}"
-                return self.get_legal_moves_action
+
+                chess.Move.from_uci(
+                    random_move
+                ).uci()  # Throws if invalid move is provided, i.e. if previous action was not get_legal_moves
+                self.flip_flag = True
+                return f"{self.make_move_action} {random_move}"
         except Exception:
             return self.get_legal_moves_action
 
