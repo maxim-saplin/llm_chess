@@ -30,7 +30,8 @@ class GameLog:
     player_white: PlayerStats
     player_black: PlayerStats
     material_count: Dict[str, int]
-    usage_stats: Dict[str, UsageStats]
+    usage_stats_white: UsageStats
+    usage_stats_black: UsageStats
 
 
 def load_game_log(file_path: str) -> GameLog:
@@ -46,24 +47,22 @@ def load_game_log(file_path: str) -> GameLog:
             player_white=PlayerStats(**data["player_white"]),
             player_black=PlayerStats(**data["player_black"]),
             material_count=data["material_count"],
-            usage_stats={
-                "white": UsageStats(
-                    total_cost=data["usage_stats"]["white"][white_usage_keys[0]],
-                    details=(
-                        data["usage_stats"]["white"].get(white_usage_keys[1], None)
-                        if len(white_usage_keys) > 1
-                        else None
-                    ),
+            usage_stats_white=UsageStats(
+                total_cost=data["usage_stats"]["white"][white_usage_keys[0]],
+                details=(
+                    data["usage_stats"]["white"].get(white_usage_keys[1], None)
+                    if len(white_usage_keys) > 1
+                    else None
                 ),
-                "black": UsageStats(
-                    total_cost=data["usage_stats"]["black"][black_usage_keys[0]],
-                    details=(
-                        data["usage_stats"]["black"].get(white_usage_keys[1], None)
-                        if len(white_usage_keys) > 1
-                        else None
-                    ),
+            ),
+            usage_stats_black=UsageStats(
+                total_cost=data["usage_stats"]["black"][black_usage_keys[0]],
+                details=(
+                    data["usage_stats"]["black"].get(black_usage_keys[1], None)
+                    if len(black_usage_keys) > 1
+                    else None
                 ),
-            },
+            ),
         )
 
 
@@ -105,6 +104,7 @@ def aggregate_models_to_csv(
                             "sum_squares_avg_material_white": 0,
                             "sum_avg_moves": 0,
                             "sum_squares_avg_moves": 0,
+                            "completion_tokens_black": 0,
                         }
 
                     model_aggregates[model_name]["total_games"] += 1
@@ -139,6 +139,10 @@ def aggregate_models_to_csv(
                         total_moves**2
                     )
 
+                    model_aggregates[model_name][
+                        "completion_tokens_black"
+                    ] += game_log.usage_stats_black.details["completion_tokens"]
+
                 except json.JSONDecodeError:
                     print(f"Skipping invalid JSON file: {file_path}")
 
@@ -161,6 +165,8 @@ def aggregate_models_to_csv(
         "wrong_moves_per_100moves",
         "average_moves",
         "std_dev_moves",
+        "completion_tokens_black",
+        "completion_tokens_black_per_move",
     ]
 
     for model_name, aggregate in model_aggregates.items():
@@ -206,6 +212,8 @@ def aggregate_models_to_csv(
                 aggregate["wrong_moves"] / total_moves * 100,
                 weighted_avg_moves,
                 std_dev_moves,
+                aggregate["completion_tokens_black"],
+                aggregate["completion_tokens_black"] / total_moves,
             ]
         )
 
