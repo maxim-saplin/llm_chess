@@ -89,9 +89,12 @@
 
         pre.title {
             font-size: 16px;
-            line-height: 1.0;
             scale: 1.0;
             padding-top: 50px;
+        }
+
+        pre.title-narrow {
+            display: none;
         }
 
         pre.board {
@@ -114,8 +117,16 @@
             opacity: 0.75;
         }
 
+        .table-container {
+            overflow-x: auto;
+            padding: 0 20px;
+        }
+
         table {
             margin-bottom: 40px;
+            min-width: 700px;
+            width: 100%;
+            border-collapse: collapse;
         }
         
         td, th {
@@ -141,7 +152,7 @@
         /* Responsive styles for mobile devices */
         @media (max-width: 768px) {
             body {
-                font-size: 16px;
+                font-size: 18px;
             }
 
             div.center {
@@ -154,23 +165,29 @@
 
             p.intro {
                 width: 100%;
-                padding: 20px;
-                font-size: 14px;
+            }
+
+            pre.board {
+                scale: 0.9;
             }
 
             button {
                 width: 140px;
-                font-size: 16px;
+                font-size: 18px;
             }
 
             pre.title {
-                font-size: 14px;
-                padding-top: 30px;
+                display: none;
             }
 
-            table {
-                width: 100%;
-                font-size: 14px;
+            pre.title-narrow {
+                display: block;
+                font-size: 10px;
+                padding-top: 20px;
+                padding-bottom: 20px;
+                opacity: 1.0;
+                max-width: 325px;
+                overflow-x: hidden;
             }
 
             td, th {
@@ -369,6 +386,19 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
     \/___/   \/___/   \/_/ \/_/    \/___/   \/_/\/_/\/____/\/___/  \/___/ 
 
         </pre>
+        <pre class="title-narrow">
+ __         __         __    __                        
+/\ \       /\ \       /\ "-./  \                       
+\ \ \____  \ \ \____  \ \ \-./\ \                      
+ \ \_____\  \ \_____\  \ \_\ \ \_\                     
+  \/_____/   \/_____/   \/_/  \/_/                     
+                                                                   
+ ______     __  __     ______     ______     ______    
+/\  ___\   /\ \_\ \   /\  ___\   /\  ___\   /\  ___\   
+\ \ \____  \ \  __ \  \ \  __\   \ \___  \  \ \___  \  
+ \ \_____\  \ \_\ \_\  \ \_____\  \/\_____\  \/\_____\ 
+  \/_____/   \/_/\/_/   \/_____/   \/_____/   \/_____/ 
+        </pre>
         <p class="intro">
             Can a Large Language Model play chess? You can prompt it to make
             a move based on the board state, hint it with legal moves. You will find that 
@@ -394,26 +424,28 @@ o o o ♙ o o o o
 o o o o o o o o
 ♙ ♙ ♙ o ♙ ♙ ♙ ♙
 ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖</pre>
-        LLM Player (Black)
+        GPT-4o Mini (Black)
         <div class="button-container">
             <button class="selected" onclick="showPane('leaderboard')">Leaderboard</button>
             <button onclick="showPane('how-it-works')">How it works</button>
         </div>
         <div id="leaderboard" class="pane">
-            <table border="0">
-                <thead>
-                    <tr>
-                        <th>Model Name&nbsp;&nbsp;</th>
-                        <th>Material Advantage&nbsp;&nbsp;</th>
-                        <th>Mistakes per 100 Moves&nbsp;&nbsp;</th>
-                        <th>Wins&nbsp;&nbsp;</th>
-                        <th>Draws&nbsp;&nbsp;</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Data will be populated here -->
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table border="0">
+                    <thead>
+                        <tr>
+                            <th>Model Name&nbsp;&nbsp;</th>
+                            <th>Material Advantage&nbsp;&nbsp;</th>
+                            <th>Mistakes per 100 Moves&nbsp;&nbsp;</th>
+                            <th>Wins&nbsp;&nbsp;</th>
+                            <th>Draws&nbsp;&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
         </div>
         <div id="how-it-works" class="pane" style="display: none;">
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
