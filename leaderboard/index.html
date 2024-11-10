@@ -104,16 +104,56 @@
             width: 300px;
             height: 300px;
             background-color: black;
-            border: solid white 5px;
             opacity: 0.85;
-            padding-top: 5px;
-            margin-left: auto;
-            margin-right: auto;
+            line-height: 37px;
+            padding: 0;
+            margin: 0;
+        }
+
+        div.board {
+            width: 300px;
+            height: 300px;
+            border: solid white 5px;
             margin-top: 20px;
             margin-bottom: 20px;
-            line-height: 37px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            background-color: rgba(0, 0, 0, .9);
+            width: 300px;
+            height: 300px;
+            text-align: center;
+            display: none;
+        }
+
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
         }
         
+        .game-over p {
+            color: red;
+            font-size: 40px;
+            font-weight: bold;
+            animation: blink 1s infinite;
+        }
+
+        .game-over span {
+            text-align: left;
+            display: inline-flex;
+        }
+
         p, pre {
             opacity: 0.75;
         }
@@ -168,7 +208,7 @@
                 width: 100%;
             }
 
-            pre.board {
+            div.board {
                 scale: 0.9;
             }
 
@@ -356,15 +396,22 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
                     let currentIndex = 0;
 
                     let interval = 1000; // Initial interval in milliseconds
+                    let resetGameInterval = 7000;
 
                     function animateBoard() {
                         document.querySelector('pre.board').textContent = boardStates[currentIndex].trim();
+                        document.querySelector('div.game-over').style.display = 'none';
                         currentIndex = (currentIndex + 1) % boardStates.length;
 
-                        // Decrease the interval progressively
-                        interval = Math.max(50, interval - 25); // Decrease by 25ms, but not less than 50ms
-
-                        setTimeout(animateBoard, interval);
+                        if (currentIndex === 0) {
+                            document.querySelector('div.game-over').style.display = 'block';
+                            currentIndex = 0;
+                            setTimeout(animateBoard, resetGameInterval);
+                        } else {
+                            // Decrease the interval progressively
+                            interval = Math.max(50, interval - 25); // Decrease by 25ms, but not less than 50ms
+                            setTimeout(animateBoard, interval);
+                        }
                     }
 
                     animateBoard(); // Start the animation
@@ -417,7 +464,8 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
             Let's find out ツ
         </p>
         Random Player (White)
-        <pre class="board">
+        <div class="board">
+            <pre class="board">
 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
 o o o o o o o o
@@ -426,6 +474,16 @@ o o o ♙ o o o o
 o o o o o o o o
 ♙ ♙ ♙ o ♙ ♙ ♙ ♙
 ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖</pre>
+            <div class="game-over">
+                <p>GAME OVER</p>
+                <span>
+                    - Outcome: Draw </br>
+                    - Max moves reached: 200 </br>
+                    - Material White: 16 </br>
+                    - Material Black: 18
+                </span>
+            </div>
+        </div>
         GPT-4o Mini (Black)
         <div class="button-container">
             <button class="selected" onclick="showPane('leaderboard')">Leaderboard</button>
