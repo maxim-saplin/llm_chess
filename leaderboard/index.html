@@ -94,8 +94,6 @@
             padding-top: 50px;
         }
 
-        svg { display: block }
-
         pre.board {
             font-family: 'Courier New', Courier, monospace;
             font-size: 30px;
@@ -139,6 +137,54 @@
             position: absolute;
             top: 40px;
             image-rendering: crisp-edges;
+        }
+        /* Responsive styles for mobile devices */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+            }
+
+            div.center {
+                width: 90%;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            p.intro {
+                width: 100%;
+                padding: 20px;
+                font-size: 14px;
+            }
+
+            button {
+                width: 140px;
+                font-size: 16px;
+            }
+
+            pre.title {
+                font-size: 14px;
+                padding-top: 30px;
+            }
+
+            table {
+                width: 100%;
+                font-size: 14px;
+            }
+
+            td, th {
+                padding: 8px;
+            }
+
+            .button-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .button-container button {
+                margin: 5px 0;
+            }
         }
     </style>
     <script>
