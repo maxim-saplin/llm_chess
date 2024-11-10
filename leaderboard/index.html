@@ -19,6 +19,7 @@
             text-align: center;
             margin: 0;
             font-size: 20px;
+            overflow-y: scroll;
         }
 
         div.center {
@@ -225,6 +226,7 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
         function showPane(paneId) {
             document.getElementById('leaderboard').style.display = paneId === 'leaderboard' ? 'block' : 'none';
             document.getElementById('how-it-works').style.display = paneId === 'how-it-works' ? 'block' : 'none';
+            document.getElementById('considerations').style.display = paneId === 'considerations' ? 'block' : 'none';
             document.querySelectorAll('.button-container button').forEach(button => {
                 button.classList.remove('selected');
             });
@@ -428,6 +430,7 @@ o o o o o o o o
         <div class="button-container">
             <button class="selected" onclick="showPane('leaderboard')">Leaderboard</button>
             <button onclick="showPane('how-it-works')">How it works</button>
+            <button onclick="showPane('considerations')">Considerations</button>
         </div>
         <div id="leaderboard" class="pane">
             <div class="table-container">
@@ -449,6 +452,9 @@ o o o o o o o o
         </div>
         <div id="how-it-works" class="pane" style="display: none;">
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        </div>
+        <div id="considerations" class="pane" style="display: none;">
+            <p>Here you can add any considerations or notes about the LLM chess project.</p>
         </div>
     </div>
 </body>
