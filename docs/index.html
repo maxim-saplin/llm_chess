@@ -13,6 +13,14 @@
             src: url(web_ibm_vga_8x16.woff) format('woff');
         }
 
+        @font-face {
+            font-family: 'Chess';
+            font-style: normal;
+            font-weight: 400;
+            /* src: url(segoe-w95-chess.woff) format('woff'); */
+            src: url(DejavuSansMono.ttf) format('truetype');
+        }
+
         body {
             background-color: #0000AA;
             color: #FFFFFF;
@@ -50,7 +58,7 @@
         .button-container {
             display: flex;
             justify-content: center;
-            margin-top: 40px;
+            margin-top: 50px;
             margin-bottom: 20px;
         }
 
@@ -107,15 +115,17 @@
         }
 
         pre.board {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 30px;
-            width: 300px;
-            height: 300px;
+            font-family: 'Chess';
+            font-size: 32px;
+            width: 295px;
+            height: 298px;
             background-color: black;
+            text-align: justify;
             opacity: 0.85;
             line-height: 37px;
-            padding: 0;
             margin: 0;
+            padding-left: 5px;
+            padding-top: 2px;
         }
 
         div.board {
@@ -504,14 +514,14 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
         </p>
         Random Player (White)
         <div class="board">
-            <pre class="board">
+<pre class="board">
 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
-o o o o o o o o
-o o o o o o o o
-o o o ♙ o o o o
-o o o o o o o o
-♙ ♙ ♙ o ♙ ♙ ♙ ♙
+· · · · · · · ·
+· · · · · · · ·
+· · · · · · · ·
+· · · · · · · ·
+♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
 ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖</pre>
             <div class="game-over">
                 <p>GAME OVER</p>
