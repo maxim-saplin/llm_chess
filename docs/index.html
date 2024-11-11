@@ -37,6 +37,11 @@
             padding-bottom: 30px;
         }
 
+        a {
+            color: greenyellow;
+            text-decoration: none; 
+        }
+
         .gh {
             color: greenyellow;
             text-decoration: none; 
@@ -577,22 +582,21 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
 
             </div>
             <p class="descriptions">
-                <strong>NOTES:</strong></br>
-                - LLMs played as black against Random Player (as white)</br>
-                - 30 game simulations for Random Player vs LLM</br>
-                - Bottom rows in Green demonstrate simulations how a Chess Engine (Stockfish v17) fairs against Random Player</br>
-                - 1000 simulations for Random Player vs Chess Engine and Random vs Random</br>
-                - You see it right, LLMs scored 0 wins</br>
-                - Using Draws insead if Wins to evaluate LLMs chess proficiency</br>
-                - <strong>Mistakes</strong> metric gives an evaluation of LLMs instruction following capabilities and resistance to haluscinations (making up non-legal moves while having a list of legal moves provided in the prompt)</br>
-                </br>
-                <strong>METRICS:</strong></br>
-                <strong>- Player:</strong> Model playing as black against a Random Player.</br>
-                <strong>- Draws:</strong> Percentage of games without a winner (e.g., reaching maximum number of 200 moves OR stalemate). Displays LLMs proficiency in chess.</br>
-                <strong>- Wins:</strong> How often the player scored a win (due to checkmate or the opponent failing to make a move).</br>
-                <strong>- Mistakes:</strong> Number of LLM erroneous replies per 1000 moves - how often did an LLM fail to follow the instructions and make a move, e.g., due to hallucinations picking illegal moves and not conforming to communication protocol. Shows model's instruction-following capabilities and hallucination resistance.</br>
-                <strong>- Tokens:</strong> Number of tokens generated per one move. Demonstrates model's verbosity.</br>
-
+                <strong>NOTES:</strong><br/>
+                - LLMs played as black against a Random Player (as white).<br/>
+                - 30 game simulations for Random Player vs. LLM.<br/>
+                - Bottom rows in green demonstrate simulations of how a Chess Engine (Stockfish v17) fares against a Random Player.<br/>
+                - 1000 simulations for Random Player vs. Chess Engine and Random vs. Random.<br/>
+                - You see it right, LLMs scored 0 wins.<br/>
+                - Using Draws instead of Wins to evaluate LLMs' chess proficiency.<br/>
+                - <strong>Mistakes</strong> metric gives an evaluation of LLMs' instruction-following capabilities and resistance to hallucinations (making up non-legal moves while having a list of legal moves provided in the prompt).<br/>
+                <br/>
+                <strong>METRICS:</strong><br/>
+                <strong>- Player:</strong> Model playing as black against a Random Player.<br/>
+                <strong>- Draws:</strong> Percentage of games without a winner (e.g., reaching the maximum number of 200 moves or stalemate). Displays LLMs' proficiency in chess.<br/>
+                <strong>- Wins:</strong> How often the player scored a win (due to checkmate or the opponent failing to make a move).<br/>
+                <strong>- Mistakes:</strong> Number of LLM erroneous replies per 1000 moves - how often did an LLM fail to follow the instructions and make a move, e.g., due to hallucinations picking illegal moves and not conforming to the communication protocol. Shows the model's instruction-following capabilities and hallucination resistance.<br/>
+                <strong>- Tokens:</strong> Number of tokens generated per move. Demonstrates the model's verbosity.<br/>
             </p>
         </div>
         <div id="how-it-works" class="pane" style="display: none;">
@@ -600,39 +604,48 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
         </div>
         <div id="considerations" class="pane" style="display: none;">
             <p class="descriptions">
-            Language Models can make moves in a chess game. But they can not actually play chess, they can't progress towards a victory. 
-            The experiemtn started after taking a class at Deeplearning teaching Microsoft Autogen framework. One of the classes demonstrated
-            a simulation of a chess gams between LLMs. Right away I was swayed away by the idea of putting different LLMs head-to-head in a chess game
-            putting up a competition. Though I was very much suprised that the naive prompting strategy from the class never lead to a game completion.
-            Extending prompts didn't help. I ended up testing LLMs performance in a chess game using a Random Player. A human player with reasonable chess
-            skill will have no problems winning a random player. Yet LLMs failed misserably in this competition.
+            Language Models can make moves in a chess game, but they cannot actually play chess or progress towards a victory. 
+            The experiment started after taking a class at DeepLearning, which taught the Microsoft Autogen framework. One of the classes demonstrated
+            a simulation of a chess game between LLMs. I was immediately intrigued by the idea of putting different LLMs head-to-head in a chess game competition. 
+            However, I was surprised that the naive prompting strategy from the class never led to a game completion. Extending prompts didn't help. 
+            I ended up testing LLMs' performance in a chess game using a Random Player. A human player with reasonable chess skills would have no problems winning 
+            against a random player, yet LLMs failed miserably in this competition.
+            <br/><br/>
+            I suspect that crushing this "LLM Chess" eval might be as hard as the <a href="https://arcprize.org">ARC Challenge</a>—a benchmark created to demonstrate 
+            the true nature of text-generating LLMs, exploit their weaknesses, and show how LLMs struggle with reasoning. "It's easy for humans, but hard for AI."
+            <br/><br/>
+            LLMs and Transformer-based models can be trained specifically to play chess. There are projects on the internet where people have fine-tuned LLMs
+            as chess players. Yet, those are specialized models that can't be good chat models.
+            <br/><br/>
+            I am looking forward to testing new releases of SOTA and frontier models. It would be great to see a model that starts scoring wins against
+            the chaos monkey while maintaining performance at traditional chat tasks.
             <br/>
-            I suspect that crushing this "LLM Chess" eval might be as hard as the Arc Challenge (https://arcprize.org) - a becnhmark created to demonstrate 
-            the true nature of text generating LLMs, exploit their weaknesses and demonstrate how LLM struggle
-            with reasoning. "It's easy for humans, but hard for AI." 
             <br/>
-            LLMs and Transformer based models can be tranied to specifically play chess, there're projects in the internet where people fine-tuned LLMs
-            as chess players. Yet those are specialized models that can't be good chat models.
-            <br/>
-            I am looking forward to testing new releases of SOTA and frontier models. Would be great to see a model start starts scoring wins against
-            the chaos monkey WHILE maintaining performance at traidtional chat tasks.
-            <br/>
-            <strong>NOTES:</strong>
-            - No history of moves available to LLM, no reflection used (giving the model "time to think")
-            - Experiments with reflection suggest that LLMs do even worse when they are prompted to evaluate options before making a move (https://github.com/maxim-saplin/llm_chess/blob/main/_logs/_not_OK_logs/reflection/aggregate_results.csv)
-             &nbsp;- Could LLMs improve their performance if given the whole log of the game?
-            - More data here (https://github.com/maxim-saplin/llm_chess/blob/main/docs/_data/refined.csv) and here (https://github.com/maxim-saplin/llm_chess/blob/main/docs/_data/aggregate_models.numbers)
-            - Chess engine (Stockfish, https://stockfishchess.org) has 100% win rate with an average game taking 32 moves to complete
-            &nbsp;- Stockfish	17, macOS, 0.1ms time limit (vs 0,1s default) - with decreased perforamnce Sotkfish dominates over Random Player
-            - Random Player (a white) wins over Random Player (as black) in 10.5% of cases - LLMs scored 0 wins.
-            &nbsp;- Indeed giving the right of the first move gives an advantage to white player
-            &nbsp;- LLMs do worse than random players
-            &nbsp;- As if an LLM had no goal to win, as if it was it's intention to keep the game going. What if I prompted it and told that 200 moves is the maximum and game ends after? Would it try harder?
-            - While some models are less verbose and follow the rules in a strict way (e.g. OpenAI), others are verbose
-            &nbsp;- Initially I used exact match when communicating to an LLM and prompted it to reply with action name (show board, get legal moves, make move) - worked well with Open AI
-            &nbsp;- After the list of models has been extended the original prompts had issues steering them
-            &nbsp;- As a result I have changes the communication protocol to use regex and be tolerant to reply format, doing it's best to extract action and arguments from LLM replies
-            - 
+            <strong>NOTES:</strong><br/>
+            - More data on game simulations is available <a href="https://github.com/maxim-saplin/llm_chess/blob/main/docs/_data/refined.csv">here</a> and 
+            <a href="https://github.com/maxim-saplin/llm_chess/blob/main/docs/_data/aggregate_models.numbers">here</a>.<br/>
+            - No history of moves is available to LLM, no reflection used (giving the model "time to think").<br/>
+            &nbsp;- Experiments with reflection suggest that LLMs do even worse when they are prompted to evaluate options before making a move
+            (<a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/_not_OK_logs/reflection/aggregate_results.csv">reflection results</a>).
+            &nbsp;- Could LLMs improve their performance if given the whole log of the game?<br/>
+            - The chess engine ( <a href="https://stockfishchess.org">Stockfish</a>) has a 100% win rate with an average game taking 32 moves to complete.<br/>
+            &nbsp;- Stockfish 17, macOS, 0.1ms time limit (vs 0.1s default) - with decreased performance, Stockfish dominates over Random Player.<br/>
+            - Random Player (as white) wins over Random Player (as black) in 10.5% of cases - LLMs scored 0 wins.<br/>
+            &nbsp;- Indeed, giving the right of the first move gives an advantage to the white player.<br/>
+            &nbsp;- LLMs do worse than random players.<br/>
+            &nbsp;- It's as if an LLM had no goal to win, as if it was its intention to keep the game going. What if I prompted it and told it that 200 moves is the maximum and the game ends after? Would it try harder?<br/>
+            - While some models are less verbose and follow the rules strictly (e.g., OpenAI), others are verbose.<br/>
+            &nbsp;- Initially, I used exact match when communicating with an LLM and prompted it to reply with action names (show board, get legal moves, make move) - worked well with OpenAI.<br/>
+            &nbsp;- After the list of models was extended, the original prompts had issues steering them.<br/>
+            &nbsp;- As a result, I changed the communication protocol to use regex and be tolerant to reply format, doing its best to extract action and arguments from LLM replies.<br/>
+            - Since models don't score any Wins there must be some alternative metric demosntrating game progress.<br/>
+            &nbsp;- For the time being using Draws, the more draws - the better.<br/>
+            &nbsp;- Yet most of the draws scored are due to hitting the 200 max moves limmit and hence the metric demonstrates the adherence to communication protocol/prompt cpnverntions.<br/>
+            &nbsp;- Logs also contain "Material Count" metrics - the weighted scores of piaces a player has, at the beginning a player has a total of 39 units of material.<br/>
+            &nbsp;- Material difference could be a good metric to evluate progress, the player having more material left as the game progress is at a better position.<br/>
+            &nbsp;- Yet most of the models demonstrated negative material difference and one of the models (gpt-35-turbo-0125) failed to make a single move having a material difference at 0 putting it above models that had negative material while staying in the game much longer.<br/>
+            &nbsp;- It might be resonable to create a computed metric that account for both the material and length of the game, addressing the endless pointless game concern, as well as never changing material diff due to failing to early.<br/>
+            - The older GPT-4 Turbo did better than newer GPT-4o version, this is a yet another eval demonstrating how newer models performed worse supporting the claim the the 4o family of models are smaller and cheaper to run models.
         </div>
         <a class="gh" href="https://github.com/maxim-saplin/llm_chess/" target="_blank">
             Project's GitHub
