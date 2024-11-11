@@ -1,3 +1,5 @@
+# [>>> LEADERBOARD <<<](https://maxim-saplin.github.io/llm_chess/)
+
 Putting LLMs up against ~each other~ Randmon Player in chess game. Testing basic instruction following capabilities and of course chess proficiency :)
 
 - `llm_chessp.py` runs the game, collects the results, records video
