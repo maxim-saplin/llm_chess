@@ -28,7 +28,7 @@
             text-align: center;
             margin: 0;
             font-size: 20px;
-            overflow-y: scroll;
+            overflow-y: scroll;=
         }
 
         div.center {
@@ -298,7 +298,6 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
         let currentSortOrder = {}; // To track the current sort order for each column
         const defaultSortColumnIndex = 1; // Sort by "Draws %" by default
 
-
         function showPane(paneId) {
             document.getElementById('leaderboard').style.display = paneId === 'leaderboard' ? 'block' : 'none';
             document.getElementById('how-it-works').style.display = paneId === 'how-it-works' ? 'block' : 'none';
@@ -307,7 +306,14 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
                 button.classList.remove('selected');
             });
             document.querySelector(`.button-container button[onclick="showPane('${paneId}')"]`).classList.add('selected');
+
+            // Simulate a page view event in Google Analytics
+            gtag('event', 'page_view', {
+                'page_title': document.title + ' - ' + paneId,
+                'page_path': '/' + paneId
+            });
         }
+
         // !!!! Copy Paste aggregate results CSV here
         function fillTableWithCSV() {
             const lines = data.trim().split('\n');
@@ -539,7 +545,7 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
         <div class="button-container">
             <button class="selected" onclick="showPane('leaderboard')">Leaderboard</button>
             <button onclick="showPane('how-it-works')">How it works</button>
-            <button onclick="showPane('considerations')">Considerations</button>
+            <button onclick="showPane('considerations')">Thoughts</button>
         </div>
         <div id="leaderboard" class="pane">
             <div class="table-container">
