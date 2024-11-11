@@ -152,6 +152,8 @@ def aggregate_models_to_csv(
         "black_llm_wins",
         "white_rand_wins",
         "draws",
+        "black_llm_wins_percent",  # New header
+        "black_llm_draws_percent",  # New header
         "llm_total_moves",
         "llm_wrong_actions",
         "llm_wrong_moves",
@@ -170,6 +172,7 @@ def aggregate_models_to_csv(
     ]
 
     for model_name, aggregate in model_aggregates.items():
+        total_games = aggregate["total_games"]
         total_moves = aggregate["total_moves"]
         weighted_avg_material_black = aggregate["sum_avg_material_black"] / total_moves
         weighted_avg_material_white = aggregate["sum_avg_material_white"] / total_moves
@@ -192,6 +195,10 @@ def aggregate_models_to_csv(
         material_diff = weighted_avg_material_black - weighted_avg_material_white
         material_diff_llm_minus_rand_per_100moves = material_diff / total_moves * 100
 
+        # Calculate percentages
+        black_llm_wins_percent = (aggregate["black_wins"] / total_games) * 100
+        black_llm_draws_percent = (aggregate["draws"] / total_games) * 100
+
         csv_data.append(
             [
                 model_name,
@@ -199,6 +206,8 @@ def aggregate_models_to_csv(
                 aggregate["black_wins"],
                 aggregate["white_wins"],
                 aggregate["draws"],
+                black_llm_wins_percent,  # Add calculated percentage
+                black_llm_draws_percent,  # Add calculated percentage
                 total_moves,
                 aggregate["wrong_actions"],
                 aggregate["wrong_moves"],
