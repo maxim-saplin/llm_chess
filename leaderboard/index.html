@@ -247,20 +247,27 @@
     </style>
     <script>
             data = `
-model_name,total_games,black_llm_wins,white_rand_wins,draws,llm_total_moves,llm_wrong_actions,llm_wrong_moves,llm_avg_material,llm_std_dev_material,rand_avg_material,rand_std_dev_material,material_diff_llm_minus_rand,wrong_actions_per_100moves,wrong_moves_per_100moves,average_moves,std_dev_moves
-anthropic.claude-v3-5-sonnet,10,0,3,7,1716,0,3,17.1,9.456919865015951,24.7,9.177871939253311,-7.599999999999998,0.0,0.17482517482517482,171.6,51.18636971347396
-anthropic.claude-v3-haiku,10,0,10,0,254,6,4,37.7,2.7908580918579307,37.6,4.087922591134904,0.10000000000000142,2.3622047244094486,1.574803149606299,25.4,15.579188397060712
-gemini-1.5-flash-001,10,0,3,7,1466,3,6,21.7,11.25512229066294,32.4,8.248905651323964,-10.7,0.20463847203274216,0.4092769440654843,146.6,87.09662577977532
-gemini-1.5-pro-preview-0409,10,0,4,6,1032,6,15,22.5,9.095175766428168,30.5,5.317685377847939,-8.0,0.5813953488372093,1.4534883720930232,103.2,61.72483742834448
-gpt-35-turbo-0125,10,0,10,0,32,30,0,39.0,0.0,39.0,0.0,0.0,93.75,0.0,3.2,2.6997942308422114
-gpt-4-turbo-2024-04-09,10,0,1,9,1845,0,0,13.5,8.409650541028576,22.3,12.329278612762026,-8.8,0.0,0.0,184.5,49.01530373260988
-gpt-4o-2024-05-13,10,0,1,9,1923,0,0,11.7,6.18331087147762,15.6,4.033195589934446,-3.9000000000000004,0.0,0.0,192.3,24.34953798329652
-gpt-4o-2024-08-06,10,0,1,9,1945,0,0,14.6,6.703233050799691,16.5,10.865337342004414,-1.9000000000000004,0.0,0.0,194.5,17.392527130926087
-gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519563777,-4.300000000000001,0.25348542458808615,0.5703422053231939,157.8,68.0486753891817
+Player,total_games,player_wins,opponent_wins,draws,player_wins_percent,player_draws_percent,total_moves,player_wrong_actions,player_wrong_moves,player_avg_material,opponent_avg_material,material_diff_player_llm_minus_opponent,material_diff_player_minus_opponent_per_1000moves,wrong_actions_per_1000moves,wrong_moves_per_1000moves,average_moves,completion_tokens_black_per_move
+anthropic.claude-v3-5-sonnet,30,0,8,22,0.000,73.333,5148,0,12,13.24,20.60,-7.36,-1.43012,0.00,2.33,171.60,81.07479
+anthropic.claude-v3-haiku,30,0,30,0,0.000,0.000,1020,6,4,34.34,35.89,-1.55,-1.52057,5.88,3.92,34.00,205.71176
+gemini-1.5-flash-001,30,0,20,10,0.000,33.333,2524,18,36,16.69,31.44,-14.75,-5.84296,7.13,14.26,84.13,19.91482
+gemini-1.5-pro-preview-0409,30,0,19,11,0.000,36.667,2558,14,61,22.09,28.23,-6.15,-2.40366,5.47,23.85,85.27,13.40774
+gemma-2-27b-it@q6_k_l,30,0,22,8,0.000,26.667,3268,8,52,18.95,20.79,-1.85,-0.56518,2.45,15.91,108.93,55.04437
+gemma-2-9b-it-8bit,30,0,26,4,0.000,13.333,2075,45,31,23.39,26.80,-3.41,-1.64413,21.69,14.94,69.17,58.12434
+gpt-35-turbo-0125,30,0,30,0,0.000,0.000,86,90,0,39.00,39.00,0.00,0.00000,1046.51,0.00,2.87,82.02326
+gpt-4-turbo-2024-04-09,30,0,2,28,0.000,93.333,5786,0,0,14.94,20.29,-5.35,-0.92524,0.00,0.00,192.87,6.03284
+gpt-4o-2024-05-13,30,0,5,25,0.000,83.333,5596,1,3,11.68,15.91,-4.23,-0.75513,0.18,0.54,186.53,28.40654
+gpt-4o-2024-08-06,30,0,3,27,0.000,90.000,5861,0,0,14.69,17.38,-2.69,-0.45911,0.00,0.00,195.37,6.57959
+gpt-4o-mini-2024-07-18,30,0,12,18,0.000,60.000,4481,13,24,17.15,21.38,-4.23,-0.94480,2.90,5.36,149.37,108.21625
+llama-3-70b-instruct-awq,30,0,15,15,0.000,50.000,4449,2,41,17.99,25.62,-7.63,-1.71560,0.45,9.22,148.30,41.60890
+meta-llama-3.1-8b-instruct-fp16,30,0,30,0,0.000,0.000,830,19,61,34.70,35.29,-0.60,-0.71999,22.89,73.49,27.67,71.86024
+Random Player (as White),1000,105,0,895,10.5,89.5,190073,0,0,10.56,11.08,-0.52,-0.00274,0.00,0.00,190.07,-
+Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0.00274,0.00,0.00,190.07,-
+Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21.01,17.21,0.53164,0.00,0.00,32.37,-
             `
 
         let currentSortOrder = {}; // To track the current sort order for each column
-        const defaultSortColumnIndex = 1;
+        const defaultSortColumnIndex = 0; // Sort by "Draws %" by default
 
 
         function showPane(paneId) {
@@ -279,49 +286,38 @@ gpt-4o-mini-2024-07-18,10,0,4,6,1578,4,9,19.8,9.223159256278006,24.1,9.859569519
             const rows = lines.slice(1).map(row => row.split(','));
 
             const csvIndices = {
-                model_name: 0,
-                total_games: 1,
-                black_llm_wins: 2,
-                white_rand_wins: 3,
-                draws: 4,
-                llm_total_moves: 5,
-                llm_wrong_actions: 6,
-                llm_wrong_moves: 7,
-                llm_avg_material: 8,
-                llm_std_dev_material: 9,
-                rand_avg_material: 10,
-                rand_std_dev_material: 11,
-                material_diff_llm_minus_rand: 12,
-                wrong_actions_per_100moves: 13,
-                wrong_moves_per_100moves: 14,
-                average_moves: 15,
-                std_dev_moves: 16
+                player: 0,
+                player_wins_percent: 5,
+                player_draws_percent: 6,
+                wrong_actions_per_1000moves: 14,
+                wrong_moves_per_1000moves: 15,
+                completion_tokens_black_per_move: 17
             };
 
-            // Sort rows by "Material Advantage" in descending order
+            // Sort rows by "Draws %" in descending order
             rows.sort((a, b) => {
-                const materialA = parseFloat(a[csvIndices.material_diff_llm_minus_rand]);
-                const materialB = parseFloat(b[csvIndices.material_diff_llm_minus_rand]);
-                return materialB - materialA;
+                const drawsA = parseFloat(a[csvIndices.player_draws_percent]);
+                const drawsB = parseFloat(b[csvIndices.player_draws_percent]);
+                return drawsB - drawsA;
             });
 
             const tbody = document.querySelector('#leaderboard tbody');
             rows.forEach(columns => {
-                const model_name = columns[csvIndices.model_name];
-                const black_llm_wins = parseInt(columns[csvIndices.black_llm_wins]);
-                const draws = parseInt(columns[csvIndices.draws]);
-                const material_diff_llm_minus_rand = parseFloat(columns[csvIndices.material_diff_llm_minus_rand]);
-                const wrong_actions_per_100moves = parseFloat(columns[csvIndices.wrong_actions_per_100moves]);
-                const wrong_moves_per_100moves = parseFloat(columns[csvIndices.wrong_moves_per_100moves]);
-                const llm_mistakes_per_100moves = wrong_actions_per_100moves + wrong_moves_per_100moves;
+                const player = columns[csvIndices.player];
+                const player_wins_percent = parseFloat(columns[csvIndices.player_wins_percent]);
+                const player_draws_percent = parseFloat(columns[csvIndices.player_draws_percent]);
+                const wrong_actions_per_1000moves = parseFloat(columns[csvIndices.wrong_actions_per_1000moves]);
+                const wrong_moves_per_1000moves = parseFloat(columns[csvIndices.wrong_moves_per_1000moves]);
+                const mistakes = wrong_actions_per_1000moves + wrong_moves_per_1000moves;
+                const tokens = parseFloat(columns[csvIndices.completion_tokens_black_per_move]);
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${model_name}</td>
-                    <td>${material_diff_llm_minus_rand.toFixed(2)}</td>
-                    <td>${llm_mistakes_per_100moves.toFixed(2)}</td>
-                    <td>${black_llm_wins}</td>
-                    <td>${draws}</td>
+                    <td>${player}</td> <!-- Player first -->
+                    <td>${player_draws_percent.toFixed(2)}%</td> <!-- Draws second -->
+                    <td>${player_wins_percent.toFixed(2)}%</td>
+                    <td>${mistakes.toFixed(2)}</td>
+                    <td>${tokens.toFixed(2)}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -495,11 +491,11 @@ o o o o o o o o
                 <table border="0">
                     <thead>
                         <tr>
-                            <th>Model Name&nbsp;&nbsp;</th>
-                            <th>Material Advantage&nbsp;&nbsp;</th>
-                            <th>Mistakes per 100 Moves&nbsp;&nbsp;</th>
-                            <th>Wins&nbsp;&nbsp;</th>
-                            <th>Draws&nbsp;&nbsp;</th>
+                            <th>Player&nbsp;&nbsp;</th> <!-- Player first -->
+                            <th>Draws %&nbsp;&nbsp;</th> <!-- Draws second -->
+                            <th>Wins %&nbsp;&nbsp;</th>
+                            <th>Mistakes&nbsp;&nbsp;</th>
+                            <th>Tokens&nbsp;&nbsp;</th>
                         </tr>
                     </thead>
                     <tbody>
