@@ -26,6 +26,13 @@
         div.center {
             width: 1000px;
             margin: auto;
+            padding-bottom: 30px;
+        }
+
+        .gh {
+            color: #FFFFFF; 
+            text-decoration: none; 
+            margin-right: 10px; 
         }
 
         h1 {
@@ -190,11 +197,6 @@
             color: greenyellow;
         }
 
-        .gh{
-            position: absolute;
-            top: 40px;
-            image-rendering: crisp-edges;
-        }
         /* Responsive styles for mobile devices */
         @media (max-width: 768px) {
             body {
@@ -250,6 +252,15 @@
             }
         }
     </style>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4SS6VHS4QF"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-4SS6VHS4QF');
+    </script>
     <script>
             data = `
 Player,total_games,player_wins,opponent_wins,draws,player_wins_percent,player_draws_percent,total_moves,player_wrong_actions,player_wrong_moves,player_avg_material,opponent_avg_material,material_diff_player_llm_minus_opponent,material_diff_player_minus_opponent_per_1000moves,wrong_actions_per_1000moves,wrong_moves_per_1000moves,average_moves,completion_tokens_black_per_move
@@ -453,7 +464,6 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
 </head>
 <body>
     <div class="center">
-        <a class="gh" href="https://github.com/maxim-saplin/llm_chess" target="_blank" hidden="true"><img src="gh.png" width="48"/></a>
         <pre class="title">
  __       __                    ____     __                               
 /\ \     /\ \       /'\_/`\    /\  _``. /\ \                              
@@ -543,6 +553,9 @@ o o o o o o o o
         <div id="considerations" class="pane" style="display: none;">
             <p>Here you can add any considerations or notes about the LLM chess project.</p>
         </div>
+        <a class="gh" href="https://github.com/maxim-saplin/llm_chess/" target="_blank">
+            GitHub
+        </a>
     </div>
 </body>
 </html>
