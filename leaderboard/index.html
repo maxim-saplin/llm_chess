@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♞</text></svg>">
     <title>LLM Chess Leaderboard</title>
     <style>
         @font-face {
@@ -185,6 +186,10 @@
             opacity: 0.75;
         }
 
+        table tbody tr:nth-last-child(-n+3) {
+            color: greenyellow;
+        }
+
         .gh{
             position: absolute;
             top: 40px;
@@ -267,7 +272,7 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
             `
 
         let currentSortOrder = {}; // To track the current sort order for each column
-        const defaultSortColumnIndex = 0; // Sort by "Draws %" by default
+        const defaultSortColumnIndex = 1; // Sort by "Draws %" by default
 
 
         function showPane(paneId) {
@@ -294,15 +299,28 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
                 completion_tokens_black_per_move: 17
             };
 
-            // Sort rows by "Draws %" in descending order
-            rows.sort((a, b) => {
+            // Separate the rows that should always be at the bottom
+            const bottomRows = [];
+            const otherRows = rows.filter(columns => {
+                const player = columns[csvIndices.player];
+                if (player === "Stockfish chess engine (as Black)" ||
+                    player === "Random Player (as White)" ||
+                    player === "Random Player (as Black)") {
+                    bottomRows.push(columns);
+                    return false;
+                }
+                return true;
+            });
+
+            // Sort the remaining rows by "Draws %" in descending order
+            otherRows.sort((a, b) => {
                 const drawsA = parseFloat(a[csvIndices.player_draws_percent]);
                 const drawsB = parseFloat(b[csvIndices.player_draws_percent]);
                 return drawsB - drawsA;
             });
 
             const tbody = document.querySelector('#leaderboard tbody');
-            rows.forEach(columns => {
+            [...otherRows, ...bottomRows].forEach(columns => {
                 const player = columns[csvIndices.player];
                 const player_wins_percent = parseFloat(columns[csvIndices.player_wins_percent]);
                 const player_draws_percent = parseFloat(columns[csvIndices.player_draws_percent]);
@@ -348,7 +366,20 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
             const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
             currentSortOrder[columnIndex] = newOrder;
 
-            rows.sort((a, b) => {
+            // Separate the rows that should always be at the bottom
+            const bottomRows = [];
+            const otherRows = rows.filter(row => {
+                const player = row.cells[0].textContent;
+                if (player === "Stockfish chess engine (as Black)" ||
+                    player === "Random Player (as White)" ||
+                    player === "Random Player (as Black)") {
+                    bottomRows.push(row);
+                    return false;
+                }
+                return true;
+            });
+
+            otherRows.sort((a, b) => {
                 const aText = a.cells[columnIndex].textContent;
                 const bText = b.cells[columnIndex].textContent;
 
@@ -359,8 +390,8 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
                 return newOrder === 'asc' ? comparison : -comparison;
             });
 
-            // Append sorted rows
-            rows.forEach(row => table.appendChild(row));
+            // Append sorted rows and then the bottom rows
+            [...otherRows, ...bottomRows].forEach(row => table.appendChild(row));
 
             // Clear all sort indicators
             document.querySelectorAll('#leaderboard th').forEach((headerCell) => {
@@ -377,6 +408,8 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
         document.addEventListener('DOMContentLoaded', () => {
             fillTableWithCSV();
             fetchAndAnimateBoard();
+            // Set initial sort order for the default column
+            currentSortOrder[defaultSortColumnIndex] = 'desc'; // Assuming "Draws %" is the second column
         });
 
         function fetchAndAnimateBoard() {
