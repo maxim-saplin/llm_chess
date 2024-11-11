@@ -43,7 +43,7 @@
         }
 
         .gh {
-            color: greenyellow;
+            color: red;
             text-decoration: none; 
             margin-right: 10px; 
         }
@@ -113,6 +113,13 @@
             font-size: 16px;
             scale: 1.0;
             padding-top: 50px;
+            color: greenyellow;
+        }
+
+        pre.snippet {
+            /* font-size: 16px; */
+            font-family: "Web IBM VGA 8x16";
+            text-align: left;
             color: greenyellow;
         }
 
@@ -600,7 +607,56 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
             </p>
         </div>
         <div id="how-it-works" class="pane" style="display: none;">
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <p class="descriptions">
+                <strong>Libraries adn Dependencies Used:</strong><br/>
+                - <strong>chess:</strong> A Python library for handling chess game rules and basic operations, including board representation, legal move evaluation, and game state evaluation. This is not a chess engine runnig the actual caclulation of the best move.<br/>
+                - <strong>Microsoft Autogen</strong> is used as a backbone for LLM comunication. It also implements the interaction between a Chess Board and custom agents like GameAgent, RandomPlayerAgent, AutoReplyAgent, and others for simulating different player types.<br/>
+                - <strong>Stockfish</strong> - the chess engine doing the actual best move calculation, used as a referrence to demonstrate what a real chess player's peformance is.<br/>
+                <br/>
+                <strong>Workflow:</strong><br/>
+                1. The game is initialized with a chess board and two players: a Random Player (as white) and an LLM (as black).<br/>
+                2. The game loop runs until a termination condition is met, such as checkmate, stalemate, or reaching the maximum number of moves.<br/>
+                3. Each player takes turns making a move. The Random Player selects a move randomly from the list of legal moves.<br/>
+                4. The LLM is prompted to make a move using a structured dialog, which includes actions like getting the current board state, retrieving legal moves, and making a move.<br/>
+                5. The game state is updated after each move, and the board is visualized if enabled.<br/>
+                6. Game statistics are generated and stored at the end of the game.<br/>
+                <br/>
+                <strong>Dialog:</strong><br/>
+                Here is an example of a dialog that prompts a model to make a move:<br/>
+                <pre class="snippet">
+Proxy (to Player_Black):
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+Respond with the action.
+
+Player_Black (to Proxy):
+get_current_board
+
+Proxy (to Player_Black):
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+· · · · · · · ·
+· · · · · · · ·
+· · · · · · · ·
+· · · · · · · ·
+♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+Player_Black (to Proxy):
+get_legal_moves
+
+Proxy (to Player_Black):
+a7a6, b7b6, c7c6, d7d6, e7e6, f7f6, g7g6, h7h6, a7a5, b7b5, c7c5, d7d5, e7e5, f7f5, g7g5, h7h5
+
+Player_Black (to Proxy):
+make_move e7e5
+
+Proxy (to Player_Black):
+Move made, switching player
+                </pre>
+            </p>
         </div>
         <div id="considerations" class="pane" style="display: none;">
             <p class="descriptions">
