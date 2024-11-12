@@ -32,9 +32,11 @@
         }
 
         div.center {
-            width: 1000px;
+            width: 740px;
             margin: auto;
             padding-bottom: 30px;
+            padding-left: 20px;
+            padding-right: 20px;
         }
 
         a {
@@ -54,7 +56,6 @@
 
         p.intro {
             display: block;
-            width: 700px;
             margin:auto;
             text-align: justify;
             padding-bottom: 40px;
@@ -117,10 +118,10 @@
         }
 
         pre.snippet {
-            /* font-size: 16px; */
             font-family: "Web IBM VGA 8x16";
             text-align: left;
             color: greenyellow;
+            overflow: auto;
         }
 
         pre.title-narrow {
@@ -191,12 +192,12 @@
 
         .table-container {
             overflow-x: auto;
-            padding: 0 20px;
+            padding: 0;
         }
 
         table {
             margin-bottom: 40px;
-            min-width: 700px;
+            min-width: 720px;
             width: 100%;
             border-collapse: collapse;
         }
@@ -534,7 +535,7 @@ Chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21.01,17.21,
         </pre>
         <p class="intro">
             Can a Large Language Model play chess? You can prompt it to make
-            a move based on the board state, hint it with legal moves. You will find that 
+            a move based on the board state, hint it with a list legal moves (and ask to pick one). You will find that 
             an LLM can move pieces, even provide sound comments on why it made a certain move
             and what tactic or strategy it followed.
             <br/><br/>
@@ -628,18 +629,18 @@ Chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21.01,17.21,
                 <strong>Dialog:</strong><br/>
                 Here is an example of a dialog that prompts a model to make a move:<br/>
                 <pre class="snippet">
-Proxy (to Player_Black):
+<span style="color:green">Proxy (to Player_Black):</span>
 You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
 - 'get_current_board' to get the schema and current status of the board
 - 'get_legal_moves' to get a UCI formatted list of available moves
 - 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
 Respond with the action.
 
-Player_Black (to Proxy):
+<span style="color:green">Player_Black (to Proxy):</span>
 get_current_board
 
-Proxy (to Player_Black):
-♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+<span style="color:green">Proxy (to Player_Black):</span>
+<span style="font-family: Chess;">♞ ♝ ♛ ♚ ♝ ♞ ♜ ♜
 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
 · · · · · · · ·
 · · · · · · · ·
@@ -647,17 +648,18 @@ Proxy (to Player_Black):
 · · · · · · · ·
 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
 ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+</span>
 
-Player_Black (to Proxy):
+<span style="color:green">Player_Black (to Proxy):</span>
 get_legal_moves
 
-Proxy (to Player_Black):
+<span style="color:green">Proxy (to Player_Black):</span>
 a7a6, b7b6, c7c6, d7d6, e7e6, f7f6, g7g6, h7h6, a7a5, b7b5, c7c5, d7d5, e7e5, f7f5, g7g5, h7h5
 
-Player_Black (to Proxy):
+<span style="color:green">Player_Black (to Proxy):</span>
 make_move e7e5
 
-Proxy (to Player_Black):
+<span style="color:green">Proxy (to Player_Black):</span>
 Move made, switching player
                 </pre>
             </p>
@@ -693,7 +695,7 @@ Move made, switching player
             - Random Player (as white) wins over Random Player (as black) in 10.5% of cases - LLMs scored 0 wins.<br/>
             &nbsp;- Indeed, giving the right of the first move gives an advantage to the white player.<br/>
             &nbsp;- LLMs do worse than random players.<br/>
-            &nbsp;- It's as if an LLM had no goal to win, as if it was its intention to keep the game going. What if I prompted it and told it that 200 moves is the maximum and the game ends after? Would it try harder?<br/>
+            &nbsp;- It's as if an LLM had no goal to win, as if it was its intention to keep the game going. What if I prompted it and told it that 200 moves is the maximum and the game ends after? Would it try harder? Can adding to a system prompt an explicitly instruction to Win help?<br/>
             - While some models are less verbose and follow the rules strictly (e.g., OpenAI), others are verbose.<br/>
             &nbsp;- Initially, I used exact match when communicating with an LLM and prompted it to reply with action names (show board, get legal moves, make move) - worked well with OpenAI.<br/>
             &nbsp;- After the list of models was extended, the original prompts had issues steering them.<br/>
@@ -705,7 +707,8 @@ Move made, switching player
             &nbsp;- Material difference could be a good metric to evluate progress, the player having more material left as the game progress is at a better position.<br/>
             &nbsp;- Yet most of the models demonstrated negative material difference and one of the models (gpt-35-turbo-0125) failed to make a single move having a material difference at 0 putting it above models that had negative material while staying in the game much longer.<br/>
             &nbsp;- It might be resonable to create a computed metric that account for both the material and length of the game, addressing the endless pointless game concern, as well as never changing material diff due to failing to early.<br/>
-            - The older GPT-4 Turbo did better than newer GPT-4o version, this is a yet another eval demonstrating how newer models performed worse supporting the claim the the 4o family of models are smaller and cheaper to run models.
+            - What if the model is not given the list of legal moves? Will the model figuring out legal moves on their own and struggle to progress? Can giving the models a list of legal moves essentially break reasoning turning the game into simple instruction following (i.e. pick one item from the list rather than win in the game)?
+            - The older GPT-4 Turbo did better than newer GPT-4o version, this is a yet another eval demonstrating how newer models performed worse supporting the claim the the 4o family of models are smaller and cheaper to run models.<br/>
         </div>
         <a class="gh" href="https://github.com/maxim-saplin/llm_chess/" target="_blank">
             Project's GitHub
