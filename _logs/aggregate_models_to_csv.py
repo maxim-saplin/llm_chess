@@ -67,8 +67,8 @@ def load_game_log(file_path: str) -> GameLog:
 
 
 def aggregate_models_to_csv(
-    logs_dir="_logs/no_reflection",
-    output_csv="_logs/no_reflection/aggregate_models.csv",
+    logs_dir="_logs/reflection",
+    output_csv="_logs/reflection/aggregate_models.csv",
 ):
     csv_data = []
     model_aggregates = {}
