@@ -57,7 +57,7 @@ random_print_board = (
 )
 visualize_board = True  # You can skip board visualization to speed up execution
 remove_description = True  # Turns out Autogen can substitute system message with decription, o1-mini doesn't support system role
-temp_override = None  # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini)
+temp_override = 1.0  # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini)
 
 stockfish_path = "/opt/homebrew/bin/stockfish"
 

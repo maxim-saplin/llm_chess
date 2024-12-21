@@ -5,9 +5,7 @@ from llm_chess import run
 
 # Parameters
 NUM_REPETITIONS = 3  # Set the number of games to run
-LOG_FOLDER = (
-    "_logs/no_reflection/_21.12.2024_o1-mini-2024-09-12"  # Set the folder to store logs
-)
+LOG_FOLDER = "_logs/no_reflection/_21.12.2024_o1-mini-2024-09-12_2"  # Set the folder to store logs
 
 STORE_INDIVIDUAL_LOGS = True
 
