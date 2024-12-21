@@ -41,12 +41,25 @@ def calculate_material_count(board):
 load_dotenv()
 
 
-def get_llms_autogen():
-    # NOTE, if Azure type is used Autogen removes dots from model name,
-    # If that is an issues (i.e. you are using LLM gateway that works like Azure but accupts model names with dots)
-    # You better disable this in Autogen source code 'oia/client.py'
-    #  if openai_config["azure_deployment"] is not None:
-    #         openai_config["azure_deployment"] = openai_config["azure_deployment"].replace(".", "")
+def get_llms_autogen(temperature=None):
+    """
+    Retrieve the configuration for LLMs (Large Language Models) with optional temperature setting.
+
+    Note:
+    If the Azure type is used, Autogen removes dots from the model name.
+    If this is an issue (e.g., you are using an LLM gateway that works like Azure but accepts model names with dots),
+    you should disable this behavior in the Autogen source code 'oia/client.py'.
+
+    Example of disabling in source code:
+    if openai_config["azure_deployment"] is not None:
+        openai_config["azure_deployment"] = openai_config["azure_deployment"].replace(".", "")
+
+    Args:
+        temperature (float, optional): The temperature setting for the model. Defaults to None.
+
+    Returns:
+        tuple: A tuple containing two configuration dictionaries for the models.
+    """
     model_kinds = [
         os.environ.get("MODEL_KIND_W", "azure"),
         os.environ.get("MODEL_KIND_B", "azure"),
@@ -71,7 +84,7 @@ def get_llms_autogen():
     def create_config(config_list):
         return {
             "config_list": config_list,
-            "temperature": 1.0,
+            "temperature": temperature if temperature is not None else 0.3,
             "top_p": 1.0,
             "frequency_penalty": 0.0,
             "presence_penalty": 0.0,
