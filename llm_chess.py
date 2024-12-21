@@ -51,11 +51,12 @@ use_fen_board = False  # Whther to use graphical UNICODE representation board OR
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times
 max_failed_attempts = 3  # count of wrong replies in a single-move dialog (e.g. non existing action) before stopping the game, giving a loss
-throttle_delay = 0  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+throttle_delay = 2  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
 visualize_board = True  # You can skip board visualization to speed up execution
+remove_description = True  # Turns out Autogen can substitute system message with decription, o1-mini doesn't support system role
 
 stockfish_path = "/opt/homebrew/bin/stockfish"
 
@@ -167,8 +168,12 @@ def run(log_dir="_logs", save_logs=True):
         name="Player_White",
         # Not using system message as some LLMs can ignore it
         system_message="",
-        description="You are a professional chess player and you play as white. "
-        + common_prompt,
+        description=(
+            ""
+            if remove_description
+            else "You are a professional chess player and you play as white. "
+            + common_prompt
+        ),
         llm_config=llm_config_white,
         is_termination_msg=is_termination_message,
         human_input_mode="NEVER",

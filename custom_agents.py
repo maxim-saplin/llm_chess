@@ -2,7 +2,10 @@ import random
 import re
 import chess
 import chess.engine
-from autogen import ConversableAgent
+
+# Using local fork since autogen 0.2 used to pass in system message (even empty) and it broke o1-mini,
+# made a quick fix there (conversable_agent.py)
+from _ag import ConversableAgent
 from sunfish import Searcher, Position, parse, render, pst
 from typing import Any, Dict, List, Optional, Union
 
