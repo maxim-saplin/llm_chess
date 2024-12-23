@@ -1,21 +1,21 @@
 # [>>> LEADERBOARD <<<](https://maxim-saplin.github.io/llm_chess/)
 
-Putting LLMs up against ~each other~ Randmon Player in chess game. Testing basic instruction following capabilities and of course chess proficiency :)
+Putting LLMs up against ~each other~ Randmon Player in a chess game. Testing basic instruction following capabilities and of course chess proficiency :)
 
 - `llm_chessp.py` runs the game, collects the results, records video
     
 
 ## Running the Games
 
- - Decide if you would like to put one LLM against the other OR a random player (chaos monkey picking randome move out of a list of legal moves provided to it)
-    - Set `use_random_player` to True to make make random player play white and LLM play black
- - Set LLM params in .env file (API key, etc.) for both white and black player agents
-    - Azure Open AI i used buy default, modify `utils.py` to use a different provider that is supported by [Autogen](https://microsoft.github.io/autogen/docs/topics/llm_configuration/)
+ - Decide if you would like to put one LLM against the other OR a random player (chaos monkey picking random move out of a list of legal moves provided to it)
+    - Set `use_random_player` to True to make random player play white and LLM play black
+ - Set LLM params in the .env file (API key, etc.) for both white and black player agents
+    - Azure Open AI used by default, modify `utils.py` to use a different provider that is supported by [Autogen 0.2](https://microsoft.github.io/autogen/docs/topics/llm_configuration/)
  - Check configs (see next)
  - `pip install -r requirements.txt`
     - Optionally create a VENV
  - Run `llm_chess.py`
-    - llm_chess_tool_call.py is older version relying on native tool call support, not maintained, keeping JIC
+    - llm_chess_tool_call.py is an older version relying on native tool call support, not maintained, keeping JIC
 
 ### Configs
 
@@ -23,15 +23,15 @@ Adjust the global configs at `llm_chess.py`.
 
 - `white_player_type`: Determines the type of player controlling the white pieces. Options include `RANDOM_PLAYER`, `LLM_WHITE`, `LLM_BLACK`, `CHESS_ENGINE_SUNFISH`, and `CHESS_ENGINE_STOCKFISH`.
 - `black_player_type`: Determines the type of player controlling the black pieces. Options include `RANDOM_PLAYER`, `LLM_WHITE`, `LLM_BLACK`, `CHESS_ENGINE_SUNFISH`, and `CHESS_ENGINE_STOCKFISH`.
-- `enable_reflection`:  whether to offer the LLM time to think and evaluate moves by giving an extra "relfect" action
-- `use_fen_board`: A boolean indicating whether to use the FEN format for board representation. Default is `False`.
-- `max_game_moves`: An integer specifying the maximum number of moves allowed in a game before it is automatically terminated. Default is 200.
-- Constrains for a single move (LLM dialogs if LLM agent is used)
-    - `max_llm_turns`: An integer indicating the maximum number of conversation turns (pairs of user/assistant messages) an LLM can take while deciding and making a move. Default is 10.
-    - `max_failed_attempts`: An integer that sets the number of incorrect replies or actions a player agent can make before the game is halted and the player is declared the loser. E.g. if a model returns action name not in the requested format OR asks to make a move that is not possible an internal counter will grow, the model will be asked to self-correct. If the `max_failed_attempts` is reached the game is interrupted, WIN is given to the opposite player. Default value is 3.
-- `throttle_delay_moves`: A delay in seconds between moves to prevent throttling by LLM providers due to frequent API requests. Default is 1 second.
+- `enable_reflection`:  whether to offer the LLM time to think and evaluate moves by giving an extra "reflect" action
+- `use_fen_board`: A boolean indicating whether to use the FEN format for board representation. The default is `False`.
+- `max_game_moves`: An integer specifying the maximum number of moves allowed in a game before it is automatically terminated. The default is 200.
+- Constraints for a single move (LLM dialogs if LLM agent is used)
+    - `max_llm_turns`: An integer indicating the maximum number of conversation turns (pairs of user/assistant messages) an LLM can take while deciding and making a move. The default is 10.
+    - `max_failed_attempts`: An integer that sets the number of incorrect replies or actions a player agent can make before the game is halted and the player is declared the loser. E.g. if a model returns an action name not in the requested format OR asks to make a move that is not possible an internal counter will grow, and the model will be asked to self-correct. If the `max_failed_attempts` is reached the game is interrupted, and WIN is given to the opposite player. The default value is 3.
+- `throttle_delay_moves`: A delay in seconds between moves to prevent throttling by LLM providers due to frequent API requests. The default is 1 second.
 
-These settings are used to configure the game environment and control the flow of the chess match between the agents.
+These settings configure the game environment and control the flow of the chess match between the agents.
 
 ### Multiple Games
 
@@ -40,29 +40,29 @@ The `run_multiple_games.py` script allows you to execute multiple chess games be
 To run multiple games:
 - Adjust the `NUM_REPETITIONS` variable to set the number of games you want to simulate.
 - The results, including win/loss statistics and material counts, are aggregated and can be analyzed to understand the strengths and weaknesses of each player type.
-- Aggregate log and logs for individual games (if `STORE_INDIVIDUAL_LOGS` is set to True) can be stored in the specified `LOG_FOLDER` for further inspection.
+- Aggregate logs and logs for individual games (if `STORE_INDIVIDUAL_LOGS` is set to True) can be stored in the specified `LOG_FOLDER` for further inspection.
 
 This feature is used to compare different kinds of players and generalize the findings. For LLM playes 10 games were used, for random/chess engine players 1000 games, some states is provided below.
 
 #### Aggregate Result
 
-When running multiple games individual logs are collectyed in `{date_time}.json` files (e.g. 2024.10.11_17:34.json) which are collected in a directory. After the games are finnished aggregate results are collected in `aggregate_results.csv`.
+When running multiple games individual logs are collected in `{date_time}.json` files (e.g. 2024.10.11_17:34.json) which are collected in a directory. After the games are finished aggregate results are collected in `aggregate_results.csv`.
 
 Notes:
-- "wrong_moves" and "wrong_actions" is a total number of erroneous replies by player (e.g. not following to convention) made in "inner" dialogs bewtween proxy and player. To get the total number of erroneous replies add up the metrics (i.e. `wrong_moves` do not include `wrong_actions`)
-  - A single game is finished if any of the player makes more than `max_failed_attempts` in the inner dialogs (i.e. `wrong_moves` + `wrong_actions` < `max_failed_attempts` - see above config)
+- "wrong_moves" and "wrong_actions" is the total number of erroneous replies by the player (e.g. not following convention) made in "inner" dialogs between the proxy and player. To get the total number of erroneous replies add up the metrics (i.e. `wrong_moves` do not include `wrong_actions`)
+  - A single game is finished if any of the players make more than `max_failed_attempts` in the inner dialogs (i.e. `wrong_moves` + `wrong_actions` < `max_failed_attempts` - see above config)
 
 
 ## Kinds of Agents
 
 - LLM Player Agent (instantiated from Autogen's standard ConversiableAgent) is used to evaluate the board and make moves on behalf of one of the players (white or black)
-- Random Player Agent (custom RandomPlayerAgent) requests for a list of legal moves, randomly picks one and than makes a moive. Always plays as white
-- Proxy Agent (custom AutoReplyAgent) is used to kick-off conversation with player agent, provides a list of available actions (get_current_board, get_legal_moves, make_move)
+- Random Player Agent (custom RandomPlayerAgent) requests for a list of legal moves, randomly picks one, and then makes a move. Always plays as white
+- Proxy Agent (custom AutoReplyAgent) is used to kick off conversation with a player agent and provides a list of available actions (get_current_board, get_legal_moves, make_move)
 - Chess Engine Players:
   - Sunfish: A simple Python engine.
   - Stockfish: A powerful engine requiring separate installation.
 
-## Sample Dialog Happenning within a Single Move
+## Sample Dialog Happening within a Single Move
 
 GPT-4o-Mini
 
@@ -115,7 +115,7 @@ Move made, switching player
 ```
 ## Logs/Changes Affecting Evals
 
-Game run results are stored under `_logs` folder.
+Game run results are stored under the `_logs` folder.
 
 !NOTES:
 - Logs before 08.10.2024 (first 8) are more strict with wrong moves stats
@@ -123,7 +123,7 @@ Game run results are stored under `_logs` folder.
 - Different configs could be used, directory folder
 - Log `_15.10.2024_gpt-4o-anthropic.claude-v3-5-sonnet_reflectio` had timeout error, aggregate only had 9 out of 10 consistent runs
 - After 19.10.2024 setting default hyperparams ("temperature": 0.7, "top_p": 1.0, "frequency_penalty": 0.0, "presence_penalty": 0.0,)
-- 19.10.2024, gemini-1.5-flash-001 consistently failed to follow the instructions:
+- 19.10.2024, Gemini-1.5-flash-001 consistently failed to follow the instructions:
 - 22.10.2024, slightly updated common prompt removing excessive tabs
 - 05.11.2024, fixed bug with wrong action counting (not global per game but per move), set temperature to 0.7, re-ran no_reflection
 
@@ -134,9 +134,9 @@ I have conducted a number of games putting LLM (playing with black) against a Ra
 
 ## Model Zoo
 
-### Problems with instructuin following
+### Problems with the instruction following
 
-!NOTE, not touching prompts, changin parsing logic to be more relaxed, logs before 08.10.2024 (first 8) are more strict with wrong moves stats
+!NOTE, not touching prompts, changing parsing logic to be more relaxed, logs before 08.10.2024 (first 8) are more strict with wrong moves stats
 
 Original kick-off prompt:
 ```
@@ -148,15 +148,15 @@ Respond with the action.
 ```
 And the failure message:
 ```
-Invalid action. Pick one, reply exactly with the name and space delimetted argument: "get_current_board, get_legal_moves, make_move <UCI formatted move>
+Invalid action. Pick one, reply exactly with the name and space delimited argument: "get_current_board, get_legal_moves, make_move <UCI formatted move>
 ```
 
-- GPT-4o, GPT-4o mini, gemini-1.5-pro-preview-0409 worked fine with the ogirinal prompts and exact match logic for make_move
-- Claude 3.5 Sonnet failed to reply with simple string always adding verbosity
+- GPT-4o, GPT-4o mini, gemini-1.5-pro-preview-0409 worked fine with the original prompts and exact match logic for make_move
+- Claude 3.5 Sonnet failed to reply with a simple string always adding verbosity
 ```
 Proxy (to Player_Black):
 
-Invalid action. Pick one, reply exactly with the name and space delimetted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+Invalid action. Pick one, reply exactly with the name and space delimited argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
 
 --------------------------------------------------------------------------------
 Player_Black (to Proxy):
@@ -166,7 +166,7 @@ I apologize for the continued confusion. Let me provide the correct format for t
 make_move c7c5
 ```
 
-- Gemini-1.5-flash-001 alaways wrapped answers in JSON code blocks (while not asked)
+- Gemini-1.5-flash-001 always wrapped answers in JSON code blocks (while not asked)
 - lama-3.1-nemotron-70b-instruct-hf 4 bit was too verbose failing to make any actions (2024.10.22_23:18_lama-3.1-nemotron-70b-instruct-hf.md)
 - gpt-35-turbo-0125 failed to make any moves by not complying with the instructions and reply format (see _23.10.2024_gpt-35-turbo-0125/fail.md)
 
@@ -225,18 +225,18 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
 
 ## Random and Chess Engine Players
 
-- Random players requests for all legal moves and randomly picks one thus always making valid moves
+- Random players request all legal moves and randomly pick one thus always making valid moves
 - Chess engines 
  - Simple no dependency Pyhton engine Sunfish (https://github.com/thomasahle/sunfish)
  - Powerful Stockfish
     - Requires separate installation and properly defining path with python-chess
-        - On macOS I installed it via `brew install stockfish`
+        - On macOS, I installed it via `brew install stockfish`
         - Path to Stockfish is identified via `where stockfish` yielding `/opt/homebrew/bin/stockfish`
         - Set the path in `llm_chess.py`.
 
-Below is some stats simulating many games (1000) and collecting stats to get an idea of a baseline for LLM players palying against random player
+Below are some stats simulating many games (1000) and collecting stats to get an idea of a baseline for LLM players playing against a random player
 
-### Random Player (white) vs Cheess Engine (black, Stockfish, time per move 0.01s)
+### Random Player (white) vs Chess Engine (black, Stockfish, time per move 0.01s)
 
 ```json
 {
@@ -271,9 +271,9 @@ Below is some stats simulating many games (1000) and collecting stats to get an 
 }
 ```
 
-### Random Player (white) vs Cheess Engine (black, Sunfish)
+### Random Player (white) vs Chess Engine (black, Sunfish)
 
-Simulating 1000 games of a chess engine against show that with chess engine it takes around 100 moves to complete the game, chess engine dominates judging by ammount of material (weighted sum of piaces standing at the board)
+Simulating 1000 games of a chess engine shows that with a chess engine, it takes around 100 moves to complete the game, The chess engine dominates judging by the amount of material (weighted sum of pieces standing on the board)
 ```json
 {
     "total_games": 1000,
@@ -403,12 +403,12 @@ Action: `do_reflection`
 --------------------------------------------------------------------------------
 Proxy (to Player_Black):
 
-Before deciding on the next move you can reflect on your current situation, write down notes and evaluate.
-    Here're a few recomendations that you can follow to make a better move decision:
+Before deciding on the next move you can reflect on your current situation, write down notes, and evaluate.
+    Here are a few recommendations that you can follow to make a better move decision:
     - Shortlist the most valuable next moves
     - Consider how they affect the situation
     - What could be the next moves from your opponent in each case
-    - Is there any strategy fitting the situation and you choice of moves
+    - Is there any strategy fitting the situation and your choice of moves
     - Rerank the shortlisted moves based on the previous steps
     
 
@@ -423,7 +423,7 @@ Player_Black (to Proxy):
    - **c7c5**: Challenges the center and prepares to expand on the queenside.
 
 2. **Immediate Effects:**
-   - **g8f6**: Develops a piece, brings the knight nearer to the center.
+   - **g8f6**: Develops a piece, and brings the knight nearer to the center.
    - **h7h6**: Solidifies kingside but is more of a precautionary move.
    - **c7c5**: Direct action against the center, preparing for future breaks.
 
@@ -451,11 +451,11 @@ Proxy (to Player_Black):
 Move made, switching player
 ```
 
-## Can LLMs discern Unicode encoded pieces? Yes, they can
+## Can LLMs discern Unicode-encoded pieces? Yes, they can
 
 Prompt:
 ```
-Please name chess pieces and their colors
+Please name chess pieces and their colors.
 
 ♕ ♔ ♗ ♘ ♖ ♙
 ♛ ♚ ♝ ♞ ♜ ♟
