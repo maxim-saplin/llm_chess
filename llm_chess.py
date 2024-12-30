@@ -137,8 +137,8 @@ def run(log_dir="_logs", save_logs=True):
         "Now is your turn to make a move. Before making a move you can pick one of the following actions:\n"
         f"- '{get_current_board_action}' to get the schema and current status of the board\n"
         f"- '{get_legal_moves_action}' to get a UCI formatted list of available moves\n"
-        f"{f"- '{reflect_action}' to take a moment to think about your strategy\n" if enable_reflection else ""}"
-        f"- '{make_move_action} <UCI formatted move>' when you are ready to complete your turn (e.g., '{make_move_action} e2e4')"
+        + (f"- '{reflect_action}' to take a moment to think about your strategy\n" if enable_reflection else "")
+        + f"- '{make_move_action} <UCI formatted move>' when you are ready to complete your turn (e.g., '{make_move_action} e2e4')"
     )
 
     reflect_prompt = (
