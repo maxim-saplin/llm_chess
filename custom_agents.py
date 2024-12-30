@@ -18,6 +18,7 @@ class GameAgent(ConversableAgent):
         wrong_actions=0,
         has_requested_board=False,
         failed_action_attempts=0,
+        dialog_turn_delay=0,  # Add this parameter
         *args,
         **kwargs,
     ):
@@ -26,6 +27,7 @@ class GameAgent(ConversableAgent):
         self.wrong_actions = wrong_actions
         self.has_requested_board = has_requested_board
         self.failed_action_attempts = failed_action_attempts
+        self.dialog_turn_delay = dialog_turn_delay  # Store it locally
 
     def prep_to_move(self):
         """
@@ -35,6 +37,16 @@ class GameAgent(ConversableAgent):
         self.wrong_actions = 0
         self.has_requested_board = False
         self.failed_action_attempts = 0
+
+    def generate_reply(
+        self,
+        messages: Optional[List[Dict[str, Any]]] = None,
+        sender: Optional[ConversableAgent] = None,
+        **kwargs: Any,
+    ) -> Union[str, Dict, None]:
+        if isinstance(self.dialog_turn_delay, int) and self.dialog_turn_delay > 0:
+            time.sleep(self.dialog_turn_delay)
+        return super().generate_reply(messages, sender, **kwargs)
 
 
 class RandomPlayerAgent(GameAgent):
@@ -124,7 +136,6 @@ class AutoReplyAgent(GameAgent):
         make_move_action,
         reflect_prompt,
         reflection_followup_prompt,
-        dialog_turn_delay=0,  # Add this parameter
         *args,
         **kwargs,
     ):
@@ -141,7 +152,6 @@ class AutoReplyAgent(GameAgent):
         self.reflect_action = reflect_action
         self.make_move_action = make_move_action
         self.reflect_prompt = reflect_prompt
-        self.dialog_turn_delay = dialog_turn_delay  # Add this line
         self.reflection_followup_prompt = reflection_followup_prompt
 
     def generate_reply(
@@ -152,9 +162,6 @@ class AutoReplyAgent(GameAgent):
     ) -> Union[str, Dict, None]:
         if self._is_termination_msg(messages[-1]):
             return None
-        # Add delay if dialog_turn_delay is set and greater than 0
-        if isinstance(self.dialog_turn_delay, int) and self.dialog_turn_delay > 0:
-            time.sleep(self.dialog_turn_delay)
 
         action_choice = messages[-1]["content"].lower().strip()
 

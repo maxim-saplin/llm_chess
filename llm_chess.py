@@ -186,6 +186,7 @@ def run(log_dir="_logs", save_logs=True):
         llm_config=llm_config_white,
         is_termination_msg=is_termination_message,
         human_input_mode="NEVER",
+        dialog_turn_delay=dialog_turn_delay,
     )
 
     llm_black = GameAgent(
@@ -196,6 +197,7 @@ def run(log_dir="_logs", save_logs=True):
         llm_config=llm_config_black,
         is_termination_msg=is_termination_message,
         human_input_mode="NEVER",
+        dialog_turn_delay=dialog_turn_delay,
     )
 
     random_player = RandomPlayerAgent(
@@ -205,7 +207,6 @@ def run(log_dir="_logs", save_logs=True):
         human_input_mode="NEVER",
         is_termination_msg=is_termination_message,
         make_move_action=make_move_action,
-        dialog_turn_delay=dialog_turn_delay,  # Add this line
         get_legal_moves_action=get_legal_moves_action,
         get_current_board_action=(
             get_current_board_action if random_print_board else None
