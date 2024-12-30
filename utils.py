@@ -81,6 +81,13 @@ def get_llms_autogen(temperature=None):
             "api_key": "any",
         }
 
+    def gemini_config(key):
+        return {
+            "model": os.environ[f"GEMINI_MODEL_NAME_{key}"],
+            "api_key": os.environ[f"GEMINI_API_KEY_{key}"],
+            "api_type": "google",
+        }
+
     def create_config(config_list):
         return {
             "config_list": config_list,
@@ -96,6 +103,8 @@ def get_llms_autogen(temperature=None):
             configs.append(create_config([azure_config(key)]))
         elif kind == "local":
             configs.append(create_config([local_config(key)]))
+        elif kind == "gemini":
+            configs.append(create_config([gemini_config(key)]))
 
     for config in configs:
         config["cache_seed"] = None
