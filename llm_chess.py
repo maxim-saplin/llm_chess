@@ -59,6 +59,12 @@ visualize_board = True  # You can skip board visualization to speed up execution
 remove_description = True  # Turns out Autogen can substitute system message with decription, o1-mini doesn't support system role
 temp_override = 1.0  # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini)
 
+# Add a warning if both remove_description is True or False and temp_override is not None
+if (remove_description in [True]) and temp_override is not None:
+    print(
+        "\033[93mWarning: 'remove_description' is set to True and 'temp_override' is not None. This overrides ARE ONLY NEEDED to o1 models\033[0m"
+    )
+
 stockfish_path = "/opt/homebrew/bin/stockfish"
 
 
