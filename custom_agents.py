@@ -1,4 +1,5 @@
 import random
+import time  # Add this import
 import re
 import chess
 import chess.engine
@@ -123,6 +124,7 @@ class AutoReplyAgent(GameAgent):
         make_move_action,
         reflect_prompt,
         reflection_followup_prompt,
+        dialog_turn_delay=0,  # Add this parameter
         *args,
         **kwargs,
     ):
@@ -139,6 +141,7 @@ class AutoReplyAgent(GameAgent):
         self.reflect_action = reflect_action
         self.make_move_action = make_move_action
         self.reflect_prompt = reflect_prompt
+        self.dialog_turn_delay = dialog_turn_delay  # Add this line
         self.reflection_followup_prompt = reflection_followup_prompt
 
     def generate_reply(
@@ -149,6 +152,10 @@ class AutoReplyAgent(GameAgent):
     ) -> Union[str, Dict, None]:
         if self._is_termination_msg(messages[-1]):
             return None
+        # Add delay if dialog_turn_delay is set and greater than 0
+        if isinstance(self.dialog_turn_delay, int) and self.dialog_turn_delay > 0:
+            time.sleep(self.dialog_turn_delay)
+
         action_choice = messages[-1]["content"].lower().strip()
 
         reply = ""

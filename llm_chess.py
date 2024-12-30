@@ -51,18 +51,21 @@ use_fen_board = False  # Whther to use graphical UNICODE representation board OR
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times
 max_failed_attempts = 3  # count of wrong replies in a single-move dialog (e.g. non existing action) before stopping the game, giving a loss
-throttle_delay = 5  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+throttle_delay = 3  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+dialog_turn_delay = 6  # adds a delay in seconds inside auto reply agent, i.e. delays between turns in a dialog happenning within a move
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
 visualize_board = True  # You can skip board visualization to speed up execution
 remove_description = False  # Turns out Autogen can substitute system message with decription, o1-mini doesn't support system role
+
 temp_override = None  # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini)
 
 # Add a warning if both remove_description is True or False and temp_override is not None
 if (remove_description in [True]) and temp_override is not None:
     print(
-        "\033[93mWarning: 'remove_description' is set to True and 'temp_override' is not None. This overrides ARE ONLY NEEDED to o1 models\033[0m"
+        "\033[93mWarning: 'remove_description' is set to True and 'temp_override' is not None."
+        " This overrides ARE ONLY NEEDED to o1 models\033[0m"
     )
 
 stockfish_path = "/opt/homebrew/bin/stockfish"
@@ -202,6 +205,7 @@ def run(log_dir="_logs", save_logs=True):
         human_input_mode="NEVER",
         is_termination_msg=is_termination_message,
         make_move_action=make_move_action,
+        dialog_turn_delay=dialog_turn_delay,  # Add this line
         get_legal_moves_action=get_legal_moves_action,
         get_current_board_action=(
             get_current_board_action if random_print_board else None
