@@ -4,8 +4,8 @@ import statistics  # Import the statistics module
 from llm_chess import run
 
 # Parameters
-NUM_REPETITIONS = 3  # Set the number of games to run
-LOG_FOLDER = "_logs/no_reflection/_30.12.2024_gemini-2.0-flash-exp"  # Set the folder to store logs
+NUM_REPETITIONS = 1  # Set the number of games to run
+LOG_FOLDER = "_logs/no_reflection/_01.01.2025_gemini-2.0-flash-exp"  # Set the folder to store logs
 
 STORE_INDIVIDUAL_LOGS = True
 
