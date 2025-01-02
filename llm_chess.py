@@ -52,7 +52,7 @@ max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times
 max_failed_attempts = 3  # count of wrong replies in a single-move dialog (e.g. non existing action) before stopping the game, giving a loss
 throttle_delay = 1  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
-dialog_turn_delay = 1  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
+dialog_turn_delay = 0  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
