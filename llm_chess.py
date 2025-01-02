@@ -51,15 +51,15 @@ use_fen_board = False  # Whther to use graphical UNICODE representation board OR
 max_game_moves = 200  # maximum number of game moves before terminating
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times
 max_failed_attempts = 3  # count of wrong replies in a single-move dialog (e.g. non existing action) before stopping the game, giving a loss
-throttle_delay = 10  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
-dialog_turn_delay = 10  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
+throttle_delay = 1  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+dialog_turn_delay = 1  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
 visualize_board = True  # You can skip board visualization to speed up execution
-remove_description = False  # Turns out Autogen can substitute system message with decription, o1-mini doesn't support system role
+remove_description = True  # Turns out Autogen can substitute system message with decription, o1-mini doesn't support system role
 
-temp_override = None  # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini)
+temp_override = 1.0  # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini)
 
 # Add a warning if both remove_description is True or False and temp_override is not None
 if (remove_description in [True]) and temp_override is not None:
@@ -137,7 +137,11 @@ def run(log_dir="_logs", save_logs=True):
         "Now is your turn to make a move. Before making a move you can pick one of the following actions:\n"
         f"- '{get_current_board_action}' to get the schema and current status of the board\n"
         f"- '{get_legal_moves_action}' to get a UCI formatted list of available moves\n"
-        + (f"- '{reflect_action}' to take a moment to think about your strategy\n" if enable_reflection else "")
+        + (
+            f"- '{reflect_action}' to take a moment to think about your strategy\n"
+            if enable_reflection
+            else ""
+        )
         + f"- '{make_move_action} <UCI formatted move>' when you are ready to complete your turn (e.g., '{make_move_action} e2e4')"
     )
 
