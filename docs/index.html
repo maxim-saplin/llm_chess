@@ -347,6 +347,11 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
 
         let currentSortOrder = {}; // To track the current sort order for each column
         const defaultSortColumnIndex = 1; // Sort by "Draws %" by default
+        const SPECIAL_ROWS = {
+            STOCKFISH: "Stockfish chess engine (as Black)",
+            RANDOM_WHITE: "Random Player (as White)",
+            RANDOM_BLACK: "Random Player (as Black)"
+        };
 
         function showPane(paneId) {
             document.getElementById('leaderboard').style.display = paneId === 'leaderboard' ? 'block' : 'none';
@@ -383,9 +388,9 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
             const bottomRows = [];
             const otherRows = rows.filter(columns => {
                 const player = columns[csvIndices.player];
-                if (player === "Stockfish chess engine (as Black)" ||
-                    player === "Random Player (as White)" ||
-                    player === "Random Player (as Black)") {
+                if (player === SPECIAL_ROWS.STOCKFISH ||
+                    player === SPECIAL_ROWS.RANDOM_WHITE ||
+                    player === SPECIAL_ROWS.RANDOM_BLACK) {
                     bottomRows.push(columns);
                     return false;
                 }
@@ -458,9 +463,9 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
             const bottomRows = [];
             const otherRows = rows.filter(row => {
                 const player = row.cells[0].textContent;
-                if (player === "Chess engine (as Black)" ||
-                    player === "Random Player (as White)" ||
-                    player === "Random Player (as Black)") {
+                if (player === SPECIAL_ROWS.STOCKFISH ||
+                    player === SPECIAL_ROWS.RANDOM_WHITE ||
+                    player === SPECIAL_ROWS.RANDOM_BLACK) {
                     bottomRows.push(row);
                     return false;
                 }
