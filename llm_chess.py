@@ -57,14 +57,14 @@ random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
 visualize_board = True  # You can skip board visualization to speed up execution
-remove_description = True  # Turns out Autogen can substitute system message with decription, o1-mini doesn't support system role
+# remove_description = True  # Turns out Autogen can substitute system message with decription, o1-mini doesn't support system role
 
-temp_override = 1.0  # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini)
+temp_override = None  # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini)
 
 # Add a warning if both remove_description is True or False and temp_override is not None
-if (remove_description in [True]) and temp_override is not None:
+if temp_override is not None:
     print(
-        "\033[93mWarning: 'remove_description' is set to True and 'temp_override' is not None."
+        "\033[93mWarning: 'temp_override' is not None."
         " This overrides ARE ONLY NEEDED to o1 models\033[0m"
     )
 
@@ -181,12 +181,7 @@ def run(log_dir="_logs", save_logs=True):
         name="Player_White",
         # Not using system message as some LLMs can ignore it
         system_message="",
-        description=(
-            ""
-            if remove_description
-            else "You are a professional chess player and you play as white. "
-            + common_prompt
-        ),
+        description="",
         llm_config=llm_config_white,
         is_termination_msg=is_termination_message,
         human_input_mode="NEVER",
