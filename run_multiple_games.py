@@ -4,9 +4,9 @@ import statistics  # Import the statistics module
 from llm_chess import run
 
 # Parameters
-NUM_REPETITIONS = 15  # Set the number of games to run
+NUM_REPETITIONS = 11  # Set the number of games to run
 LOG_FOLDER = (
-    "_logs/no_reflection/_03.02.2025_deepseek-chat_2"  # Set the folder to store logs
+    "_logs/no_reflection/_04.02.2025_deepseek-chat"  # Set the folder to store logs
 )
 
 STORE_INDIVIDUAL_LOGS = True
