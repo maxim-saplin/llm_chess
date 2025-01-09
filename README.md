@@ -52,6 +52,24 @@ Notes:
 - "wrong_moves" and "wrong_actions" is the total number of erroneous replies by the player (e.g. not following convention) made in "inner" dialogs between the proxy and player. To get the total number of erroneous replies add up the metrics (i.e. `wrong_moves` do not include `wrong_actions`)
   - A single game is finished if any of the players make more than `max_failed_attempts` in the inner dialogs (i.e. `wrong_moves` + `wrong_actions` < `max_failed_attempts` - see above config)
 
+## Processing Logs & Prepping for Web
+
+`_logs/aggregate_models_to_csv.py` can process individual games logs within a given folder and produce a CSV grouping logs by model name and aggregating stats. 
+
+Change the default params to point the script to the correct folder and output CSV file:
+
+```python
+def aggregate_models_to_csv(
+    logs_dir="_logs/no_reflection",
+    output_csv="_logs/no_reflection/aggregate_models.csv",
+):
+```
+
+### Web
+
+Copy the produced `aggregate_models.csv` to `docs/data`, run `aggregate_models.csv` to prdouce `refined.csv` ready for `index.html` emdedding. Manually copy the needed rows to `index.html` const in JS - the data will be used in the Web Leaderboard.
+
+Why copy manually? Cause you are likely updating a leaderboard and some of the models in the Web migth have different names, not the ones used in the logs.
 
 ## Kinds of Agents
 
