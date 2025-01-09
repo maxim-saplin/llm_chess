@@ -1,3 +1,13 @@
+"""
+Aggregates data from multiple JSON log files, groups by model and writes the aggregated results to a CSV file.
+It processes game logs, calculates various statistics for each model, and outputs these statistics in a structured CSV format.
+
+1. Reads logs from (default: '_logs/no_reflection')
+2. Run the script using Python:
+   python aggregate_models_to_csv.py
+3. Aggregate stats will be saved to a CSV file (default: '_logs/no_reflection/aggregate_models.csv')
+"""
+
 import os
 import json
 import csv
