@@ -49,8 +49,14 @@
 
         .gh {
             color: yellowgreen;
-            text-decoration: none; 
-            margin-right: 10px; 
+        }
+
+        .gh img {
+            vertical-align: middle;
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            filter: invert(100%);
         }
 
         h1 {
@@ -657,12 +663,12 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
         </div>
         <div id="how-it-works" class="pane" style="display: none;">
             <p class="descriptions">
-                <strong>Libraries and Dependencies Used:</strong><br/>
+                <strong>Libraries and Dependencies Used:</strong><br/><br/>
                 - <strong>chess:</strong> A Python library for handling chess game rules and basic operations, including board representation, legal move evaluation, and game state evaluation. This is not a chess engine runnig the actual caclulation of the best move.<br/>
                 - <strong>Microsoft Autogen</strong> is used as a backbone for LLM comunication. It also implements the interaction between a Chess Board and custom agents like GameAgent, RandomPlayerAgent, AutoReplyAgent, and others for simulating different player types.<br/>
                 - <strong>Stockfish</strong> - the chess engine doing the actual best move calculation, used as a referrence to demonstrate what a real chess player's peformance is.<br/>
                 <br/>
-                <strong>Workflow:</strong><br/>
+                <strong>Workflow:</strong><br/><br/>
                 1. The game is initialized with a chess board and two players: a Random Player (as white) and an LLM (as black).<br/>
                 2. The game loop runs until a termination condition is met, such as checkmate, stalemate, or reaching the maximum number of moves.<br/>
                 3. Each player takes turns making a move. The Random Player selects a move randomly from the list of legal moves.<br/>
@@ -670,7 +676,7 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
                 5. The game state is updated after each move, and the board is visualized if enabled.<br/>
                 6. Game statistics are generated and stored at the end of the game.<br/>
                 <br/>
-                <strong>Dialog:</strong><br/>
+                <strong>Dialog:</strong><br/><br/>
                 Here is an example of a dialog that prompts a model to make a move:<br/>
                 <pre class="snippet">
 <span style="color:green">Proxy (to Player_Black):</span>
@@ -760,6 +766,7 @@ Move made, switching player
             - The older GPT-4 Turbo did better than newer GPT-4o version, this is a yet another eval demonstrating how newer models performed worse supporting the claim the the 4o family of models are smaller and cheaper to run models.<br/>
         </div>
         <a class="gh" href="https://github.com/maxim-saplin/llm_chess/" target="_blank">
+            <img src="icons/gh.png" alt="GitHub Icon">
             Project's GitHub
         </a>
     </div>
