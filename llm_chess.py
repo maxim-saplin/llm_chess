@@ -352,8 +352,10 @@ def run(log_dir="_logs", save_logs=True):
                         winner = "NONE"
                         reason = TerminationReason.INSUFFICIENT_MATERIAL.value
                     elif board.is_seventyfive_moves():
+                        winner = "NONE"
                         reason = TerminationReason.SEVENTYFIVE_MOVES.value
                     elif board.is_fivefold_repetition():
+                        winner = "NONE"
                         reason = TerminationReason.FIVEFOLD_REPETITION.value
                 elif (
                     last_message.lower().strip() != move_was_made.lower().strip()

@@ -3,7 +3,23 @@
 Putting LLMs up against ~each other~ Randmon Player in a chess game. Testing basic instruction following capabilities and of course chess proficiency :)
 
 - `llm_chessp.py` runs the game, collects the results, records video
-    
+
+## Rules
+
+- Random players plays as white, LLM as black
+- Game constraints:
+    - Max 200 moves (100 moves per player)
+    - Max 10 turns in LLM dialog when deciding on a move (a turn being a user/assistant pair of messages)
+    - Max 3 mistakes in LLM dialog
+- Win OR Loss
+    - In LLM dialog if max turns is reached OR 3 mistakes are made by LMM, Random Players gets a WIN and LLM gets a LOSS
+    - If max moves is reached a DRAW is given
+    - Chess engine evaluates the board after each move and can give the corresponding player a WIN in case of a checkmate or stop the game and give a DRAW for the following reasons: Stalemate, Insufficient Material, Seventy-five Moves, or Fivefold Repetition.
+ - Exceptions/Execution Errors:
+    - If the execution is halted due to a programatic error the game is stopped and DRAW is scored.
+    - MANUAL inspection of logs is required:
+        - If the error happens to be connectivity or thorrle limmit error by API the game to be discarded
+        - If the error is model error (e.g. ""The model produced invalid content. Consider modifying your prompt if you are seeing this error persistently." by OpenAI or 400 or 500 errors by Local Models) the draw to be changed to a LOSS to LLM
 
 ## Running the Games
 
@@ -131,11 +147,12 @@ Proxy (to Player_Black):
 
 Move made, switching player
 ```
-## Logs/Changes Affecting Evals
+## Logs
 
 Game run results are stored under the `_logs` folder.
 
-!NOTES:
+## Changes Affecting Evals
+
 - Logs before 08.10.2024 (first 8) are more strict with wrong moves stats
 - Logs before 16.10.2024 had ambiguous "Unknown issue, Player_Black failed to make a move" reason which often meant that a single dialog took more than 10 turns (20 total messages) and execution was halted, changed to include a more specific reason "Max turns in single dialog"
 - Different configs could be used, directory folder
