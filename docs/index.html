@@ -404,7 +404,7 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
                 return true;
             });
 
-            // Sort the remaining rows by "Draws %" in descending order
+            // Sort the remaining rows by "Wins", "Draws", and then "Mistakes" in descending order
             otherRows.sort((a, b) => {
                 const winsA = parseFloat(a[csvIndices.player_wins_percent]);
                 const winsB = parseFloat(b[csvIndices.player_wins_percent]);
@@ -412,11 +412,9 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
                 const drawsB = parseFloat(b[csvIndices.player_draws_percent]);
                 const mistakesA = parseFloat(a[csvIndices.wrong_actions_per_1000moves]) + parseFloat(a[csvIndices.wrong_moves_per_1000moves]);
                 const mistakesB = parseFloat(b[csvIndices.wrong_actions_per_1000moves]) + parseFloat(b[csvIndices.wrong_moves_per_1000moves]);
-                const tokensA = parseFloat(a[csvIndices.completion_tokens_black_per_move]);
-                const tokensB = parseFloat(b[csvIndices.completion_tokens_black_per_move]);
 
-                // Hierarchical sorting: Wins DESC, Draws DESC, Mistakes ASC, Tokens ASC
-                return winsB - winsA || drawsB - drawsA || mistakesA - mistakesB || tokensA - tokensB;
+                // Hierarchical sorting: Wins DESC, Draws DESC, Mistakes ASC
+                return winsB - winsA || drawsB - drawsA || mistakesA - mistakesB;
             });
 
             const tbody = document.querySelector('#leaderboard tbody');
