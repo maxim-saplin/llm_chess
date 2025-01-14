@@ -48,7 +48,7 @@
         }
 
         .gh {
-            color: red;
+            color: yellowgreen;
             text-decoration: none; 
             margin-right: 10px; 
         }
@@ -61,7 +61,6 @@
             display: block;
             margin:auto;
             text-align: justify;
-            padding-bottom: 40px;
         }
 
         .button-container {
@@ -129,6 +128,10 @@
 
         pre.title-narrow {
             display: none;
+        }
+
+        .game {
+            padding-bottom: 50px;
         }
 
         pre.board {
@@ -572,6 +575,30 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
  \ \_____\  \ \_\ \_\  \ \_____\  \/\_____\  \/\_____\ 
   \/_____/   \/_/\/_/   \/_____/   \/_____/   \/_____/ 
         </pre>
+        <div class="game">
+            <span style="color: yellow;">Random Player (White)</span>
+            <div class="board">
+<pre class="board">
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+· · · · · · · ·
+· · · · · · · ·
+· · · · · · · ·
+· · · · · · · ·
+♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖</pre>
+                <div class="game-over">
+                    <p>GAME OVER</p>
+                    <span>
+                        - Outcome: Draw<br>
+                        - Max moves reached: 200<br>
+                        - Material White: 16<br>
+                        - Material Black: 18
+                    </span>
+                </div>
+            </div>
+            <span style="color: yellow;">GPT-4o Mini (Black)</span>
+        </div>
         <p class="intro">
             Can a Large Language Model play chess? You can prompt it to make
             a move based on the board state, hint it with a list of legal moves (and ask to pick one). You will find that 
@@ -587,28 +614,6 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
             <br/><br/>
             Let's find out ツ
         </p>
-        Random Player (White)
-        <div class="board">
-<pre class="board">
-♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
-♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
-· · · · · · · ·
-· · · · · · · ·
-· · · · · · · ·
-· · · · · · · ·
-♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
-♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖</pre>
-            <div class="game-over">
-                <p>GAME OVER</p>
-                <span>
-                    - Outcome: Draw<br>
-                    - Max moves reached: 200<br>
-                    - Material White: 16<br>
-                    - Material Black: 18
-                </span>
-            </div>
-        </div>
-        GPT-4o Mini (Black)
         <div class="button-container">
             <button class="selected" onclick="showPane('leaderboard')">Leaderboard</button>
             <button onclick="showPane('how-it-works')">How it works</button>
