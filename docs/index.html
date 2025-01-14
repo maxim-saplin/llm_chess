@@ -72,8 +72,8 @@
         .button-container {
             display: flex;
             justify-content: center;
-            margin-top: 50px;
-            margin-bottom: 20px;
+            margin-top: 30px;
+            margin-bottom: 40px;
         }
 
         button {
@@ -114,9 +114,9 @@
             left: 2px;
         }
 
-        .pane{
+        /* .pane{
             padding-top: 20px;
-        }
+        } */
 
         pre.title {
             font-size: 16px;
@@ -721,6 +721,51 @@ Move made, switching player
         </div>
         <div id="considerations" class="pane" style="display: none;">
             <p class="descriptions">
+            <span style="color:white;">
+            ------------------------------------------------------<br/>
+            December 14, 2025 : Reasoning Models, First Wins<br/>
+            ------------------------------------------------------<br/><br/></span>
+            In my initial notes (see below), I expressed skepticism about LLMs ever being capable of achieving meaningful wins against a Random Player 
+            (let alone a dedicated chess engine). I also mentioned the ARC Challenge as a similar benchmark that is difficult or unsolvable by LLMs.
+            Yet, in late December 2024, OpenAI introduced their o3 model, which excelled in 
+            <a href="https://arcprize.org/blog/oai-o3-pub-breakthrough">ARC-AGI-1</a>.<br/><br/>
+            Around the same time, I received API access to o1-mini, and it was impressive! o1-mini scored 9 wins in 30 games (30%), 
+            making it the first model
+            capable of meaningful chess games. Next, I tried o1-preview, achieving an even more impressive 46.7% win rate.<br/><br/>
+            The o1 models did something different; they played a meaningful game rather than randomly moving pieces on the board as 
+            seen with older "non-reasoning" models. They formed a league of their own—a "strong" model capable of winning.<br/><br/>
+            I also tested a number of other reasoning models introduced after o1—Google's Gemini 2.0 Flash Thinking (via API), 
+            QwQ 32B (4-bit quantized via LM Studio), and Sky T1 32B (also 4-bit quantized via LM Studio).
+            The results were underwhelming, to say the least—those 3 models couldn't complete even a single game, often failing 
+            after a few moves (due to breaking the communication protocol or making illegal moves).
+            Just like the o1 models, they produced lots of tokens, yet unlike o1, 
+            which seems to have 2 separate stages—thinking (those hidden tokens) and producing the 
+            final answer—the other "thinking" models just stream lots of tokens without caring about 
+            following any instructions as to what they are asked to produce.
+            Verbosity and failing to adhere to instructions seem to plague not just the o1 competitors 
+            but also newer models (e.g., check Deepseek v3).<br/><br/>
+            <br/><strong>NOTES:</strong><br/><br/>
+            - When LLMs achieve a 90% win rate against a Random Player, I will replace it with Stockfish.<br/>
+            - You can find conversation logs for 
+            o1-mini <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_21.12.2024_o1-mini-2024-09-12/output.txt">here</a> 
+            and for o1-preview <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_03.01.2025_o1-preview-2024-09-12_2/output.txt">
+            here</a><br/>
+            - Conversation logs for <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_09.01.2025_gemini-2.0-flash-thinking-exp-1219/output.txt">Gemini 2.0 Thinking</a>,
+            <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_14.01.2025_sky-t1-32b-preview_q4-0/output.txt">QwQ</a>
+            and <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_14.01.2025_sky-t1-32b-preview_q4-0/output.txt">Sky T1</a>
+
+            - While o1 models used a lot of tokens (1221 tokens per move for o1-mini and 2660 
+            for o1-preview vs. below 100 tokens for an average model), their replies were concise (most of the tokens 
+            were hidden ones) and had few mistakes.<br/>
+            - An idea: while other (non-o1) reasoning models might be poor instruction followers, why 
+            not introduce a deliberate step of final answer synthesizing? I.e., use a cheaper LLM (e.g., 4o-mini) 
+            to get the long scroll from a reasoning model and prompt it to produce a final answer. 
+            Will the reasoning models show better chess abilities?<br/>
+            <br/>
+            <span style="color:white;">
+            <br/><br/>------------------------------------------------------<br/>
+            November 12, 2024 : Initial Observations, Opinion<br/>
+            ------------------------------------------------------<br/><br/></span>
             Language Models can make moves in a chess game, but they cannot actually play chess or progress towards a victory. 
             The experiment started after taking a class at DeepLearning, which taught the Microsoft Autogen framework. One of the classes demonstrated
             a simulation of a chess game between LLMs. I was immediately intrigued by the idea of putting different LLMs head-to-head in a chess game competition. 
@@ -738,7 +783,7 @@ Move made, switching player
             the chaos monkey while maintaining performance at traditional chat tasks.
             <br/>
             <br/>
-            <strong>NOTES:</strong><br/>
+            <strong>NOTES:</strong><br/><br/>
             - More data on game simulations is available <a href="https://github.com/maxim-saplin/llm_chess/blob/main/docs/_data/refined.csv">here</a> and 
             <a href="https://github.com/maxim-saplin/llm_chess/blob/main/docs/_data/aggregate_models.numbers">here</a>.<br/>
             - No history of moves is available to LLM, no reflection used (giving the model "time to think").<br/>
