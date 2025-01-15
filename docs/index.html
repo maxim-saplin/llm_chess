@@ -606,7 +606,7 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
         <p class="intro">
             Can a Large Language Model play chess? You can prompt it to make
             a move based on the board state, hint it with a list of legal moves (and ask to pick one). You will find that 
-            an LLM can move pieces, even provide sound comments on why it made a certain move
+            an LLM can move pieces (but not all of them, some struggle with instruction following), even provide sound comments on why it made a certain move
             and what tactic or strategy it followed.
             <br/><br/>
             But can LLMs actually make any meaningful moves and win in a chess game? Why don't
@@ -646,7 +646,8 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
                 <strong>- Player:</strong> Model playing as black against a Random Player.<br/>
                 <strong>- Wins:</strong> How often the player scored a win (due to checkmate or the opponent failing to make a move). Displays LLMs' proficiency in chess.<br/>
                 <strong>- Draws:</strong> Percentage of games without a winner (e.g., reaching the maximum number of 200 moves or stalemate). Displays weaks' LLMs' proficiency in chess if it can't win.<br/>
-                <strong>- Mistakes:</strong> Number of LLM erroneous replies per 1000 moves - how often did an LLM fail to follow the instructions and make a move, e.g., due to hallucinations picking illegal moves and not conforming to the communication protocol. Shows the model's instruction-following capabilities and hallucination resistance.<br/>
+                <strong>- Mistakes:</strong> Number of LLM erroneous replies per 1000 moves - how often did an LLM fail to follow the instructions 
+                and make a move. E.g., due to hallucinations, picking illegal moves, not conforming to the communication protocol. Shows the model's instruction-following capabilities and hallucination resistance.<br/>
                 <strong>- Tokens:</strong> Number of tokens generated per move. Demonstrates the model's verbosity.<br/><br/>
                 <strong>NOTES:</strong><br/><br/>
                 - LLMs played as black against a Random Player (as white).<br/>
