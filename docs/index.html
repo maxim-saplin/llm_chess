@@ -753,10 +753,12 @@ Move made, switching player
             - Conversation logs for <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_09.01.2025_gemini-2.0-flash-thinking-exp-1219/output.txt">Gemini 2.0 Thinking</a>,
             <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_14.01.2025_sky-t1-32b-preview_q4-0/output.txt">QwQ</a>
             and <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_14.01.2025_sky-t1-32b-preview_q4-0/output.txt">Sky T1</a>
-
             - While o1 models used a lot of tokens (1221 tokens per move for o1-mini and 2660 
             for o1-preview vs. below 100 tokens for an average model), their replies were concise (most of the tokens 
             were hidden ones) and had few mistakes.<br/>
+            - OpenAI models might have an advantage over other models because the prompts have been crafted with GPT-4 models.
+            This might explain why many models perform worse. Contrary to this point, there are non-OpenAI models (e.g., Anthropic)
+            that do not struggle with instruction following. I believe the factor of prompts and adjusting prompts for each specific model plays a minor role.
             - An idea: while other (non-o1) reasoning models might be poor instruction followers, why 
             not introduce a deliberate step of final answer synthesizing? I.e., use a cheaper LLM (e.g., 4o-mini) 
             to get the long scroll from a reasoning model and prompt it to produce a final answer. 
