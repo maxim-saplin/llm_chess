@@ -594,8 +594,16 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
             document.getElementById('material-diff').textContent = `Material Diff: ${parseFloat(materialDiff).toFixed(1)}`;
 
             const rect = row.getBoundingClientRect();
-            popup.style.top = `${rect.top + window.scrollY}px`;
-            popup.style.left = `${rect.right + window.scrollX}px`;
+            if (window.innerWidth < 1200) {
+                popup.style.top = `${rect.bottom + window.scrollY}px`;                
+                popup.style.right = `${rect.left + window.scrollX}px`;
+                popup.style.left = '';
+            }
+            else {
+                popup.style.top = `${rect.top + window.scrollY}px`;
+                popup.style.left = `${rect.right + window.scrollX}px`;
+                popup.style.right = '';
+            }
             popup.style.display = 'block';
         }
 
