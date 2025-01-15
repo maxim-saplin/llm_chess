@@ -418,13 +418,17 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
         const csvIndices = {
                 player: 0,
                 total_games: 1,
+                player_wins: 2, // Assuming the wins column is at index 2
+                losses: 3,      // Assuming the losses column is at index 3
+                draws: 4,       // Assuming the draws column is at index 4
                 player_wins_percent: 5,
                 player_draws_percent: 6,
                 wrong_actions_per_1000moves: 14,
                 wrong_moves_per_1000moves: 15,
                 completion_tokens_black_per_move: 17,
                 average_moves: 16,
-                material_diff: 12
+                material_diff: 12,
+                losses: 3 // Assuming the losses column is at index 3
             };
 
         function fillTableWithCSV() {
@@ -596,13 +600,19 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
 
         function showPopup(row, columns) {
             const popup = document.getElementById('popup');
-            const averageMoves = columns[csvIndices.average_moves];
-            const materialDiff = columns[csvIndices.material_diff];
             const totalGames = columns[csvIndices.total_games];
+            const wins = columns[csvIndices.player_wins]; // Retrieve wins
+            const losses = columns[csvIndices.losses];    // Retrieve losses
+            const draws = columns[csvIndices.draws];      // Retrieve draws
+            const averageMoves = columns[csvIndices.average_moves]; // Retrieve average moves
+            const materialDiff = columns[csvIndices.material_diff]; // Retrieve material difference
 
-            document.getElementById('average-moves').textContent = `Average Moves: ${parseFloat(averageMoves).toFixed(1)}`;
-            document.getElementById('material-diff').textContent = `Material Diff: ${parseFloat(materialDiff).toFixed(1)}`;
             document.getElementById('total-games').textContent = `Games: ${parseInt(totalGames)}`;
+            document.getElementById('wins').textContent = `Wins: ${parseInt(wins)}`; // Add wins to popup
+            document.getElementById('losses').textContent = `Losses: ${parseInt(losses)}`; // Add losses to popup
+            document.getElementById('draws').textContent = `Draws: ${parseInt(draws)}`; // Add draws to popup
+            document.getElementById('average-moves').textContent = `Average Moves: ${parseFloat(averageMoves).toFixed(2)}`; // Add average moves to popup
+            document.getElementById('material-diff').textContent = `Material Diff: ${parseFloat(materialDiff).toFixed(2)}`; // Add material difference to popup
 
             const rect = row.getBoundingClientRect();
             if (window.innerWidth < 1200) {
@@ -889,9 +899,12 @@ Move made, switching player
         </a>
     </div>
     <div id="popup" style="display: none;">
+        <p id="total-games"></p>
+        <p id="wins"></p>
+        <p id="losses"></p>
+        <p id="draws"></p> 
         <p id="average-moves"></p>
         <p id="material-diff"></p>
-        <p id="total-games"></p>
     </div>
 </body>
 </html>
