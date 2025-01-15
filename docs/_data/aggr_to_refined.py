@@ -87,5 +87,5 @@ def convert_aggregate_to_refined(aggregate_file, refined_file):
 
 # Usage
 convert_aggregate_to_refined(
-    "docs/_data/aggregate_models.csv", "docs/_data/refined.csv"
+    "_logs/no_reflection/aggregate_models.csv", "docs/_data/refined.csv"
 )
