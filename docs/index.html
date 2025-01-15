@@ -238,8 +238,18 @@
             cursor: pointer;
         }
 
+        th:hover {
+            cursor: pointer;
+            color: yellowgreen;
+        }
+
+        tr:hover td{
+            color: yellowgreen;
+        }
+
         td {
             border-top: 1px solid;
+            cursor: default;
             color: lightgray;
         }
 
@@ -259,6 +269,16 @@
         .descriptions strong {
             font-weight: normal;
             color: white;
+        }
+
+        #popup {
+            display: none;
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            z-index: 1000;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            text-align: left;
         }
 
         /* Responsive styles for mobile devices */
@@ -387,20 +407,21 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
             });
         }
 
-        // !!!! Copy Paste aggregate results CSV here
-        function fillTableWithCSV() {
-            const lines = data.trim().split('\n');
-            const header = lines[0].split(',');
-            const rows = lines.slice(1).map(row => row.split(','));
-
-            const csvIndices = {
+        const csvIndices = {
                 player: 0,
                 player_wins_percent: 5,
                 player_draws_percent: 6,
                 wrong_actions_per_1000moves: 14,
                 wrong_moves_per_1000moves: 15,
-                completion_tokens_black_per_move: 17
+                completion_tokens_black_per_move: 17,
+                average_moves: 16,
+                material_diff: 12
             };
+
+        function fillTableWithCSV() {
+            const lines = data.trim().split('\n');
+            const header = lines[0].split(',');
+            const rows = lines.slice(1).map(row => row.split(','));
 
             // Separate the rows that should always be at the bottom
             const bottomRows = [];
@@ -447,6 +468,11 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
                     <td>${tokens.toFixed(2)}</td>
                 `;
                 tbody.appendChild(tr);
+
+                // Add event listeners for hover and tap
+                tr.addEventListener('mouseenter', () => showPopup(tr, columns));
+                tr.addEventListener('mouseleave', hidePopup);
+                tr.addEventListener('click', () => showPopup(tr, columns));
             });
 
             // Add a non-breaking space to all headers
@@ -557,6 +583,25 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
                 .catch(error => {
                     console.error('Error fetching moves.txt:', error);
                 });
+        }
+
+        function showPopup(row, columns) {
+            const popup = document.getElementById('popup');
+            const averageMoves = columns[csvIndices.average_moves];
+            const materialDiff = columns[csvIndices.material_diff];
+
+            document.getElementById('average-moves').textContent = `Average Moves: ${parseFloat(averageMoves).toFixed(1)}`;
+            document.getElementById('material-diff').textContent = `Material Diff: ${parseFloat(materialDiff).toFixed(1)}`;
+
+            const rect = row.getBoundingClientRect();
+            popup.style.top = `${rect.top + window.scrollY}px`;
+            popup.style.left = `${rect.right + window.scrollX}px`;
+            popup.style.display = 'block';
+        }
+
+        function hidePopup() {
+            const popup = document.getElementById('popup');
+            popup.style.display = 'none';
         }
     </script>
 </head>
@@ -823,6 +868,10 @@ Move made, switching player
             <img src="icons/gh.png" alt="GitHub Icon">
             Project's GitHub
         </a>
+    </div>
+    <div id="popup" style="display: none; position: absolute; background-color: #333; color: #fff; padding: 10px; border-radius: 5px; z-index: 1000;">
+        <p id="average-moves"></p>
+        <p id="material-diff"></p>
     </div>
 </body>
 </html>
