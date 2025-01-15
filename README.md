@@ -83,7 +83,7 @@ def aggregate_models_to_csv(
 
 ### Web
 
-Copy the produced `aggregate_models.csv` to `docs/data`, run `aggregate_models.csv` to prdouce `refined.csv` ready for `index.html` emdedding. Manually copy the needed rows to `index.html` const in JS - the data will be used in the Web Leaderboard.
+Run `_docs/data/aggr_to_refined.py` to prdouce `refined.csv` (from `aggregate_models.csv`) ready for `index.html` emdedding. Manually copy the needed rows to `index.html` const in JS - the data will be used in the Web Leaderboard.
 
 Why copy manually? Cause you are likely updating a leaderboard and some of the models in the Web migth have different names, not the ones used in the logs.
 
