@@ -278,7 +278,13 @@
             color: #fff;
             z-index: 1000;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
             text-align: left;
+        }
+        
+        #popup p {
+            margin: 0;
         }
 
         /* Responsive styles for mobile devices */
@@ -411,6 +417,7 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
 
         const csvIndices = {
                 player: 0,
+                total_games: 1,
                 player_wins_percent: 5,
                 player_draws_percent: 6,
                 wrong_actions_per_1000moves: 14,
@@ -591,9 +598,11 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
             const popup = document.getElementById('popup');
             const averageMoves = columns[csvIndices.average_moves];
             const materialDiff = columns[csvIndices.material_diff];
+            const totalGames = columns[csvIndices.total_games];
 
             document.getElementById('average-moves').textContent = `Average Moves: ${parseFloat(averageMoves).toFixed(1)}`;
             document.getElementById('material-diff').textContent = `Material Diff: ${parseFloat(materialDiff).toFixed(1)}`;
+            document.getElementById('total-games').textContent = `Games: ${parseInt(totalGames)}`;
 
             const rect = row.getBoundingClientRect();
             if (window.innerWidth < 1200) {
@@ -879,9 +888,10 @@ Move made, switching player
             Project's GitHub
         </a>
     </div>
-    <div id="popup" style="display: none; position: absolute; background-color: #333; color: #fff; padding: 10px; border-radius: 5px; z-index: 1000;">
+    <div id="popup" style="display: none;">
         <p id="average-moves"></p>
         <p id="material-diff"></p>
+        <p id="total-games"></p>
     </div>
 </body>
 </html>
