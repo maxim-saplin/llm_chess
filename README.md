@@ -259,6 +259,48 @@ Proxy (to Player_Black):
 Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2N2/R1P1P1PP/2BQKB1R b Kq - 2 8
 ```
 
+## Model Providers Used
+
+- Azure OpenAI:
+  - gpt-4o-2024-11-20
+  - gpt-4o-2024-08-06
+  - gpt-4o-2024-05-13
+  - o1-preview-2024-09-12
+  - o1-mini-2024-09-12
+  - gpt-4o-mini-2024-07-18
+  - gpt-35-turbo-0125
+  - gpt-4-turbo-2024-04-09
+- Anthropic:
+  - anthropic.claude-v3-5-sonnet
+  - anthropic.claude-v3-opus
+  - anthropic.claude-v3-haiku
+- Google:
+  - gemini-1.5-flash-001
+  - gemini-1.5-pro-preview-0409
+  - gemini-2.0-flash-exp
+  - gemini-2.0-flash-thinking-exp-1219
+- Groq:
+  - llama-3.2-90b-vision-preview
+- Cerebras:
+  - llama-3.3-70b
+- Deepseek:
+  - deepseek-chat-v3
+- Local (llama.cpp/LM Studio):
+  - llama-2-7b-chat@q8_0
+  - llama-3-70b-instruct-awq
+  - meta-llama-3.1-8b-instruct@fp16
+  - gemma-2-27b-it@q6_k_l
+  - gemma-2-9b-it-8bit
+  - granite-3.1-8b-instruct@q8_0
+  - internlm3-8b-instruct@q8_0
+  - ministral-8b-instruct-2410@q8_0
+  - mistral-nemo-12b-instruct-2407@q8_0
+  - mistral-small-instruct-2409
+  - phi-4@q8
+  - qwen2.5-14b-instruct@q8_0
+  - qwq-32b-preview@q4_k_m
+  - sky-t1-32b-preview@q4_0
+
 ## Random and Chess Engine Players
 
 - Random players request all legal moves and randomly pick one thus always making valid moves
