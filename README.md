@@ -292,6 +292,7 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - llama-2-7b-chat@q8_0
   - llama-3-70b-instruct-awq
   - meta-llama-3.1-8b-instruct@fp16
+  - meta-llama-3.1-8b-instruct@q8_0
   - meta-llama-3.1-8b-instruct@q4_k_m
   - gemma-2-27b-it@q6_k_l
   - gemma-2-9b-it-8bit
