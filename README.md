@@ -292,7 +292,7 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - llama3.1-8b
 - Deepseek:
   - deepseek-chat-v3
-- Local (llama.cpp/LM Studio):
+- Local (llama.cpp/LM Studio, default settings - 8k context, Flash Attention enabled, 100% GPU off-load when possible):
   - llama-2-7b-chat@q8_0
   - llama-3-70b-instruct-awq
   - meta-llama-3.1-8b-instruct@fp16
