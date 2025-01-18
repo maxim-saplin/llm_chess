@@ -2,9 +2,9 @@ import os
 from aggregate_logs_to_csv import aggregate_models_to_csv
 from aggr_to_refined import convert_aggregate_to_refined
 
-LOGS_DIR = "_logs/no_reflection"
+LOGS_DIR = "_temp"
 AGGREGATE_CSV = os.path.join(LOGS_DIR, "aggregate_models.csv")
-REFINED_CSV = "data_processing/refined_quant.csv"
+REFINED_CSV = "_temp/refined_quant.csv"
 
 
 def main():
