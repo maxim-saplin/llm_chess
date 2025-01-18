@@ -148,7 +148,7 @@ Game run results are stored under the `_logs` folder.
 - Logs before 16.10.2024 had ambiguous "Unknown issue, Player_Black failed to make a move" reason which often meant that a single dialog took more than 10 turns (20 total messages) and execution was halted, changed to include a more specific reason "Max turns in single dialog"
 - Different configs could be used, directory folder
 - Log `_15.10.2024_gpt-4o-anthropic.claude-v3-5-sonnet_reflectio` had timeout error, aggregate only had 9 out of 10 consistent runs
-- After 19.10.2024 setting default hyperparams ("temperature": 0.7, "top_p": 1.0, "frequency_penalty": 0.0, "presence_penalty": 0.0,)
+- After 19.10.2024 setting default hyperparams ("temperature": 0.3, "top_p": 1.0, "frequency_penalty": 0.0, "presence_penalty": 0.0,)
 - 19.10.2024, Gemini-1.5-flash-001 consistently failed to follow the instructions:
 - 22.10.2024, slightly updated common prompt removing excessive tabs
 - 05.11.2024, fixed bug with wrong action counting (not global per game but per move), set temperature to 0.7, re-ran no_reflection
