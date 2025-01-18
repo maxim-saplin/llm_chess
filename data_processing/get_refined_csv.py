@@ -4,7 +4,7 @@ from aggr_to_refined import convert_aggregate_to_refined
 
 LOGS_DIR = "_logs/no_reflection"
 AGGREGATE_CSV = os.path.join(LOGS_DIR, "aggregate_models.csv")
-REFINED_CSV = "data_processing/refined.csv"
+REFINED_CSV = "data_processing/refined_quant.csv"
 
 
 def main():
