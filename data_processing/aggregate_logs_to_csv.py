@@ -6,6 +6,9 @@ It processes game logs, calculates various statistics for each model, and output
 2. Run the script using Python:
    python aggregate_models_to_csv.py
 3. Aggregate stats will be saved to a CSV file (default: '_logs/no_reflection/aggregate_models.csv')
+
+Usage:
+    Set constants to path and run as script OR call the aggregate_models_to_csv() function
 """
 
 import os
@@ -13,6 +16,9 @@ import json
 import csv
 from dataclasses import dataclass, field
 from typing import Dict, Any
+
+LOGS_DIR = ("_logs/no_reflection",)
+OUTPUT_CSV = "_logs/no_reflection/aggregate_models.csv"
 
 
 @dataclass
@@ -77,8 +83,8 @@ def load_game_log(file_path: str) -> GameLog:
 
 
 def aggregate_models_to_csv(
-    logs_dir="_logs/no_reflection",
-    output_csv="_logs/no_reflection/aggregate_models.csv",
+    logs_dir,
+    output_csv,
 ):
     csv_data = []
     model_aggregates = {}
@@ -244,4 +250,4 @@ def aggregate_models_to_csv(
 
 
 if __name__ == "__main__":
-    aggregate_models_to_csv()
+    aggregate_models_to_csv(LOGS_DIR, OUTPUT_CSV)

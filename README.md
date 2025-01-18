@@ -60,9 +60,9 @@ To run multiple games:
 
 This feature is used to compare different kinds of players and generalize the findings. For LLM playes 10 games were used, for random/chess engine players 1000 games, some states is provided below.
 
-#### Aggregate Result
+#### Multiple Games Summary Results
 
-When running multiple games individual logs are collected in `{date_time}.json` files (e.g. 2024.10.11_17:34.json) which are collected in a directory. After the games are finished aggregate results are collected in `aggregate_results.csv`.
+When running multiple games individual logs are collected in `{date_time}.json` files (e.g. 2024.10.11_17:34.json) which are collected in a directory. After the games are finished summary results are collected in `aggregate_results.csv`.
 
 Notes:
 - "wrong_moves" and "wrong_actions" is the total number of erroneous replies by the player (e.g. not following convention) made in "inner" dialogs between the proxy and player. To get the total number of erroneous replies add up the metrics (i.e. `wrong_moves` do not include `wrong_actions`)
@@ -70,20 +70,11 @@ Notes:
 
 ## Processing Logs & Prepping for Web
 
-`_logs/aggregate_models_to_csv.py` can process individual games logs within a given folder and produce a CSV grouping logs by model name and aggregating stats. 
-
-Change the default params to point the script to the correct folder and output CSV file:
-
-```python
-def aggregate_models_to_csv(
-    logs_dir="_logs/no_reflection",
-    output_csv="_logs/no_reflection/aggregate_models.csv",
-):
-```
+- `data_processing/aggregate_logss_to_csv.py` can process individual games logs within a given folder and produce a CSV grouping logs by model name and aggregating stats. Change the default params to point the script to the correct folder and output CSV file:
 
 ### Web
 
-Run `_docs/data/aggr_to_refined.py` to prdouce `refined.csv` (from `aggregate_models.csv`) ready for `index.html` emdedding. Manually copy the needed rows to `index.html` const in JS - the data will be used in the Web Leaderboard.
+Run `data_processing/get_refined.py` to prdouce `refined.csv` ready for `index.html` emdedding. Manually copy the needed rows to `index.html` const in JS - the data will be used in the Web Leaderboard.
 
 Why copy manually? Cause you are likely updating a leaderboard and some of the models in the Web migth have different names, not the ones used in the logs.
 

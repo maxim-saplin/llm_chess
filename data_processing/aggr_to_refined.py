@@ -1,4 +1,24 @@
+"""
+Convert aggregated chess game statistics
+from a CSV file into a refined format used for Web publishing.
+The refined format includes calculated
+percentages and differences that are useful for analyzing player performance
+over multiple games.
+
+Functions:
+    convert_aggregate_to_refined(aggregate_file, refined_file):
+        Reads an aggregate CSV file containing game statistics, processes the
+        data to calculate additional metrics, and writes the results to a
+        refined CSV file with a new structure.
+
+Usage:
+    Set constants to path and run as script OR call the convert_aggregate_to_refined() function
+"""
+
 import csv
+
+AGGREGATE_FILE = "_logs/no_reflection/aggregate_models.csv"
+REFINED_FILE = "docs/_data/refined.csv"
 
 
 def convert_aggregate_to_refined(aggregate_file, refined_file):
@@ -85,7 +105,5 @@ def convert_aggregate_to_refined(aggregate_file, refined_file):
                 )
 
 
-# Usage
-convert_aggregate_to_refined(
-    "_logs/no_reflection/aggregate_models.csv", "docs/_data/refined.csv"
-)
+if __name__ == "__main__":
+    convert_aggregate_to_refined(AGGREGATE_FILE, REFINED_FILE)
