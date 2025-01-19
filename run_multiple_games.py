@@ -4,10 +4,8 @@ import statistics  # Import the statistics module
 from llm_chess import run
 
 # Parameters
-NUM_REPETITIONS = 70  # Set the number of games to run
-LOG_FOLDER = (
-    "_logs/quantization_research/temp001/_18.01.2025_meta-llama-3.1-8b-instruct@q8_0"  # Set the folder to store logs
-)
+NUM_REPETITIONS = 3  # Set the number of games to run
+LOG_FOLDER = "_logs/no_reflection/_19.01.2025_llama-3.3-70b-versatile"  # Set the folder to store logs
 
 STORE_INDIVIDUAL_LOGS = True
 
