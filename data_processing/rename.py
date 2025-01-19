@@ -2,7 +2,7 @@ import os
 import re
 
 # Define the top-level directory
-TOP_LEVEL_DIR = "_logs/no_reflection"
+TOP_LEVEL_DIR = "_logs/reflection"
 
 # Regular expression to match the date format in the directory name
 date_pattern = re.compile(r"_(\d{2})\.(\d{2})\.(\d{4})_")
