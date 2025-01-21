@@ -17,7 +17,7 @@ import csv
 from dataclasses import dataclass, field
 from typing import Dict, Any
 
-LOGS_DIR = ("_logs/no_reflection",)
+LOGS_DIR = "_logs/no_reflection"
 OUTPUT_CSV = "_logs/no_reflection/aggregate_models.csv"
 
 
@@ -118,9 +118,13 @@ def aggregate_models_to_csv(
                             "sum_avg_material_white": 0,
                             "sum_squares_avg_material_black": 0,
                             "sum_squares_avg_material_white": 0,
-                            "sum_avg_moves": 0,
-                            "sum_squares_avg_moves": 0,
+                            "sum_moves": 0,
+                            "sum_squares_moves": 0,
                             "completion_tokens_black": 0,
+                            "min_moves": float("inf"),
+                            "max_moves": 0,
+                            "prompt_tokens_black": 0,
+                            "total_tokens_black": 0,
                         }
 
                     model_aggregates[model_name]["total_games"] += 1
@@ -150,14 +154,33 @@ def aggregate_models_to_csv(
                     model_aggregates[model_name]["sum_squares_avg_material_white"] += (
                         game_log.material_count["white"] ** 2 * total_moves
                     )
-                    model_aggregates[model_name]["sum_avg_moves"] += total_moves
-                    model_aggregates[model_name]["sum_squares_avg_moves"] += (
-                        total_moves**2
+                    model_aggregates[model_name]["sum_moves"] += total_moves
+                    model_aggregates[model_name]["sum_squares_moves"] += total_moves**2
+
+                    model_aggregates[model_name]["completion_tokens_black"] += (
+                        game_log.usage_stats_black.details["completion_tokens"]
+                        if game_log.usage_stats_black.details
+                        else 0
                     )
 
-                    model_aggregates[model_name][
-                        "completion_tokens_black"
-                    ] += game_log.usage_stats_black.details["completion_tokens"]
+                    model_aggregates[model_name]["prompt_tokens_black"] += (
+                        game_log.usage_stats_black.details["total_tokens"]
+                        if game_log.usage_stats_black.details
+                        else 0
+                    )
+
+                    model_aggregates[model_name]["total_tokens_black"] += (
+                        game_log.usage_stats_black.details["prompt_tokens"]
+                        if game_log.usage_stats_black.details
+                        else 0
+                    )
+
+                    model_aggregates[model_name]["min_moves"] = min(
+                        model_aggregates[model_name]["min_moves"], total_moves
+                    )
+                    model_aggregates[model_name]["max_moves"] = max(
+                        model_aggregates[model_name]["max_moves"], total_moves
+                    )
 
                 except json.JSONDecodeError:
                     print(f"Skipping invalid JSON file: {file_path}")
@@ -168,8 +191,8 @@ def aggregate_models_to_csv(
         "black_llm_wins",
         "white_rand_wins",
         "draws",
-        "black_llm_wins_percent",  # New header
-        "black_llm_draws_percent",  # New header
+        "black_llm_wins_percent",
+        "black_llm_draws_percent",
         "llm_total_moves",
         "llm_wrong_actions",
         "llm_wrong_moves",
@@ -185,6 +208,10 @@ def aggregate_models_to_csv(
         "std_dev_moves",
         "completion_tokens_black",
         "completion_tokens_black_per_move",
+        "min_moves",
+        "max_moves",
+        "prompt_tokens_black",
+        "total_tokens_black",
     ]
 
     for model_name, aggregate in model_aggregates.items():
@@ -192,7 +219,7 @@ def aggregate_models_to_csv(
         total_moves = aggregate["total_moves"]
         weighted_avg_material_black = aggregate["sum_avg_material_black"] / total_moves
         weighted_avg_material_white = aggregate["sum_avg_material_white"] / total_moves
-        weighted_avg_moves = aggregate["sum_avg_moves"] / aggregate["total_games"]
+        avg_moves = aggregate["sum_moves"] / aggregate["total_games"]
 
         variance_material_black = (
             aggregate["sum_squares_avg_material_black"] / total_moves
@@ -200,9 +227,9 @@ def aggregate_models_to_csv(
         variance_material_white = (
             aggregate["sum_squares_avg_material_white"] / total_moves
         ) - (weighted_avg_material_white**2)
-        variance_moves = (
-            aggregate["sum_squares_avg_moves"] / aggregate["total_games"]
-        ) - (weighted_avg_moves**2)
+        variance_moves = (aggregate["sum_squares_moves"] / aggregate["total_games"]) - (
+            avg_moves**2
+        )
 
         std_dev_material_black = variance_material_black**0.5
         std_dev_material_white = variance_material_white**0.5
@@ -222,8 +249,8 @@ def aggregate_models_to_csv(
                 aggregate["black_wins"],
                 aggregate["white_wins"],
                 aggregate["draws"],
-                black_llm_wins_percent,  # Add calculated percentage
-                black_llm_draws_percent,  # Add calculated percentage
+                black_llm_wins_percent,
+                black_llm_draws_percent,
                 total_moves,
                 aggregate["wrong_actions"],
                 aggregate["wrong_moves"],
@@ -235,10 +262,14 @@ def aggregate_models_to_csv(
                 material_diff_llm_minus_rand_per_100moves,
                 aggregate["wrong_actions"] / total_moves * 100,
                 aggregate["wrong_moves"] / total_moves * 100,
-                weighted_avg_moves,
+                avg_moves,
                 std_dev_moves,
                 aggregate["completion_tokens_black"],
                 aggregate["completion_tokens_black"] / total_moves,
+                model_aggregates[model_name]["min_moves"],
+                model_aggregates[model_name]["max_moves"],
+                model_aggregates[model_name]["prompt_tokens_black"],
+                model_aggregates[model_name]["total_tokens_black"],
             ]
         )
 
