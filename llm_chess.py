@@ -59,11 +59,11 @@ random_print_board = (
 visualize_board = False  # You can skip board visualization to speed up execution
 # remove_description = True  # Turns out Autogen can substitute system message with decription, o1-mini doesn't support system role
 
-temp_override = 0.6  # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini)
+temp_override = None # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini), R1 distil recomend 0.5-0.7
  
 # Tell AutoReply agent to ignore given pieces of text when processing replies (using re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL))
 # May help isolating thinking tokens. E.g. Deepseek R1 32B uses <think> tags that can have actions mentioned breaking execution (r"<think>.*?</think>")
-ignore_text = r"<think>.*?</think>" 
+ignore_text = None # r"<think>.*?</think>" 
 
 # Add a warning if both remove_description is True or False and temp_override is not None
 if temp_override is not None:
