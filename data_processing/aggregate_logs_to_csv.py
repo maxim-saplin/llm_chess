@@ -17,8 +17,18 @@ import csv
 from dataclasses import dataclass, field
 from typing import Dict, Any
 
+# Directory where log files are stored
 LOGS_DIR = "_logs/no_reflection"
+
+# Path to the output CSV file where aggregated results will be saved
 OUTPUT_CSV = "_logs/no_reflection/aggregate_models.csv"
+
+# Dictionary to override model names in the logs with more descriptive names, matches key as a substring in log file path
+MODEL_OVERRIDES = {
+    "2025-21-01_deepseek-r1-distill-qwen-32b@q4_k_m_no_thinking_isol": "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp03",
+    "2025-21-01_deepseek-r1-distill-qwen-32b@q4_k_m_temp06_thinking_isol": "deepseek-r1-distill-qwen-32b@q4_k_m|isol_temp06",
+    "2025-21-01_deepseek-r1-distill-qwen-32b@q4_k_m_temp06_no_thinking_isol": "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp06",
+}
 
 
 @dataclass
@@ -83,9 +93,20 @@ def load_game_log(file_path: str) -> GameLog:
 
 
 def aggregate_models_to_csv(
-    logs_dir,
-    output_csv,
-):
+    logs_dir: str, output_csv: str, model_overrides: dict = None
+) -> None:
+    """
+    Aggregates game logs from a specified directory and writes the results to a CSV file.
+
+    Args:
+        logs_dir (str): The directory containing the game log files in JSON format.
+        output_csv (str): The path to the output CSV file where aggregated results will be saved.
+        model_overrides (dict, optional): A dictionary mapping file path substrings to model names,
+                                          used to override the model name in the logs if specified.
+
+    Returns:
+        None
+    """
     csv_data = []
     model_aggregates = {}
 
@@ -95,7 +116,17 @@ def aggregate_models_to_csv(
                 file_path = os.path.join(root, file)
                 try:
                     game_log = load_game_log(file_path)
+                    # Use model ID from log, override if specified
                     model_name = game_log.player_black.model
+                    if model_overrides:
+                        key = next((k for k in model_overrides if k in file_path), None)
+                        if key:
+                            original_model_name = model_name
+                            model_name = model_overrides[key]
+                            print(
+                                f"Warning: Overriding model name from '{original_model_name}' to '{model_name}' for file '{file_path}'"
+                            )
+
                     total_moves = game_log.number_of_moves
                     material_diff = (
                         game_log.material_count["black"]
@@ -281,4 +312,4 @@ def aggregate_models_to_csv(
 
 
 if __name__ == "__main__":
-    aggregate_models_to_csv(LOGS_DIR, OUTPUT_CSV)
+    aggregate_models_to_csv(LOGS_DIR, OUTPUT_CSV, MODEL_OVERRIDES)
