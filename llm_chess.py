@@ -59,7 +59,7 @@ random_print_board = (
 visualize_board = False  # You can skip board visualization to speed up execution
 # remove_description = True  # Turns out Autogen can substitute system message with decription, o1-mini doesn't support system role
 
-temp_override = None  # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini)
+temp_override = 0.6  # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini)
  
 # Tell AutoReply agent to ignore given pieces of text when processing replies (using re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL))
 # May help isolating thinking tokens. E.g. Deepseek R1 32B uses <think> tags that can have actions mentioned breaking execution (r"<think>.*?</think>")
@@ -69,7 +69,7 @@ ignore_text = r"<think>.*?</think>"
 if temp_override is not None:
     print(
         "\033[93mWarning: 'temp_override' is not None."
-        " This overrides ARE ONLY NEEDED to o1 models\033[0m"
+        " This overrides ARE ONLY NEEDED for special models (e.g. o1 requite temp at 1.0, Deepseek R1 local models recomend 0.5 - 0.7)\033[0m"
     )
 
 stockfish_path = "/opt/homebrew/bin/stockfish"
