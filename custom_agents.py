@@ -119,6 +119,7 @@ class AutoReplyAgent(GameAgent):
         get_current_board_action (str): The action string for getting the current board state.
         get_legal_moves_action (str): The action string for getting legal moves.
         make_move_action (str): The action string for making a move.
+        ignore_text (str): A regex pattern to identify and ignore specific text segments in replies.
     """
 
     def __init__(
@@ -136,6 +137,7 @@ class AutoReplyAgent(GameAgent):
         make_move_action,
         reflect_prompt,
         reflection_followup_prompt,
+        ignore_text,
         *args,
         **kwargs,
     ):
@@ -153,6 +155,7 @@ class AutoReplyAgent(GameAgent):
         self.make_move_action = make_move_action
         self.reflect_prompt = reflect_prompt
         self.reflection_followup_prompt = reflection_followup_prompt
+        self.ignore_text = ignore_text
 
     def generate_reply(
         self,
@@ -165,6 +168,10 @@ class AutoReplyAgent(GameAgent):
 
         action_choice = messages[-1]["content"].lower().strip()
 
+        # Apply ignore_text regex to remove unwanted segments
+        if self.ignore_text:
+            re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL)
+
         reply = ""
 
         if self.get_current_board_action in action_choice:
@@ -174,13 +181,6 @@ class AutoReplyAgent(GameAgent):
             reply = self.get_legal_moves()
             sender.has_requested_board = True
         elif (
-            # Only return follow-up message if reflection actio is mentioned twice, in the proxy message and in the assistants request
-            # sum(
-            #     1
-            #     for msg in messages
-            #     if self.reflect_action.lower().strip() in msg["content"].lower().strip()
-            # )
-            # == 2
             messages[-2]["content"]
             == self.reflect_prompt
         ):
@@ -215,7 +215,6 @@ class AutoReplyAgent(GameAgent):
             reply = self.too_many_failed_actions_message
 
         return reply
-
 
 class ChessEngineSunfishAgent(GameAgent):
     """
