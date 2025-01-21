@@ -57,7 +57,6 @@ random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
 visualize_board = False  # You can skip board visualization to speed up execution
-# remove_description = True  # Turns out Autogen can substitute system message with decription, o1-mini doesn't support system role
 
 temp_override = None # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini), R1 distil recomend 0.5-0.7
  
