@@ -170,7 +170,7 @@ class AutoReplyAgent(GameAgent):
 
         # Apply ignore_text regex to remove unwanted segments
         if self.ignore_text:
-            re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL)
+            action_choice = re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL)
 
         reply = ""
 
