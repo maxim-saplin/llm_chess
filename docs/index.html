@@ -34,6 +34,11 @@
             overflow-y: scroll;
         }
 
+        code {
+            font-size: 20px;
+            font-family: "Web IBM VGA 8x16";
+        }
+
         div.center {
             width: 740px;
             margin: auto;
@@ -375,7 +380,7 @@ gpt-4o-2024-05-13,60,0,12,48,0.0,80.0,11057,1,16,12.585601881161255,16.568056434
 gpt-4o-2024-08-06,60,1,9,50,1.6666666666666667,83.33333333333334,11214,0,1,14.141787051899412,18.534242910647404,-4.392455858747992,-0.39169394139004743,0.0,0.08917424647761726,186.9,7.70322810772249
 gpt-4o-2024-11-20,71,3,6,62,4.225352112676056,87.32394366197182,13470,1,1,11.130734966592428,19.365330363771342,-8.234595397178914,-0.6113285372812853,0.07423904974016333,0.07423904974016333,189.71830985915494,50.575278396436524
 gpt-4o-mini-2024-07-18,30,0,12,18,0.0,60.0,4481,13,24,17.146172729301494,21.37982593171167,-4.233653202410178,-0.9448009824615439,2.9011381388083017,5.355947333184558,149.36666666666667,108.21624637357732
-deepseek-reasoner-r1,26,4,16,6,15.384615384615385,23.076923076923077,2403,7,38,11.852684144818976,3.099459009571369,8.753225135247607,3.642623859861676,2.913025384935497,15.813566375364129,92.42307692307692,4564.074906367041
+deepseek-reasoner,28,5,17,6,17.857142857142858,21.428571428571427,2553,7,42,12.731688209949079,3.157070113591853,9.574618096357225,3.750340029908823,2.7418723070896984,16.45123384253819,91.17857142857143,4588.827262044653
 deepseek-chat,70,0,68,2,0.0,2.857142857142857,4043,10,180,25.59930744496661,24.216176106851346,1.3831313381152626,0.3421052035902208,2.473410833539451,44.52139500371011,57.75714285714286,246.92604501607718
 deepseek-r1-distill-qwen-14b@q8_0,30,0,30,0,0.0,0.0,78,82,8,39.0,39.0,0.0,0.0,1051.2820512820513,102.56410256410255,2.6,3073.0641025641025
 deepseek-r1-distill-qwen-32b@q4_k_m,30,0,30,0,0.0,0.0,110,73,7,39.0,38.90909090909091,0.09090909090909349,0.826446280991759,663.6363636363637,63.63636363636363,3.6666666666666665,2173.827272727273
@@ -813,7 +818,94 @@ Move made, switching player
         </div>
         <div id="considerations" class="pane" style="display: none;">
             <p class="descriptions">
+            <span style="color:white;">
+            -------------------<br/>
+            January 22, 2025: R1 Challenges o1, thinking "surrogates"<br/>
+            -------------------<br/><br/></span>
     
+            Released on January 21, DeepSeek-R1 made a significant impact by showing similar
+            or even better performance than OpenAI's o1 models across a range of math and
+            coding benchmarks. All of this comes at a fraction of the cost when accessing
+            their 671B model through their API. Besides, the model weights are open, and
+            there are plenty of details about the training process—a stark contrast to
+            OpenAI's secrecy regarding the o1/o3 family of models. And that's not all! For
+            those interested in local models, there are smaller "distilled" reasoning models
+            at 70B, 32B, 14B, etc., sizes.<br/><br/>
+
+            So far, none of the so-called reasoning or thinking models have come close to o1
+            (qwq-32b-preview, sky-t1-32b-preview, gemini-2.0-flash-thinking-exp-1219). They
+            were a step back in instruction following and could hardly be steered when
+            compared to non-thinking models. Let alone, they didn't perform as well in chess.
+            I call them surrogates, verbosity generators mimicking but not replicating o1's
+            behavior.<br/><br/>
+
+            Deepseek-R1 (deepseek-reasoner-r1) was an extremely curious model to test, and
+            now there are evaluation results in the Leaderboard.<br/><br/>
+
+            Additionally, Google has just released an update to its Gemini 2.0 Thinking Model
+            (gemini-2.0-flash-thinking-exp-01-21), which previously showed poor results. Two
+            very interesting releases in two days...<br/><br/>
+
+            <strong>NOTES:</strong><br/><br/>
+
+            - There are now three models in a league of their own: o1-mini, o1-preview, and now
+            deepseek-reasoner-r1. These are the only models with significant wins (>10%) and
+            maintaining a positive material difference (~9) as opposed to a negative material
+            difference for the resetGameInterval.<br/><br/>
+
+            - Deepseek-reasoner-r1 is much more verbose (almost twice as many tokens as o1) and
+            also makes more mistakes. Many games were lost due to the model making mistakes,
+            unlike o1 models, which mostly fell out of the games due to losing or drawing
+            (e.g., stalemate, insufficient material).<br/><br/>
+
+            - Deepseek-reasoner-r1 showed distinctive behavior: sometimes it made moves without
+            requesting the board state or legal moves list (i.e., issues make_move action in
+            the very first response), sometimes it only requested the board state without
+            getting the list of moves and decided on the move without a hint (in some cases
+            picking the right move, in others wrong).<br/><br/>
+
+            - Overall, o1 models are better all-round models (compared to R1), with better chess
+            performance, as well as instruction following (Mistakes) and Durability (not
+            falling out of the games, doing more moves on average).<br/><br/>
+
+            - The rest of the "thinking" models (sky-t1-32b-preview@q4_0, qwq-32b-preview@q4_k_m,
+            deepseek-r1-distill-qwen-32b@q4_k_m, deepseek-r1-distill-qwen-14b@q8_0,
+            gemini-2.0-flash-thinking-exp-1219) can hardly follow prompt instructions, lasting
+            on average 2~14 moves.<br/><br/>
+
+            - Distilled dense 14B and 32B versions of Deepseek-R1 (deepseek-r1-distill-qwen-32b@q4_k_m,
+            deepseek-r1-distill-qwen-14b@q8_0) did not impress—very poor instruction following,
+            not even close to the full 671B MoE model. Could quantization have an effect?
+            Don't know.<br/><br/>
+
+            - Distilled R1 models use <code>&lt;think&gt;&lt;/think&gt;</code> tags to enclose
+            "reasoning" tokens (those ones hidden for o1), sometimes they fail to put the
+            opening <code>&lt;think&gt;</code> tag (most often in the very first reply).<br/><br/>
+
+            - The new Gemini Thinking model (gemini-2.0-flash-thinking-exp-01-21) did improve a
+            lot in instruction following. While the previous December version
+            (gemini-2.0-flash-thinking-exp-1219) was almost useless, staying in the game on
+            average for 2.3 moves (i.e., breaking instruction prompts in the 2nd move it was
+            asked to make), the new model lasted on average 40 moves and showed far fewer
+            mistakes.<br/><br/>
+
+            In terms of chess, the newer gemini-2.0-flash-thinking-exp-01-21 showed a negative
+            material difference and negligible draw count—way below other non-thinking models
+            (even Google's own Gemma 2 9B).<br/><br/>
+
+            - Gemini-2.0-flash-thinking-exp-01-21 also demonstrated much less verbosity in the
+            outputs, providing to-the-point answers. Didn't investigate it deeply, yet it
+            seems that now Gemini Thinking does proper isolation of reasoning tokens. Per
+            <a href="https://ai.google.dev/gemini-api/docs/thinking">docs</a>, "On a standard
+            request, the model responds with two parts, the thoughts and the model response.
+            You can check programmatically if a part is a thought or not by seeing if the
+            part.thought field is set to True." Autogen doesn't seem to register thought
+            tokens in completion stats for Flash Thinking while it does so for R1.<br/><br/>
+
+            - Earlier non-o1 thinking models did not do well with splitting the reasoning/thinking part
+            from the final answer, R1 and newer Gemini Thinking do that (yet it didn't help
+            the distilled R1 models).<br/><br/>
+
             <span style="color:white;">
             -------------------<br/>
             January 21, 2025: More Models, More Tests<br/>
@@ -823,20 +915,20 @@ Move made, switching player
             (although losing to the random player more often). 
             Back in November, when I did 30 runs of Sonnet 3.5, there were 0 wins. 
             Did Anthropic change something in v1 as well, or was it just a question of stochasticity?
-            <br/>
+            <br/><br/>
             - Conducted more runs of GPT-4o models (gpt-4o-2024-05-13, gpt-4o-2024-08-06, gpt-4o-2024-11-20). The August version also achieved a win, yet
             it also had its first non-zero mistake (previous 30-run result had a perfect 0 mistakes) - this time, that happened due to Azure's content
             filter halting one of the games.
-            <br/>
+            <br/><br/>
             - OpenAI's and Anthropic's models are still the most durable models, i.e.,
             demonstrating the least number of mistakes, staying in almost all games
             until the very end without falling off due to a random glitch/hallucination
             or breaking the prompt instructions. Clearly, it is a challenge for most models
             to sustain a 100-turn (200-move game) with an average of 3-4 dialog interactions per game turn. 
-            <br/>
+            <br/><br/>
             - Deepseeks R1 distilled into 32B Qwen (deepseek-r1-distill-qwen-32b@q4_k_m) didn't perform well
             - barely able to move past a couple of turns in the chess game, no better than QwQ or Flash Thinking.
-            <br/>
+            <br/><br/>
             - o1 models are still special being the only models maintaing positive material diff (gaining more piaces rather than losing them)
             versus most other models having a significant negative diff suggesting the wins for non-o1 models can hardly be attributed
             to models reasoning performance (i.e. with the models meaningfully moving the pieces rather than faking a game).
@@ -871,27 +963,27 @@ Move made, switching player
             following any instructions as to what they are asked to produce.
             Verbosity and failing to adhere to instructions seem to plague not just the o1 competitors 
             but also newer models (e.g., check Deepseek v3).<br/><br/>
-            <br/><strong>NOTES:</strong><br/><br/>
+            <strong>NOTES:</strong><br/><br/>
             - When LLMs achieve a 90% win rate against a Random Player, I will replace it with Stockfish.<br/>
             - You can find conversation logs for 
             o1-mini <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_21.12.2024_o1-mini-2024-09-12/output.txt">here</a> 
             and for o1-preview <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_03.01.2025_o1-preview-2024-09-12_2/output.txt">
-            here</a><br/>
+            here</a><br/><br/>
             - Conversation logs for <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_09.01.2025_gemini-2.0-flash-thinking-exp-1219/output.txt">Gemini 2.0 Thinking</a>,
             <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_14.01.2025_sky-t1-32b-preview_q4-0/output.txt">QwQ</a>
-            and <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_14.01.2025_sky-t1-32b-preview_q4-0/output.txt">Sky T1</a>
+            and <a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/no_reflection/_14.01.2025_sky-t1-32b-preview_q4-0/output.txt">Sky T1</a><br/><br/>
             - While o1 models used a lot of tokens (1221 tokens per move for o1-mini and 2660 
             for o1-preview vs. below 100 tokens for an average model), their replies were concise (most of the tokens 
-            were hidden ones) and had few mistakes.<br/>
+            were hidden ones) and had few mistakes.<br/><br/>
             - OpenAI models might have an advantage over other models because the prompts have been crafted with GPT-4 models.
             This might explain why many models perform worse. Contrary to this point, there are non-OpenAI models (e.g., Anthropic)
-            that do not struggle with instruction following. I believe the factor of prompts and adjusting prompts for each specific model plays a minor role.
+            that do not struggle with instruction following. I believe the factor of prompts and adjusting prompts for each specific model plays a minor role.<br/><br/>
             - An idea: while other (non-o1) reasoning models might be poor instruction followers, why 
             not introduce a deliberate step of final answer synthesizing? I.e., use a cheaper LLM (e.g., 4o-mini) 
             to get the long scroll from a reasoning model and prompt it to produce a final answer. 
-            Will the reasoning models show better chess abilities?<br/>
-            <span style="color:white;">
+            Will the reasoning models show better chess abilities?
             <br/><br/>
+            <span style="color:white;">
             -------------------<br/>
             November 12, 2024 : Initial Observations, Opinion<br/>
             -------------------<br/><br/></span>
@@ -914,30 +1006,30 @@ Move made, switching player
             <br/>
             <strong>NOTES:</strong><br/><br/>
             - More data on game simulations is available <a href="https://github.com/maxim-saplin/llm_chess/blob/main/docs/_data/refined.csv">here</a> and 
-            <a href="https://github.com/maxim-saplin/llm_chess/blob/main/docs/_data/aggregate_models.numbers">here</a>.<br/>
-            - No history of moves is available to LLM, no reflection used (giving the model "time to think").<br/>
+            <a href="https://github.com/maxim-saplin/llm_chess/blob/main/docs/_data/aggregate_models.numbers">here</a>.<br/><br/>
+            - No history of moves is available to LLM, no reflection used (giving the model "time to think").<br/><br/>
             &nbsp;- Experiments with reflection suggest that LLMs do even worse when they are prompted to evaluate options before making a move
             (<a href="https://github.com/maxim-saplin/llm_chess/blob/main/_logs/_not_OK_logs/reflection/aggregate_results.csv">reflection results</a>).
-            &nbsp;- Could LLMs improve their performance if given the whole log of the game?<br/>
-            - The chess engine ( <a href="https://stockfishchess.org">Stockfish</a>) has a 100% win rate with an average game taking 32 moves to complete.<br/>
-            &nbsp;- Stockfish 17, macOS, 0.1ms time limit (vs 0.1s default) - with decreased performance, Stockfish dominates over Random Player.<br/>
-            - Random Player (as white) wins over Random Player (as black) in 10.5% of cases - LLMs scored 0 wins.<br/>
-            &nbsp;- Indeed, giving the right of the first move gives an advantage to the white player.<br/>
-            &nbsp;- LLMs do worse than random players.<br/>
-            &nbsp;- It's as if an LLM had no goal to win, as if it was its intention to keep the game going. What if I prompted it and told it that 200 moves is the maximum and the game ends after? Would it try harder? Can adding to a system prompt an explicitly instruction to Win help?<br/>
-            - While some models are less verbose and follow the rules strictly (e.g., OpenAI), others are verbose.<br/>
-            &nbsp;- Initially, I used exact match when communicating with an LLM and prompted it to reply with action names (show board, get legal moves, make move) - worked well with OpenAI.<br/>
-            &nbsp;- After the list of models was extended, the original prompts had issues steering them.<br/>
-            &nbsp;- As a result, I changed the communication protocol to use regex and be tolerant to reply format, doing its best to extract action and arguments from LLM replies.<br/>
-            - Since models don't score any Wins there must be some alternative metric demosntrating game progress.<br/>
-            &nbsp;- For the time being using Draws, the more draws - the better.<br/>
-            &nbsp;- Yet most of the draws scored are due to hitting the 200 max moves limmit and hence the metric demonstrates the adherence to communication protocol/prompt cpnverntions.<br/>
-            &nbsp;- Logs also contain "Material Count" metrics - the weighted scores of piaces a player has, at the beginning a player has a total of 39 units of material.<br/>
-            &nbsp;- Material difference could be a good metric to evluate progress, the player having more material left as the game progress is at a better position.<br/>
-            &nbsp;- Yet most of the models demonstrated negative material difference and one of the models (gpt-35-turbo-0125) failed to make a single move having a material difference at 0 putting it above models that had negative material while staying in the game much longer.<br/>
-            &nbsp;- It might be resonable to create a computed metric that account for both the material and length of the game, addressing the endless pointless game concern, as well as never changing material diff due to failing to early.<br/>
-            - What if the model is not given the list of legal moves? Will the model figuring out legal moves on their own and struggle to progress? Can giving the models a list of legal moves essentially break reasoning turning the game into simple instruction following (i.e. pick one item from the list rather than win in the game)?
-            - The older GPT-4 Turbo did better than newer GPT-4o version, this is a yet another eval demonstrating how newer models performed worse supporting the claim the the 4o family of models are smaller and cheaper to run models.<br/>
+            &nbsp;- Could LLMs improve their performance if given the whole log of the game?<br/><br/>
+            - The chess engine ( <a href="https://stockfishchess.org">Stockfish</a>) has a 100% win rate with an average game taking 32 moves to complete.<br/><br/>
+            &nbsp;- Stockfish 17, macOS, 0.1ms time limit (vs 0.1s default) - with decreased performance, Stockfish dominates over Random Player.<br/><br/>
+            - Random Player (as white) wins over Random Player (as black) in 10.5% of cases - LLMs scored 0 wins.<br/><br/>
+            &nbsp;- Indeed, giving the right of the first move gives an advantage to the white player.<br/><br/>
+            &nbsp;- LLMs do worse than random players.<br/><br/>
+            &nbsp;- It's as if an LLM had no goal to win, as if it was its intention to keep the game going. What if I prompted it and told it that 200 moves is the maximum and the game ends after? Would it try harder? Can adding to a system prompt an explicitly instruction to Win help?<br/><br/>
+            - While some models are less verbose and follow the rules strictly (e.g., OpenAI), others are verbose.<br/><br/>
+            &nbsp;- Initially, I used exact match when communicating with an LLM and prompted it to reply with action names (show board, get legal moves, make move) - worked well with OpenAI.<br/><br/>
+            &nbsp;- After the list of models was extended, the original prompts had issues steering them.<br/><br/>
+            &nbsp;- As a result, I changed the communication protocol to use regex and be tolerant to reply format, doing its best to extract action and arguments from LLM replies.<br/><br/>
+            - Since models don't score any Wins there must be some alternative metric demosntrating game progress.<br/><br/>
+            &nbsp;- For the time being using Draws, the more draws - the better.<br/><br/>
+            &nbsp;- Yet most of the draws scored are due to hitting the 200 max moves limmit and hence the metric demonstrates the adherence to communication protocol/prompt cpnverntions.<br/><br/>
+            &nbsp;- Logs also contain "Material Count" metrics - the weighted scores of piaces a player has, at the beginning a player has a total of 39 units of material.<br/><br/>
+            &nbsp;- Material difference could be a good metric to evluate progress, the player having more material left as the game progress is at a better position.<br/><br/>
+            &nbsp;- Yet most of the models demonstrated negative material difference and one of the models (gpt-35-turbo-0125) failed to make a single move having a material difference at 0 putting it above models that had negative material while staying in the game much longer.<br/><br/>
+            &nbsp;- It might be resonable to create a computed metric that account for both the material and length of the game, addressing the endless pointless game concern, as well as never changing material diff due to failing to early.<br/><br/>
+            - What if the model is not given the list of legal moves? Will the model figuring out legal moves on their own and struggle to progress? Can giving the models a list of legal moves essentially break reasoning turning the game into simple instruction following (i.e. pick one item from the list rather than win in the game)?<br/><br/>
+            - The older GPT-4 Turbo did better than newer GPT-4o version, this is a yet another eval demonstrating how newer models performed worse supporting the claim the the 4o family of models are smaller and cheaper to run models.<br/><br/>
         </div>
         <a class="gh" href="https://github.com/maxim-saplin/llm_chess/" target="_blank">
             <img src="icons/gh.png" alt="GitHub Icon">
