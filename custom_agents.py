@@ -170,7 +170,7 @@ class AutoReplyAgent(GameAgent):
 
         # Apply ignore_text regex to remove unwanted segments
         if self.ignore_text:
-            action_choice = re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL)
+            action_choice = re.sub(self.ignore_text, "", action_choice, flags=re.DOTALL)
 
         reply = ""
 
@@ -180,10 +180,7 @@ class AutoReplyAgent(GameAgent):
         elif self.get_legal_moves_action in action_choice:
             reply = self.get_legal_moves()
             sender.has_requested_board = True
-        elif (
-            messages[-2]["content"]
-            == self.reflect_prompt
-        ):
+        elif messages[-2]["content"] == self.reflect_prompt:
             reply = self.reflection_followup_prompt
         elif self.reflect_action in action_choice:
             reply = self.reflect_prompt
@@ -215,6 +212,7 @@ class AutoReplyAgent(GameAgent):
             reply = self.too_many_failed_actions_message
 
         return reply
+
 
 class ChessEngineSunfishAgent(GameAgent):
     """
