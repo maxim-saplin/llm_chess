@@ -51,24 +51,27 @@ use_fen_board = False  # Whther to use graphical UNICODE representation board OR
 max_game_moves = 200  # maximum number of game moves before terminating, dafault 200
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times, default 10
 max_failed_attempts = 3  # number of wrong replies within a dialog (e.g. non existing action) before stopping/giving a loss, default 3
-throttle_delay = 0  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+throttle_delay = 1  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
 dialog_turn_delay = 0  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
 visualize_board = False  # You can skip board visualization to speed up execution
 
-temp_override = None # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini), R1 distil recomend 0.5-0.7
- 
-# Tell AutoReply agent to ignore given pieces of text when processing replies (using re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL))
-# May help isolating thinking tokens. E.g. Deepseek R1 32B uses <think> tags that can have actions mentioned breaking execution (r"<think>.*?</think>")
-ignore_text = None # r"<think>.*?</think>" 
+# Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini), R1 distil recomend 0.5-0.7
+temp_override = None
+
+# Tell AutoReply agent to ignore given pieces of text when processing replies
+# (using re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL))
+# May help isolating thinking tokens.
+# E.g. Deepseek R1 32B uses <think> tags that can have actions mentioned breaking execution (r"<think>.*?</think>")
+ignore_text = None  # r"<think>.*?</think>"
 
 # Add a warning if both remove_description is True or False and temp_override is not None
 if temp_override is not None:
     print(
         "\033[93mWarning: 'temp_override' is not None."
-        " This overrides ARE ONLY NEEDED for special models (e.g. o1 requite temp at 1.0, Deepseek R1 local models recomend 0.5 - 0.7)\033[0m"
+        " This overrides ARE ONLY NEEDED for special models (e.g. o1 require temp 1.0, Deepseek R1 local models recomend 0.5 - 0.7)\033[0m"
     )
 
 stockfish_path = "/opt/homebrew/bin/stockfish"
@@ -232,7 +235,7 @@ def run(log_dir="_logs", save_logs=True):
         reflect_prompt=reflect_prompt,
         reflection_followup_prompt=reflection_followup_prompt,
         make_move_action=make_move_action,
-        ignore_text = ignore_text
+        ignore_text=ignore_text,
     )
 
     player_white = {
