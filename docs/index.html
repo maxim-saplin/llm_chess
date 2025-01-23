@@ -37,6 +37,7 @@
         code {
             font-size: 20px;
             font-family: "Web IBM VGA 8x16";
+            color: white;
         }
 
         div.center {
@@ -823,77 +824,77 @@ Move made, switching player
             January 22, 2025: R1 Challenges o1, thinking "surrogates"<br/>
             -------------------<br/><br/></span>
     
-            Released on January 21, DeepSeek-R1 made a significant impact by showing similar
-            or even better performance than OpenAI's o1 models across a range of math and
+            Released on January 21, <code>DeepSeek-R1</code> made a significant impact by showing similar
+            or even better performance than OpenAI's <code>o1</code> models across a range of math and
             coding benchmarks. All of this comes at a fraction of the cost when accessing
             their 671B model through their API. Besides, the model weights are open, and
             there are plenty of details about the training process—a stark contrast to
-            OpenAI's secrecy regarding the o1/o3 family of models. And that's not all! For
+            OpenAI's secrecy regarding the <code>o1/o3</code> family of models. And that's not all! For
             those interested in local models, there are smaller "distilled" reasoning models
             at 70B, 32B, 14B, etc., sizes.<br/><br/>
 
-            So far, none of the so-called reasoning or thinking models have come close to o1
-            (qwq-32b-preview, sky-t1-32b-preview, gemini-2.0-flash-thinking-exp-1219). They
+            So far, none of the so-called reasoning or thinking models have come close to <code>o1</code>
+            (<code>qwq-32b-preview</code>, <code>sky-t1-32b-preview</code>, <code>gemini-2.0-flash-thinking-exp-1219</code>). They
             were a step back in instruction following and could hardly be steered when
             compared to non-thinking models. Let alone, they didn't perform as well in chess.
-            I call them surrogates, verbosity generators mimicking but not replicating o1's
+            I call them surrogates, verbosity generators mimicking but not replicating <code>o1</code>'s
             behavior.<br/><br/>
 
-            Deepseek-R1 (deepseek-reasoner-r1) was an extremely curious model to test, and
+            Deepseek-R1 (<code>deepseek-reasoner-r1</code>) was an extremely curious model to test, and
             now there are evaluation results in the Leaderboard.<br/><br/>
 
             Additionally, Google has just released an update to its Gemini 2.0 Thinking Model
-            (gemini-2.0-flash-thinking-exp-01-21), which previously showed poor results. Two
+            (<code>gemini-2.0-flash-thinking-exp-01-21</code>), which previously showed poor results. Two
             very interesting releases in two days...<br/><br/>
 
             <strong>NOTES:</strong><br/><br/>
 
-            - There are now three models in a league of their own: o1-mini, o1-preview, and now
-            deepseek-reasoner-r1. These are the only models with significant wins (>10%) and
+            - There are now three models in a league of their own: <code>o1-mini</code>, <code>o1-preview</code>, and now
+            <code>deepseek-reasoner-r1</code>. These are the only models with significant wins (>10%) and
             maintaining a positive material difference (~9) as opposed to a negative material
             difference for the resetGameInterval.<br/><br/>
 
-            - Deepseek-reasoner-r1 is much more verbose (almost twice as many tokens as o1) and
+            - <code>deepseek-reasoner-r1</code> is much more verbose (almost twice as many tokens as <code>o1</code>) and
             also makes more mistakes. Many games were lost due to the model making mistakes,
-            unlike o1 models, which mostly fell out of the games due to losing or drawing
+            unlike <code>o1</code> models, which mostly fell out of the games due to losing or drawing
             (e.g., stalemate, insufficient material).<br/><br/>
 
-            - Deepseek-reasoner-r1 showed distinctive behavior: sometimes it made moves without
+            - <code>deepseek-reasoner-r1</code> showed distinctive behavior: sometimes it made moves without
             requesting the board state or legal moves list (i.e., issues make_move action in
             the very first response), sometimes it only requested the board state without
             getting the list of moves and decided on the move without a hint (in some cases
             picking the right move, in others wrong).<br/><br/>
 
-            - Overall, o1 models are better all-round models (compared to R1), with better chess
+            - Overall, <code>o1</code> models are better all-round models (compared to R1), with better chess
             performance, as well as instruction following (Mistakes) and Durability (not
             falling out of the games, doing more moves on average).<br/><br/>
 
-            - The rest of the "thinking" models (sky-t1-32b-preview@q4_0, qwq-32b-preview@q4_k_m,
-            deepseek-r1-distill-qwen-32b@q4_k_m, deepseek-r1-distill-qwen-14b@q8_0,
-            gemini-2.0-flash-thinking-exp-1219) can hardly follow prompt instructions, lasting
+            - The rest of the "thinking" models (<code>sky-t1-32b-preview@q4_0</code>, <code>qwq-32b-preview@q4_k_m</code>,
+            <code>deepseek-r1-distill-qwen-32b@q4_k_m</code>, <code>deepseek-r1-distill-qwen-14b@q8_0</code>,
+            <code>gemini-2.0-flash-thinking-exp-1219</code>) can hardly follow prompt instructions, lasting
             on average 2~14 moves.<br/><br/>
 
-            - Distilled dense 14B and 32B versions of Deepseek-R1 (deepseek-r1-distill-qwen-32b@q4_k_m,
-            deepseek-r1-distill-qwen-14b@q8_0) did not impress—very poor instruction following,
+            - Distilled dense 14B and 32B versions of <code>Deepseek-R1</code> (<code>deepseek-r1-distill-qwen-32b@q4_k_m</code>,
+            <code>deepseek-r1-distill-qwen-14b@q8_0</code>) did not impress—very poor instruction following,
             not even close to the full 671B MoE model. Could quantization have an effect?
             Don't know.<br/><br/>
 
             - Distilled R1 models use <code>&lt;think&gt;&lt;/think&gt;</code> tags to enclose
-            "reasoning" tokens (those ones hidden for o1), sometimes they fail to put the
+            "reasoning" tokens (those ones hidden for <code>o1</code>), sometimes they fail to put the
             opening <code>&lt;think&gt;</code> tag (most often in the very first reply).<br/><br/>
 
-            - The new Gemini Thinking model (gemini-2.0-flash-thinking-exp-01-21) did improve a
+            - The new Gemini Thinking model (<code>gemini-2.0-flash-thinking-exp-01-21</code>) did improve a
             lot in instruction following. While the previous December version
-            (gemini-2.0-flash-thinking-exp-1219) was almost useless, staying in the game on
+            (<code>gemini-2.0-flash-thinking-exp-1219</code>) was almost useless, staying in the game on
             average for 2.3 moves (i.e., breaking instruction prompts in the 2nd move it was
             asked to make), the new model lasted on average 40 moves and showed far fewer
             mistakes.<br/><br/>
 
-            In terms of chess, the newer gemini-2.0-flash-thinking-exp-01-21 showed a negative
+            In terms of chess, the newer <code>gemini-2.0-flash-thinking-exp-01-21</code> showed a negative
             material difference and negligible draw count—way below other non-thinking models
             (even Google's own Gemma 2 9B).<br/><br/>
 
-            - Gemini-2.0-flash-thinking-exp-01-21 also demonstrated much less verbosity in the
+            - <code>gemini-2.0-flash-thinking-exp-01-21</code> also demonstrated much less verbosity in the
             outputs, providing to-the-point answers. Didn't investigate it deeply, yet it
             seems that now Gemini Thinking does proper isolation of reasoning tokens. Per
             <a href="https://ai.google.dev/gemini-api/docs/thinking">docs</a>, "On a standard
@@ -902,7 +903,12 @@ Move made, switching player
             part.thought field is set to True." Autogen doesn't seem to register thought
             tokens in completion stats for Flash Thinking while it does so for R1.<br/><br/>
 
-            - Earlier non-o1 thinking models did not do well with splitting the reasoning/thinking part
+            - Most of the failures/losses from <code>gemini-2.0-flash-thinking-exp-01-21</code> 
+            were due to server errors. Occasionally, the server returned an empty message or flagged 
+            the request with a "RECITATION" error, among others. 
+            Clearly, there's some instability in generation on the server side.<br/><br/>
+
+            - Earlier non-<code>o1</code> thinking models did not do well with splitting the reasoning/thinking part
             from the final answer, R1 and newer Gemini Thinking do that (yet it didn't help
             the distilled R1 models).<br/><br/>
 
@@ -910,13 +916,13 @@ Move made, switching player
             -------------------<br/>
             January 21, 2025: More Models, More Tests<br/>
             -------------------<br/><br/></span>
-            - Added the new Claude 3.5 Sonnet (claude-v3-5-sonnet-v2) and also retested the previous version (claude-v3-5-sonnet-v1), giving them more runs
-            (60 this time). What surprised me was not just the fact that v2 showed some wins, but that v1 demonstrated even more wins 
+            - Added the new Claude 3.5 Sonnet (<code>claude-v3-5-sonnet-v2</code>) and also retested the previous version (<code>claude-v3-5-sonnet-v1</code>), giving them more runs
+            (60 this time). What surprised me was not just the fact that <code>v2</code> showed some wins, but that <code>v1</code> demonstrated even more wins 
             (although losing to the random player more often). 
             Back in November, when I did 30 runs of Sonnet 3.5, there were 0 wins. 
-            Did Anthropic change something in v1 as well, or was it just a question of stochasticity?
+            Did Anthropic change something in <code>v1</code> as well, or was it just a question of stochasticity?
             <br/><br/>
-            - Conducted more runs of GPT-4o models (gpt-4o-2024-05-13, gpt-4o-2024-08-06, gpt-4o-2024-11-20). The August version also achieved a win, yet
+            - Conducted more runs of GPT-4o models (<code>gpt-4o-2024-05-13</code>, <code>gpt-4o-2024-08-06</code>, <code>gpt-4o-2024-11-20</code>). The August version also achieved a win, yet
             it also had its first non-zero mistake (previous 30-run result had a perfect 0 mistakes) - this time, that happened due to Azure's content
             filter halting one of the games.
             <br/><br/>
@@ -926,18 +932,18 @@ Move made, switching player
             or breaking the prompt instructions. Clearly, it is a challenge for most models
             to sustain a 100-turn (200-move game) with an average of 3-4 dialog interactions per game turn. 
             <br/><br/>
-            - Deepseeks R1 distilled into 32B Qwen (deepseek-r1-distill-qwen-32b@q4_k_m) didn't perform well
-            - barely able to move past a couple of turns in the chess game, no better than QwQ or Flash Thinking.
+            - Deepseeks R1 distilled into 32B Qwen (<code>deepseek-r1-distill-qwen-32b@q4_k_m</code>) didn't perform well
+            - barely able to move past a couple of turns in the chess game, no better than <code>QwQ</code> or Flash Thinking.
             <br/><br/>
-            - o1 models are still special being the only models maintaing positive material diff (gaining more piaces rather than losing them)
-            versus most other models having a significant negative diff suggesting the wins for non-o1 models can hardly be attributed
+            - <code>o1</code> models are still special being the only models maintaing positive material diff (gaining more piaces rather than losing them)
+            versus most other models having a significant negative diff suggesting the wins for non-<code>o1</code> models can hardly be attributed
             to models reasoning performance (i.e. with the models meaningfully moving the pieces rather than faking a game).
             <br/><br/>
             <span style="color:white;">
             -------------------<br/>
             January 16, 2025: First wins by non-reasoning model<br/>
             -------------------<br/><br/></span>
-            The November 2024 update to GPT-4o demonstrated a few wins, something non-o1 models couldn't do before. Yet, what is curious is that the updated
+            The November 2024 update to <code>GPT-4o</code> demonstrated a few wins, something non-o1 models couldn't do before. Yet, what is curious is that the updated
             model not only scored wins but also lost to the Random Player more often than others.
             <br/><br/>
             <span style="color:white;">
