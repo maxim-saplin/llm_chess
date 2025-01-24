@@ -253,6 +253,10 @@
             color: yellowgreen;
         }
 
+        tr:hover td:nth-child(even) {
+            color: darkgreen;
+        }
+
         td {
             border-top: 1px solid;
             cursor: default;
@@ -260,11 +264,13 @@
         }
 
         th:nth-child(even), td:nth-child(even) {
-            background-color: black;
+            background-color: lightgray;
+            color: black;
         }
 
         table tbody tr:nth-last-child(-n+3) td {
             color: greenyellow !important;
+            background-color: transparent;
         }
 
         .descriptions {
