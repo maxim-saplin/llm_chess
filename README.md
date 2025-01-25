@@ -1,4 +1,4 @@
-# [>>> LEADERBOARD <<<](https://maxim-saplin.github.io/llm_chess/)
+# 🏆 [Click Here for the LIVE LEADERBOARD! 🏆](https://maxim-saplin.github.io/llm_chess/)
 
 Putting LLMs up against ~each other~ Randmon Player in a chess game. Testing basic instruction following capabilities and of course chess proficiency :)
 
