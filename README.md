@@ -1,6 +1,6 @@
 # 🏆 [Click Here for the LIVE LEADERBOARD! 🏆](https://maxim-saplin.github.io/llm_chess/)
 
-Putting LLMs up against ~each other~ Randmon Player in a chess game. Testing basic instruction following capabilities and of course chess proficiency :)
+Putting LLMs up against ~each other~ Random Player in a chess game. Testing basic instruction following capabilities and of course chess proficiency :)
 
 - `llm_chessp.py` runs the game, collects the results, records video
 
@@ -10,7 +10,7 @@ Putting LLMs up against ~each other~ Randmon Player in a chess game. Testing bas
 - Game constraints:
     - Max 200 moves (100 moves per player)
     - Max 10 turns in LLM dialog when deciding on a move (a turn being a user/assistant pair of messages)
-    - Max 3 mistakes in LLM dialog
+    - Max 3 mistakes in LLM dialog (i.e. 3rd mistakes in the dialog breaks game loop and assignes a LOSS to LLM)
 - Win OR Loss
     - In LLM dialog if max turns is reached OR 3 mistakes are made by LMM, Random Players gets a WIN and LLM gets a LOSS
     - If max moves is reached a DRAW is given
