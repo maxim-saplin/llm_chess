@@ -618,3 +618,36 @@ Black Pieces:
 ♟ - Black Pawn
 Each player controls one color and aims to checkmate the opponent's king.
 ```
+
+## Ideas, Future
+
+- Validate that Win/Draw rate are representative of resoning abilities
+    - Currenntly there's a threshold of 0 wins which reliably was only beaten by Open AI o1 models and Deepseek R1 - the models generally well accepted by the puiblic as special and overperforming models
+    - This supports that chess proficiency is a good indicator of reasoning, the binary behavior - either you step over the threshold or stay behind it, either you do some reasoning or keep generating text converting input to output.
+ 
+- Corss-check with other benchmarks
+    - I see alignment of instruction following evaluation with other benches
+      - E.g. ComplexFuncBench has this distinctive split between OS and Closed models with the latter doing much better complying with the prompt
+      ```
+      ComplexFuncBench is designed to test complex function calling evaluation with over 1,000 real-world scenarios from five aspects.
+
+        Function calling with: 
+        1️⃣ multiple-step in single-turn
+        2️⃣ User-provided constraints
+        3️⃣ Parameter value reasoning from implicit information
+        4️⃣ Long parameter values that exceed 500 tokens
+        5️⃣ 128k long-context length.
+        
+        Insights:
+        🏆 Claude 3.5 61%; OpenAI 4o 60.5%; Qwen 2.5 72B 40%; Llama 3.1 70B 2.7%
+        📉 Open LLMs underperform compared to closed models
+        ⛔ Value Errors are a major error type
+        🛑 Early stop in multi-step calls, failing to complete all necessary functions.
+        🧩 keys like 'filter' and 'legs' are more challenging
+        
+        Paper: https://lnkd.in/eTmf4RPc
+        Github: https://lnkd.in/eKaSG6KR
+    ```
+
+- Better study and describe stochasticity. Randmization of games make the becnh unique, no memorization can happen, every game is different
+    - Smth similar to GSM Symbolic observations, adding mutations to a well known math bench demonstrates how models struggle and pass rate drops: https://machinelearning.apple.com/research/gsm-symbolic
