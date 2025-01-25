@@ -370,7 +370,7 @@
     gtag('config', 'G-4SS6VHS4QF');
     </script>
     <script>
-            data = `
+        const data = `
 Player,total_games,player_wins,opponent_wins,draws,player_wins_percent,player_draws_percent,total_moves,player_wrong_actions,player_wrong_moves,player_avg_material,opponent_avg_material,material_diff_player_llm_minus_opponent,material_diff_player_minus_opponent_per_1000moves,wrong_actions_per_1000moves,wrong_moves_per_1000moves,average_moves,completion_tokens_black_per_move
 o1-preview-2024-09-12,30,14,3,13,46.666666666666664,43.333333333333336,3744,4,10,11.512286324786325,1.5224358974358974,9.989850427350428,2.668229280809409,1.0683760683760686,2.6709401709401708,124.8,2660.071848290598
 o1-mini-2024-09-12,30,9,6,15,30.0,50.0,4282,2,8,13.582438113031294,2.8169079869219993,10.765530126109295,2.5141359472464493,0.4670714619336758,1.8682858477347033,142.73333333333332,1221.1361513311538
@@ -418,14 +418,34 @@ Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21
 Random Player (as White),1000,105,0,895,10.5,89.5,190073,0,0,10.56,11.08,-0.52,-0.00274,0.00,0.00,190.07,-
 Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0.00274,0.00,0.00,190.07,-
             `
+        const csvIndices = {
+            player: 0,
+            total_games: 1,
+            player_wins: 2,
+            losses: 3,
+            draws: 4,
+            player_wins_percent: 5,
+            player_draws_percent: 6,
+            wrong_actions_per_1000moves: 14,
+            wrong_moves_per_1000moves: 15,
+            completion_tokens_black_per_move: 17,
+            average_moves: 16,
+            material_diff: 12,
 
-        let currentSortOrder = {}; // To track the current sort order for each column
-        const defaultSortColumnIndex = 1; // Sort by "Draws %" by default
+        };
+
+        let currentSortOrder = {};
+
         const SPECIAL_ROWS = {
             STOCKFISH: "Stockfish chess engine (as Black)",
             RANDOM_WHITE: "Random Player (as White)",
             RANDOM_BLACK: "Random Player (as Black)"
         };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            buildTable();
+            fetchAndAnimateBoard();
+        });
 
         function showPane(paneId) {
             document.getElementById('leaderboard').style.display = paneId === 'leaderboard' ? 'block' : 'none';
@@ -443,23 +463,7 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
             });
         }
 
-        const csvIndices = {
-                player: 0,
-                total_games: 1,
-                player_wins: 2, // Assuming the wins column is at index 2
-                losses: 3,      // Assuming the losses column is at index 3
-                draws: 4,       // Assuming the draws column is at index 4
-                player_wins_percent: 5,
-                player_draws_percent: 6,
-                wrong_actions_per_1000moves: 14,
-                wrong_moves_per_1000moves: 15,
-                completion_tokens_black_per_move: 17,
-                average_moves: 16,
-                material_diff: 12,
-                losses: 3 // Assuming the losses column is at index 3
-            };
-
-        function fillTableWithCSV() {
+        function buildTable() {
             const lines = data.trim().split('\n');
             const header = lines[0].split(',');
             const rows = lines.slice(1).map(row => row.split(','));
@@ -521,10 +525,7 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
                 const baseText = headerCell.textContent.trim();
                 headerCell.innerHTML = `${baseText}&nbsp;&nbsp;`;
             });
-            const materialAdvantageHeader = document.querySelectorAll('#leaderboard th')[1];
-            const defaultSortColumnIndex = 1; // Assuming this is defined above
-            const defaultSortHeader = document.querySelectorAll('#leaderboard th')[defaultSortColumnIndex];
-            defaultSortHeader.innerHTML = `${defaultSortHeader.textContent.trim()}&nbsp;▼`;
+
             document.querySelectorAll('#leaderboard th').forEach((headerCell, index) => {
                 headerCell.addEventListener('click', () => {
                     sortTable(index);
@@ -581,12 +582,6 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
             const indicator = currentSortOrder[columnIndex] === 'asc' ? '▲' : '▼';
             sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
         }
-        document.addEventListener('DOMContentLoaded', () => {
-            fillTableWithCSV();
-            fetchAndAnimateBoard();
-            // Set initial sort order for the default column
-            currentSortOrder[defaultSortColumnIndex] = 'desc'; // Assuming "Draws %" is the second column
-        });
 
         function fetchAndAnimateBoard() {
             fetch('moves.txt')
@@ -636,11 +631,13 @@ Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0
             const materialDiff = columns[csvIndices.material_diff]; // Retrieve material difference
 
             document.getElementById('total-games').textContent = `Games: ${parseInt(totalGames)}`;
-            document.getElementById('wins').textContent = `Wins: ${parseInt(wins)}`; // Add wins to popup
-            document.getElementById('losses').textContent = `Losses: ${parseInt(losses)}`; // Add losses to popup
-            document.getElementById('draws').textContent = `Draws: ${parseInt(draws)}`; // Add draws to popup
-            document.getElementById('average-moves').textContent = `Average Moves: ${parseFloat(averageMoves).toFixed(2)}`; // Add average moves to popup
-            document.getElementById('material-diff').textContent = `Material Diff: ${parseFloat(materialDiff).toFixed(2)}`; // Add material difference to popup
+            document.getElementById('wins').textContent = `Wins: ${parseInt(wins)} - ${((parseInt(wins) / parseInt(totalGames)) * 100).toFixed(2)}%`;
+            document.getElementById('losses').textContent = `Losses: ${parseInt(losses)} - ${((parseInt(losses) / parseInt(totalGames)) * 100).toFixed(2)}%`;
+            const winsMinusLossesPercent = ((parseInt(wins) - parseInt(losses)) / parseInt(totalGames) * 100).toFixed(2);
+            document.getElementById('wins_minus_losses').textContent = `Wins - Losses: ${winsMinusLossesPercent}%`;
+            document.getElementById('draws').textContent = `Draws: ${parseInt(draws)} - ${((parseInt(draws) / parseInt(totalGames)) * 100).toFixed(2)}%`;
+            document.getElementById('average-moves').textContent = `Average Moves: ${parseFloat(averageMoves).toFixed(2)}`;
+            document.getElementById('material-diff').textContent = `Material Diff: ${parseFloat(materialDiff).toFixed(2)}`;
 
             const rect = row.getBoundingClientRect();
             if (window.innerWidth < 1200) {
@@ -864,7 +861,7 @@ Move made, switching player
                 - Despite this, <strong>Grok-2</strong> is an intriguing non-reasoning model. It maintained a positive 
                 material count throughout the games (with a material difference of 2.63).<br><br>
 
-                - Example of <strong>Grok-2</strong> failing to pick a legal move and hallucinating one not on the list >
+                - Example of <strong>Grok-2</strong> failing to pick a legal move and hallucinating one not on the list &lt;
             </p>
             <div class="expandable-snippet">
                 <button class="toggle-snippet" onclick="toggleSnippet(this)">Show Snippet</button>
@@ -904,7 +901,7 @@ Failed to make move: illegal uci: 'e5d3' in r3kb1r/ppp3pp/6P1/4q1N1/P3N3/1P1p3P/
 I apologize for the confusion. Let me review the legal moves again and choose a different move. I will move the queen from e5 to e2, which is a legal move and aims to put pressure on the opponent's position. Please execute 'make_move e5e2'.
 
 --------------------------------------------------------------------------------
-<span style="color:green">BREAKING >>> Failed to make move: illegal uci: 'e5e2' in r3kb1r/ppp3pp/6P1/4q1N1/P3N3/1P1p3P/R1pP1P2/2B2K1R b - - 0 26</span>
+<span style="color:green">BREAKING &gt;&gt;&gt; Failed to make move: illegal uci: 'e5e2' in r3kb1r/ppp3pp/6P1/4q1N1/P3N3/1P1p3P/R1pP1P2/2B2K1R b - - 0 26</span>
 <span style="color:green">Proxy (to Player_Black):</span>
 
 Too many wrong actions
@@ -942,7 +939,7 @@ Too many wrong actions
                 <strong>NOTES:</strong><br><br>
 
                 - There are now three models in a league of their own: <code>o1-mini</code>, <code>o1-preview</code>, and now
-                <code>deepseek-reasoner-r1</code>. These are the only models with significant wins (>10%) and
+                <code>deepseek-reasoner-r1</code>. These are the only models with significant wins (&gt;10%) and
                 maintaining a positive material difference (~9) as opposed to a negative material
                 difference for the resetGameInterval.<br><br>
 
@@ -1139,6 +1136,7 @@ Too many wrong actions
         <p id="total-games"></p>
         <p id="wins"></p>
         <p id="losses"></p>
+        <p id="wins_minus_losses"></p>
         <p id="draws"></p> 
         <p id="average-moves"></p>
         <p id="material-diff"></p>
