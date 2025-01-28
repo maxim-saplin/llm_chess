@@ -101,7 +101,8 @@ def aggregate_models_to_csv(
     Args:
         logs_dir (str): The directory containing the game log files in JSON format.
         output_csv (str): The path to the output CSV file where aggregated results will be saved.
-        model_overrides (dict, optional): A dictionary mapping file path substrings to model names,
+        model_overrides (dict, optional): A dictionary mapping file path (the last part of the path
+                                          i.e. 'def' from '/abc/def/') to model names,
                                           used to override the model name in the logs if specified.
 
     Returns:
@@ -119,7 +120,14 @@ def aggregate_models_to_csv(
                     # Use model ID from log, override if specified
                     model_name = game_log.player_black.model
                     if model_overrides:
-                        key = next((k for k in model_overrides if k in file_path), None)
+                        key = next(
+                            (
+                                k
+                                for k in model_overrides
+                                if os.path.dirname(file_path).endswith(k)
+                            ),
+                            None,
+                        )
                         if key:
                             original_model_name = model_name
                             model_name = model_overrides[key]

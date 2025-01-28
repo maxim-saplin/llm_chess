@@ -17,8 +17,8 @@ Usage:
 
 import csv
 
-AGGREGATE_FILE = "_logs/no_reflection/aggregate_models.csv"
-REFINED_FILE = "docs/_data/refined.csv"
+AGGREGATE_FILE = None  #  "_logs/no_reflection/aggregate_models.csv"
+REFINED_FILE = None  # "docs/_data/refined.csv"
 
 
 def convert_aggregate_to_refined(aggregate_file, refined_file):
