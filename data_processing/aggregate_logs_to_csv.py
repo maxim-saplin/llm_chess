@@ -270,9 +270,15 @@ def aggregate_models_to_csv(
             avg_moves**2
         )
 
-        std_dev_material_black = variance_material_black**0.5
-        std_dev_material_white = variance_material_white**0.5
-        std_dev_moves = variance_moves**0.5
+        # Use sample standard deviation (n-1) to generalize to a theoretical "infinite" future
+        # Adjust variance using (n-1) for sample standard deviation
+        std_dev_material_black = (
+            variance_material_black * total_moves / (total_moves - 1)
+        ) ** 0.5
+        std_dev_material_white = (
+            variance_material_white * total_moves / (total_moves - 1)
+        ) ** 0.5
+        std_dev_moves = (variance_moves * total_games / (total_games - 1)) ** 0.5
 
         material_diff = weighted_avg_material_black - weighted_avg_material_white
         material_diff_llm_minus_rand_per_100moves = material_diff / total_moves * 100
