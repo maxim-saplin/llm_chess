@@ -40,6 +40,14 @@ class PlayerStats:
     reflections_used_before_board: int
     model: str
 
+    @property
+    def mistakes(self) -> int:
+        """
+        Calculate the total number of mistakes made by the player.
+        Mistakes are defined as the sum of wrong moves and wrong actions.
+        """
+        return self.wrong_moves + self.wrong_actions
+
 
 @dataclass
 class UsageStats:
@@ -140,6 +148,50 @@ def aggregate_models_to_csv(
                         game_log.material_count["black"]
                         - game_log.material_count["white"]
                     )
+                    wrong_actions_per_1000moves = (
+                        game_log.player_black.wrong_actions / total_moves * 1000
+                    )
+                    wrong_moves_per_1000moves = (
+                        game_log.player_black.wrong_moves / total_moves * 1000
+                    )
+                    mistakes_per_1000moves = (
+                        game_log.player_black.mistakes / total_moves * 1000
+                    )
+
+                    if model_name not in model_aggregates:
+                        model_aggregates[model_name] = {
+                            "total_games": 0,
+                            "black_wins": 0,
+                            "white_wins": 0,
+                            "draws": 0,
+                            "total_moves": 0,
+                            "wrong_actions": 0,
+                            "wrong_moves": 0,
+                            "mistakes": 0,
+                            "sum_avg_material_black": 0,
+                            "sum_avg_material_white": 0,
+                            "sum_squares_avg_material_black": 0,
+                            "sum_squares_avg_material_white": 0,
+                            "sum_moves": 0,
+                            "sum_squares_moves": 0,
+                            "completion_tokens_black": 0,
+                            "min_moves": float("inf"),
+                            "max_moves": 0,
+                            "prompt_tokens_black": 0,
+                            "total_tokens_black": 0,
+                            "sum_squares_wrong_actions_per_1000moves": 0,
+                            "sum_squares_wrong_moves_per_1000moves": 0,
+                            "sum_squares_mistakes_per_1000moves": 0,
+                        }
+                    model_aggregates[model_name][
+                        "sum_squares_wrong_actions_per_1000moves"
+                    ] += (wrong_actions_per_1000moves**2)
+                    model_aggregates[model_name][
+                        "sum_squares_wrong_moves_per_1000moves"
+                    ] += (wrong_moves_per_1000moves**2)
+                    model_aggregates[model_name][
+                        "sum_squares_mistakes_per_1000moves"
+                    ] += (mistakes_per_1000moves**2)
                     material_diff_llm_minus_rand_per_100moves = (
                         material_diff / total_moves * 100
                     )
@@ -153,6 +205,7 @@ def aggregate_models_to_csv(
                             "total_moves": 0,
                             "wrong_actions": 0,
                             "wrong_moves": 0,
+                            "mistakes": 0,
                             "sum_avg_material_black": 0,
                             "sum_avg_material_white": 0,
                             "sum_squares_avg_material_black": 0,
@@ -164,6 +217,9 @@ def aggregate_models_to_csv(
                             "max_moves": 0,
                             "prompt_tokens_black": 0,
                             "total_tokens_black": 0,
+                            "sum_squares_wrong_actions_per_1000moves": 0,
+                            "sum_squares_wrong_moves_per_1000moves": 0,
+                            "sum_squares_mistakes_per_1000moves": 0,
                         }
 
                     model_aggregates[model_name]["total_games"] += 1
@@ -181,6 +237,10 @@ def aggregate_models_to_csv(
                     model_aggregates[model_name][
                         "wrong_moves"
                     ] += game_log.player_black.wrong_moves
+                    model_aggregates[model_name][
+                        "mistakes"
+                    ] += game_log.player_black.mistakes
+
                     model_aggregates[model_name]["sum_avg_material_black"] += (
                         game_log.material_count["black"] * total_moves
                     )
@@ -243,7 +303,13 @@ def aggregate_models_to_csv(
         "material_diff_llm_minus_rand_per_100moves",
         "wrong_actions_per_100moves",
         "wrong_moves_per_100moves",
-        "average_moves",
+        "wrong_actions_per_1000moves",  # New metric
+        "wrong_moves_per_1000moves",  # New metric
+        "mistakes_per_1000moves",  # New metric
+        "std_dev_wrong_actions_per_1000moves",
+        "std_dev_wrong_moves_per_1000moves",
+        "std_dev_mistakes_per_1000moves",
+        "average_moves",  # Add this line
         "std_dev_moves",
         "completion_tokens_black",
         "completion_tokens_black_per_move",
@@ -283,10 +349,34 @@ def aggregate_models_to_csv(
         material_diff = weighted_avg_material_black - weighted_avg_material_white
         material_diff_llm_minus_rand_per_100moves = material_diff / total_moves * 100
 
-        # Calculate percentages
+        wrong_actions_per_1000moves = aggregate["wrong_actions"] / total_moves * 1000
+        wrong_moves_per_1000moves = aggregate["wrong_moves"] / total_moves * 1000
+        mistakes_per_1000moves = aggregate["mistakes"] / total_moves * 1000
         black_llm_wins_percent = (aggregate["black_wins"] / total_games) * 100
         black_llm_draws_percent = (aggregate["draws"] / total_games) * 100
 
+        variance_wrong_actions_per_1000moves = (
+            model_aggregates[model_name]["sum_squares_wrong_actions_per_1000moves"]
+            / total_games
+        ) - (wrong_actions_per_1000moves**2)
+        variance_wrong_moves_per_1000moves = (
+            model_aggregates[model_name]["sum_squares_wrong_moves_per_1000moves"]
+            / total_games
+        ) - (wrong_moves_per_1000moves**2)
+        variance_mistakes_per_1000moves = (
+            model_aggregates[model_name]["sum_squares_mistakes_per_1000moves"]
+            / total_games
+        ) - (mistakes_per_1000moves**2)
+
+        std_dev_wrong_actions_per_1000moves = (
+            variance_wrong_actions_per_1000moves * total_games / (total_games - 1)
+        ) ** 0.5
+        std_dev_wrong_moves_per_1000moves = (
+            variance_wrong_moves_per_1000moves * total_games / (total_games - 1)
+        ) ** 0.5
+        std_dev_mistakes_per_1000moves = (
+            variance_mistakes_per_1000moves * total_games / (total_games - 1)
+        ) ** 0.5
         csv_data.append(
             [
                 model_name,
@@ -307,7 +397,13 @@ def aggregate_models_to_csv(
                 material_diff_llm_minus_rand_per_100moves,
                 aggregate["wrong_actions"] / total_moves * 100,
                 aggregate["wrong_moves"] / total_moves * 100,
-                avg_moves,
+                wrong_actions_per_1000moves,  # New metric
+                wrong_moves_per_1000moves,  # New metric
+                mistakes_per_1000moves,  # New metric
+                std_dev_wrong_actions_per_1000moves,
+                std_dev_wrong_moves_per_1000moves,
+                std_dev_mistakes_per_1000moves,
+                avg_moves,  # Add this line
                 std_dev_moves,
                 aggregate["completion_tokens_black"],
                 aggregate["completion_tokens_black"] / total_moves,
