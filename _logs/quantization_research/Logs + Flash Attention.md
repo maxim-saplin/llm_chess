@@ -1,5 +1,7 @@
 All logs collected with LM Studio 0.3.6, runtime: CUDA llama.cpp (Windows) v1.7.1, RTX 4090 OC.
 
+29.01.2025 logs (990 run for LLama and Gemma) obtained via LM Studio 0.3.8 and llama.cpp 1.9.2
+
 ## Flash Attention and Performance
 
 LLama 3.1 8B, context length 8192, Evaluation Batch Size 512:
