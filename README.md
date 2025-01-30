@@ -153,6 +153,7 @@ Game run results are stored under the `_logs` folder.
 - 22.10.2024, slightly updated common prompt removing excessive tabs
 - 05.11.2024, fixed bug with wrong action counting (not global per game but per move), set temperature to 0.7, re-ran no_reflection
 - 14.01.2025, changed logs aand switched DRAWS for LLM losses due to model error to Gemini-1.5-pro-preview-0409 (8 logs from November, no reflection), qwq-32b-preview@q4_k_m (1 log from January 9, no reflection), sky-t1-32b-preview@q4_0 (1 log from January 14, no reflection), o1-mini-2024-09-12 (1 lof fro December 22, no reflection), gpt-4-turbo-2024-04-09 (4 logs from November, reflection)
+- 31.01.2025 - changing from weighted average to simple average for material count, wrong moves, wrong actions
 
 ## Model vs Random Player
 

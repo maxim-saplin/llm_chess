@@ -17,7 +17,7 @@ Usage:
 
 import csv
 
-AGGREGATE_FILE = None  #  "_logs/no_reflection/aggregate_models.csv"
+AGGREGATE_FILE = None  # "_logs/no_reflection/aggregate_models.csv"
 REFINED_FILE = None  # "docs/_data/refined.csv"
 
 
