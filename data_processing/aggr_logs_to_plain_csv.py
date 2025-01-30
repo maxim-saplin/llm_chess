@@ -50,7 +50,7 @@ def aggregate_logs_to_csv(logs_dir, output_csv):
 
                     try:
                         usage_stats_key = list(data["usage_stats"]["black"].keys())[1]
-                    except Exception as e:
+                    except Exception:
                         usage_stats_key = None
 
                     # Flatten the JSON data
