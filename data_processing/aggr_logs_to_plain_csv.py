@@ -27,12 +27,9 @@ def aggregate_logs_to_csv(logs_dir, output_csv):
             "player_black_reflections_used",
             "player_black_reflections_used_before_board",
             "player_black_model",
-            "usage_stats_white_total_cost",
-            "usage_stats_black_total_cost",
-            "usage_stats_black_model_cost",
-            "usage_stats_black_model_prompt_tokens",
-            "usage_stats_black_model_completion_tokens",
-            "usage_stats_black_model_total_tokens",
+            "black_model_prompt_tokens",
+            "black_model_completion_tokens",
+            "black_model_total_tokens",
         ]
 
         # Create a CSV DictWriter
@@ -50,6 +47,11 @@ def aggregate_logs_to_csv(logs_dir, output_csv):
                     # Read and parse the JSON file
                     with open(file_path, "r") as f:
                         data = json.load(f)
+
+                    try:
+                        usage_stats_key = list(data["usage_stats"]["black"].keys())[1]
+                    except Exception:
+                        usage_stats_key = None
 
                     # Flatten the JSON data
                     row = {
@@ -88,30 +90,27 @@ def aggregate_logs_to_csv(logs_dir, output_csv):
                             "player_black"
                         ].get("reflections_used_before_board"),
                         "player_black_model": data["player_black"].get("model"),
-                        "usage_stats_white_total_cost": data["usage_stats"][
-                            "white"
-                        ].get("total_cost"),
-                        "usage_stats_black_total_cost": data["usage_stats"][
-                            "black"
-                        ].get("total_cost"),
-                        "usage_stats_black_model_cost": data["usage_stats"]["black"]
-                        .get(data["player_black"]["model"], {})
-                        .get("cost"),
-                        "usage_stats_black_model_prompt_tokens": data["usage_stats"][
-                            "black"
-                        ]
-                        .get(data["player_black"]["model"], {})
-                        .get("prompt_tokens"),
-                        "usage_stats_black_model_completion_tokens": data[
-                            "usage_stats"
-                        ]["black"]
-                        .get(data["player_black"]["model"], {})
-                        .get("completion_tokens"),
-                        "usage_stats_black_model_total_tokens": data["usage_stats"][
-                            "black"
-                        ]
-                        .get(data["player_black"]["model"], {})
-                        .get("total_tokens"),
+                        "black_model_prompt_tokens": (
+                            data["usage_stats"]["black"]
+                            .get(usage_stats_key, {})
+                            .get("prompt_tokens", 0)
+                            if usage_stats_key
+                            else 0
+                        ),
+                        "black_model_completion_tokens": (
+                            data["usage_stats"]["black"]
+                            .get(usage_stats_key, {})
+                            .get("completion_tokens", 0)
+                            if usage_stats_key
+                            else 0
+                        ),
+                        "black_model_total_tokens": (
+                            data["usage_stats"]["black"]
+                            .get(usage_stats_key, {})
+                            .get("total_tokens", 0)
+                            if usage_stats_key
+                            else 0
+                        ),
                     }
 
                     # Write the row to the CSV
