@@ -290,7 +290,11 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - deepseek-reasoner-r1
 - Alibaba
   - qwen-max-2025-01-25
+  - qwen-turbo-2024-11-01
+  - qwen-plus-2025-01-25
   - qwen2.5-72b-instruct
+  - qwen2.5-14b-instruct-1m
+  - qwen2.5-7b-instruct-1m
 - Local (llama.cpp/LM Studio, default settings - 8k context, Flash Attention enabled, 100% GPU off-load when possible):
   - llama-2-7b-chat@q8_0
   - llama-3-70b-instruct-awq
