@@ -165,6 +165,8 @@ def aggregate_models_to_csv(
         "std_dev_moves",
         "completion_tokens_black",
         "completion_tokens_black_per_move",
+        "std_dev_completion_tokens_black_per_move",
+        "moe_completion_tokens_black_per_move",
         "min_moves",
         "max_moves",
         "prompt_tokens_black",
@@ -329,6 +331,35 @@ def aggregate_models_to_csv(
         completion_tokens_black_per_move = (
             completion_tokens_black / llm_total_moves if llm_total_moves > 0 else 0
         )
+
+        # Calculate std_dev and moe for completion_tokens_black_per_move
+        per_game_completion_tokens_black_per_move = [
+            (
+                (
+                    log.usage_stats_black.details.get("completion_tokens", 0)
+                    if log.usage_stats_black.details
+                    else 0
+                )
+                / log.number_of_moves
+            )
+            for log in model_logs
+            if log.number_of_moves > 0
+        ]
+        std_dev_completion_tokens_black_per_move = (
+            stdev(per_game_completion_tokens_black_per_move)
+            if len(per_game_completion_tokens_black_per_move) > 1
+            else 0
+        )
+        if total_games > 1:
+            standard_error_completion_tokens_black_per_move = (
+                std_dev_completion_tokens_black_per_move / math.sqrt(total_games)
+            )
+            moe_completion_tokens_black_per_move = (
+                1.96 * standard_error_completion_tokens_black_per_move
+            )
+        else:
+            moe_completion_tokens_black_per_move = 0
+
         prompt_tokens_black = sum(
             log.usage_stats_black.details.get("prompt_tokens", 0)
             for log in model_logs
@@ -402,6 +433,8 @@ def aggregate_models_to_csv(
                 std_dev_moves,
                 completion_tokens_black,
                 completion_tokens_black_per_move,
+                std_dev_completion_tokens_black_per_move,
+                moe_completion_tokens_black_per_move,
                 min_moves,
                 max_moves,
                 prompt_tokens_black,

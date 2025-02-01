@@ -51,11 +51,15 @@ def convert_aggregate_to_refined(
             "player_avg_material",
             "opponent_avg_material",
             "material_diff_player_llm_minus_opponent",
-            "material_diff_player_minus_opponent_per_1000moves",
             "wrong_actions_per_1000moves",
             "wrong_moves_per_1000moves",
+            "mistakes_per_1000moves",
             "average_moves",
             "completion_tokens_black_per_move",
+            "moe_average_moves",
+            "moe_material_diff",
+            "moe_mistakes_per_1000moves",
+            "moe_completion_tokens_black_per_move",
         ]
 
         # Prepare to write to the refined CSV
@@ -88,21 +92,23 @@ def convert_aggregate_to_refined(
                 player_avg_material = float(row["llm_avg_material"])
                 opponent_avg_material = float(row["rand_avg_material"])
                 material_diff = float(row["material_diff_llm_minus_rand"])
-                material_diff_per_1000moves = (
-                    float(row["material_diff_llm_minus_rand_per_100moves"]) * 10
-                )
-                wrong_actions_per_1000moves = (
-                    float(row["wrong_actions_per_100moves"]) * 10
-                )
-                wrong_moves_per_1000moves = float(row["wrong_moves_per_100moves"]) * 10
+                wrong_actions_per_1000moves = float(row["wrong_actions_per_1000moves"])
+                wrong_moves_per_1000moves = float(row["wrong_moves_per_1000moves"])
+                mistakes_per_1000moves = float(row["mistakes_per_1000moves"])
                 average_moves = float(row["average_moves"])
                 completion_tokens_black_per_move = float(
                     row["completion_tokens_black_per_move"]
                 )
+                moe_average_moves = float(row["moe_avg_moves"])
+                moe_material_diff = float(row["moe_material_diff"])
+                moe_mistakes_per_1000moves = float(row["moe_mistakes_per_1000moves"])
+                moe_completion_tokens_black_per_move = float(
+                    row["moe_completion_tokens_black_per_move"]
+                )
 
                 # Calculate percentages
-                player_wins_percent = (player_wins / total_games) * 100
-                player_draws_percent = (draws / total_games) * 100
+                player_wins_percent = float(row["black_llm_wins_percent"])
+                player_draws_percent = float(row["black_llm_draws_percent"])
 
                 # Append the row to the list of rows to write
                 rows_to_write.append(
@@ -120,11 +126,15 @@ def convert_aggregate_to_refined(
                         "player_avg_material": player_avg_material,
                         "opponent_avg_material": opponent_avg_material,
                         "material_diff_player_llm_minus_opponent": material_diff,
-                        "material_diff_player_minus_opponent_per_1000moves": material_diff_per_1000moves,
                         "wrong_actions_per_1000moves": wrong_actions_per_1000moves,
                         "wrong_moves_per_1000moves": wrong_moves_per_1000moves,
+                        "mistakes_per_1000moves": mistakes_per_1000moves,
                         "average_moves": average_moves,
                         "completion_tokens_black_per_move": completion_tokens_black_per_move,
+                        "moe_average_moves": moe_average_moves,
+                        "moe_material_diff": moe_material_diff,
+                        "moe_mistakes_per_1000moves": moe_mistakes_per_1000moves,
+                        "moe_completion_tokens_black_per_move": moe_completion_tokens_black_per_move,
                     }
                 )
 

@@ -29,8 +29,9 @@ class TestUtils(unittest.TestCase):
                 "name": "White",
                 "wrong_moves": 2,
                 "wrong_actions": 1,
-                "material_count": 15,
-                "llm_config": {"model": "test_model"},
+                "reflections_used": 0,
+                "reflections_used_before_board": 0,
+                "llm_config": {"config_list": [{"model": "test_model"}]},
             },
         )()
 
@@ -41,10 +42,13 @@ class TestUtils(unittest.TestCase):
                 "name": "Black",
                 "wrong_moves": 3,
                 "wrong_actions": 2,
-                "material_count": 10,
-                "llm_config": {"model": "test_model"},
+                "reflections_used": 0,
+                "reflections_used_before_board": 0,
+                "llm_config": {"config_list": [{"model": "test_model"}]},
             },
         )()
+
+        material_count = {"white": 15, "black": 10}
 
         stats = generate_game_stats(
             "2024.10.07_12:00",
@@ -53,8 +57,7 @@ class TestUtils(unittest.TestCase):
             40,
             player_white,
             player_black,
-            player_white.llm_config,
-            player_black.llm_config,
+            material_count,
         )
 
         self.assertEqual(stats["winner"], "White")
@@ -62,6 +65,10 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(stats["number_of_moves"], 40)
         self.assertEqual(stats["player_white"]["wrong_moves"], 2)
         self.assertEqual(stats["player_black"]["wrong_moves"], 3)
+        self.assertEqual(stats["material_count"]["white"], 15)
+        self.assertEqual(stats["material_count"]["black"], 10)
+        self.assertEqual(stats["player_white"]["model"], "test_model")
+        self.assertEqual(stats["player_black"]["model"], "test_model")
 
 
 if __name__ == "__main__":
