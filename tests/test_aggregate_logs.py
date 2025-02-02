@@ -102,7 +102,18 @@ class TestAggregateMetrics(unittest.TestCase):
         ) / len(logs)
         self.assertEqual(material_diff, 2)
 
-    def test_completion_tokens_per_move(self):
+    def test_std_dev_and_moe_black_llm_draws_percent(self):
+        logs = [
+            create_mock_game_log(winner="Draw"),
+            create_mock_game_log(winner="Draw"),
+            create_mock_game_log(winner="Player_Black"),
+            create_mock_game_log(winner="Random_Player"),
+        ]
+        black_llm_draws_percent = [100, 100, 0, 0]
+        std_dev = stdev(black_llm_draws_percent)
+        moe = 1.96 * (std_dev / math.sqrt(len(black_llm_draws_percent)))
+        self.assertAlmostEqual(std_dev, 57.735026918962575)
+        self.assertAlmostEqual(moe, 56.5803263805833)
         logs = [create_mock_game_log(completion_tokens=100, number_of_moves=40)]
         tokens_per_move = sum(
             log.usage_stats_black.details["completion_tokens"] / log.number_of_moves
@@ -110,7 +121,18 @@ class TestAggregateMetrics(unittest.TestCase):
         ) / len(logs)
         self.assertAlmostEqual(tokens_per_move, 2.5)
 
-    def test_moe_material_diff(self):
+    def test_std_dev_and_moe_black_llm_wins_percent(self):
+        logs = [
+            create_mock_game_log(winner="Player_Black"),
+            create_mock_game_log(winner="Player_Black"),
+            create_mock_game_log(winner="Random_Player"),
+            create_mock_game_log(winner="Draw"),
+        ]
+        black_llm_wins_percent = [100, 100, 0, 0]
+        std_dev = stdev(black_llm_wins_percent)
+        moe = 1.96 * (std_dev / math.sqrt(len(black_llm_wins_percent)))
+        self.assertAlmostEqual(std_dev, 57.735026918962575)
+        self.assertAlmostEqual(moe, 56.58032638058332)
         logs = [
             create_mock_game_log(material_black=20, material_white=18)
             for _ in range(10)

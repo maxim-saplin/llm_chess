@@ -173,6 +173,10 @@ def aggregate_models_to_csv(
         "total_tokens_black",
         "moe_material_diff",
         "moe_avg_moves",
+        "std_dev_black_llm_wins_percent",
+        "moe_black_llm_wins_percent",
+        "std_dev_black_llm_draws_percent",
+        "moe_black_llm_draws_percent",
         "moe_wrong_actions_per_1000moves",
         "moe_wrong_moves_per_1000moves",
         "moe_mistakes_per_1000moves",
@@ -198,6 +202,35 @@ def aggregate_models_to_csv(
             (black_llm_wins / total_games) * 100 if total_games > 0 else 0
         )
         black_llm_draws_percent = (draws / total_games) * 100 if total_games > 0 else 0
+
+        # Calculate per-game black wins and draws percentages
+        per_game_black_llm_wins_percent = [
+            (1 if log.winner == "Player_Black" else 0) * 100 for log in model_logs
+        ]
+        per_game_black_llm_draws_percent = [
+            (1 if log.winner not in ["Player_Black", "Random_Player"] else 0) * 100
+            for log in model_logs
+        ]
+
+        # Compute std_dev and moe for black_llm_wins_percent
+        std_dev_black_llm_wins_percent = (
+            stdev(per_game_black_llm_wins_percent) if total_games > 1 else 0
+        )
+        moe_black_llm_wins_percent = (
+            1.96 * (std_dev_black_llm_wins_percent / math.sqrt(total_games))
+            if total_games > 1
+            else 0
+        )
+
+        # Compute std_dev and moe for black_llm_draws_percent
+        std_dev_black_llm_draws_percent = (
+            stdev(per_game_black_llm_draws_percent) if total_games > 1 else 0
+        )
+        moe_black_llm_draws_percent = (
+            1.96 * (std_dev_black_llm_draws_percent / math.sqrt(total_games))
+            if total_games > 1
+            else 0
+        )
 
         llm_total_moves = sum(log.number_of_moves for log in model_logs)
         llm_wrong_actions = sum(log.player_black.wrong_actions for log in model_logs)
@@ -441,6 +474,10 @@ def aggregate_models_to_csv(
                 total_tokens_black,
                 moe_material_diff,
                 moe_avg_moves,
+                std_dev_black_llm_wins_percent,
+                moe_black_llm_wins_percent,
+                std_dev_black_llm_draws_percent,
+                moe_black_llm_draws_percent,
                 moe_wrong_actions_per_1000moves,
                 moe_wrong_moves_per_1000moves,
                 moe_mistakes_per_1000moves,

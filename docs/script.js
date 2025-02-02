@@ -131,7 +131,8 @@ function buildTable() {
     });
 
     const tbody = document.querySelector('#leaderboard tbody');
-    [...otherRows, ...bottomRows].forEach(columns => {
+    [...otherRows, ...bottomRows].forEach((columns, index) => {
+        const isBottomRow = bottomRows.includes(columns); // Check if the row is a bottom row
         const player = columns[csvIndices.player];
         const player_wins_percent = parseFloat(columns[csvIndices.player_wins_percent]);
         const player_draws_percent = parseFloat(columns[csvIndices.player_draws_percent]);
@@ -142,6 +143,7 @@ function buildTable() {
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
+            <td>${isBottomRow ? '' : index + 1}</td> <!-- Empty rank for bottom rows -->
             <td>${player}</td> <!-- Player first -->
             <td>${player_wins_percent.toFixed(2)}%</td>
             <td>${player_draws_percent.toFixed(2)}%</td>
@@ -182,7 +184,7 @@ function sortTable(columnIndex) {
     // Separate the rows that should always be at the bottom
     const bottomRows = [];
     const otherRows = rows.filter(row => {
-        const player = row.cells[0].textContent;
+        const player = row.cells[1].textContent.trim(); // Use the Player column to identify special rows
         if (player === SPECIAL_ROWS.STOCKFISH ||
             player === SPECIAL_ROWS.RANDOM_WHITE ||
             player === SPECIAL_ROWS.RANDOM_BLACK) {
@@ -192,9 +194,10 @@ function sortTable(columnIndex) {
         return true;
     });
 
+    // Sort only the other rows
     otherRows.sort((a, b) => {
-        const aText = a.cells[columnIndex].textContent;
-        const bText = b.cells[columnIndex].textContent;
+        const aText = a.cells[columnIndex].textContent.trim();
+        const bText = b.cells[columnIndex].textContent.trim();
 
         const comparison = isNumericColumn
             ? parseFloat(aText) - parseFloat(bText)
