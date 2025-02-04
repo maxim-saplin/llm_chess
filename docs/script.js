@@ -57,7 +57,7 @@ sky-t1-32b-preview,30,0,30,0,0.0,0.0,415,9,59,38.766666666666666,38.8,-0.0333333
 Stockfish chess engine (as Black),1000,1000,0,0,100.000,0.000,32368,0,0,38.21,21.01,17.21,0.53164,0.00,0.00,32.37,-
 Random Player (as White),1000,105,0,895,10.5,89.5,190073,0,0,10.56,11.08,-0.52,-0.00274,0.00,0.00,190.07,-
 Random Player (as Black),1000,0,105,895,0.000,89.5,190073,0,0,11.08,10.56,0.52,0.00274,0.00,0.00,190.07,-
-    `
+`
 const csvIndices = {
     player: 0,
     total_games: 1,
@@ -113,8 +113,7 @@ function showPane(paneId) {
 }
 
 function buildTable() {
-    const lines = data.trim().split('\n');
-    // const header = lines[0].split(',');
+    const lines = data.trim().split('\n').filter(line => line.trim() !== '');
     const rows = lines.slice(1).map(row => row.split(','));
 
     // Separate the rows that should always be at the bottom
