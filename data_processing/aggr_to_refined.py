@@ -60,6 +60,7 @@ def convert_aggregate_to_refined(
             "moe_material_diff",
             "moe_mistakes_per_1000moves",
             "moe_completion_tokens_black_per_move",
+            "moe_mistakes_per_1000moves",
         ]
 
         # Prepare to write to the refined CSV
@@ -135,6 +136,7 @@ def convert_aggregate_to_refined(
                         "moe_material_diff": moe_material_diff,
                         "moe_mistakes_per_1000moves": moe_mistakes_per_1000moves,
                         "moe_completion_tokens_black_per_move": moe_completion_tokens_black_per_move,
+                        "moe_mistakes_per_1000moves": moe_mistakes_per_1000moves,
                     }
                 )
 

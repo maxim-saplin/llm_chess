@@ -9,6 +9,7 @@ FILTER_OUT_MODELS = [
     "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp03",
     "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp03",
     "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp06",
+    "anthropic.claude-v3-5-sonnet",
 ]
 
 ALIASES = {
