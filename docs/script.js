@@ -273,11 +273,16 @@ function fetchAndAnimateBoard() {
 function showPopup(row, columns) {
     const popup = document.getElementById('popup');
     const totalGames = columns[csvIndices.total_games];
-    const wins = columns[csvIndices.player_wins]; // Retrieve wins
-    const losses = columns[csvIndices.losses];    // Retrieve losses
-    const draws = columns[csvIndices.draws];      // Retrieve draws
-    const averageMoves = columns[csvIndices.average_moves]; // Retrieve average moves
-    const materialDiff = columns[csvIndices.material_diff]; // Retrieve material difference
+    const wins = columns[csvIndices.player_wins];
+    const losses = columns[csvIndices.losses];
+    const draws = columns[csvIndices.draws];
+    const averageMoves = columns[csvIndices.average_moves];
+    const materialDiff = columns[csvIndices.material_diff];
+
+    const moeAverageMoves = columns[csvIndices.moe_average_moves];
+    const moeMaterialDiff = columns[csvIndices.moe_material_diff];
+    // const moeMistakesPer1000Moves = columns[csvIndices.moe_mistakes_per_1000moves];
+    // const moeCompletionTokensBlackPerMove = columns[csvIndices.moe_completion_tokens_black_per_move];
 
     document.getElementById('total-games').textContent = `Games: ${parseInt(totalGames)}`;
     document.getElementById('wins').textContent = `Wins: ${parseInt(wins)} | ${((parseInt(wins) / parseInt(totalGames)) * 100).toFixed(2)}%`;
@@ -285,8 +290,8 @@ function showPopup(row, columns) {
     const winsMinusLossesPercent = ((parseInt(wins) - parseInt(losses)) / parseInt(totalGames) * 100).toFixed(2);
     document.getElementById('wins_minus_losses').textContent = `Wins - Losses: ${winsMinusLossesPercent}%`;
     document.getElementById('draws').textContent = `Draws: ${parseInt(draws)} | ${((parseInt(draws) / parseInt(totalGames)) * 100).toFixed(2)}%`;
-    document.getElementById('average-moves').textContent = `Average Moves: ${parseFloat(averageMoves).toFixed(2)}`;
-    document.getElementById('material-diff').textContent = `Material Diff: ${parseFloat(materialDiff).toFixed(2)}`;
+    document.getElementById('average-moves').textContent = `Average Moves: ${parseFloat(averageMoves).toFixed(2)} ± ${parseFloat(moeAverageMoves).toFixed(2)}`;
+    document.getElementById('material-diff').textContent = `Material Diff: ${parseFloat(materialDiff).toFixed(2)} ± ${parseFloat(moeMaterialDiff).toFixed(2)}`;
 
     const rect = row.getBoundingClientRect();
     if (window.innerWidth < 1200) {
