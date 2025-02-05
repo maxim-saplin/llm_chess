@@ -272,6 +272,9 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - gemini-1.5-pro-preview-0409
   - gemini-2.0-flash-exp
   - gemini-2.0-flash-thinking-exp-1219
+- AWS
+  - amazon.nova-pro-v1 
+  - amazon.nova-lite-v1
 - x.ai
   - grok-2-1212
 - Groq:
