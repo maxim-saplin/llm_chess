@@ -8,3 +8,7 @@ Testing Stockfish engine with and without move history, the original baseline wa
 ## Revising Baseline
 
 Using Stockfishs skill levels (Default at 1) and changing per move compute time (default 0.1s instead of previous 0.01s) instead of just cmpute time - it seems that just compute time is hardware agnostics and is not quite reproducible.
+
+### Eng
+1. 14" M1 Pro Mac Book Pro, Stockfish 17
+2. Intel Core i5 13600KF, WSL, Stockfish 17 (stockfish-ubuntu-x86-64-avx2)
