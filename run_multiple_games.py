@@ -4,10 +4,10 @@ import statistics  # Import the statistics module
 from llm_chess import run
 
 # Parameters
-NUM_REPETITIONS = 1000  # Set the number of games to run
-LOG_FOLDER = "_logs/misc/2025-06-02_stockfish"  # Set the folder to store logs
+NUM_REPETITIONS = 32  # Set the number of games to run
+LOG_FOLDER = "_logs/no_reflection/2025-02-06_DeepSeek-R1-Distill-Llama-70B-FP8"  # Set the folder to store logs
 
-STORE_INDIVIDUAL_LOGS = False
+STORE_INDIVIDUAL_LOGS = True
 
 # ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`
 # Hyper params such as temperature are defined in `utils.py`
