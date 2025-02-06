@@ -11,6 +11,8 @@ FILTER_OUT_MODELS = [
     "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp06",
     "anthropic.claude-v3-5-sonnet",
     "llama-3.1-tulu-3-8b@q4_k_m",
+    "llama-3.1-8b-instant",  # Groq
+    "meta-llama-3.1-8b-instruct-fp16",  # local
 ]
 
 ALIASES = {
