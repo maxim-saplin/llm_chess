@@ -8,7 +8,6 @@ from custom_agents import (
     GameAgent,
     RandomPlayerAgent,
     AutoReplyAgent,
-    ChessEngineSunfishAgent,
     ChessEngineStockfishAgent,
 )
 
@@ -39,19 +38,19 @@ class PlayerType(Enum):
     LLM_WHITE = 1  # Represents a white player controlled by an LLM and using *_W config keys from .env
     LLM_BLACK = 2  # Represents a black player controlled by an LLM and using *_B config keys from .env
     RANDOM_PLAYER = 3  # Represents a player making random moves
-    CHESS_ENGINE_SUNFISH = 4
+    # CHESS_ENGINE_SUNFISH = 4 # Removed in 2025
     CHESS_ENGINE_STOCKFISH = 5
 
 
 # Hyper params such as temperature are defined in `utils.py`
 white_player_type = PlayerType.RANDOM_PLAYER
-black_player_type = PlayerType.LLM_BLACK
+black_player_type = PlayerType.CHESS_ENGINE_STOCKFISH
 enable_reflection = False  # Whether to offer the LLM time to think and evaluate moves
 use_fen_board = False  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
 max_game_moves = 200  # maximum number of game moves before terminating, dafault 200
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times, default 10
 max_failed_attempts = 3  # number of wrong replies within a dialog (e.g. non existing action) before stopping/giving a loss, default 3
-throttle_delay = 1  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+throttle_delay = 0  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
 dialog_turn_delay = 0  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
@@ -75,6 +74,13 @@ if temp_override is not None:
     )
 
 stockfish_path = "/opt/homebrew/bin/stockfish"
+reset_stockfish_history = (
+    True  # If True, Stockfish will get no history before making a move, default is True
+)
+stockfish_level = 1  # Set to an integer (0-20) to override Stockfish skill level, or None to use default
+stockfish_time_per_move = (
+    0.1  # Time limit (in seconds) for Stockfish to think per move, default is 0.1
+)
 
 
 def run(log_dir="_logs", save_logs=True):
@@ -104,11 +110,6 @@ def run(log_dir="_logs", save_logs=True):
         if board.legal_moves.count() == 0:
             return None
         return ",".join([str(move) for move in board.legal_moves])
-
-    if black_player_type == PlayerType.CHESS_ENGINE_SUNFISH and not use_fen_board:
-        print(
-            "Warning: Chess engine SUNFISH is selected but FEN board is not used. It will fail"
-        )
 
     def get_current_board() -> (
         Annotated[str, "A text representation of the current board state"]
@@ -242,22 +243,15 @@ def run(log_dir="_logs", save_logs=True):
         PlayerType.LLM_WHITE: llm_white,
         PlayerType.LLM_BLACK: llm_black,
         PlayerType.RANDOM_PLAYER: random_player,
-        PlayerType.CHESS_ENGINE_SUNFISH: ChessEngineSunfishAgent(
-            name="Chess_Engine_Sunfish_White",
-            system_message="",
-            description="You are a chess player using the Sunfish engine.",
-            human_input_mode="NEVER",
-            is_termination_msg=is_termination_message,
-            make_move_action=make_move_action,
-            get_current_board_action=get_current_board_action,
-            is_white=True,
-        ),
         PlayerType.CHESS_ENGINE_STOCKFISH: ChessEngineStockfishAgent(
             name="Chess_Engine_Stockfish_White",
             board=board,
             make_move_action=make_move_action,
             stockfish_path=stockfish_path,
+            remove_history=reset_stockfish_history,
             is_termination_msg=is_termination_message,
+            level=stockfish_level,
+            time_limit=stockfish_time_per_move,  # Pass the stockfish_level parameter
         ),
     }.get(white_player_type)
 
@@ -265,22 +259,15 @@ def run(log_dir="_logs", save_logs=True):
         PlayerType.LLM_WHITE: llm_white,
         PlayerType.LLM_BLACK: llm_black,
         PlayerType.RANDOM_PLAYER: random_player,
-        PlayerType.CHESS_ENGINE_SUNFISH: ChessEngineSunfishAgent(
-            name="Chess_Engine_Sunfish_Black",
-            system_message="",
-            description="You are a chess player using the Sunfish engine.",
-            human_input_mode="NEVER",
-            is_termination_msg=is_termination_message,
-            make_move_action=make_move_action,
-            get_current_board_action=get_current_board_action,
-            is_white=False,
-        ),
         PlayerType.CHESS_ENGINE_STOCKFISH: ChessEngineStockfishAgent(
             name="Chess_Engine_Stockfish_Black",
             board=board,
             make_move_action=make_move_action,
             stockfish_path=stockfish_path,
+            remove_history=reset_stockfish_history,
             is_termination_msg=is_termination_message,
+            level=stockfish_level,
+            time_limit=stockfish_time_per_move,
         ),
     }.get(black_player_type)
 
