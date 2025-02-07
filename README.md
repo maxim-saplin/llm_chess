@@ -367,45 +367,6 @@ Below are some stats simulating many games (1000) and collecting stats to get an
 }
 ```
 
-### Random Player (white) vs Chess Engine (black, Sunfish)
-
-Simulating 1000 games of a chess engine shows that with a chess engine, it takes around 100 moves to complete the game, The chess engine dominates judging by the amount of material (weighted sum of pieces standing on the board)
-```json
-{
-    "total_games": 1000,
-    "white_wins": 0,
-    "black_wins": 190,
-    "draws": 810,
-    "total_moves": 99252,
-    "reasons": {
-        "Checkmate": 190,
-        "Stalemate": 406,
-        "Max moves reached": 34,
-        "Fivefold repetition": 370
-    },
-    "player_white": {
-        "name": "Random_Player",
-        "model": "",
-        "total_material": 1183,
-        "wrong_moves": 0,
-        "wrong_actions": 0,
-        "avg_material": 1.183,
-        "std_dev_material": 4.750587235182518
-    },
-    "player_black": {
-        "name": "Chess_Engine_Player_Black",
-        "model": "",
-        "total_material": 39549,
-        "wrong_moves": 0,
-        "wrong_actions": 0,
-        "avg_material": 39.549,
-        "std_dev_material": 9.469597260299524
-    },
-    "average_moves": 99.252,
-    "std_dev_moves": 51.129705091490045
-}
-```
-
 ### Random vs Random
 
 ```json
