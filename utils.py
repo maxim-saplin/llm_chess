@@ -72,7 +72,6 @@ def get_llms_autogen(temperature=None):
             "api_key": os.environ[f"AZURE_OPENAI_KEY_{key}"],
             "base_url": os.environ[f"AZURE_OPENAI_ENDPOINT_{key}"],
             "api_version": os.environ[f"AZURE_OPENAI_VERSION_{key}"],
-            "timeout": 120
         }
 
     def local_config(key):
@@ -80,7 +79,6 @@ def get_llms_autogen(temperature=None):
             "model": os.environ[f"LOCAL_MODEL_NAME_{key}"],
             "base_url": os.environ[f"LOCAL_BASE_URL_{key}"],
             "api_key": os.environ.get(f"LOCAL_API_KEY_{key}", "any"),
-            "timeout": 120
         }
 
     def gemini_config(key):
@@ -88,7 +86,6 @@ def get_llms_autogen(temperature=None):
             "model": os.environ[f"GEMINI_MODEL_NAME_{key}"],
             "api_key": os.environ[f"GEMINI_API_KEY_{key}"],
             "api_type": "google",
-            "timeout": 120
         }
 
     def create_config(config_list):
@@ -98,6 +95,8 @@ def get_llms_autogen(temperature=None):
             "top_p": 1.0,
             "frequency_penalty": 0.0,
             "presence_penalty": 0.0,
+            "stream": False,
+            "timeout": 120
         }
 
     configs = []
