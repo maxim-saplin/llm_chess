@@ -58,7 +58,9 @@ random_print_board = (
 visualize_board = False  # You can skip board visualization to speed up execution
 
 # Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini), R1 distil recomend 0.5-0.7
-temp_override = None
+temp_override = 1.0
+
+reasoning_effort = "low" # Default is None, used with OpenAI models low, medium, or high
 
 # Tell AutoReply agent to ignore given pieces of text when processing replies
 # (using re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL))
@@ -66,11 +68,16 @@ temp_override = None
 # E.g. Deepseek R1 32B uses <think> tags that can have actions mentioned breaking execution (r"<think>.*?</think>")
 ignore_text = None  # r"<think>.*?</think>"
 
-# Add a warning if both remove_description is True or False and temp_override is not None
+# Add warnings for both temp_override and reasoning_effort
 if temp_override is not None:
     print(
         "\033[93mWarning: 'temp_override' is not None."
-        " This overrides ARE ONLY NEEDED for special models (e.g. o1 require temp 1.0, Deepseek R1 local models recomend 0.5 - 0.7)\033[0m"
+        " This override is only needed for special models (e.g., o1 requires temp 1.0, Deepseek R1 local models recommend 0.5 - 0.7)\033[0m"
+    )
+if reasoning_effort is not None:
+    print(
+        "\033[93mWarning: 'reasoning_effort' is set to '{}'."
+        " This setting is only applicable to specific models and may not be supported by all models.\033[0m".format(reasoning_effort)
     )
 
 stockfish_path = "/opt/homebrew/bin/stockfish"
@@ -94,7 +101,7 @@ def run(log_dir="_logs", save_logs=True):
 
     # LLM
 
-    llm_config_white, llm_config_black = get_llms_autogen(temp_override)
+    llm_config_white, llm_config_black = get_llms_autogen(temp_override, reasoning_effort)
     # llm_config_white = llm_config_black  # Quick hack to use same model
 
     # Init chess board

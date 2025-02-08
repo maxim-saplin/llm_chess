@@ -41,7 +41,7 @@ def calculate_material_count(board):
 load_dotenv()
 
 
-def get_llms_autogen(temperature=None):
+def get_llms_autogen(temperature=None, reasoning_effort=None):
     """
     Retrieve the configuration for LLMs (Large Language Models) with optional temperature setting.
 
@@ -92,6 +92,7 @@ def get_llms_autogen(temperature=None):
         return {
             "config_list": config_list,
             "temperature": temperature if temperature is not None else 0.3,
+            **({"reasoning_effort": reasoning_effort} if reasoning_effort is not None else {}),
             "top_p": 1.0,
             "frequency_penalty": 0.0,
             "presence_penalty": 0.0,
