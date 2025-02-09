@@ -1,0 +1,5 @@
+For o3 models I received odd instability, in some cases server dropped connection. At first I considered this to be some network instability not related to the model. Yet latter I noticed that it happen too often while at the same time I have never seen this rate of connection errors (and this sort of errors) with other OpenAI models. Reserching internet didn't yield conclusive results, other than some users reported similar issues with them being fixed by using different model alials. As well as there was a mention that this behavior could be related to model failure (some forum in regards to ChatGPT). I have also observed odd behaviour when using chat UI with o1 models when sometimes I received connection errors. For thr time being considering those errors as model errors and assinging losses to LLM.
+
+```
+httpx.RemoteProtocolError: peer closed connection without sending complete message body (incomplete chunked read)
+```
