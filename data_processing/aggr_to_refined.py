@@ -45,26 +45,25 @@ def convert_aggregate_to_refined(
             "draws",
             "player_wins_percent",
             "player_draws_percent",
+            "average_moves",
+            "moe_average_moves",
             "total_moves",
             "player_wrong_actions",
             "player_wrong_moves",
-            "player_avg_material",
-            "opponent_avg_material",
-            "material_diff_player_llm_minus_opponent",
             "wrong_actions_per_1000moves",
             "wrong_moves_per_1000moves",
             "mistakes_per_1000moves",
-            "average_moves",
-            "completion_tokens_black_per_move",
-            "moe_average_moves",
-            "moe_material_diff",
             "moe_mistakes_per_1000moves",
+            "player_avg_material",
+            "opponent_avg_material",
+            "material_diff_player_llm_minus_opponent",
+            "moe_material_diff_llm_minus_rand",
+            "completion_tokens_black_per_move",
+            "moe_completion_tokens_black_per_move",
             "std_dev_black_llm_win_rate",
             "moe_black_llm_win_rate",
             "std_dev_draw_rate",
             "moe_draw_rate",
-            "moe_completion_tokens_black_per_move",
-            "moe_mistakes_per_1000moves",
         ]
 
         # Prepare to write to the refined CSV
@@ -105,7 +104,9 @@ def convert_aggregate_to_refined(
                     row["completion_tokens_black_per_move"]
                 )
                 moe_average_moves = float(row["moe_avg_moves"])
-                moe_material_diff = float(row["moe_material_diff"])
+                moe_material_diff_llm_minus_rand = float(
+                    row["moe_material_diff_llm_minus_rand"]
+                )
                 moe_mistakes_per_1000moves = float(row["moe_mistakes_per_1000moves"])
                 moe_completion_tokens_black_per_move = float(
                     row["moe_completion_tokens_black_per_move"]
@@ -130,22 +131,21 @@ def convert_aggregate_to_refined(
                         "draws": draws,
                         "player_wins_percent": player_wins_percent,
                         "player_draws_percent": player_draws_percent,
+                        "average_moves": average_moves,
+                        "moe_average_moves": moe_average_moves,
                         "total_moves": total_moves,
                         "player_wrong_actions": player_wrong_actions,
                         "player_wrong_moves": player_wrong_moves,
-                        "player_avg_material": player_avg_material,
-                        "opponent_avg_material": opponent_avg_material,
-                        "material_diff_player_llm_minus_opponent": material_diff,
                         "wrong_actions_per_1000moves": wrong_actions_per_1000moves,
                         "wrong_moves_per_1000moves": wrong_moves_per_1000moves,
                         "mistakes_per_1000moves": mistakes_per_1000moves,
-                        "average_moves": average_moves,
+                        "moe_mistakes_per_1000moves": moe_mistakes_per_1000moves,
+                        "player_avg_material": player_avg_material,
+                        "opponent_avg_material": opponent_avg_material,
+                        "material_diff_player_llm_minus_opponent": material_diff,
+                        "moe_material_diff_llm_minus_rand": moe_material_diff_llm_minus_rand,
                         "completion_tokens_black_per_move": completion_tokens_black_per_move,
-                        "moe_average_moves": moe_average_moves,
-                        "moe_material_diff": moe_material_diff,
-                        "moe_mistakes_per_1000moves": moe_mistakes_per_1000moves,
                         "moe_completion_tokens_black_per_move": moe_completion_tokens_black_per_move,
-                        "moe_mistakes_per_1000moves": moe_mistakes_per_1000moves,
                         "std_dev_black_llm_win_rate": std_dev_black_llm_win_rate,
                         "moe_black_llm_win_rate": moe_black_llm_win_rate,
                         "std_dev_draw_rate": std_dev_draw_rate,

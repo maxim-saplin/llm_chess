@@ -141,6 +141,10 @@ class TestAggregateMetrics(unittest.TestCase):
         self.assertAlmostEqual(float(model_1_data["black_llm_wins_percent"]), 0.0)
         self.assertAlmostEqual(float(model_2_data["black_llm_wins_percent"]), 0.0)
 
+        # Verify the absolute black LLM win rate for each model
+        self.assertAlmostEqual(float(model_1_data["black_llm_win_rate"]), 0.0)
+        self.assertAlmostEqual(float(model_2_data["black_llm_win_rate"]), 0.0)
+
         self.assertAlmostEqual(float(model_1_data["moe_black_llm_win_rate"]), 0.0)
         self.assertAlmostEqual(float(model_2_data["moe_black_llm_win_rate"]), 0.0)
 
@@ -155,11 +159,43 @@ class TestAggregateMetrics(unittest.TestCase):
         model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
         model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
 
+        self.assertAlmostEqual(float(model_1_data["draw_rate"]), 0.5)
+        self.assertAlmostEqual(float(model_2_data["draw_rate"]), 0.5)
+
         self.assertAlmostEqual(float(model_1_data["black_llm_draws_percent"]), 50.0)
         self.assertAlmostEqual(float(model_2_data["black_llm_draws_percent"]), 50.0)
 
         self.assertAlmostEqual(float(model_1_data["moe_draw_rate"]), 0.69296465)
         self.assertAlmostEqual(float(model_2_data["moe_draw_rate"]), 0.69296465)
+
+    def test_black_llm_loss_rate_and_moe(self):
+        """Tests that the black LLM loss rate and margin of error are correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the black LLM loss rate, standard deviation, and margin of error for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        # Expected values for model_1 and model_2
+        self.assertAlmostEqual(float(model_1_data["black_llm_loss_rate"]), 0.5)
+        self.assertAlmostEqual(float(model_2_data["black_llm_loss_rate"]), 0.5)
+
+        self.assertAlmostEqual(
+            float(model_1_data["std_dev_black_llm_loss_rate"]), 0.3535533905932738
+        )
+        self.assertAlmostEqual(
+            float(model_2_data["std_dev_black_llm_loss_rate"]), 0.3535533905932738
+        )
+
+        self.assertAlmostEqual(
+            float(model_1_data["moe_black_llm_loss_rate"]), 0.69296465
+        )
+        self.assertAlmostEqual(
+            float(model_2_data["moe_black_llm_loss_rate"]), 0.69296465
+        )
 
     def test_aggregation_output_fields(self):
         aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
@@ -175,18 +211,24 @@ class TestAggregateMetrics(unittest.TestCase):
             "black_llm_wins",
             "white_rand_wins",
             "draws",
+            "black_llm_win_rate",
+            "std_dev_black_llm_win_rate",
+            "moe_black_llm_win_rate",
+            "black_llm_loss_rate",
+            "std_dev_black_llm_loss_rate",
+            "moe_black_llm_loss_rate",
+            "draw_rate",
+            "std_dev_draw_rate",
+            "moe_draw_rate",
             "black_llm_wins_percent",
             "black_llm_draws_percent",
             "white_rand_wins_percent",
             "llm_total_moves",
+            "average_moves",
+            "std_dev_moves",
+            "moe_avg_moves",
             "llm_wrong_actions",
             "llm_wrong_moves",
-            "llm_avg_material",
-            "llm_std_dev_material",
-            "rand_avg_material",
-            "rand_std_dev_material",
-            "material_diff_llm_minus_rand",
-            "material_diff_llm_minus_rand_per_100moves",
             "wrong_actions_per_100moves",
             "wrong_moves_per_100moves",
             "wrong_actions_per_1000moves",
@@ -195,8 +237,16 @@ class TestAggregateMetrics(unittest.TestCase):
             "std_dev_wrong_actions_per_1000moves",
             "std_dev_wrong_moves_per_1000moves",
             "std_dev_mistakes_per_1000moves",
-            "average_moves",
-            "std_dev_moves",
+            "moe_wrong_actions_per_1000moves",
+            "moe_wrong_moves_per_1000moves",
+            "moe_mistakes_per_1000moves",
+            "llm_avg_material",
+            "llm_std_dev_material",
+            "rand_avg_material",
+            "rand_std_dev_material",
+            "material_diff_llm_minus_rand",
+            "material_diff_llm_minus_rand_per_100moves",
+            "moe_material_diff_llm_minus_rand",
             "completion_tokens_black",
             "completion_tokens_black_per_move",
             "std_dev_completion_tokens_black_per_move",
@@ -205,20 +255,15 @@ class TestAggregateMetrics(unittest.TestCase):
             "max_moves",
             "prompt_tokens_black",
             "total_tokens_black",
-            "moe_material_diff",
-            "moe_avg_moves",
-            "moe_wrong_actions_per_1000moves",
-            "moe_wrong_moves_per_1000moves",
-            "moe_mistakes_per_1000moves",
-            "std_dev_black_llm_win_rate",
-            "moe_black_llm_win_rate",
-            "std_dev_draw_rate",
-            "moe_draw_rate",
         ]
 
         # Verify that all expected fields are present in the aggregated CSV
         for field in headers:
             self.assertIn(field, read_headers)
+
+        # Fail if there are extra fields in the CSV
+        for field in read_headers:
+            self.assertIn(field, headers)
 
 
 def create_mock_json_logs():

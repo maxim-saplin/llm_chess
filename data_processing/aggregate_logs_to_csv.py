@@ -142,18 +142,24 @@ def aggregate_models_to_csv(
         "black_llm_wins",
         "white_rand_wins",
         "draws",
+        "black_llm_win_rate",
+        "std_dev_black_llm_win_rate",
+        "moe_black_llm_win_rate",
+        "black_llm_loss_rate",
+        "std_dev_black_llm_loss_rate",
+        "moe_black_llm_loss_rate",
+        "draw_rate",
+        "std_dev_draw_rate",
+        "moe_draw_rate",
         "black_llm_wins_percent",
         "black_llm_draws_percent",
         "white_rand_wins_percent",
         "llm_total_moves",
+        "average_moves",
+        "std_dev_moves",
+        "moe_avg_moves",
         "llm_wrong_actions",
         "llm_wrong_moves",
-        "llm_avg_material",
-        "llm_std_dev_material",
-        "rand_avg_material",
-        "rand_std_dev_material",
-        "material_diff_llm_minus_rand",
-        "material_diff_llm_minus_rand_per_100moves",
         "wrong_actions_per_100moves",
         "wrong_moves_per_100moves",
         "wrong_actions_per_1000moves",
@@ -162,8 +168,16 @@ def aggregate_models_to_csv(
         "std_dev_wrong_actions_per_1000moves",
         "std_dev_wrong_moves_per_1000moves",
         "std_dev_mistakes_per_1000moves",
-        "average_moves",
-        "std_dev_moves",
+        "moe_wrong_actions_per_1000moves",
+        "moe_wrong_moves_per_1000moves",
+        "moe_mistakes_per_1000moves",
+        "llm_avg_material",
+        "llm_std_dev_material",
+        "rand_avg_material",
+        "rand_std_dev_material",
+        "material_diff_llm_minus_rand",
+        "material_diff_llm_minus_rand_per_100moves",
+        "moe_material_diff_llm_minus_rand",
         "completion_tokens_black",
         "completion_tokens_black_per_move",
         "std_dev_completion_tokens_black_per_move",
@@ -172,15 +186,6 @@ def aggregate_models_to_csv(
         "max_moves",
         "prompt_tokens_black",
         "total_tokens_black",
-        "moe_material_diff",
-        "moe_avg_moves",
-        "moe_wrong_actions_per_1000moves",
-        "moe_wrong_moves_per_1000moves",
-        "moe_mistakes_per_1000moves",
-        "std_dev_black_llm_win_rate",
-        "moe_black_llm_win_rate",
-        "std_dev_draw_rate",
-        "moe_draw_rate",
     ]
 
     csv_data = []
@@ -204,25 +209,38 @@ def aggregate_models_to_csv(
         )
         black_llm_draws_percent = (draws / total_games) * 100 if total_games > 0 else 0
 
-        # Calculate standard deviation and margin of error for win rate
+        # Calculate win rate, standard deviation, and margin of error
+        black_llm_win_rate = black_llm_wins / total_games if total_games > 0 else 0
         if total_games > 0:
-            black_llm_win_rate = black_llm_wins / total_games
             std_dev_black_llm_win_rate = math.sqrt(
                 (black_llm_win_rate * (1 - black_llm_win_rate)) / total_games
             )
             moe_black_llm_win_rate = 1.96 * std_dev_black_llm_win_rate
         else:
-            black_llm_win_rate = 0
             std_dev_black_llm_win_rate = 0
             moe_black_llm_win_rate = 0
 
+        # Calculate loss rate
+        black_llm_loss_rate = white_rand_wins / total_games if total_games > 0 else 0
+
+        # Calculate standard deviation and margin of error for loss rate
+        if total_games > 0:
+            std_dev_black_llm_loss_rate = math.sqrt(
+                (black_llm_loss_rate * (1 - black_llm_loss_rate)) / total_games
+            )
+            moe_black_llm_loss_rate = 1.96 * std_dev_black_llm_loss_rate
+        else:
+            std_dev_black_llm_loss_rate = 0
+            moe_black_llm_loss_rate = 0
+
+        # Calculate draw rate
+        draw_rate = draws / total_games if total_games > 0 else 0
+
         # Calculate standard deviation and margin of error for draw rate
         if total_games > 0:
-            draw_rate = draws / total_games
             std_dev_draw_rate = math.sqrt((draw_rate * (1 - draw_rate)) / total_games)
             moe_draw_rate = 1.96 * std_dev_draw_rate
         else:
-            draw_rate = 0
             std_dev_draw_rate = 0.0
             moe_draw_rate = 0.0
 
@@ -418,7 +436,7 @@ def aggregate_models_to_csv(
             standard_error_material_diff = std_dev_material_diff / math.sqrt(
                 sample_size
             )
-            moe_material_diff = z_score * standard_error_material_diff
+            moe_material_diff_llm_minus_rand = z_score * standard_error_material_diff
 
             standard_error_moves = std_dev_moves / math.sqrt(sample_size)
             moe_avg_moves = z_score * standard_error_moves
@@ -426,7 +444,7 @@ def aggregate_models_to_csv(
             moe_wrong_actions_per_1000moves = 0
             moe_wrong_moves_per_1000moves = 0
             moe_mistakes_per_1000moves = 0
-            moe_material_diff = 0
+            moe_material_diff_llm_minus_rand = 0
             moe_avg_moves = 0
 
         # Append the calculated data to the CSV data list
@@ -437,18 +455,24 @@ def aggregate_models_to_csv(
                 black_llm_wins,
                 white_rand_wins,
                 draws,
+                black_llm_win_rate,
+                std_dev_black_llm_win_rate,
+                moe_black_llm_win_rate,
+                black_llm_loss_rate,
+                std_dev_black_llm_loss_rate,
+                moe_black_llm_loss_rate,
+                draw_rate,
+                std_dev_draw_rate,
+                moe_draw_rate,
                 black_llm_wins_percent,
                 black_llm_draws_percent,
                 (white_rand_wins / total_games) * 100 if total_games > 0 else 0,
                 llm_total_moves,
+                average_moves,
+                std_dev_moves,
+                moe_avg_moves,
                 llm_wrong_actions,
                 llm_wrong_moves,
-                llm_avg_material,
-                llm_std_dev_material,
-                rand_avg_material,
-                rand_std_dev_material,
-                material_diff_llm_minus_rand,
-                material_diff_llm_minus_rand_per_100moves,
                 wrong_actions_per_100moves,
                 wrong_moves_per_100moves,
                 wrong_actions_per_1000moves,
@@ -457,8 +481,16 @@ def aggregate_models_to_csv(
                 std_dev_wrong_actions_per_1000moves,
                 std_dev_wrong_moves_per_1000moves,
                 std_dev_mistakes_per_1000moves,
-                average_moves,
-                std_dev_moves,
+                moe_wrong_actions_per_1000moves,
+                moe_wrong_moves_per_1000moves,
+                moe_mistakes_per_1000moves,
+                llm_avg_material,
+                llm_std_dev_material,
+                rand_avg_material,
+                rand_std_dev_material,
+                material_diff_llm_minus_rand,
+                material_diff_llm_minus_rand_per_100moves,
+                moe_material_diff_llm_minus_rand,
                 completion_tokens_black,
                 completion_tokens_black_per_move,
                 std_dev_completion_tokens_black_per_move,
@@ -467,15 +499,6 @@ def aggregate_models_to_csv(
                 max_moves,
                 prompt_tokens_black,
                 total_tokens_black,
-                moe_material_diff,
-                moe_avg_moves,
-                moe_wrong_actions_per_1000moves,
-                moe_wrong_moves_per_1000moves,
-                moe_mistakes_per_1000moves,
-                std_dev_black_llm_win_rate,
-                moe_black_llm_win_rate,
-                std_dev_draw_rate,
-                moe_draw_rate,
             ]
         )
 
