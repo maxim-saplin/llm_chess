@@ -64,6 +64,8 @@ def convert_aggregate_to_refined(
             "moe_black_llm_win_rate",
             "std_dev_draw_rate",
             "moe_draw_rate",
+            "std_dev_black_llm_loss_rate",
+            "moe_black_llm_loss_rate",
         ]
 
         # Prepare to write to the refined CSV
@@ -121,6 +123,10 @@ def convert_aggregate_to_refined(
                 std_dev_draw_rate = float(row["std_dev_draw_rate"])
                 moe_draw_rate = float(row["moe_draw_rate"])
 
+                # Calculate loss rate statistics
+                std_dev_black_llm_loss_rate = float(row["std_dev_black_llm_loss_rate"])
+                moe_black_llm_loss_rate = float(row["moe_black_llm_loss_rate"])
+
                 # Append the row to the list of rows to write
                 rows_to_write.append(
                     {
@@ -150,6 +156,8 @@ def convert_aggregate_to_refined(
                         "moe_black_llm_win_rate": moe_black_llm_win_rate,
                         "std_dev_draw_rate": std_dev_draw_rate,
                         "moe_draw_rate": moe_draw_rate,
+                        "std_dev_black_llm_loss_rate": std_dev_black_llm_loss_rate,
+                        "moe_black_llm_loss_rate": moe_black_llm_loss_rate,
                     }
                 )
 
