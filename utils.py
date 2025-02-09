@@ -89,16 +89,24 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
         }
 
     def create_config(config_list):
-        return {
+        config = {
             "config_list": config_list,
-            "temperature": temperature if temperature is not None else 0.3,
-            **({"reasoning_effort": reasoning_effort} if reasoning_effort is not None else {}),
             "top_p": 1.0,
             "frequency_penalty": 0.0,
             "presence_penalty": 0.0,
             "stream": False,
             "timeout": 120
         }
+
+        # Add temperature only if it is not "remove"
+        if temperature != "remove":
+            config["temperature"] = temperature if temperature is not None else 0.3
+
+        # Add reasoning_effort if it is not None
+        if reasoning_effort is not None:
+            config["reasoning_effort"] = reasoning_effort
+
+        return config
 
     configs = []
     for kind, key in zip(model_kinds, ["W", "B"]):

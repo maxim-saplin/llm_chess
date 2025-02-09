@@ -51,16 +51,17 @@ max_game_moves = 200  # maximum number of game moves before terminating, dafault
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times, default 10
 max_failed_attempts = 3  # number of wrong replies within a dialog (e.g. non existing action) before stopping/giving a loss, default 3
 throttle_delay = 2  # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
-dialog_turn_delay = 3  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
+dialog_turn_delay = 2  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
 visualize_board = False  # You can skip board visualization to speed up execution
 
-# Set to None to use defaults, o1-mini fails with any params other than 1.0 (added as a workaround for o1-mini), R1 distil recomend 0.5-0.7
-temp_override = 1.0
+# Set to None to use defaults, "remove" to not send it
+# o1-mini fails with any params other than 1.0 or not present, R1 distil recomends 0.5-0.7
+temp_override = "remove"
 
-reasoning_effort = "low" # Default is None, used with OpenAI models low, medium, or high
+reasoning_effort = "medium" # Default is None, used with OpenAI models low, medium, or high
 
 # Tell AutoReply agent to ignore given pieces of text when processing replies
 # (using re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL))
