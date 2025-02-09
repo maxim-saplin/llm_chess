@@ -319,7 +319,7 @@ function showPopup(row, columns) {
     document.getElementById('average-moves').textContent = `Average Moves: ${parseFloat(averageMoves).toFixed(2)} ± ${parseFloat(moeAverageMoves).toFixed(2)}`;
     document.getElementById('material-diff').textContent = `Material Diff: ${parseFloat(materialDiff).toFixed(2)} ± ${parseFloat(moeMaterialDiff).toFixed(2)}`;
     document.getElementById('mistakes-per-1000moves').textContent = `Mist. per 1k Moves: ${parseFloat(mistakesPer1000Moves).toFixed(2)} ± ${parseFloat(moeMistakesPer1000Moves).toFixed(2)}`;
-    document.getElementById('completion-tokens-black-per-move').textContent = `Compl. Toks. per Move: ${parseFloat(completionTokensBlackPerMove).toFixed(2)} ± ${parseFloat(moeCompletionTokensBlackPerMove).toFixed(2)}`;
+    document.getElementById('completion-tokens-black-per-move').textContent = `Compl. Tok. p. Move: ${parseFloat(completionTokensBlackPerMove).toFixed(2)} ± ${parseFloat(moeCompletionTokensBlackPerMove).toFixed(2)}`;
 
     const rect = row.getBoundingClientRect();
     if (window.innerWidth < 1200) {
