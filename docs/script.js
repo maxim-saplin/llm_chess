@@ -160,7 +160,7 @@ function buildTable() {
         const player_draws_percent = parseFloat(columns[csvIndices.player_draws_percent]);
         const wrong_actions_per_1000moves = parseFloat(columns[csvIndices.wrong_actions_per_1000moves]);
         const wrong_moves_per_1000moves = parseFloat(columns[csvIndices.wrong_moves_per_1000moves]);
-        const mistakes = wrong_actions_per_1000moves + wrong_moves_per_1000moves;
+        const mistakes = parseFloat(columns[csvIndices.mistakes_per_1000moves]);
         const tokens = parseFloat(columns[csvIndices.completion_tokens_black_per_move]);
 
         const tr = document.createElement('tr');
