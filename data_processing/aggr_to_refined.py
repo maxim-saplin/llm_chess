@@ -59,6 +59,10 @@ def convert_aggregate_to_refined(
             "moe_average_moves",
             "moe_material_diff",
             "moe_mistakes_per_1000moves",
+            "std_dev_black_llm_win_rate",
+            "moe_black_llm_win_rate",
+            "std_dev_draw_rate",
+            "moe_draw_rate",
             "moe_completion_tokens_black_per_move",
             "moe_mistakes_per_1000moves",
         ]
@@ -111,6 +115,11 @@ def convert_aggregate_to_refined(
                 player_wins_percent = float(row["black_llm_wins_percent"])
                 player_draws_percent = float(row["black_llm_draws_percent"])
 
+                std_dev_black_llm_win_rate = float(row["std_dev_black_llm_win_rate"])
+                moe_black_llm_win_rate = float(row["moe_black_llm_win_rate"])
+                std_dev_draw_rate = float(row["std_dev_draw_rate"])
+                moe_draw_rate = float(row["moe_draw_rate"])
+
                 # Append the row to the list of rows to write
                 rows_to_write.append(
                     {
@@ -137,6 +146,10 @@ def convert_aggregate_to_refined(
                         "moe_mistakes_per_1000moves": moe_mistakes_per_1000moves,
                         "moe_completion_tokens_black_per_move": moe_completion_tokens_black_per_move,
                         "moe_mistakes_per_1000moves": moe_mistakes_per_1000moves,
+                        "std_dev_black_llm_win_rate": std_dev_black_llm_win_rate,
+                        "moe_black_llm_win_rate": moe_black_llm_win_rate,
+                        "std_dev_draw_rate": std_dev_draw_rate,
+                        "moe_draw_rate": moe_draw_rate,
                     }
                 )
 

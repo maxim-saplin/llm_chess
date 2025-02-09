@@ -177,6 +177,10 @@ def aggregate_models_to_csv(
         "moe_wrong_actions_per_1000moves",
         "moe_wrong_moves_per_1000moves",
         "moe_mistakes_per_1000moves",
+        "std_dev_black_llm_win_rate",
+        "moe_black_llm_win_rate",
+        "std_dev_draw_rate",
+        "moe_draw_rate",
     ]
 
     csv_data = []
@@ -199,6 +203,28 @@ def aggregate_models_to_csv(
             (black_llm_wins / total_games) * 100 if total_games > 0 else 0
         )
         black_llm_draws_percent = (draws / total_games) * 100 if total_games > 0 else 0
+
+        # Calculate standard deviation and margin of error for win rate
+        if total_games > 0:
+            black_llm_win_rate = black_llm_wins / total_games
+            std_dev_black_llm_win_rate = math.sqrt(
+                (black_llm_win_rate * (1 - black_llm_win_rate)) / total_games
+            )
+            moe_black_llm_win_rate = 1.96 * std_dev_black_llm_win_rate
+        else:
+            black_llm_win_rate = 0
+            std_dev_black_llm_win_rate = 0
+            moe_black_llm_win_rate = 0
+
+        # Calculate standard deviation and margin of error for draw rate
+        if total_games > 0:
+            draw_rate = draws / total_games
+            std_dev_draw_rate = math.sqrt((draw_rate * (1 - draw_rate)) / total_games)
+            moe_draw_rate = 1.96 * std_dev_draw_rate
+        else:
+            draw_rate = 0
+            std_dev_draw_rate = 0.0
+            moe_draw_rate = 0.0
 
         llm_total_moves = sum(log.number_of_moves for log in model_logs)
         llm_wrong_actions = sum(log.player_black.wrong_actions for log in model_logs)
@@ -446,6 +472,10 @@ def aggregate_models_to_csv(
                 moe_wrong_actions_per_1000moves,
                 moe_wrong_moves_per_1000moves,
                 moe_mistakes_per_1000moves,
+                std_dev_black_llm_win_rate,
+                moe_black_llm_win_rate,
+                std_dev_draw_rate,
+                moe_draw_rate,
             ]
         )
 

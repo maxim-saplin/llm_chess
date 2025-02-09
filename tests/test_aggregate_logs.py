@@ -1,133 +1,174 @@
 import unittest
-from statistics import stdev
-from data_processing.aggregate_logs_to_csv import (
-    GameLog,
-    PlayerStats,
-    UsageStats,
-)
+import tempfile
+import os
+import json
 import csv
-
-
-def create_mock_game_log(
-    winner="Player_Black",
-    number_of_moves=40,
-    wrong_moves_black=2,
-    wrong_actions_black=1,
-    material_black=20,
-    material_white=18,
-    completion_tokens=100,
-    prompt_tokens=50,
-    model_name="test_model",
-):
-    return GameLog(
-        time_started="2025-01-01T00:00:00",
-        winner=winner,
-        reason="Checkmate",
-        number_of_moves=number_of_moves,
-        player_white=PlayerStats(
-            name="Random_Player",
-            wrong_moves=0,
-            wrong_actions=0,
-            reflections_used=0,
-            reflections_used_before_board=0,
-            model="Random_Player",
-        ),
-        player_black=PlayerStats(
-            name="Player_Black",
-            wrong_moves=wrong_moves_black,
-            wrong_actions=wrong_actions_black,
-            reflections_used=0,
-            reflections_used_before_board=0,
-            model=model_name,
-        ),
-        material_count={"black": material_black, "white": material_white},
-        usage_stats_white=UsageStats(total_cost=0, details={}),
-        usage_stats_black=UsageStats(
-            total_cost=completion_tokens,
-            details={
-                "completion_tokens": completion_tokens,
-                "prompt_tokens": prompt_tokens,
-            },
-        ),
-    )
+from data_processing.aggregate_logs_to_csv import aggregate_models_to_csv
 
 
 class TestAggregateMetrics(unittest.TestCase):
+    def setUp(self):
+        """Set up a temporary directory and mock logs for testing."""
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.output_csv = os.path.join(self.temp_dir.name, "aggregate_output.csv")
+
+        # Create mock JSON logs
+        self.logs = create_mock_json_logs()
+
+        # Write logs to the temporary directory
+        write_mock_logs_to_temp_dir(self.logs, self.temp_dir.name)
+
+    def tearDown(self):
+        """Clean up the temporary directory."""
+        self.temp_dir.cleanup()
+
     def test_total_games(self):
-        logs = [create_mock_game_log() for _ in range(5)]
-        self.assertEqual(len(logs), 5)
+        """Tests that the total number of games is correctly aggregated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the total number of games for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        self.assertEqual(int(model_1_data["total_games"]), 2)
+        self.assertEqual(int(model_2_data["total_games"]), 2)
 
     def test_black_llm_wins(self):
-        logs = [create_mock_game_log(winner="Player_Black") for _ in range(3)]
-        logs += [create_mock_game_log(winner="Random_Player") for _ in range(2)]
-        black_llm_wins = sum(1 for log in logs if log.winner == "Player_Black")
-        self.assertEqual(black_llm_wins, 3)
+        """Tests that the number of black LLM wins is correctly aggregated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the black LLM wins for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        self.assertEqual(int(model_1_data["black_llm_wins"]), 0)
+        self.assertEqual(int(model_2_data["black_llm_wins"]), 0)
 
     def test_draws(self):
-        logs = [create_mock_game_log(winner="Draw") for _ in range(4)]
-        draws = sum(1 for log in logs if log.winner == "Draw")
-        self.assertEqual(draws, 4)
+        """Tests that the number of draws is correctly aggregated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the draws for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        self.assertEqual(int(model_1_data["draws"]), 1)
+        self.assertEqual(int(model_2_data["draws"]), 1)
 
     def test_average_moves(self):
-        logs = [
-            create_mock_game_log(number_of_moves=30),
-            create_mock_game_log(number_of_moves=50),
-        ]
-        avg_moves = sum(log.number_of_moves for log in logs) / len(logs)
-        self.assertEqual(avg_moves, 40)
+        """Tests that the average number of moves is correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the average moves for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        self.assertAlmostEqual(float(model_1_data["average_moves"]), 166.0)
+        self.assertAlmostEqual(float(model_2_data["average_moves"]), 182.0)
 
     def test_std_dev_moves(self):
-        logs = [
-            create_mock_game_log(number_of_moves=30),
-            create_mock_game_log(number_of_moves=50),
-        ]
-        moves = [log.number_of_moves for log in logs]
-        std_dev = stdev(moves)
-        self.assertAlmostEqual(std_dev, 14.142135623730951)
+        """Tests that the standard deviation of moves is correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the standard deviation of moves for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        self.assertAlmostEqual(float(model_1_data["std_dev_moves"]), 48.08326112068523)
+        self.assertAlmostEqual(float(model_2_data["std_dev_moves"]), 25.45584412271571)
 
     def test_mistakes_per_1000moves(self):
-        logs = [
-            create_mock_game_log(
-                wrong_moves_black=2, wrong_actions_black=1, number_of_moves=40
-            )
-        ]
-        mistakes_per_1000moves = sum(
-            (log.player_black.wrong_moves + log.player_black.wrong_actions)
-            / log.number_of_moves
-            * 1000
-            for log in logs
-        ) / len(logs)
-        self.assertAlmostEqual(mistakes_per_1000moves, 75.0)
+        """Tests that the mistakes per 1000 moves are correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the mistakes per 1000 moves for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        self.assertAlmostEqual(
+            float(model_1_data["mistakes_per_1000moves"]), 11.363636363636363
+        )
+        self.assertAlmostEqual(
+            float(model_2_data["mistakes_per_1000moves"]), 9.146341463414634
+        )
 
     def test_material_diff(self):
-        logs = [create_mock_game_log(material_black=20, material_white=18)]
-        material_diff = sum(
-            log.material_count["black"] - log.material_count["white"] for log in logs
-        ) / len(logs)
-        self.assertEqual(material_diff, 2)
+        """Tests that the material difference is correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
 
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
 
-class TestAggregateOutputFields(unittest.TestCase):
+        # Verify the material difference for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        # Corrected expected value for model_1
+        self.assertAlmostEqual(
+            float(model_1_data["material_diff_llm_minus_rand"]), -8.0
+        )
+        self.assertAlmostEqual(float(model_2_data["material_diff_llm_minus_rand"]), 1.5)
+
+    def test_black_llm_win_rate_and_moe(self):
+        """Tests that the black LLM win rate and margin of error are correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the black LLM win rate and margin of error for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        self.assertAlmostEqual(float(model_1_data["black_llm_wins_percent"]), 0.0)
+        self.assertAlmostEqual(float(model_2_data["black_llm_wins_percent"]), 0.0)
+
+        self.assertAlmostEqual(float(model_1_data["moe_black_llm_win_rate"]), 0.0)
+        self.assertAlmostEqual(float(model_2_data["moe_black_llm_win_rate"]), 0.0)
+
+    def test_draw_rate_and_moe(self):
+        """Tests that the draw rate and margin of error are correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the draw rate and margin of error for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        self.assertAlmostEqual(float(model_1_data["black_llm_draws_percent"]), 50.0)
+        self.assertAlmostEqual(float(model_2_data["black_llm_draws_percent"]), 50.0)
+
+        self.assertAlmostEqual(float(model_1_data["moe_draw_rate"]), 0.69296465)
+        self.assertAlmostEqual(float(model_2_data["moe_draw_rate"]), 0.69296465)
+
     def test_aggregation_output_fields(self):
-        # Create mock logs
-        logs = [
-            create_mock_game_log(winner="Player_Black"),
-            create_mock_game_log(winner="Random_Player"),
-            create_mock_game_log(winner="Draw"),
-        ]
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
 
-        # Mock the aggregation process
-        output_csv = "mock_aggregate_output.csv"
+        with open(self.output_csv, "r") as csvfile:
+            reader = csv.DictReader(csvfile)
+            read_headers = reader.fieldnames
 
-        # Group logs by model name (mocking the behavior of load_game_logs)
-        model_groups = {}
-        for log in logs:
-            model_name = log.player_black.model
-            if model_name not in model_groups:
-                model_groups[model_name] = []
-            model_groups[model_name].append(log)
-
-        # Prepare headers and data for the CSV
+        # Expected headers
         headers = [
             "model_name",
             "total_games",
@@ -169,100 +210,184 @@ class TestAggregateOutputFields(unittest.TestCase):
             "moe_wrong_actions_per_1000moves",
             "moe_wrong_moves_per_1000moves",
             "moe_mistakes_per_1000moves",
+            "std_dev_black_llm_win_rate",
+            "moe_black_llm_win_rate",
+            "std_dev_draw_rate",
+            "moe_draw_rate",
         ]
-
-        csv_data = []
-
-        for model_name, model_logs in model_groups.items():
-            total_games = len(model_logs)
-            black_llm_wins = sum(
-                1 for log in model_logs if log.winner == "Player_Black"
-            )
-            white_rand_wins = sum(
-                1 for log in model_logs if log.winner == "Random_Player"
-            )
-            draws = total_games - black_llm_wins - white_rand_wins
-
-            black_llm_wins_percent = (
-                (black_llm_wins / total_games) * 100 if total_games > 0 else 0
-            )
-            black_llm_draws_percent = (
-                (draws / total_games) * 100 if total_games > 0 else 0
-            )
-            white_rand_wins_percent = (
-                (white_rand_wins / total_games) * 100 if total_games > 0 else 0
-            )
-
-            # Append the calculated data to the CSV data list
-            csv_data.append(
-                [
-                    model_name,
-                    total_games,
-                    black_llm_wins,
-                    white_rand_wins,
-                    draws,
-                    black_llm_wins_percent,
-                    black_llm_draws_percent,
-                    white_rand_wins_percent,
-                    0,  # Placeholder for llm_total_moves
-                    0,  # Placeholder for llm_wrong_actions
-                    0,  # Placeholder for llm_wrong_moves
-                    0,  # Placeholder for llm_avg_material
-                    0,  # Placeholder for llm_std_dev_material
-                    0,  # Placeholder for rand_avg_material
-                    0,  # Placeholder for rand_std_dev_material
-                    0,  # Placeholder for material_diff_llm_minus_rand
-                    0,  # Placeholder for material_diff_llm_minus_rand_per_100moves
-                    0,  # Placeholder for wrong_actions_per_100moves
-                    0,  # Placeholder for wrong_moves_per_100moves
-                    0,  # Placeholder for wrong_actions_per_1000moves
-                    0,  # Placeholder for wrong_moves_per_1000moves
-                    0,  # Placeholder for mistakes_per_1000moves
-                    0,  # Placeholder for std_dev_wrong_actions_per_1000moves
-                    0,  # Placeholder for std_dev_wrong_moves_per_1000moves
-                    0,  # Placeholder for std_dev_mistakes_per_1000moves
-                    0,  # Placeholder for average_moves
-                    0,  # Placeholder for std_dev_moves
-                    0,  # Placeholder for completion_tokens_black
-                    0,  # Placeholder for completion_tokens_black_per_move
-                    0,  # Placeholder for std_dev_completion_tokens_black_per_move
-                    0,  # Placeholder for moe_completion_tokens_black_per_move
-                    0,  # Placeholder for min_moves
-                    0,  # Placeholder for max_moves
-                    0,  # Placeholder for prompt_tokens_black
-                    0,  # Placeholder for total_tokens_black
-                    0,  # Placeholder for moe_material_diff
-                    0,  # Placeholder for moe_avg_moves
-                    0,  # Placeholder for moe_wrong_actions_per_1000moves
-                    0,  # Placeholder for moe_wrong_moves_per_1000moves
-                    0,  # Placeholder for moe_mistakes_per_1000moves
-                ]
-            )
-
-        # Write the mock data to the CSV
-        with open(output_csv, "w", newline="") as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(headers)
-            writer.writerows(csv_data)
-
-        # Read the aggregated CSV
-        with open(output_csv, "r") as csvfile:
-            reader = csv.DictReader(csvfile)
-            read_headers = reader.fieldnames
-            rows = list(reader)
 
         # Verify that all expected fields are present in the aggregated CSV
         for field in headers:
             self.assertIn(field, read_headers)
 
-        # Verify the values in the CSV match the expected data
-        for i, row in enumerate(rows):
-            for j, header in enumerate(headers):
-                if header in row:
-                    if isinstance(csv_data[i][j], float):
-                        self.assertAlmostEqual(float(row[header]), csv_data[i][j])
-                    else:
-                        self.assertEqual(row[header], str(csv_data[i][j]))
+
+def create_mock_json_logs():
+    """Creates a list of mock JSON strings representing game logs."""
+    return [
+        json.dumps(
+            {
+                "time_started": "2025.02.09_09:31",
+                "winner": "NONE",
+                "reason": "Max moves reached",
+                "number_of_moves": 200,
+                "player_white": {
+                    "name": "Random_Player",
+                    "wrong_moves": 0,
+                    "wrong_actions": 0,
+                    "reflections_used": 0,
+                    "reflections_used_before_board": 0,
+                    "model": "N/A",
+                },
+                "material_count": {"white": 11, "black": 12},
+                "player_black": {
+                    "name": "Player_Black",
+                    "wrong_moves": 0,
+                    "wrong_actions": 0,
+                    "reflections_used": 0,
+                    "reflections_used_before_board": 0,
+                    "model": "model_1",
+                },
+                "usage_stats": {
+                    "white": {"total_cost": 0},
+                    "black": {
+                        "total_cost": 0.08589000000000013,
+                        "model_1": {
+                            "cost": 0.08589000000000013,
+                            "prompt_tokens": 111510,
+                            "completion_tokens": 20090,
+                            "total_tokens": 131600,
+                        },
+                    },
+                },
+            }
+        ),
+        json.dumps(
+            {
+                "time_started": "2025.02.09_09:32",
+                "winner": "Random_Player",
+                "reason": "Too many wrong actions",
+                "number_of_moves": 132,
+                "player_white": {
+                    "name": "Random_Player",
+                    "wrong_moves": 0,
+                    "wrong_actions": 0,
+                    "reflections_used": 0,
+                    "reflections_used_before_board": 0,
+                    "model": "N/A",
+                },
+                "material_count": {"white": 21, "black": 4},
+                "player_black": {
+                    "name": "Player_Black",
+                    "wrong_moves": 3,
+                    "wrong_actions": 0,
+                    "reflections_used": 0,
+                    "reflections_used_before_board": 0,
+                    "model": "model_1",
+                },
+                "usage_stats": {
+                    "white": {"total_cost": 0},
+                    "black": {
+                        "total_cost": 0.055271500000000036,
+                        "model_1": {
+                            "cost": 0.055271500000000036,
+                            "prompt_tokens": 73145,
+                            "completion_tokens": 12466,
+                            "total_tokens": 85611,
+                        },
+                    },
+                },
+            }
+        ),
+        json.dumps(
+            {
+                "time_started": "2025.02.09_09:33",
+                "winner": "NONE",
+                "reason": "Max moves reached",
+                "number_of_moves": 200,
+                "player_white": {
+                    "name": "Random_Player",
+                    "wrong_moves": 0,
+                    "wrong_actions": 0,
+                    "reflections_used": 0,
+                    "reflections_used_before_board": 0,
+                    "model": "N/A",
+                },
+                "material_count": {"white": 12, "black": 11},
+                "player_black": {
+                    "name": "Player_Black",
+                    "wrong_moves": 0,
+                    "wrong_actions": 0,
+                    "reflections_used": 0,
+                    "reflections_used_before_board": 0,
+                    "model": "model_2",
+                },
+                "usage_stats": {
+                    "white": {"total_cost": 0},
+                    "black": {
+                        "total_cost": 0.0822600000000002,
+                        "model_2": {
+                            "cost": 0.0822600000000002,
+                            "prompt_tokens": 108030,
+                            "completion_tokens": 18830,
+                            "total_tokens": 126860,
+                        },
+                    },
+                },
+            }
+        ),
+        json.dumps(
+            {
+                "time_started": "2025.02.09_10:06",
+                "winner": "Random_Player",
+                "reason": "Too many wrong actions",
+                "number_of_moves": 164,
+                "player_white": {
+                    "name": "Random_Player",
+                    "wrong_moves": 0,
+                    "wrong_actions": 0,
+                    "reflections_used": 0,
+                    "reflections_used_before_board": 0,
+                    "model": "N/A",
+                },
+                "material_count": {"white": 12, "black": 16},
+                "player_black": {
+                    "name": "Player_Black",
+                    "wrong_moves": 3,
+                    "wrong_actions": 0,
+                    "reflections_used": 0,
+                    "reflections_used_before_board": 0,
+                    "model": "model_2",
+                },
+                "usage_stats": {
+                    "white": {"total_cost": 0},
+                    "black": {
+                        "total_cost": 0.065411,
+                        "model_2": {
+                            "cost": 0.065411,
+                            "prompt_tokens": 88387,
+                            "completion_tokens": 14145,
+                            "total_tokens": 102532,
+                        },
+                    },
+                },
+            }
+        ),
+    ]
+
+
+def write_mock_logs_to_temp_dir(logs, temp_dir):
+    """Writes a list of mock JSON strings to files in a temporary directory."""
+    for i, log in enumerate(logs):
+        log_path = os.path.join(temp_dir, f"log_{i}.json")
+        with open(log_path, "w") as f:
+            f.write(log)
+
+
+def read_csv_as_dict(csv_path):
+    """Reads a CSV file and returns its contents as a list of dictionaries."""
+    with open(csv_path, "r") as f:
+        reader = csv.DictReader(f)
+        return list(reader)
 
 
 if __name__ == "__main__":
