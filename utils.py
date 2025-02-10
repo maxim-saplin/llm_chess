@@ -95,7 +95,7 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
             "frequency_penalty": 0.0,
             "presence_penalty": 0.0,
             "stream": False,
-            "timeout": 120
+            "timeout": 250
         }
 
         # Add temperature only if it is not "remove"
