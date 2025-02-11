@@ -335,7 +335,7 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
 
 Below are some stats simulating many games (1000) and collecting stats to get an idea of a baseline for LLM players playing against a random player
 
-### Random Player (white) vs Chess Engine (black, Stockfish, time per move 0.01s)
+### Random Player (white) vs Chess Engine (black, Stockfish, time per move 0.1s, skill level 1)
 
 ```json
 {
@@ -343,30 +343,34 @@ Below are some stats simulating many games (1000) and collecting stats to get an
     "white_wins": 0,
     "black_wins": 1000,
     "draws": 0,
-    "total_moves": 32368,
+    "total_moves": 57922,
     "reasons": {
         "Checkmate": 1000
     },
     "player_white": {
         "name": "Random_Player",
         "model": "",
-        "total_material": 21006,
+        "total_material": 19125,
         "wrong_moves": 0,
         "wrong_actions": 0,
-        "avg_material": 21.006,
-        "std_dev_material": 9.191324411881263
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 19.125,
+        "std_dev_material": 10.335966679861503
     },
     "player_black": {
         "name": "Chess_Engine_Stockfish_Black",
         "model": "",
-        "total_material": 38214,
+        "total_material": 35113,
         "wrong_moves": 0,
         "wrong_actions": 0,
-        "avg_material": 38.214,
-        "std_dev_material": 3.77391659240721
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 35.113,
+        "std_dev_material": 5.572188105249165
     },
-    "average_moves": 32.368,
-    "std_dev_moves": 13.554050622905622
+    "average_moves": 57.922,
+    "std_dev_moves": 30.961727092404658
 }
 ```
 
