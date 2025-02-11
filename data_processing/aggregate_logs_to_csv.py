@@ -17,6 +17,11 @@ MODEL_OVERRIDES = {
     "2025-21-01_deepseek-r1-distill-qwen-32b@q4_k_m_no_thinking_isol": "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp03",
     "2025-21-01_deepseek-r1-distill-qwen-32b@q4_k_m_temp06_thinking_isol": "deepseek-r1-distill-qwen-32b@q4_k_m|isol_temp06",
     "2025-21-01_deepseek-r1-distill-qwen-32b@q4_k_m_temp06_no_thinking_isol": "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp06",
+    "2025-02-06_o3-mini-2025-01-31_1": "ignore",
+    "2025-02-06_o3-mini-2025-01-31_2": "ignore",
+    "2025-02-06_o3-mini-2025-01-31_3": "ignore",
+    "2025-02-09_o3-mini-2025-01-31-high_24_GAMES_TIMEDOUT": "ignore",
+    "2025-02-10_o3-mini-2025-01-31-high-again_timeouts": "ignore",
 }
 
 

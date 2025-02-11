@@ -191,6 +191,34 @@ Move made, switching player
             <p class="descriptions">
                 <span style="color:white;">
                 -------------------<br>
+                February 10, OpenAI o3-mini<br>
+                -------------------<br><br></span>
+                Testing <strong>o3-mini</strong> turned out to be a challenge, with plenty of errors. Some were timeout issues (tried 120 and 250 seconds), 
+                something I haven't seen with supposedly weaker (in terms of infrastructure) <strong>Deepseek R1</strong>, and never observed when testing other OpenAI models through Azure.
+                Had to ignore plenty of logs due to such interruptions.
+                The other errors were due to the server dropping the connection during the generation of the reply, treating these issues as model errors and giving a loss...<br><br>
+                - Only low and medium reasoning efforts have been tested; most of the high modes ended up with timeout issues. Might retest in the future.<br><br>
+                - <strong>o3-mini</strong> at low reasoning effort (<strong>o3-mini-2025-01-31-low</strong>) didn't impress, performing at the level of <strong>Claude 3.5</strong>/<strong>GPT-4o</strong>, yet with plenty of errors.<br><br>
+                - <strong>o3-mini-2025-01-31-medium</strong>, on the other hand, is an interesting case. It took place right between <strong>o1-preview-2024-09-12</strong> and <strong>o1-mini-2024-09-12</strong>, demonstrating way fewer mistakes, suggesting better steerability.<br><br>
+                - <strong>o3-mini-2025-01-31-medium</strong>, unlike the <strong>o1</strong> models, didn't score a single loss. It also maintained a greater material count by the end of each game. Yet, it often struggled to complete games where it dominated (resulting in stalemates and insufficient material).<br><br>
+                - Low reasoning mode produced almost 4 times fewer tokens than medium (676 tokens per move vs. 2535), still way more tokens than <strong>anthropic.claude-v3-5-sonnet-v1</strong> (80).<br><br>
+                <span style="color:white;">
+                -------------------<br>
+                February 09, 2025: Google Gemini 2 Progress<br>
+                -------------------<br><br></span>
+                Google made great progress with their Gemini 2 models. While the preview models initially looked mediocre, they have now performed much better!<br><br>
+                - On <strong>Feb 5, 2025</strong>, they introduced a release version of <strong>Gemini 2.0 Flash</strong> (<strong>gemini-2.0-flash-001</strong>), as well as a preview of the smaller <strong>Gemini 2.0 Flash Lite</strong> (<strong>gemini-2.0-flash-lite-preview-02-05</strong>).<br><br>
+                - <strong>gemini-2.0-flash-001</strong> performed significantly better than the preview version from December.<br>
+                &nbsp;&nbsp;- <strong>gemini-2.0-flash-exp</strong> on average lasted for 86 moves, while <strong>gemini-2.0-flash-001</strong> lasted for 159 moves.<br>
+                &nbsp;&nbsp;- A similar improvement was observed for <strong>gemini-2.0-flash-thinking-exp-1219</strong> (which was at the bottom of the list) and <strong>gemini-2.0-flash-thinking-exp-01-21</strong> (which performed better but was still subpar).<br>
+                &nbsp;&nbsp;- <strong>gemini-2.0-flash-thinking-exp-01-21</strong> exhibited odd instability, often failing to produce replies and returning empty messages around 50 moves.<br><br>
+                - <strong>gemini-2.0-flash-lite-preview-02-05</strong> was disappointing, performing worse in evaluations than local runs of <strong>Gemma 2 9B</strong> and <strong>27B</strong>.<br><br>
+                - <strong>gemini-2.0-flash-001</strong> ranked near the top of the leaderboard, between <strong>Claude 3.5</strong> and <strong>GPT-4o</strong>, due to scoring 3 wins in 67 games.<br><br>
+                &nbsp;&nbsp;- However, I wouldn’t consider it equal to the top models from Anthropic and OpenAI. <strong>Gemini 2.0 Flash</strong> performed worse overall, achieving only 34% draws and suffering too many losses. It made mistakes too often and broke the game loop on average at 159 moves, whereas <strong>Claude</strong> and <strong>GPT-4o</strong> almost never broke the loop.<br><br>
+                - Revisiting the ranking is necessary, as using Win Rate as the key metric can place models that are worse overall above better-performing ones.
+                <br><br>
+                <span style="color:white;">
+                -------------------<br>
                 February 6, 2025: Amazon Nova, Tulu<br>
                 -------------------<br><br></span>
                 I had the opportunity to test a few models from December 2024. Amazon released their state-of-the-art Nova models: 

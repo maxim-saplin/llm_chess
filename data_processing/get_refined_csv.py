@@ -13,12 +13,14 @@ FILTER_OUT_MODELS = [
     "llama-3.1-tulu-3-8b@q4_k_m",
     "llama-3.1-8b-instant",  # Groq
     "meta-llama-3.1-8b-instruct-fp16",  # local
+    "ignore",  # models marked to be ignored via aggregate_models_to_csv.MODEL_OVERRIDES
 ]
 
 ALIASES = {
     "deepseek-r1-distill-qwen-32b@q4_k_m|isol_temp06": "deepseek-r1-distill-qwen-32b@q4_k_m",
     "deepseek-reasoner": "deepseek-reasoner-r1",  # at the time of testing (Jan 2025) R1 was called "deepseek-reasoner"
     "deepseek-chat": "deepseek-chat-v3",  # at the time of testing (Jan 2025) V3 was called "deepseek-chat"
+    "gemma2-9b-it": "gemma2-9b-it-groq",
 }
 
 

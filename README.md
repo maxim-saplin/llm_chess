@@ -254,11 +254,13 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
 ## Model Providers Used
 
 - Azure OpenAI:
+  - o3-mini-2025-01-31-medium
+  - o3-mini-2025-01-31-low
+  - o1-preview-2024-09-12
+  - o1-mini-2024-09-12
   - gpt-4o-2024-11-20
   - gpt-4o-2024-08-06
   - gpt-4o-2024-05-13
-  - o1-preview-2024-09-12
-  - o1-mini-2024-09-12
   - gpt-4o-mini-2024-07-18
   - gpt-35-turbo-0125
   - gpt-4-turbo-2024-04-09
@@ -287,6 +289,7 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - llama-3.1-8b-instant
   - llama3-8b-8192
   - mixtral-8x7b-32768
+  - gemma2-9b-it
 - Cerebras:
   - llama-3.3-70b
   - llama3.1-8b
