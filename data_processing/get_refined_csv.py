@@ -21,6 +21,10 @@ ALIASES = {
     "deepseek-reasoner": "deepseek-reasoner-r1",  # at the time of testing (Jan 2025) R1 was called "deepseek-reasoner"
     "deepseek-chat": "deepseek-chat-v3",  # at the time of testing (Jan 2025) V3 was called "deepseek-chat"
     "gemma2-9b-it": "gemma2-9b-it-groq",
+    "anthropic.claude-v3-5-sonnet-v1": "claude-v3-5-sonnet-v1",
+    "anthropic.claude-v3-5-sonnet-v2": "claude-v3-5-sonnet-v2",
+    "anthropic.claude-v3-haiku": "claude-v3-haiku",
+    "anthropic.claude-v3-opus": "claude-v3-opus",
 }
 
 

@@ -191,6 +191,32 @@ Move made, switching player
             <p class="descriptions">
                 <span style="color:white;">
                 -------------------<br>
+                February 12, Legacy GPT-4, get_current_board vs. get_legal_moves<br>
+                -------------------<br><br></span>
+                The results for <strong>gpt-4-0613</strong> and <strong>gpt-4-32k-0613</strong> show they performed well, making zero mistakes and achieving numerous draws. 
+                However, older GPT-4 models completely ignored the opportunity to request the board state (<strong>get_current_board</strong> action), instead relying solely 
+                on the list of legal moves (<strong>get_legal_moves</strong> action) to make their moves immediately - mimicing the behavior of the random bot, mechanisitcally getting the list of moves and mechanistically picking one. Upon closer examination of outputs from few models, 
+                it was observed that reasoning models (<strong>r1</strong>, <strong>o1</strong>/<strong>o3</strong>) predominantly used <strong>get_current_board</strong>, demonstrating confidence in their ability to decide 
+                on a legal move without needing additional hints (by requesting <strong>get_legal_moves</strong>). For <strong>o3</strong> models, this confidence increased with higher reasoning effort. 
+                The majority of "traditional" LLMs (<strong>GPT-4o</strong>, <strong>Claude 3.5 Sonnet</strong>) utilized both <strong>get_current_board</strong> and <strong>get_legal_moves</strong> before making a move.<br><br>
+
+                Here are the ratios for the number of actions issued by models, get_current_board/get_legal_moves:<br>
+                <ul>
+                    <li>o3-mini-low: 1.375</li>
+                    <li>o3-mini-medium: 2.613</li>
+                    <li>o3-mini-hard: 45.1</li>
+                    <li>o1-mini: 1.465</li>
+                    <li>deepSeek-r1: 1.938</li>
+                    <li>gpt-4-32k: 0.006</li>
+                    <li>qwen-max-2025-01-25: 0.997</li>
+                    <li>gemini-2.0-flash-001: 0.952</li>
+                    <li>anthropic.claude-v3-5-sonnet-v2: 0.999</li>
+                    <li>gpt-4o-2024-11-20: 0.999</li>
+                </ul>
+                <br>
+                
+                <span style="color:white;">
+                -------------------<br>
                 February 10, OpenAI o3-mini<br>
                 -------------------<br><br></span>
                 Testing <strong>o3-mini</strong> turned out to be a challenge, with plenty of errors. Some were timeout issues (tried 120 and 250 seconds), 
