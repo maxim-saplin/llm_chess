@@ -22,6 +22,7 @@ MODEL_OVERRIDES = {
     "2025-02-06_o3-mini-2025-01-31_3": "ignore",
     "2025-02-09_o3-mini-2025-01-31-high_24_GAMES_TIMEDOUT": "ignore",
     "2025-02-10_o3-mini-2025-01-31-high-again_timeouts": "ignore",
+    "2025-02-10_o1-mini-2024-09-12_plenty_connection_errors": "ignore",
 }
 
 
