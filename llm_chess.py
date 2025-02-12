@@ -50,24 +50,26 @@ use_fen_board = False  # Whther to use graphical UNICODE representation board OR
 max_game_moves = 200  # maximum number of game moves before terminating, dafault 200
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times, default 10
 max_failed_attempts = 3  # number of wrong replies within a dialog (e.g. non existing action) before stopping/giving a loss, default 3
-throttle_delay = 0 # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
-dialog_turn_delay = 1  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
+throttle_delay = 1 # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+dialog_turn_delay = 2  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
 visualize_board = False  # You can skip board visualization to speed up execution
 
 # Set to None to use defaults, "remove" to not send it
-# o1-mini fails with any params other than 1.0 or not present, R1 distil recomends 0.5-0.7
+# o1-mini fails with any params other than 1.0 or not present, R1 distil recomends 0.5-0.7, kimi-k1.5-preview 0.3
 temp_override = None
 
 reasoning_effort = None # Default is None, used with OpenAI models low, medium, or high
 
 # Tell AutoReply agent to ignore given pieces of text when processing replies
 # (using re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL))
-# May help isolating thinking tokens.
-# E.g. Deepseek R1 32B uses <think> tags that can have actions mentioned breaking execution (r"<think>.*?</think>")
-ignore_text = None  # r"<think>.*?</think>"
+# May help isolating thinking tokens. E.g. Deepseek R1 32B uses <think> tags that can have actions mentioned breaking execution (r"<think>.*?</think>")
+# r"<think>.*?</think>" - Deepseek R1 Distil
+# r"◁think▷.*?◁/think▷ - Kimi 1.5
+# Default None
+ignore_text = None
 
 # Add warnings for both temp_override and reasoning_effort
 if temp_override is not None:
