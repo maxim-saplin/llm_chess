@@ -4,8 +4,8 @@ import statistics  # Import the statistics module
 from llm_chess import run
 
 # Parameters
-NUM_REPETITIONS = 5  # Set the number of games to run
-LOG_FOLDER = "_logs/no_reflection/2025-02-12_kimi-k1.5-preview"  # Set the folder to store logs
+NUM_REPETITIONS = 42  # Set the number of games to run
+LOG_FOLDER = "_logs/no_reflection/2025-02-15_deephermes-3-llama-3-8b-preview@q8"  # Set the folder to store logs
 
 STORE_INDIVIDUAL_LOGS = True
 

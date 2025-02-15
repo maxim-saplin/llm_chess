@@ -31,7 +31,6 @@ Putting LLMs up against ~each other~ Random Player in a chess game. Testing basi
  - `pip install -r requirements.txt`
     - Optionally create a VENV
  - Run `llm_chess.py`
-    - llm_chess_tool_call.py is an older version relying on native tool call support, not maintained, keeping JIC
 
 ### Configs
 
@@ -321,6 +320,7 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - qwen2.5-14b-instruct@q8_0
   - qwq-32b-preview@q4_k_m
   - sky-t1-32b-preview@q4_0
+  - deephermes-3-llama-3-8b-preview@q8
 
 ## Random and Chess Engine Players
 
