@@ -635,6 +635,7 @@ Each player controls one color and aims to checkmate the opponent's king.
       ```
 
     - Rerun AIW Benchamrk (https://github.com/LAION-AI/AIW?tab=readme-ov-file) for more recent models and cross-check results - a breainteaser question that lead to breakdown of older Claude 3 and GPT-4
+    - Correlate with TAU-Bench (https://github.com/sierra-research/tau-bench)
 
 - Better study and describe stochasticity. Randmization of games make the becnh unique, no memorization can happen, every game is different
     - Smth similar to GSM Symbolic observations, adding mutations to a well known math bench demonstrates how models struggle and pass rate drops: https://machinelearning.apple.com/research/gsm-symbolic
