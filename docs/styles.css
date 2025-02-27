@@ -118,6 +118,7 @@ pre.title {
     scale: 1.0;
     padding-top: 50px;
     color: greenyellow;
+    font-weight: 900;
 }
 
 pre.snippet {
@@ -222,6 +223,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     border: 0;
+    table-layout: fixed;
 }
 
 td, th {
@@ -257,6 +259,25 @@ th:nth-child(3), td:nth-child(3), th:nth-child(5), td:nth-child(5) {
     background-color: lightgray;
     color: black;
     box-shadow: 8px 8px;
+}
+
+/* Setting column widths */
+th:nth-child(6),
+td:nth-child(6),
+th:nth-child(5),
+td:nth-child(5),
+th:nth-child(4),
+td:nth-child(4),
+th:nth-child(3),
+td:nth-child(3) {
+    width: 72px;
+    overflow: hidden;
+}
+
+th:nth-child(1),
+td:nth-child(1) {
+    width: 10px;
+    overflow: hidden;
 }
 
 table tbody tr:nth-last-child(-n+3) td {
@@ -333,6 +354,7 @@ table tbody tr:nth-last-child(-n+3) td {
         margin: auto;
         line-height: 1.3;
         color: greenyellow;
+        font-weight: 900;
     }
 
     td, th {
