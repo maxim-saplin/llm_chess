@@ -1,4 +1,6 @@
 import os
+import sys
+import re
 from _ag import gather_usage_summary
 from typing import Any
 from pprint import pprint
@@ -272,3 +274,44 @@ def display_store_game_video_and_stats(game_stats, log_dir="_logs", save_logs=Tr
         pprint(white_summary["usage_excluding_cached_inference"])
     if black_summary:
         pprint(black_summary["usage_excluding_cached_inference"])
+
+
+def setup_console_logging(log_folder, filename="output.txt"):
+    """
+    Redirect console output to a file and optionally also print to the console.
+
+    Args:
+        log_folder (str): The folder where the log file will be saved.
+        filename (str): The name of the log file. Defaults to "output.txt".
+    """
+    log_file_path = os.path.join(log_folder, filename)
+    os.makedirs(log_folder, exist_ok=True)  # Ensure the log folder exists
+    log_file = open(log_file_path, "w")
+
+    # Regular expression to match ANSI escape codes
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+
+    # Redirect stdout and stderr to the log file
+    class Tee:
+        def __init__(self, *streams):
+            self.streams = streams
+
+        def write(self, data):
+            # Write original data (with ANSI codes) to the console
+            for stream in self.streams:
+                if stream == log_file:
+                    # Remove ANSI escape codes before writing to the log file
+                    cleaned_data = ansi_escape.sub('', data)
+                    stream.write(cleaned_data)
+                else:
+                    # Write original data (with ANSI codes) to the console
+                    stream.write(data)
+                stream.flush()
+
+        def flush(self):
+            for stream in self.streams:
+                stream.flush()
+
+    # Redirect stdout and stderr to both console and file
+    sys.stdout = Tee(sys.__stdout__, log_file)
+    sys.stderr = Tee(sys.__stderr__, log_file)

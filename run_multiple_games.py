@@ -2,10 +2,11 @@ import os
 import json
 import statistics  # Import the statistics module
 from llm_chess import run
+from utils import setup_console_logging
 
 # Parameters
-NUM_REPETITIONS = 42  # Set the number of games to run
-LOG_FOLDER = "_logs/no_reflection/2025-02-15_deephermes-3-llama-3-8b-preview@q8"  # Set the folder to store logs
+NUM_REPETITIONS = 12  # Set the number of games to run
+LOG_FOLDER = "_logs/no_reflection/2025-02-28_anthropic.claude-3-7-sonnet-20250219-v1:0_4"  # Set the folder to store logs
 
 STORE_INDIVIDUAL_LOGS = True
 
@@ -14,6 +15,7 @@ STORE_INDIVIDUAL_LOGS = True
 
 
 def run_games(num_repetitions, log_folder=LOG_FOLDER):
+    setup_console_logging(LOG_FOLDER) # save raw console output to output.txt
     aggregate_data = {
         "total_games": 0,
         "white_wins": 0,
