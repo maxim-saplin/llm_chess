@@ -262,22 +262,30 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - gpt-4o-2024-05-13
   - gpt-4o-mini-2024-07-18
   - gpt-35-turbo-0125
+  - gpt-35-turbo-0301
+  - gpt-35-turbo-0613
+  - gpt-35-turbo-1106
   - gpt-4-turbo-2024-04-09
-- Anthropic:
+  - gpt-4-0613
+  - gpt-4-32k-0613
+- AWS:
   - anthropic.claude-v3-5-sonnet-v1
   - anthropic.claude-v3-5-sonnet-v2
   - anthropic.claude-v3-opus
   - anthropic.claude-v3-haiku
+  - amazon.nova-pro-v1 
+  - amazon.nova-lite-v1
 - Google:
   - gemini-1.5-flash-001
   - gemini-1.5-pro-preview-0409
   - gemini-2.0-flash-exp
   - gemini-2.0-flash-001
+  - gemini-2.0-flash-lite-001
   - gemini-2.0-flash-lite-preview-02-05
   - gemini-2.0-flash-thinking-exp-1219
-- AWS
-  - amazon.nova-pro-v1 
-  - amazon.nova-lite-v1
+  - gemini-2.0-flash-thinking-exp-01-21
+  - gemini-2.0-flash-lite-preview-02-05
+  - chat-bison-32k@002 (Palm 2)
 - x.ai
   - grok-2-1212
 - Groq:
@@ -295,7 +303,7 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
 - Deepseek:
   - deepseek-chat-v3
   - deepseek-reasoner-r1
-- Alibaba
+- Alibaba:
   - qwen-max-2025-01-25
   - qwen-turbo-2024-11-01
   - qwen-plus-2025-01-25
@@ -321,6 +329,7 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - qwq-32b-preview@q4_k_m
   - sky-t1-32b-preview@q4_0
   - deephermes-3-llama-3-8b-preview@q8
+
 
 ## Random and Chess Engine Players
 
