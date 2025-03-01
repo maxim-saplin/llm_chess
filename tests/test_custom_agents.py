@@ -133,7 +133,12 @@ class TestAutoReplyAgent(unittest.TestCase):
         # Mock functions for testing
         self.get_current_board = lambda: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         self.get_legal_moves = lambda: "e2e4,d2d4,g1f3"
-        self.make_move = lambda move: None  # Just a stub for testing
+        
+        def mock_make_move(move):
+            if move == "e9e9":  # Invalid move
+                raise ValueError("Invalid move")
+        
+        self.make_move = mock_make_move
         
         # Create a mock sender (GameAgent) for testing
         self.mock_sender = GameAgent(
@@ -200,6 +205,53 @@ class TestAutoReplyAgent(unittest.TestCase):
         messages = [{"content": "<think>some thinking</think>make_move e2e4"}]
         reply = agent_with_ignore.generate_reply(messages=messages, sender=self.mock_sender)
         self.assertEqual(reply, "Move made")
+
+    def test_make_move_valid(self):
+        """Test making a valid move."""
+        messages = [{"content": "make_move e2e4"}]
+        reply = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
+        self.assertEqual(reply, "Move made")
+        self.assertEqual(self.mock_sender.wrong_moves, 0)
+        self.assertEqual(self.mock_sender.wrong_actions, 0)
+
+    def test_make_move_invalid(self):
+        """Test making an invalid move."""
+        messages = [{"content": "make_move e9e9"}]  # Invalid move
+        reply = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
+        self.assertTrue(reply.startswith("Failed to make move:"))
+        self.assertEqual(self.mock_sender.wrong_moves, 1)
+        self.assertEqual(self.agent.failed_action_attempts, 1)
+
+    def test_invalid_action_format(self):
+        """Test handling of incorrectly formatted actions."""
+        messages = [{"content": "invalid_action"}]
+        reply = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
+        self.assertEqual(reply, self.agent.invalid_action_message)
+        self.assertEqual(self.mock_sender.wrong_actions, 1)
+        self.assertEqual(self.agent.failed_action_attempts, 1)
+
+
+    def test_max_failed_attempts(self):
+        """Test that agent stops after reaching max failed attempts."""
+        self.agent.failed_action_attempts = self.agent.max_failed_attempts - 1
+        messages = [{"content": "invalid_action"}]
+        reply = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
+        self.assertEqual(reply, self.agent.too_many_failed_actions_message)
+
+    def test_prep_to_move(self):
+        """Test resetting of state variables before each move."""
+        self.agent.failed_action_attempts = 2
+        self.mock_sender.wrong_moves = 3
+        self.mock_sender.wrong_actions = 2
+        self.mock_sender.has_requested_board = True
+        
+        self.agent.prep_to_move()
+        self.mock_sender.prep_to_move()
+        
+        self.assertEqual(self.agent.failed_action_attempts, 0)
+        self.assertEqual(self.mock_sender.wrong_moves, 0)
+        self.assertEqual(self.mock_sender.wrong_actions, 0)
+        self.assertFalse(self.mock_sender.has_requested_board)
 
 
 if __name__ == "__main__":
