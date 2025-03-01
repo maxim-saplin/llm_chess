@@ -13,19 +13,25 @@ from typing import Any, Dict, List, Optional, Union
 class GameAgent(ConversableAgent):
     def __init__(
         self,
-        wrong_moves=0,
-        wrong_actions=0,
-        has_requested_board=False,
-        failed_action_attempts=0,
-        dialog_turn_delay=0,  # Add this parameter
+        dialog_turn_delay=0,
         *args,
         **kwargs,
     ):
+        """
+        Initialize a GameAgent instance.
+
+        Parameters:
+            dialog_turn_delay (int): The delay (in seconds) before the agent responds during a dialog turn. Set to 0.
+        """
         super().__init__(*args, **kwargs)
-        self.wrong_moves = wrong_moves
-        self.wrong_actions = wrong_actions
-        self.has_requested_board = has_requested_board
-        self.failed_action_attempts = failed_action_attempts
+        # Initialize the counter for wrong moves made by the agent.
+        self.wrong_moves = 0
+        # Initialize the counter for wrong actions performed by the agent.
+        self.wrong_actions = 0
+        # Flag to track if the agent has requested the board state (either current board or legal moves).
+        self.has_requested_board = False
+        # Counter to track the number of failed action attempts by the agent.
+        self.failed_action_attempts = 0
         self.dialog_turn_delay = dialog_turn_delay  # Store it locally
 
     def prep_to_move(self):
@@ -179,7 +185,7 @@ class AutoReplyAgent(GameAgent):
         elif self.get_legal_moves_action in action_choice:
             reply = self.get_legal_moves()
             sender.has_requested_board = True
-        elif messages[-2]["content"] == self.reflect_prompt:
+        elif len(messages) > 2 and messages[-2]["content"] == self.reflect_prompt:
             reply = self.reflection_followup_prompt
         elif self.reflect_action in action_choice:
             reply = self.reflect_prompt
