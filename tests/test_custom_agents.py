@@ -125,5 +125,82 @@ class TestRandomPlayerAgentLogic(unittest.TestCase):
         self.assertTrue(self.agent.flip_flag)  # Ensure the flag toggles back
 
 
+class TestAutoReplyAgent(unittest.TestCase):
+    def setUp(self):
+        """Set up a basic AutoReplyAgent for testing."""
+        self.board = chess.Board()
+        
+        # Mock functions for testing
+        self.get_current_board = lambda: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        self.get_legal_moves = lambda: "e2e4,d2d4,g1f3"
+        self.make_move = lambda move: None  # Just a stub for testing
+        
+        # Create a mock sender (GameAgent) for testing
+        self.mock_sender = GameAgent(
+            name="MockPlayer"
+        )
+        
+        self.agent = AutoReplyAgent(
+            name="TestAutoReply",
+            get_current_board=self.get_current_board,
+            get_legal_moves=self.get_legal_moves,
+            make_move=self.make_move,
+            move_was_made_message="Move made",
+            invalid_action_message="Invalid action",
+            too_many_failed_actions_message="Too many failed actions",
+            max_failed_attempts=3,
+            get_current_board_action="get_current_board",
+            get_legal_moves_action="get_legal_moves",
+            reflect_action="reflect",
+            make_move_action="make_move",
+            reflect_prompt="Reflecting...",
+            reflection_followup_prompt="Follow-up reflection",
+            ignore_text=None
+        )
+
+    def test_get_current_board(self):
+        """Test requesting current board state."""
+        messages = [
+            {"content": "You are a random chess player."},
+            {"content": "get_current_board"}
+            ]
+        reply = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
+        self.assertEqual(reply, self.get_current_board())
+        self.assertTrue(self.mock_sender.has_requested_board)
+
+    def test_get_legal_moves(self):
+        """Test requesting legal moves."""
+        messages = [
+            {"content": "You are a random chess player."},
+            {"content": "get_legal_moves"}]
+        reply = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
+        self.assertEqual(reply, self.get_legal_moves())
+        self.assertTrue(self.mock_sender.has_requested_board)
+    
+    def test_ignore_text(self):
+        """Test that ignore_text pattern is properly applied."""
+        agent_with_ignore = AutoReplyAgent(
+            name="TestAutoReply",
+            get_current_board=self.get_current_board,
+            get_legal_moves=self.get_legal_moves,
+            make_move=self.make_move,
+            move_was_made_message="Move made",
+            invalid_action_message="Invalid action",
+            too_many_failed_actions_message="Too many failed actions",
+            max_failed_attempts=3,
+            get_current_board_action="get_current_board",
+            get_legal_moves_action="get_legal_moves",
+            reflect_action="reflect",
+            make_move_action="make_move",
+            reflect_prompt="Reflecting...",
+            reflection_followup_prompt="Follow-up reflection",
+            ignore_text=r"<think>.*?</think>"
+        )
+        
+        messages = [{"content": "<think>some thinking</think>make_move e2e4"}]
+        reply = agent_with_ignore.generate_reply(messages=messages, sender=self.mock_sender)
+        self.assertEqual(reply, "Move made")
+
+
 if __name__ == "__main__":
     unittest.main()
