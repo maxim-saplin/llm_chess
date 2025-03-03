@@ -5,8 +5,8 @@ from llm_chess import run
 from utils import setup_console_logging
 
 # Parameters
-NUM_REPETITIONS = 12  # Set the number of games to run
-LOG_FOLDER = "_logs/no_reflection/2025-02-28_anthropic.claude-3-7-sonnet-20250219-v1:0_4"  # Set the folder to store logs
+NUM_REPETITIONS = 5  # Set the number of games to run
+LOG_FOLDER = "_logs/no_reflection/2025-03_anthropic.claude-3-7-sonnet-20250219-v1:0/2025-03-04_anthropic.claude-3-7-sonnet-20250219-v1:0"  # Set the folder to store logs
 
 STORE_INDIVIDUAL_LOGS = True
 
