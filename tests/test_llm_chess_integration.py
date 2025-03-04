@@ -1,10 +1,13 @@
 import unittest
-import chess
+import multiprocessing
+import time
+import os
 from llm_chess import (
     PlayerType,
     run,
     TerminationReason
 )
+from tests.mock_openai_server import start_server
 
 class TestRandomVsRandomGame(unittest.TestCase):
     def setUp(self):
@@ -50,6 +53,69 @@ class TestRandomVsRandomGame(unittest.TestCase):
         # If game ended due to max moves, verify it was exactly 10 moves
         if game_stats["reason"] == TerminationReason.MAX_MOVES.value:
             self.assertEqual(game_stats["number_of_moves"], 10)
+
+
+class TestLLMvsRandomGame(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Start mock OpenAI server in a separate process
+        cls.server_process = multiprocessing.Process(target=start_server, args=(8080,))
+        cls.server_process.start()
+        time.sleep(2)  # Wait for server to start
+        
+        # Configure environment for local OpenAI-compatible endpoint
+        os.environ["MODEL_KIND_B"] = "local"
+        os.environ["LOCAL_MODEL_NAME_B"] = "gpt-3.5-turbo"
+        os.environ["LOCAL_BASE_URL_B"] = "http://localhost:8080/v1"
+        os.environ["LOCAL_API_KEY_B"] = "mock-key"
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.server_process.terminate()
+        cls.server_process.join()
+
+    def setUp(self):
+        # Configure game settings for testing
+        import llm_chess
+        llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
+        llm_chess.black_player_type = PlayerType.LLM_BLACK
+        llm_chess.max_game_moves = 10
+        llm_chess.visualize_board = False
+        llm_chess.throttle_delay = 0
+        llm_chess.dialog_turn_delay = 0
+        llm_chess.random_print_board = False
+
+    def test_random_vs_mock_llm_game(self):
+        game_stats, player_white, player_black = run(save_logs=False)
+        
+        # Verify game completed
+        self.assertIsNotNone(game_stats["winner"])
+        self.assertIsNotNone(game_stats["reason"])
+        self.assertLessEqual(game_stats["number_of_moves"], 10)
+        
+        # Verify players
+        self.assertEqual(player_white.name, "Random_Player")
+        self.assertEqual(player_black.name, "Player_Black")
+        
+        # Verify no errors in moves
+        self.assertEqual(game_stats["player_white"]["wrong_moves"], 0)
+        self.assertEqual(game_stats["player_white"]["wrong_actions"], 0)
+        self.assertEqual(game_stats["player_black"]["wrong_moves"], 0)
+        self.assertEqual(game_stats["player_black"]["wrong_actions"], 0)
+
+        # Verify material counts are valid
+        self.assertLessEqual(game_stats["material_count"]["white"], 39)
+        self.assertLessEqual(game_stats["material_count"]["black"], 39)
+        self.assertGreaterEqual(game_stats["material_count"]["white"], 0)
+        self.assertGreaterEqual(game_stats["material_count"]["black"], 0)
+
+    def test_multiple_games(self):
+        # Run multiple games to ensure stability
+        for _ in range(3):
+            game_stats, _, _ = run(save_logs=False)
+            self.assertIsNotNone(game_stats["winner"])
+            self.assertLessEqual(game_stats["number_of_moves"], 10)
+
 
 if __name__ == "__main__":
     unittest.main()
