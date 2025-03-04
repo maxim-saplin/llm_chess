@@ -13,6 +13,7 @@ FILTER_OUT_MODELS = [
     "llama-3.1-tulu-3-8b@q4_k_m",
     "llama-3.1-8b-instant",  # Groq
     "meta-llama-3.1-8b-instruct-fp16",  # local
+    "gemini-2.0-pro-exp-02-05", # to many errors, I'm done with EXP models, to much trouble, going to use only release versions
     "ignore",  # models marked to be ignored via aggregate_models_to_csv.MODEL_OVERRIDES
 ]
 
