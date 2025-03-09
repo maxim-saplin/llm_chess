@@ -200,6 +200,24 @@ Move made, switching player
             <p class="descriptions">
                 <span style="color:white;">
                 -------------------<br>
+                March 9, Claude 3.7 Sonnet <br>
+                -------------------<br><br></span>
+                The model took its place near the top of the list, yet it is behind Sonnet 3.5 v1 in terms of wins.
+                If you consider the rest of the metrics, I would place it below both Sonnet 3.5 v1 and v2—it produced
+                significantly more mistakes (8.95 vs. 1.67 for v1 and 2.98 for v2) and became more verbose
+                (109 tokens vs. 80 for v1 and 91 for v2). Additionally, the model tends to lose more often (23% vs. 13% for v1 and 8% for v2).
+                I have noticed that there were 5 cases of "too many wrong actions" where the game failed to recover and persistently
+                selected illegal moves despite having requested the list of legal moves. A closer look showed that the model fabricated incorrect
+                positioning of the pieces in its head (e.g., not using the white side for ranks) and failed to realize its mistake
+                in subsequent retries—something not observed in previous versions.
+                <br><br>
+                Overall, it seems that for 3.5 v2 and 3.7, Anthropic made some compromises. While the models might perform better ерфе 3.5 v1 in
+                the set of benchmarks they used fro optimizations, based on LLM Chess, I think the reasoning and durability took a hit in newer Sonnet models 
+                 — one might expect more surprises from newer models in production with diverse inputs.
+                <br><br>
+                <span style="color:white;">
+                <br><br>
+                -------------------<br>
                 March 3, o1 Leads the Pack <br>
                 -------------------<br><br></span>
                 The release version of OpenAI's <strong>o1</strong> at LOW reasoning effort has beaten <strong>o1-preview</strong> tested last year. With a win rate of 56% (vs. 47% for the release version), the model demonstrated better overall performance — 0 losses and 0 mistakes! At low reasoning effort, it generated on average 1641 completion tokens per move, which is significantly less than <strong>o1-preview</strong> and <strong>o3-mini</strong> (at medium reasoning effort). Curious what medium and high levels of <strong>o1</strong> can demonstrate...
