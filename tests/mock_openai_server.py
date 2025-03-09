@@ -7,6 +7,8 @@ import re
 
 app = FastAPI()
 
+USE_THINKING = True # This doesn't influence rest of the tests anyway but is needed for `remove_text` tests
+
 class ChatCompletionRequest(BaseModel):
     model: str
     messages: List[dict]
@@ -27,17 +29,17 @@ class MockChessBot:
         try:
             if self.flip_flag:
                 self.flip_flag = False
-                return "get_current_board"
+                return "get_current_board" if not USE_THINKING else "<think>Thinking about my move...</think>get_current_board"
             
             legal_moves = last_message.split(",")
             if legal_moves and all(self._is_valid_move(move) for move in legal_moves):
                 random_move = random.choice(legal_moves)
                 self.flip_flag = True
-                return f"make_move {random_move}"
+                return f"make_move {random_move}" if not USE_THINKING else f"<think>Thinking about my move...</think>make_move {random_move}"
         except Exception:
             pass
         
-        return "get_legal_moves"
+        return "get_legal_moves" if not USE_THINKING else "<think>Thinking about my move...</think>get_legal_moves"
     
     def _is_valid_move(self, move: str) -> bool:
         try:

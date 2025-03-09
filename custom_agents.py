@@ -142,7 +142,7 @@ class AutoReplyAgent(GameAgent):
         make_move_action,
         reflect_prompt,
         reflection_followup_prompt,
-        ignore_text,
+        remove_text,
         *args,
         **kwargs,
     ):
@@ -160,7 +160,7 @@ class AutoReplyAgent(GameAgent):
         self.make_move_action = make_move_action
         self.reflect_prompt = reflect_prompt
         self.reflection_followup_prompt = reflection_followup_prompt
-        self.ignore_text = ignore_text
+        self.remove_text = remove_text
 
     def generate_reply(
         self,
@@ -171,12 +171,26 @@ class AutoReplyAgent(GameAgent):
         if self._is_termination_msg(messages[-1]):
             return None
 
+        # Apply remove_text regex to modify message history
+        if self.remove_text:
+            # Clean all messages in the current conversation
+            for msg in messages:
+                msg["content"] = re.sub(self.remove_text, "", msg["content"], flags=re.DOTALL)
+            
+            # Clean internal message histories
+            if sender and hasattr(sender, '_oai_messages'):
+                for msgs in sender._oai_messages.values():
+                    for msg in msgs:
+                        if "content" in msg:  # Make sure content exists
+                            msg["content"] = re.sub(self.remove_text, "", msg["content"], flags=re.DOTALL)
+            
+            if hasattr(self, '_oai_messages'):
+                for msgs in self._oai_messages.values():
+                    for msg in msgs:
+                        if "content" in msg:  # Make sure content exists
+                            msg["content"] = re.sub(self.remove_text, "", msg["content"], flags=re.DOTALL)
+
         action_choice = messages[-1]["content"].lower().strip()
-
-        # Apply ignore_text regex to remove unwanted segments
-        if self.ignore_text:
-            action_choice = re.sub(self.ignore_text, "", action_choice, flags=re.DOTALL)
-
         reply = ""
 
         if self.get_current_board_action in action_choice:

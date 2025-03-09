@@ -38,7 +38,7 @@ class TestCustomAgents(unittest.TestCase):
             make_move_action="make_move",
             reflect_prompt="Reflecting...",
             reflection_followup_prompt="Follow-up reflection",
-            ignore_text=None,
+            remove_text=None,
         )
         self.assertEqual(agent.name, "AutoReplyAgent")
         self.assertEqual(agent.max_failed_attempts, 3)
@@ -160,7 +160,7 @@ class TestAutoReplyAgent(unittest.TestCase):
             make_move_action="make_move",
             reflect_prompt="Reflecting...",
             reflection_followup_prompt="Follow-up reflection",
-            ignore_text=None
+            remove_text=None
         )
 
     def test_get_current_board(self):
@@ -182,9 +182,9 @@ class TestAutoReplyAgent(unittest.TestCase):
         self.assertEqual(reply, self.get_legal_moves())
         self.assertTrue(self.mock_sender.has_requested_board)
     
-    def test_ignore_text(self):
-        """Test that ignore_text pattern is properly applied."""
-        agent_with_ignore = AutoReplyAgent(
+    def test_remove_text_functionality(self):
+        """Test that remove_text pattern properly modifies message history."""
+        agent_with_remove = AutoReplyAgent(
             name="TestAutoReply",
             get_current_board=self.get_current_board,
             get_legal_moves=self.get_legal_moves,
@@ -199,12 +199,47 @@ class TestAutoReplyAgent(unittest.TestCase):
             make_move_action="make_move",
             reflect_prompt="Reflecting...",
             reflection_followup_prompt="Follow-up reflection",
-            ignore_text=r"<think>.*?</think>"
+            remove_text=r"<think>.*?</think>"
         )
         
-        messages = [{"content": "<think>some thinking</think>make_move e2e4"}]
-        reply = agent_with_ignore.generate_reply(messages=messages, sender=self.mock_sender)
-        self.assertEqual(reply, "Move made")
+        # Test with remove_text enabled
+        messages = [
+            {"content": "<think>some thinking</think>make_move e2e4"},
+            {"content": "<think>more thinking</think>get_legal_moves"}
+        ]
+        original_messages = messages.copy()
+        
+        agent_with_remove.generate_reply(messages=messages, sender=self.mock_sender)
+        
+        # Check that messages were modified
+        self.assertEqual(messages[0]["content"], "make_move e2e4")
+        self.assertEqual(messages[1]["content"], "get_legal_moves")
+        
+        # Test with remove_text disabled
+        agent_without_remove = AutoReplyAgent(
+            name="TestAutoReply",
+            get_current_board=self.get_current_board,
+            get_legal_moves=self.get_legal_moves,
+            make_move=self.make_move,
+            move_was_made_message="Move made",
+            invalid_action_message="Invalid action",
+            too_many_failed_actions_message="Too many failed actions",
+            max_failed_attempts=3,
+            get_current_board_action="get_current_board",
+            get_legal_moves_action="get_legal_moves",
+            reflect_action="reflect",
+            make_move_action="make_move",
+            reflect_prompt="Reflecting...",
+            reflection_followup_prompt="Follow-up reflection",
+            remove_text=None
+        )
+        
+        messages = original_messages.copy()
+        agent_without_remove.generate_reply(messages=messages, sender=self.mock_sender)
+        
+        # Check that messages were not modified
+        self.assertEqual(messages[0]["content"], original_messages[0]["content"])
+        self.assertEqual(messages[1]["content"], original_messages[1]["content"])
 
     def test_make_move_valid(self):
         """Test making a valid move."""

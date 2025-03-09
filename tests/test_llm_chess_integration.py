@@ -116,6 +116,66 @@ class TestLLMvsRandomGame(unittest.TestCase):
             self.assertIsNotNone(game_stats["winner"])
             self.assertLessEqual(game_stats["number_of_moves"], 10)
 
+    def test_remove_text_removes_think_tags(self):
+        """Test that remove_text properly removes think tags during game."""
+        import llm_chess
+        import requests
+        
+        # Enable think tags in mock server
+        requests.post("http://localhost:8080/v1/config/think_tags/true")
+        
+        # Configure game with remove_text
+        llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
+        llm_chess.black_player_type = PlayerType.LLM_BLACK
+        llm_chess.max_game_moves = 3
+        llm_chess.visualize_board = False
+        llm_chess.throttle_delay = 0
+        llm_chess.dialog_turn_delay = 0
+        llm_chess.remove_text = r"<think>.*?</think>"
+        
+        # Run game
+        _, _, black_player = run(save_logs=False)
+        
+        # Verify think tags were removed from all messages
+        for msgs in black_player._oai_messages.values():
+            for msg in msgs:
+                self.assertNotIn("<think>", msg["content"])
+                self.assertNotIn("</think>", msg["content"])
+                self.assertNotIn("Thinking about my move", msg["content"])
+
+    def test_preserve_think_tags_when_remove_text_disabled(self):
+        """Test that think tags are preserved when remove_text is disabled."""
+        import llm_chess
+        import requests
+        
+        # Enable think tags in mock server
+        requests.post("http://localhost:8080/v1/config/think_tags/true")
+        
+        # Configure game without remove_text
+        llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
+        llm_chess.black_player_type = PlayerType.LLM_BLACK
+        llm_chess.max_game_moves = 3
+        llm_chess.visualize_board = False
+        llm_chess.throttle_delay = 0
+        llm_chess.dialog_turn_delay = 0
+        llm_chess.remove_text = None
+        
+        # Run game
+        _, _, black_player = run(save_logs=False)
+        
+        # Verify at least one message contains think tags
+        found_think_tags = False
+        for msgs in black_player._oai_messages.values():
+            for msg in msgs:
+                if "<think>" in msg["content"] and "</think>" in msg["content"]:
+                    found_think_tags = True
+                    self.assertIn("Thinking about my move", msg["content"])
+                    break
+            if found_think_tags:
+                break
+        
+        self.assertTrue(found_think_tags, "Expected to find think tags in messages when remove_text is disabled")
+
 
 if __name__ == "__main__":
     unittest.main()
