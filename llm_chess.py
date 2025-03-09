@@ -69,7 +69,7 @@ reasoning_effort = None # Default is None, used with OpenAI models low, medium, 
 # r"<think>.*?</think>" - Deepseek R1 Distil
 # r"◁think▷.*?◁/think▷ - Kimi 1.5
 # Default None
-remove_text = r"<think>.*?</think>"
+remove_text = None
 
 # Add warnings for both temp_override and reasoning_effort
 if temp_override is not None:
