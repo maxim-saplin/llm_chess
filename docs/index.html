@@ -85,7 +85,13 @@
             Let's find out ツ
         </p>
         <div class="button-container">
-            <button class="selected" onclick="showPane('leaderboard')">Leaderboard</button>
+            <div class="dropdown">
+                <button class="dropbtn" onclick="toggleDropdown()">Leaderboard ▼</button>
+                <div id="leaderboardDropdown" class="dropdown-content">
+                    <a href="javascript:void(0)" onclick="showPane('leaderboard', 'new')">• New</a>
+                    <a href="javascript:void(0)" onclick="showPane('leaderboard', 'old')">Old</a>
+                </div>
+            </div>
             <button onclick="showPane('how-it-works')">How it works</button>
             <button onclick="showPane('considerations')">Notes</button>
         </div>
@@ -97,12 +103,12 @@
                 <table>
                     <thead>
                         <tr>
-                            <th title="Rank">#&nbsp;&nbsp;</th> <!-- Rank column -->
+                            <th title="Rank">#&nbsp;&nbsp;</th>
                             <th title="Model playing as black against a Random Player">Player&nbsp;&nbsp;</th>
-                            <th title="How often the player scored a win (due to check mate or the opponent failing to make)">Wins&nbsp;&nbsp;</th>
-                            <th title="Percentage of games without a winner (e.g. reaching maximum number of 200 moves OR stalemate). Displays LLMs proficiency in chess.">Draws&nbsp;&nbsp;</th>
-                            <th title="Number of LLM erroneous replies per 1000 moves - how often did an LLM fail to follow the instructions and make a move, e.g. due haluscinations picking illegal move and not conforming to communication protocol. Shows model's instruction following capabilities and halusinations resistance">Mistakes&nbsp;&nbsp;</th>
-                            <th title="Number of token's generated per one move. Demonstrates model's verbosity.">Tokens&nbsp;&nbsp;</th>
+                            <th title="How often the player scored a win (due to checkmate or the opponent failing to make a move) in Easy mode, or difference between wins and losses in Medium mode">Wins/Diff&nbsp;&nbsp;</th>
+                            <th id="draws-moves-header" title="Percentage of games without a winner in Easy mode, or average number of moves per game in Medium mode">Draws&nbsp;&nbsp;</th>
+                            <th title="Number of LLM erroneous replies per 1000 moves">Mistakes&nbsp;&nbsp;</th>
+                            <th title="Number of token's generated per one move">Tokens&nbsp;&nbsp;</th>
                         </tr>
                     </thead>
                     <tbody>

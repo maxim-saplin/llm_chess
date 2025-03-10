@@ -72,7 +72,7 @@ p.intro {
 }
 
 button {
-    width: 160px;
+    width: 180px;
     margin: 0 5px;
     padding: 5px;
     background-color: #C0C0C0;
@@ -95,11 +95,58 @@ button::after {
     z-index: -1;
 }
 
-button.selected {
+button.selected, .dropbtn.selected {
     background-color: green;
     color: #FFFFFF;
     top: 1px;
     left: 1px;
+}
+
+.dropdown {
+    display: inline-block;
+    position: relative;
+}
+
+.dropbtn {
+    width: 160px;
+    margin: 0 5px;
+    padding: 5px;
+    background-color: #C0C0C0;
+    color: #000000;
+    border: 1px solid #808080;
+    font-family: "Web IBM VGA 8x16";
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #C0C0C0;
+    min-width: 160px;
+    z-index: 1;
+    width: 100%;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #808080;
+    color: white;
+}
+
+.dropdown-content a.active::before {
+    content: "•";
+    margin-right: 5px;
+}
+
+.show {
+    display: block;
 }
 
 button:hover {
@@ -188,7 +235,10 @@ div.board {
 }
 
 @keyframes blink {
-    0%, 100% {
+    0% {
+        opacity: 1;
+    }
+    100% {
         opacity: 1;
     }
     50% {

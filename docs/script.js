@@ -114,25 +114,102 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchAndAnimateBoard();
 });
 
-function showPane(paneId) {
+let lbVersion = 'new'; // Default view
+
+function toggleDropdown() {
+    document.getElementById("leaderboardDropdown").classList.toggle("show");
+}
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+    if (!event.target.matches('.dropbtn')) {
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        for (var i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
+}
+
+function showPane(paneId, view, event) {
+    if (event) {
+        event.preventDefault();
+    }
+    
+    const scrollPos = window.scrollY;
+
+    if (view) {
+        lbVersion = view;
+        // Update dropdown items
+        document.querySelectorAll('.dropdown-content a').forEach(item => {
+            item.classList.remove('active'); // First remove active from all items
+            if (item.textContent.toLowerCase().includes(view.toLowerCase())) {
+                item.classList.add('active');
+                // Remove any existing dots and add a new one
+                item.textContent = item.textContent.replace(/^[•\s]*/, ''); // Remove existing dots and spaces
+                item.textContent = '• ' + item.textContent;
+            } else {
+                // Remove any dots from non-active items
+                item.textContent = item.textContent.replace(/^[•\s]*/, '');
+            }
+        });
+
+        // Update the column headers based on view
+        const winsHeader = document.querySelector('#leaderboard th:nth-child(3)');
+        winsHeader.textContent = lbVersion === 'old' ? 'Wins' : 'Wins-Losses';
+        winsHeader.innerHTML += '&nbsp;&nbsp;';
+        
+        const drawsMovesHeader = document.querySelector('#draws-moves-header');
+        drawsMovesHeader.textContent = lbVersion === 'old' ? 'Draws' : 'Avg Moves';
+        drawsMovesHeader.innerHTML += '&nbsp;&nbsp;';
+        drawsMovesHeader.title = lbVersion === 'old' ? 
+            'Percentage of games without a winner' : 
+            'Average number of moves per game';
+        
+        // Update dropdown button text
+        const dropBtn = document.querySelector('.dropbtn');
+        dropBtn.textContent = lbVersion === 'old' ? 'Leaderboard (O) ▼' : 'Leaderboard ▼';
+        
+        buildTable();
+    }
+    
     document.getElementById('leaderboard').style.display = paneId === 'leaderboard' ? 'block' : 'none';
     document.getElementById('how-it-works').style.display = paneId === 'how-it-works' ? 'block' : 'none';
     document.getElementById('considerations').style.display = paneId === 'considerations' ? 'block' : 'none';
+    
     document.querySelectorAll('.button-container button').forEach(button => {
         button.classList.remove('selected');
     });
-    document.querySelector(`.button-container button[onclick="showPane('${paneId}')"]`).classList.add('selected');
+    if (paneId === 'leaderboard') {
+        document.querySelector('.dropbtn').classList.add('selected');
+    }
 
-    // Simulate a page view event in Google Analytics
+    // Update dropdown button text
+    if (difficulty) {
+        document.querySelector('.dropbtn').textContent = `Leaderboard (${difficulty}) ▼`;
+    }
+
+    // Close dropdown
+    document.getElementById('leaderboardDropdown').classList.remove('show');
+
+    // Restore scroll position
+    window.scrollTo(0, scrollPos);
+
     gtag('event', 'page_view', {
-        'page_title': document.title + ' - ' + paneId,
-        'page_path': '/' + paneId
+        'page_title': document.title + ' - ' + paneId + (difficulty ? ' - ' + difficulty : ''),
+        'page_path': '/' + paneId + (difficulty ? '/' + difficulty : '')
     });
 }
 
 function buildTable() {
     const lines = data.trim().split('\n').filter(line => line.trim() !== '');
     const rows = lines.slice(1).map(row => row.split(','));
+
+    // Clear the table body first
+    const tbody = document.querySelector('#leaderboard tbody');
+    tbody.innerHTML = ''; // Clear existing rows
 
     // Separate the rows that should always be at the bottom
     const bottomRows = [];
@@ -147,10 +224,18 @@ function buildTable() {
         return true;
     });
 
-    // Sort the remaining rows by "Wins", "Draws", and then "Mistakes" in descending order
+    // Sort the remaining rows based on difficulty mode
     otherRows.sort((a, b) => {
-        const winsA = parseFloat(a[csvIndices.player_wins_percent]);
-        const winsB = parseFloat(b[csvIndices.player_wins_percent]);
+        let winsA, winsB;
+        
+        if (lbVersion === 'old') {
+            winsA = parseFloat(a[csvIndices.player_wins_percent]);
+            winsB = parseFloat(b[csvIndices.player_wins_percent]);
+        } else { // 'new' mode
+            winsA = (parseInt(a[csvIndices.player_wins]) - parseInt(a[csvIndices.opponent_wins])) / parseInt(a[csvIndices.total_games]) * 100;
+            winsB = (parseInt(b[csvIndices.player_wins]) - parseInt(b[csvIndices.opponent_wins])) / parseInt(b[csvIndices.total_games]) * 100;
+        }
+
         const drawsA = parseFloat(a[csvIndices.player_draws_percent]);
         const drawsB = parseFloat(b[csvIndices.player_draws_percent]);
         const mistakesA = parseFloat(a[csvIndices.mistakes_per_1000moves]);
@@ -159,8 +244,6 @@ function buildTable() {
         // Hierarchical sorting: Wins DESC, Draws DESC, Mistakes ASC
         return winsB - winsA || drawsB - drawsA || mistakesA - mistakesB;
     });
-
-    const tbody = document.querySelector('#leaderboard tbody');
     [...otherRows, ...bottomRows].forEach((columns, index) => {
         const isBottomRow = bottomRows.includes(columns); // Check if the row is a bottom row
         const player = columns[csvIndices.player];
@@ -175,8 +258,12 @@ function buildTable() {
         tr.innerHTML = `
             <td>${isBottomRow ? '' : index + 1}</td> <!-- Empty rank for bottom rows -->
             <td>${player}</td> <!-- Player first -->
-            <td>${player_wins_percent.toFixed(2)}%</td>
-            <td>${player_draws_percent.toFixed(2)}%</td>
+            <td>${lbVersion === 'old' ? 
+                player_wins_percent.toFixed(2) : 
+                ((parseInt(columns[csvIndices.player_wins]) - parseInt(columns[csvIndices.opponent_wins])) / parseInt(columns[csvIndices.total_games]) * 100).toFixed(2)}%</td>
+            <td>${lbVersion === 'old' ? 
+                player_draws_percent.toFixed(2) + '%' : 
+                parseFloat(columns[csvIndices.average_moves]).toFixed(1)}</td>
             <td>${mistakes.toFixed(2)}</td>
             <td>${tokens.toFixed(2)}</td>
         `;
