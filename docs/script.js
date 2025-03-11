@@ -59,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
     MinimalMD.render('considerations');
 });
 
-let lbVersion = 'new'; // Default view
 
 
 function showPane(screen) {
@@ -69,7 +68,6 @@ function showPane(screen) {
     // Update UI based on screen
     switch(screen) {
         case Screen.LEADERBOARD_NEW:
-            lbVersion = 'new';
             document.getElementById('leaderboard').style.display = 'block';
             document.getElementById('how-it-works').style.display = 'none';
             document.getElementById('considerations').style.display = 'none';
@@ -78,7 +76,6 @@ function showPane(screen) {
             break;
 
         case Screen.LEADERBOARD_OLD:
-            lbVersion = 'old';
             document.getElementById('leaderboard').style.display = 'block';
             document.getElementById('how-it-works').style.display = 'none';
             document.getElementById('considerations').style.display = 'none';
@@ -148,15 +145,9 @@ function buildTable() {
 
     // Sort the remaining rows based on difficulty mode
     otherRows.sort((a, b) => {
-        let winsA, winsB;
-        
-        if (lbVersion === 'old') {
-            winsA = parseFloat(a[csvIndices.player_wins_percent]);
-            winsB = parseFloat(b[csvIndices.player_wins_percent]);
-        } else { // 'new' mode
-            winsA = (parseInt(a[csvIndices.player_wins]) - parseInt(a[csvIndices.opponent_wins])) / parseInt(a[csvIndices.total_games]) * 100;
-            winsB = (parseInt(b[csvIndices.player_wins]) - parseInt(b[csvIndices.opponent_wins])) / parseInt(b[csvIndices.total_games]) * 100;
-        }
+        // Always use the new mode calculation
+        const winsA = (parseInt(a[csvIndices.player_wins]) - parseInt(a[csvIndices.opponent_wins])) / parseInt(a[csvIndices.total_games]) * 100;
+        const winsB = (parseInt(b[csvIndices.player_wins]) - parseInt(b[csvIndices.opponent_wins])) / parseInt(b[csvIndices.total_games]) * 100;
 
         const drawsA = parseFloat(a[csvIndices.player_draws_percent]);
         const drawsB = parseFloat(b[csvIndices.player_draws_percent]);
@@ -180,12 +171,8 @@ function buildTable() {
         tr.innerHTML = `
             <td>${isBottomRow ? '' : index + 1}</td> <!-- Empty rank for bottom rows -->
             <td>${player}</td> <!-- Player first -->
-            <td>${lbVersion === 'old' ? 
-                player_wins_percent.toFixed(2) : 
-                ((parseInt(columns[csvIndices.player_wins]) - parseInt(columns[csvIndices.opponent_wins])) / parseInt(columns[csvIndices.total_games]) * 100).toFixed(2)}%</td>
-            <td>${lbVersion === 'old' ? 
-                player_draws_percent.toFixed(2) + '%' : 
-                parseFloat(columns[csvIndices.average_moves]).toFixed(1)}</td>
+            <td>${((parseInt(columns[csvIndices.player_wins]) - parseInt(columns[csvIndices.opponent_wins])) / parseInt(columns[csvIndices.total_games]) * 100).toFixed(2)}%</td>
+            <td>${parseFloat(columns[csvIndices.average_moves]).toFixed(1)}</td>
             <td>${mistakes.toFixed(2)}</td>
             <td>${tokens.toFixed(2)}</td>
         `;
@@ -197,21 +184,14 @@ function buildTable() {
         tr.addEventListener('click', () => showPopup(tr, columns));
     });
 
-    // Update column headers based on leaderboard version
+    // Update column headers for the new format
     const winsHeader = document.querySelector('#leaderboard th:nth-child(3)');
     const drawsMovesHeader = document.querySelector('#leaderboard th:nth-child(4)');
     
-    if (lbVersion === 'old') {
-        winsHeader.textContent = 'Wins';
-        winsHeader.title = 'How often the player scored a win (due to checkmate or the opponent failing to make a move)';
-        drawsMovesHeader.textContent = 'Draws';
-        drawsMovesHeader.title = 'Percentage of games without a winner';
-    } else {
-        winsHeader.textContent = 'Wins-Losses';
-        winsHeader.title = 'Difference between wins and losses as percentage of total games';
-        drawsMovesHeader.textContent = 'Avg Moves';
-        drawsMovesHeader.title = 'Average number of moves per game';
-    }
+    winsHeader.textContent = 'Wins-Losses';
+    winsHeader.title = 'Difference between wins and losses as percentage of total games';
+    drawsMovesHeader.textContent = 'Avg Moves';
+    drawsMovesHeader.title = 'Average number of moves per game';
 
     // Add a non-breaking space to all headers
     document.querySelectorAll('#leaderboard th').forEach((headerCell) => {

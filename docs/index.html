@@ -122,8 +122,10 @@
             <p class="descriptions">
                 <strong>METRICS:</strong><br><br>
                 <strong>- Player:</strong> Model playing as black against a Random Player.<br>
-                <strong>- Wins:</strong> How often the player scored a win (due to checkmate or the opponent failing to make a move). Displays LLMs' proficiency in chess.<br>
-                <strong>- Draws:</strong> Percentage of games without a winner (e.g., reaching the maximum number of 200 moves or stalemate). Displays weaks' LLMs' proficiency in chess if it can't win.<br>
+                <strong>- Wins-Losses:</strong> Difference between wins and losses as percentage of total games. Displays LLMs' proficiency in chess.<br>
+                <strong>- Wins (old leaderboard):</strong> How often the player scored a win (due to checkmate or the opponent failing to make a move). Displays LLMs' proficiency in chess.<br>
+                <strong>- Avg Moves:</strong> Average number of moves per game.<br>
+                <strong>- Draws (old leaderboard):</strong> Percentage of games without a winner (e.g., reaching the maximum number of 200 moves or stalemate). Displays weaks' LLMs' proficiency in chess if it can't win.<br>
                 <strong>- Mistakes:</strong> Number of LLM erroneous replies per 1000 moves - how often did an LLM fail to follow the instructions 
                 and make a move. E.g., due to hallucinations, picking illegal moves, not conforming to the communication protocol. Shows the model's instruction-following capabilities and hallucination resistance.<br>
                 <strong>- Tokens:</strong> Number of tokens generated per move. Demonstrates the model's verbosity.<br><br>
@@ -134,7 +136,8 @@
                 - 1000 simulations for Random Player vs. Chess Engine and Random vs. Random.<br>
                 - <s>You see it right, LLMs scored 0 wins.</s> No longer the case, o1-mini being the 1st LLM scroging wins<br>
                 - <s>Using Draws instead of Wins to evaluate LLMs' chess proficiency</s>.<br>
-                - The default soritng is by Wins DESC, Draws DESC and Mistakes ASC <br>
+                - The default soritng is by Wins-Losses DESC, Draws DESC and Mistakes ASC (new leaderboard) and for older leaderboard by Wins DESC, Draws DESC and Mistakes ASC <br>
+                <br>
                 - Strong models (those ones winning) are judged (in Chess proficiency) by % Won, weak ones - by % Draws <br>
                 - <strong>Mistakes</strong> metric gives an evaluation of LLMs' instruction-following capabilities and resistance to hallucinations (making up non-legal moves while having a list of legal moves provided in the prompt).<br>
                 - Sort by <strong>Mistakes</strong> column and get a ranking by instruction-following ability (models with the least mistakes being better) <br>
