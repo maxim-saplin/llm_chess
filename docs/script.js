@@ -116,22 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let lbVersion = 'new'; // Default view
 
-function toggleDropdown() {
-    document.getElementById("leaderboardDropdown").classList.toggle("show");
-}
-
-// Close the dropdown if the user clicks outside of it
-window.onclick = function(event) {
-    if (!event.target.matches('.dropbtn')) {
-        var dropdowns = document.getElementsByClassName("dropdown-content");
-        for (var i = 0; i < dropdowns.length; i++) {
-            var openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show')) {
-                openDropdown.classList.remove('show');
-            }
-        }
-    }
-}
 
 function showPane(paneId, view, event) {
     if (event) {
@@ -433,6 +417,23 @@ function showPopup(row, columns) {
 function hidePopup() {
     const popup = document.getElementById('popup');
     popup.style.display = 'none';
+}
+
+function toggleDropdown() {
+    document.querySelector('.dropdown-content').classList.toggle('show');
+}
+
+// Close the dropdown if clicked outside
+window.onclick = function(event) {
+    if (!event.target.matches('.dropbtn')) {
+        var dropdowns = document.getElementsByClassName('dropdown-content');
+        for (var i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
 }
 
 function toggleSnippet(button) {

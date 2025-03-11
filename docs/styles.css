@@ -13,6 +13,10 @@
     src: url(DejavuSansMono.ttf) format('truetype');
 }
 
+:root {
+    --global-button-width: 185px; /* Define the global variable */
+}
+
 body {
     background-color: #0000AA;
     color: #FFFFFF;
@@ -72,7 +76,7 @@ p.intro {
 }
 
 button {
-    width: 180px;
+    width: var(--global-button-width);
     margin: 0 5px;
     padding: 5px;
     background-color: #C0C0C0;
@@ -102,58 +106,74 @@ button.selected, .dropbtn.selected {
     left: 1px;
 }
 
-.dropdown {
-    display: inline-block;
-    position: relative;
-}
 
-.dropbtn {
-    width: 160px;
-    margin: 0 5px;
-    padding: 5px;
-    background-color: #C0C0C0;
-    color: #000000;
-    border: 1px solid #808080;
-    font-family: "Web IBM VGA 8x16";
-    font-size: 20px;
-    cursor: pointer;
-}
 
-.dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #C0C0C0;
-    min-width: 160px;
-    z-index: 1;
-    width: 100%;
-}
-
-.dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-}
-
-.dropdown-content a:hover {
-    background-color: #808080;
-    color: white;
-}
-
-.dropdown-content a.active::before {
-    content: "•";
-    margin-right: 5px;
-}
-
-.show {
-    display: block;
-}
 
 button:hover {
     background-color: #808080;
     color: #FFFFFF;
     top: 2px;
     left: 2px;
+}
+
+.custom-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    width: var(--global-button-width);
+    margin: 0 5px;
+    padding: 5px 0px 5px 0px;
+    background-color: #C0C0C0;
+    color: #000000;
+    border: 1px solid #808080;
+    font-family: "Web IBM VGA 8x16";
+    font-size: 20px;
+    cursor: pointer;
+    position: relative;
+}
+
+.dropbtn::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    z-index: -1;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #C0C0C0;
+    min-width: var(--global-button-width);
+    box-shadow: 8px 8px #000000;
+    z-index: 1;
+    border: 1px solid #808080;
+    margin-left: 5px;
+    box-sizing: border-box;
+}
+
+.dropdown-content div {
+    color: #000000;
+    padding: 5px;
+    text-decoration: none;
+    display: block;
+    font-family: "Web IBM VGA 8x16";
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.dropdown-content div:hover {
+    background-color: #808080;
+    color: #FFFFFF;
+}
+
+.show {
+    display: block;
 }
 
 .pane{

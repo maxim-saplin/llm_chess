@@ -85,11 +85,11 @@
             Let's find out ツ
         </p>
         <div class="button-container">
-            <div class="dropdown">
+            <div class="custom-dropdown">
                 <button class="dropbtn" onclick="toggleDropdown()">Leaderboard ▼</button>
-                <div id="leaderboardDropdown" class="dropdown-content">
-                    <a href="javascript:void(0)" onclick="showPane('leaderboard', 'new')">• New</a>
-                    <a href="javascript:void(0)" onclick="showPane('leaderboard', 'old')">Old</a>
+                <div class="dropdown-content">
+                    <div onclick="showPane('leaderboard', 'new')">Leaderboard</div>
+                    <div onclick="showPane('leaderboard', 'old')">Leaderboard (O)</div>
                 </div>
             </div>
             <button onclick="showPane('how-it-works')">How it works</button>
