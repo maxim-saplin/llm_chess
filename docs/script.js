@@ -54,6 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Select Leaderboard by default
     showPane(Screen.LEADERBOARD_NEW);
+    
+    // Initialize markdown rendering
+    MinimalMD.render('considerations');
 });
 
 let lbVersion = 'new'; // Default view
