@@ -1,3 +1,12 @@
+const Screen = {
+    LEADERBOARD_NEW: 'leaderboard_new',
+    LEADERBOARD_OLD: 'leaderboard_old',
+    HOW_IT_WORKS: 'how_it_works',
+    NOTES: 'notes'
+};
+
+let currentScreen = Screen.LEADERBOARD_NEW;
+
 const data = `
 Player,total_games,player_wins,opponent_wins,draws,player_wins_percent,player_draws_percent,average_moves,moe_average_moves,total_moves,player_wrong_actions,player_wrong_moves,wrong_actions_per_1000moves,wrong_moves_per_1000moves,mistakes_per_1000moves,moe_mistakes_per_1000moves,player_avg_material,opponent_avg_material,material_diff_player_llm_minus_opponent,moe_material_diff_llm_minus_rand,completion_tokens_black_per_move,moe_completion_tokens_black_per_move,std_dev_black_llm_win_rate,moe_black_llm_win_rate,std_dev_draw_rate,moe_draw_rate,std_dev_black_llm_loss_rate,moe_black_llm_loss_rate
 amazon.nova-lite-v1,42,0,42,0,0.0,0.0,4.619047619047619,0.7845472344885497,194,50,46,424.6031746031746,196.82539682539684,621.4285714285714,161.20153522640408,38.95238095238095,38.92857142857143,0.023809523809523808,0.15648233404192521,534.3814432989691,189.87818676853868,0.0,0.0,0.0,0.0,0.0,0.0
@@ -112,78 +121,74 @@ const SPECIAL_ROWS = {
 document.addEventListener('DOMContentLoaded', () => {
     buildTable();
     fetchAndAnimateBoard();
+    
+    // Select Leaderboard by default
+    showPane(Screen.LEADERBOARD_NEW);
 });
 
 let lbVersion = 'new'; // Default view
 
 
-function showPane(paneId, view, event) {
-    if (event) {
-        event.preventDefault();
-    }
-    
+function showPane(screen) {
     const scrollPos = window.scrollY;
+    currentScreen = screen;
 
-    if (view) {
-        lbVersion = view;
-        // Update dropdown items
-        document.querySelectorAll('.dropdown-content a').forEach(item => {
-            item.classList.remove('active'); // First remove active from all items
-            if (item.textContent.toLowerCase().includes(view.toLowerCase())) {
-                item.classList.add('active');
-                // Remove any existing dots and add a new one
-                item.textContent = item.textContent.replace(/^[•\s]*/, ''); // Remove existing dots and spaces
-                item.textContent = '• ' + item.textContent;
-            } else {
-                // Remove any dots from non-active items
-                item.textContent = item.textContent.replace(/^[•\s]*/, '');
-            }
-        });
+    // Update UI based on screen
+    switch(screen) {
+        case Screen.LEADERBOARD_NEW:
+            lbVersion = 'new';
+            document.getElementById('leaderboard').style.display = 'block';
+            document.getElementById('how-it-works').style.display = 'none';
+            document.getElementById('considerations').style.display = 'none';
+            document.querySelector('.dropbtn').textContent = 'Leaderboard ▼';
+            buildTable();
+            break;
 
-        // Update the column headers based on view
-        const winsHeader = document.querySelector('#leaderboard th:nth-child(3)');
-        winsHeader.textContent = lbVersion === 'old' ? 'Wins' : 'Wins-Losses';
-        winsHeader.innerHTML += '&nbsp;&nbsp;';
-        
-        const drawsMovesHeader = document.querySelector('#draws-moves-header');
-        drawsMovesHeader.textContent = lbVersion === 'old' ? 'Draws' : 'Avg Moves';
-        drawsMovesHeader.innerHTML += '&nbsp;&nbsp;';
-        drawsMovesHeader.title = lbVersion === 'old' ? 
-            'Percentage of games without a winner' : 
-            'Average number of moves per game';
-        
-        // Update dropdown button text
-        const dropBtn = document.querySelector('.dropbtn');
-        dropBtn.textContent = lbVersion === 'old' ? 'Leaderboard (O) ▼' : 'Leaderboard ▼';
-        
-        buildTable();
+        case Screen.LEADERBOARD_OLD:
+            lbVersion = 'old';
+            document.getElementById('leaderboard').style.display = 'block';
+            document.getElementById('how-it-works').style.display = 'none';
+            document.getElementById('considerations').style.display = 'none';
+            document.querySelector('.dropbtn').textContent = 'Leaderboard (O) ▼';
+            buildTable();
+            break;
+
+        case Screen.HOW_IT_WORKS:
+            document.getElementById('leaderboard').style.display = 'none';
+            document.getElementById('how-it-works').style.display = 'block';
+            document.getElementById('considerations').style.display = 'none';
+            break;
+
+        case Screen.NOTES:
+            document.getElementById('leaderboard').style.display = 'none';
+            document.getElementById('how-it-works').style.display = 'none';
+            document.getElementById('considerations').style.display = 'block';
+            break;
     }
-    
-    document.getElementById('leaderboard').style.display = paneId === 'leaderboard' ? 'block' : 'none';
-    document.getElementById('how-it-works').style.display = paneId === 'how-it-works' ? 'block' : 'none';
-    document.getElementById('considerations').style.display = paneId === 'considerations' ? 'block' : 'none';
-    
-    document.querySelectorAll('.button-container button').forEach(button => {
+
+    // Update button states
+    document.querySelectorAll('.button-container button, .dropbtn').forEach(button => {
         button.classList.remove('selected');
     });
-    if (paneId === 'leaderboard') {
-        document.querySelector('.dropbtn').classList.add('selected');
-    }
 
-    // Update dropdown button text
-    if (difficulty) {
-        document.querySelector('.dropbtn').textContent = `Leaderboard (${difficulty}) ▼`;
+    if (screen === Screen.LEADERBOARD_NEW || screen === Screen.LEADERBOARD_OLD) {
+        document.querySelector('.dropbtn').classList.add('selected');
+    } else if (screen === Screen.HOW_IT_WORKS) {
+        document.querySelector('button[onclick="showPane(Screen.HOW_IT_WORKS)"]').classList.add('selected');
+    } else if (screen === Screen.NOTES) {
+        document.querySelector('button[onclick="showPane(Screen.NOTES)"]').classList.add('selected');
     }
 
     // Close dropdown
-    document.getElementById('leaderboardDropdown').classList.remove('show');
+    document.querySelector('.dropdown-content').classList.remove('show');
 
     // Restore scroll position
     window.scrollTo(0, scrollPos);
 
+    // Analytics
     gtag('event', 'page_view', {
-        'page_title': document.title + ' - ' + paneId + (difficulty ? ' - ' + difficulty : ''),
-        'page_path': '/' + paneId + (difficulty ? '/' + difficulty : '')
+        'page_title': document.title + ' - ' + screen,
+        'page_path': '/' + screen
     });
 }
 
@@ -258,6 +263,22 @@ function buildTable() {
         tr.addEventListener('mouseleave', hidePopup);
         tr.addEventListener('click', () => showPopup(tr, columns));
     });
+
+    // Update column headers based on leaderboard version
+    const winsHeader = document.querySelector('#leaderboard th:nth-child(3)');
+    const drawsMovesHeader = document.querySelector('#leaderboard th:nth-child(4)');
+    
+    if (lbVersion === 'old') {
+        winsHeader.textContent = 'Wins';
+        winsHeader.title = 'How often the player scored a win (due to checkmate or the opponent failing to make a move)';
+        drawsMovesHeader.textContent = 'Draws';
+        drawsMovesHeader.title = 'Percentage of games without a winner';
+    } else {
+        winsHeader.textContent = 'Wins-Losses';
+        winsHeader.title = 'Difference between wins and losses as percentage of total games';
+        drawsMovesHeader.textContent = 'Avg Moves';
+        drawsMovesHeader.title = 'Average number of moves per game';
+    }
 
     // Add a non-breaking space to all headers
     document.querySelectorAll('#leaderboard th').forEach((headerCell) => {

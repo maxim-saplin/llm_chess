@@ -88,12 +88,12 @@
             <div class="custom-dropdown">
                 <button class="dropbtn" onclick="toggleDropdown()">Leaderboard ▼</button>
                 <div class="dropdown-content">
-                    <div onclick="showPane('leaderboard', 'new')">Leaderboard</div>
-                    <div onclick="showPane('leaderboard', 'old')">Leaderboard (O)</div>
+                    <div onclick="showPane(Screen.LEADERBOARD_NEW)">New Leaderboard</div>
+                    <div onclick="showPane(Screen.LEADERBOARD_OLD)">Old Leaderboard</div>
                 </div>
             </div>
-            <button onclick="showPane('how-it-works')">How it works</button>
-            <button onclick="showPane('considerations')">Notes</button>
+            <button onclick="showPane(Screen.HOW_IT_WORKS)">How it works</button>
+            <button onclick="showPane(Screen.NOTES)">Notes</button>
         </div>
         <!-- ############################ -->
         <!-- LEADERBOARD AND DESCRIPTIONS -->
