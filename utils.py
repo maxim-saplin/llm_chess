@@ -133,12 +133,13 @@ def generate_game_stats(
     player_white: Any,
     player_black: Any,
     material_count: dict,
+    pgn_string: str = None,
 ) -> dict:
     """Generate game statistics."""
     white_summary = gather_usage_summary([player_white])
     black_summary = gather_usage_summary([player_black])
 
-    return {
+    stats = {
         "time_started": time_started,
         "winner": winner,
         "reason": reason,
@@ -181,6 +182,12 @@ def generate_game_stats(
             ),
         },
     }
+    
+    # Add PGN string if available
+    if pgn_string:
+        stats["pgn"] = pgn_string
+    
+    return stats
 
 
 load_dotenv()
@@ -268,6 +275,11 @@ def display_store_game_video_and_stats(game_stats, log_dir="_logs", save_logs=Tr
     print("\nMaterial Count:")
     print(f"Player White: {game_stats['material_count']['white']}")
     print(f"Player Black: {game_stats['material_count']['black']}")
+    
+    # Print PGN if available
+    if "pgn" in game_stats:
+        print("\n\033[96mGame PGN:\033[0m")
+        print(game_stats["pgn"])
 
     print("\nCosts per agent (white and black):\n")
     if white_summary:
