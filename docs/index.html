@@ -89,6 +89,9 @@
             <button onclick="showPane('how-it-works')">How it works</button>
             <button onclick="showPane('considerations')">Notes</button>
         </div>
+        <!-- ############################ -->
+        <!-- LEADERBOARD AND DESCRIPTIONS -->
+        <!-- ############################ -->
         <div id="leaderboard" class="pane">
             <div class="table-container">
                 <table>
@@ -129,6 +132,9 @@
                 - Sort by <strong>Mistakes</strong> column and get a ranking by instruction-following ability (models with the least mistakes being better) <br>
             </p>
         </div>
+        <!-- ############ -->
+        <!-- HOW IT WORKS -->
+        <!-- ############ -->
         <div id="how-it-works" class="pane" style="display: none;">
             <p class="descriptions">
                 <strong>Libraries and Dependencies Used:</strong><br><br>
@@ -187,8 +193,49 @@ Move made, switching player
                 The game is terminanted and LLM is given a loss if the max turns OR of number of LLM mistakes is reached in the given dialog.
             </p>
         </div>
+        <!-- ############ -->
+        <!-- NOTES        -->
+        <!-- ############ -->
         <div id="considerations" class="pane" style="display: none;">
             <p class="descriptions">
+                <span style="color:white;">
+                -------------------<br>
+                March 9, Claude 3.7 Sonnet <br>
+                -------------------<br><br></span>
+                The model took its place near the top of the list, yet it is behind Sonnet 3.5 v1 in terms of wins.
+                If you consider the rest of the metrics, I would place it below both Sonnet 3.5 v1 and v2—it produced
+                significantly more mistakes (8.95 vs. 1.67 for v1 and 2.98 for v2) and became more verbose
+                (109 tokens vs. 80 for v1 and 91 for v2). Additionally, the model tends to lose more often (23% vs. 13% for v1 and 8% for v2).
+                I have noticed that there were 5 cases of "too many wrong actions" where the game failed to recover and persistently
+                selected illegal moves despite having requested the list of legal moves. A closer look showed that the model fabricated incorrect
+                positioning of the pieces in its head (e.g., not using the white side for ranks) and failed to realize its mistake
+                in subsequent retries—something not observed in previous versions.
+                <br><br>
+                Overall, it seems that for 3.5 v2 and 3.7, Anthropic made some compromises. While the models might perform better ерфе 3.5 v1 in
+                the set of benchmarks they used fro optimizations, based on LLM Chess, I think the reasoning and durability took a hit in newer Sonnet models 
+                 — one might expect more surprises from newer models in production with diverse inputs.
+                <br><br>
+                <span style="color:white;">
+                <br><br>
+                -------------------<br>
+                March 3, o1 Leads the Pack <br>
+                -------------------<br><br></span>
+                The release version of OpenAI's <strong>o1</strong> at LOW reasoning effort has beaten <strong>o1-preview</strong> tested last year. With a win rate of 56% (vs. 47% for the release version), the model demonstrated better overall performance — 0 losses and 0 mistakes! At low reasoning effort, it generated on average 1641 completion tokens per move, which is significantly less than <strong>o1-preview</strong> and <strong>o3-mini</strong> (at medium reasoning effort). Curious what medium and high levels of <strong>o1</strong> can demonstrate...
+                <br><br>
+                o1 model (unlike o3) doesn't disdain to request both the board and list of legal moves before issuing the make move command. Below is the ratio of get board to get moves actions, higher values mean that the model only requested the printout of the board and didn't care to get the list of legal moves (deciding on the next move withount a hint). Requesting the list of legal moves can explain the 0 mistake rate of o1:<br>
+                - o1-2024-12-17-low: 1.013<br>
+                - o3-mini-low: 1.375<br>
+                - o3-mini-medium: 2.613<br>
+                - o3-mini-hard: 45.1<br>
+                - o1-mini: 1.465<br><br>
+                Besides the <strong>o1</strong> model, I also tested a few other models:<br><br>
+                - Tested and added a release version of <strong>gemini-2.0-flash-lite-001</strong>, way better steerability and stability than the preview/experimental version, even 1 occasional win. I have observed a similar step change from 'exp' (preview) to '001' (release) version with <strong>Gemini Flash 2.0</strong>, when the first previews were garbage in terms of steerability.<br><br>
+                - I also tried a preview of the flagship <strong>Gemini 2.0 Pro</strong> model (<strong>2025-03-01_gemini-2.0-pro-exp-02-05</strong>), yet the tests were riddled with odd "Service is not available" errors. I'm done with 'exp' variants of Google models—too much fuss.<br><br>
+                - I made an attempt to evaluate another "thinking" model from a Chinese AI lab <strong>MoonshotAI</strong>—to no avail. The model struggled with basic instruction following; it also failed to properly enclose the thinking tokens with ◁think▷ sections (yeah, they used some Unicode triangles)—something observed with distilled <strong>R1</strong> models.<br><br>
+                - <strong>o3-mini</strong> at high reasoning effort still can't reliably pass tests, this time due to some security filter errors happening occasionally (Invalid prompt: your prompt was flagged as potentially violating our usage policy. Please try again with a different prompt).<br><br>
+                - Tested a yet another "best in class" fine-tune of <strong>LLama 3</strong>—<strong>deephermes-3-llama-3-8b-preview@q8</strong> - bottom of the list. It follows the trend of a fine-tuned version demonstrating top results in popular evals yet being horrible in LLM Chess (and verbose).<br><br>
+
+                <br><br>
                 <span style="color:white;">
                 -------------------<br>
                 February 12, Legacy GPT-4, get_current_board vs. get_legal_moves<br>

@@ -153,6 +153,7 @@ Game run results are stored under the `_logs` folder.
 - 05.11.2024, fixed bug with wrong action counting (not global per game but per move), set temperature to 0.7, re-ran no_reflection
 - 14.01.2025, changed logs aand switched DRAWS for LLM losses due to model error to Gemini-1.5-pro-preview-0409 (8 logs from November, no reflection), qwq-32b-preview@q4_k_m (1 log from January 9, no reflection), sky-t1-32b-preview@q4_0 (1 log from January 14, no reflection), o1-mini-2024-09-12 (1 lof fro December 22, no reflection), gpt-4-turbo-2024-04-09 (4 logs from November, reflection)
 - 31.01.2025 - changing from weighted average to simple average for material count, wrong moves, wrong actions
+- 08.03.2025 - thinking models with think tags, changing `ignore_text` to `remove_text` ensuring that thinking tags are not inluded in consequent messages shared with the model (i.e. removing think sections returned previously in next messages in multi-turn dialogs, less clutter, recomended by QwQ and I guess assumed by any thinking model they don't need seeing past thinking trails)
 
 ## Model vs Random Player
 

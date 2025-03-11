@@ -54,7 +54,7 @@ use_pgn_with_board = False  # Whether to include PGN format along with the board
 max_game_moves = 200  # maximum number of game moves before terminating, dafault 200
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times, default 10
 max_failed_attempts = 3  # number of wrong replies within a dialog (e.g. non existing action) before stopping/giving a loss, default 3
-throttle_delay = 0 # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+throttle_delay = 1 # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
 dialog_turn_delay = 1  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
@@ -67,13 +67,13 @@ temp_override = None
 
 reasoning_effort = None # Default is None, used with OpenAI models low, medium, or high
 
-# Tell AutoReply agent to ignore given pieces of text when processing replies
+# Tell AutoReply agent to remove given pieces of text from BOTH agents history when processing replies
 # (using re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL))
-# May help isolating thinking tokens. E.g. Deepseek R1 32B uses <think> tags that can have actions mentioned breaking execution (r"<think>.*?</think>")
+# It is needed to remove isolating thinking tokens. E.g. Deepseek R1 32B uses <think> tags that can have actions mentioned breaking execution (r"<think>.*?</think>")
 # r"<think>.*?</think>" - Deepseek R1 Distil
 # r"◁think▷.*?◁/think▷ - Kimi 1.5
 # Default None
-ignore_text = None
+remove_text = None
 
 # Add warnings for both temp_override and reasoning_effort
 if temp_override is not None:
@@ -287,7 +287,7 @@ def run(log_dir="_logs", save_logs=True):
         reflect_prompt=reflect_prompt,
         reflection_followup_prompt=reflection_followup_prompt,
         make_move_action=make_move_action,
-        ignore_text=ignore_text,
+        remove_text=remove_text,
     )
 
     player_white = {
