@@ -68,7 +68,7 @@ reasoning_effort = None # Default is None, used with OpenAI models low, medium, 
 # It is needed to remove isolating thinking tokens. E.g. Deepseek R1 32B uses <think> tags that can have actions mentioned breaking execution (r"<think>.*?</think>")
 # r"<think>.*?</think>" - Deepseek R1 Distil
 # r"◁think▷.*?◁/think▷ - Kimi 1.5
-# r"<reasoning>.*?</reasoning> - Reka Flash
+# r"<reasoning>.*?</reasoning>" - Reka Flash
 # Default None
 remove_text = None
 
