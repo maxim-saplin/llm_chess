@@ -171,58 +171,6 @@ function showPane(screen) {
     });
 }
 
-function sortTable(columnIndex) {
-    const table = document.querySelector('#leaderboard tbody');
-    const rows = Array.from(table.rows);
-    const isNumericColumn = columnIndex !== 0; // Assuming first column is not numeric
-
-    // Determine the current sort order for the column
-    const sortOrderObj = sortOrderState[currentScreen];
-    const currentOrder = sortOrderObj[columnIndex] || 'asc';
-    const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
-    sortOrderObj[columnIndex] = newOrder;
-
-    // Separate the rows that should always be at the bottom
-    const bottomRows = [];
-    const otherRows = rows.filter(row => {
-        const player = row.cells[1].textContent.trim(); // Use the Player column to identify special rows
-        if (player === SPECIAL_ROWS.STOCKFISH ||
-            player === SPECIAL_ROWS.RANDOM_WHITE ||
-            player === SPECIAL_ROWS.RANDOM_BLACK) {
-            bottomRows.push(row);
-            return false;
-        }
-        return true;
-    });
-
-    // Sort only the other rows
-    otherRows.sort((a, b) => {
-        const aText = a.cells[columnIndex].textContent.trim();
-        const bText = b.cells[columnIndex].textContent.trim();
-
-        const comparison = isNumericColumn
-            ? parseFloat(aText) - parseFloat(bText)
-            : aText.localeCompare(bText);
-
-        return newOrder === 'asc' ? comparison : -comparison;
-    });
-
-    // Append sorted rows and then the bottom rows
-    [...otherRows, ...bottomRows].forEach(row => table.appendChild(row));
-
-    // Clear all sort indicators
-    document.querySelectorAll('#leaderboard th').forEach((headerCell) => {
-        const baseText = headerCell.textContent.replace(/[▲▼]/g, '').trim();
-        headerCell.innerHTML = `${baseText}&nbsp;&nbsp;`;
-    });
-
-    // Update header text with sorting indicator for the sorted column
-    const sortedHeaderCell = document.querySelectorAll('#leaderboard th')[columnIndex];
-    const baseText = sortedHeaderCell.textContent.replace(/[▲▼]/g, '').trim();
-    const indicator = sortOrderObj[columnIndex] === 'asc' ? '▲' : '▼';
-    sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
-}
-
 function fetchAndAnimateBoard() {
     fetch('moves.txt')
         .then(response => {
@@ -346,6 +294,7 @@ function toggleSnippet(button) {
         button.textContent = "Show Snippet";
     }
 }
+
 function buildTableGeneric(config) {
     const lines = data.trim().split('\n').filter(line => line.trim() !== '');
     const rawRows = lines.slice(1).map(row => row.split(','));
@@ -392,13 +341,70 @@ function buildTableGeneric(config) {
         tbody.appendChild(tr);
     });
 
-    // Update table headers
-    const theadCells = document.querySelectorAll('#leaderboard thead th');
+    // Clear thead and recreate th elements
+    const thead = document.querySelector('#leaderboard thead');
+    thead.innerHTML = ''; // Clear existing headers
+
+    const headerRow = document.createElement('tr');
     config.columns.forEach((col, i) => {
-        theadCells[i].textContent = col.title;
-        theadCells[i].setAttribute('title', col.tooltip || col.title);
+        const th = document.createElement('th');
+        th.textContent = col.title;
+        th.setAttribute('title', col.tooltip || col.title);
+        th.addEventListener('click', () => sortTable(i)); // Add click event for sorting
+        headerRow.appendChild(th);
     });
-    theadCells.forEach((headerCell, idx) => {
-        headerCell.addEventListener('click', () => sortTable(idx));
+    thead.appendChild(headerRow); // Append the new header row to thead
+}
+
+function sortTable(columnIndex) {
+    console.log('sorting ' + columnIndex)
+    const table = document.querySelector('#leaderboard tbody');
+    const rows = Array.from(table.rows);
+    const isNumericColumn = columnIndex !== 0; // Assuming first column is not numeric
+
+    // Determine the current sort order for the column
+    const sortOrderObj = sortOrderState[currentScreen];
+    const currentOrder = sortOrderObj[columnIndex] || 'asc';
+    const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+    sortOrderObj[columnIndex] = newOrder;
+
+    // Separate the rows that should always be at the bottom
+    const bottomRows = [];
+    const otherRows = rows.filter(row => {
+        const player = row.cells[1].textContent.trim(); // Use the Player column to identify special rows
+        if (player === SPECIAL_ROWS.STOCKFISH ||
+            player === SPECIAL_ROWS.RANDOM_WHITE ||
+            player === SPECIAL_ROWS.RANDOM_BLACK) {
+            bottomRows.push(row);
+            return false;
+        }
+        return true;
     });
+
+    // Sort only the other rows
+    otherRows.sort((a, b) => {
+        const aText = a.cells[columnIndex].textContent.trim();
+        const bText = b.cells[columnIndex].textContent.trim();
+
+        const comparison = isNumericColumn
+            ? parseFloat(aText) - parseFloat(bText)
+            : aText.localeCompare(bText);
+
+        return newOrder === 'asc' ? comparison : -comparison;
+    });
+
+    // Append sorted rows and then the bottom rows
+    [...otherRows, ...bottomRows].forEach(row => table.appendChild(row));
+
+    // Clear all sort indicators
+    document.querySelectorAll('#leaderboard th').forEach((headerCell) => {
+        const baseText = headerCell.textContent.replace(/[▲▼]/g, '').trim();
+        headerCell.innerHTML = `${baseText}&nbsp;&nbsp;`;
+    });
+
+    // Update header text with sorting indicator for the sorted column
+    const sortedHeaderCell = document.querySelectorAll('#leaderboard th')[columnIndex];
+    const baseText = sortedHeaderCell.textContent.replace(/[▲▼]/g, '').trim();
+    const indicator = sortOrderObj[columnIndex] === 'asc' ? '▲' : '▼';
+    sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
 }
