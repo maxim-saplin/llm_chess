@@ -323,8 +323,11 @@ function buildTableGeneric(config) {
     // Build rows
     allRows.forEach((row, idx) => {
         const tr = document.createElement('tr');
+        const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
         config.columns.forEach((col) => {
-            const cellValue = col.getValue(row.cols, idx);
+            const cellValue = (col.removeFromSpecialRows && isBottomRow)
+                ? ''
+                : col.getValue(row.cols, idx);
             const td = document.createElement('td');
             td.textContent = cellValue;
             tr.appendChild(td);
