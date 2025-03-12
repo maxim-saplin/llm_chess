@@ -64,17 +64,52 @@ document.addEventListener('DOMContentLoaded', () => {
 const tableConfigs = {
     [Screen.LEADERBOARD_NEW]: {
         columns: [
-            { title: '#', tooltip: 'Rank of the model', getValue: (cols, idx) => idx + 1, isNumeric: true, removeFromSpecialRows: true, compareFn: (a, b) => a.originalIndex - b.originalIndex },
+            { title: '#', tooltip: 'Rank of the model (default)', isNumeric: true, removeFromSpecialRows: true,
+              getValue: (cols, idx) => '', 
+              compareFn: (a, b) => a.defaultIndex - b.defaultIndex
+            },
             { title: 'Player', tooltip: 'Model playing against Random Player', getValue: (cols) => cols[csvIndices.player], isNumeric: false, compareFn: (a, b) => a.cols[csvIndices.player].localeCompare(b.cols[csvIndices.player]) },
             { title: 'Wins - Losses', tooltip: 'Difference between wins & losses. Better all round model wins more but also loses less.', getValue: (cols) =>
                 ((parseInt(cols[csvIndices.player_wins]) -
                   parseInt(cols[csvIndices.opponent_wins])) /
                   parseInt(cols[csvIndices.total_games]) * 100).toFixed(2) + '%', 
-              isNumeric: true 
+              isNumeric: true,
+              compareFn: (a, b) => {
+                  const aWins = parseInt(a.cols[csvIndices.player_wins]) || 0;
+                  const aLosses = parseInt(a.cols[csvIndices.opponent_wins]) || 0;
+                  const aGames = parseInt(a.cols[csvIndices.total_games]) || 0;
+                  const aDiff = aGames ? ((aWins - aLosses) / aGames) * 100 : 0;
+
+                  const bWins = parseInt(b.cols[csvIndices.player_wins]) || 0;
+                  const bLosses = parseInt(b.cols[csvIndices.opponent_wins]) || 0;
+                  const bGames = parseInt(b.cols[csvIndices.total_games]) || 0;
+                  const bDiff = bGames ? ((bWins - bLosses) / bGames) * 100 : 0;
+
+                  // Return ascending by difference; sortAllRows will invert if 'desc' is used
+                  return aDiff - bDiff;
+              }
             },
-            { title: 'Avg Moves', tooltip: 'Average duration of a game (in number of moves made) before it ended due to a win, an error, or reaching the 200 limit. For stronger winning models, lower game duration indicates higher capability—lower is better. For weak losing models, a higher value is better as it means the model can stay in the game longer without interrupting the game loop due to a mistake.', getValue: (cols) => parseFloat(cols[csvIndices.average_moves]).toFixed(1), isNumeric: true },
-            { title: 'Mistakes', tooltip: 'Number of mistakes per 1000 moves made by the model.', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true },
-            { title: 'Tokens', getValue: (cols) => parseFloat(cols[csvIndices.completion_tokens_black_per_move]).toFixed(2), isNumeric: true }
+            { title: 'Avg Moves', tooltip: 'Average duration of a game (in number of moves made) before it ended due to a win, an error, or reaching the 200 limit. For stronger winning models, lower game duration indicates higher capability—lower is better. For weak losing models, a higher value is better as it means the model can stay in the game longer without interrupting the game loop due to a mistake.', getValue: (cols) => parseFloat(cols[csvIndices.average_moves]).toFixed(1), isNumeric: true,
+              compareFn: (a, b) => {
+                  const aVal = parseFloat(a.cols[csvIndices.average_moves]) || 0;
+                  const bVal = parseFloat(b.cols[csvIndices.average_moves]) || 0;
+                  return aVal - bVal;
+              }
+            },
+            { title: 'Mistakes', tooltip: 'Number of mistakes per 1000 moves made by the model.', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true,
+              compareFn: (a, b) => {
+                  const aVal = parseFloat(a.cols[csvIndices.mistakes_per_1000moves]) || 0;
+                  const bVal = parseFloat(b.cols[csvIndices.mistakes_per_1000moves]) || 0;
+                  return aVal - bVal;
+              }
+            },
+            { title: 'Tokens', getValue: (cols) => parseFloat(cols[csvIndices.completion_tokens_black_per_move]).toFixed(2), isNumeric: true,
+              compareFn: (a, b) => {
+                  const aVal = parseFloat(a.cols[csvIndices.completion_tokens_black_per_move]) || 0;
+                  const bVal = parseFloat(b.cols[csvIndices.completion_tokens_black_per_move]) || 0;
+                  return aVal - bVal;
+              }
+            }
         ],
         defaultSortCompare: (colsA, colsB) => {
             const playerWinsA = parseInt(colsA[csvIndices.player_wins]) || 0;
@@ -99,15 +134,42 @@ const tableConfigs = {
     },
     [Screen.LEADERBOARD_OLD]: {
         columns: [
-            { title: '#', tooltip: 'Rank of the model', getValue: (cols, idx) => idx + 1, isNumeric: true, removeFromSpecialRows: true, compareFn: (a, b) => a.originalIndex - b.originalIndex },
+            { title: '#', tooltip: 'Rank of the model (default)', isNumeric: true, removeFromSpecialRows: true,
+              getValue: (cols, idx) => '', 
+              compareFn: (a, b) => a.defaultIndex - b.defaultIndex
+            },
             { title: 'Player', tooltip: 'Model playing against Random Player', getValue: (cols) => cols[csvIndices.player], isNumeric: false, compareFn: (a, b) => a.cols[csvIndices.player].localeCompare(b.cols[csvIndices.player]) },
             { title: 'Wins', tooltip: 'Wins as a percentage of all games', getValue: (cols) =>
                 ((parseInt(cols[csvIndices.player_wins]) / parseInt(cols[csvIndices.total_games])) * 100).toFixed(2) + '%',
-              isNumeric: true
+              isNumeric: true,
+              compareFn: (a, b) => {
+                  const aVal = (parseInt(a.cols[csvIndices.player_wins]) / parseInt(a.cols[csvIndices.total_games]) * 100) || 0;
+                  const bVal = (parseInt(b.cols[csvIndices.player_wins]) / parseInt(b.cols[csvIndices.total_games]) * 100) || 0;
+                  return aVal - bVal;
+              }
             },
-            { title: 'Draws', getValue: (cols) => parseFloat(cols[csvIndices.player_draws_percent]).toFixed(2) + '%', isNumeric: true },
-            { title: 'Mistakes', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true },
-            { title: 'Tokens', getValue: (cols) => parseFloat(cols[csvIndices.completion_tokens_black_per_move]).toFixed(2), isNumeric: true }
+            { title: 'Draws', getValue: (cols) => parseFloat(cols[csvIndices.player_draws_percent]).toFixed(2) + '%', isNumeric: true,
+              compareFn: (a, b) => {
+                  // parseFloat("24.56%") => 24.56
+                  const aVal = parseFloat(a.cols[csvIndices.player_draws_percent]) || 0;
+                  const bVal = parseFloat(b.cols[csvIndices.player_draws_percent]) || 0;
+                  return aVal - bVal;
+              }
+            },
+            { title: 'Mistakes', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true,
+              compareFn: (a, b) => {
+                  const aVal = parseFloat(a.cols[csvIndices.mistakes_per_1000moves]) || 0;
+                  const bVal = parseFloat(b.cols[csvIndices.mistakes_per_1000moves]) || 0;
+                  return aVal - bVal;
+              }
+            },
+            { title: 'Tokens', getValue: (cols) => parseFloat(cols[csvIndices.completion_tokens_black_per_move]).toFixed(2), isNumeric: true,
+              compareFn: (a, b) => {
+                  const aVal = parseFloat(a.cols[csvIndices.completion_tokens_black_per_move]) || 0;
+                  const bVal = parseFloat(b.cols[csvIndices.completion_tokens_black_per_move]) || 0;
+                  return aVal - bVal;
+              }
+            }
         ],
         // Sorting priority for OLD leaderboard: Wins DESC, Draws DESC, Mistakes ASC
         defaultSortCompare: (colsA, colsB) => {
@@ -319,15 +381,25 @@ function buildTableGeneric(config) {
     tbody.innerHTML = '';
 
     allRows = sortAllRows(rowObjects, config);
+    // Assign defaultIndex based on default sort
+    allRows.forEach((r, i) => {
+        r.defaultIndex = i;
+    });
 
     // Build rows
     allRows.forEach((row, idx) => {
         const tr = document.createElement('tr');
         const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
         config.columns.forEach((col) => {
-            const cellValue = (col.removeFromSpecialRows && isBottomRow)
-                ? ''
-                : col.getValue(row.cols, idx);
+            let cellValue;
+            if (col.removeFromSpecialRows && isBottomRow) {
+                cellValue = '';
+            } else if (col.title === '#') {
+                // Always show default rank + 1
+                cellValue = row.defaultIndex + 1;
+            } else {
+                cellValue = col.getValue(row.cols, idx);
+            }
             const td = document.createElement('td');
             td.textContent = cellValue;
             tr.appendChild(td);
@@ -370,13 +442,19 @@ function sortTable(columnIndex) {
     // Re-draw table
     const tbody = document.querySelector('#leaderboard tbody');
     tbody.innerHTML = '';
-    allRows.forEach((row) => {
+    allRows.forEach((row, rowIndex) => {
         const tr = document.createElement('tr');
-        config.columns.forEach((col) => {
+        config.columns.forEach((col, i) => {
             const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
-            const cellValue = (col.removeFromSpecialRows && isBottomRow)
-                ? ''
-                : col.getValue(row.cols, row.originalIndex);
+            let cellValue;
+            if (col.removeFromSpecialRows && isBottomRow) {
+                cellValue = '';
+            } else if (col.title === '#') {
+                // Always show default rank + 1
+                cellValue = row.defaultIndex + 1;
+            } else {
+                cellValue = col.getValue(row.cols, rowIndex); 
+            }
             const td = document.createElement('td');
             td.textContent = cellValue;
             tr.appendChild(td);
