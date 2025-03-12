@@ -5,9 +5,18 @@ const Screen = {
     NOTES: 'notes'
 };
 
-let currentScreen = Screen.LEADERBOARD_NEW;
+const SPECIAL_ROWS = {
+    STOCKFISH: "Stockfish chess engine (as Black)",
+    RANDOM_WHITE: "Random Player (as White)",
+    RANDOM_BLACK: "Random Player (as Black)"
+};
 
-// data const is defined in data.js and imported in index.html, saving on tokens with AI codder
+let sortOrderState = {
+    [Screen.LEADERBOARD_NEW]: {},
+    [Screen.LEADERBOARD_OLD]: {}
+};
+
+let currentScreen = Screen.LEADERBOARD_NEW;
 
 const csvIndices = {
     player: 0,
@@ -40,16 +49,7 @@ const csvIndices = {
     moe_black_llm_loss_rate: 27,
 };
 
-let currentSortOrder = {};
-
-const SPECIAL_ROWS = {
-    STOCKFISH: "Stockfish chess engine (as Black)",
-    RANDOM_WHITE: "Random Player (as White)",
-    RANDOM_BLACK: "Random Player (as Black)"
-};
-
 document.addEventListener('DOMContentLoaded', () => {
-    buildTable();
     fetchAndAnimateBoard();
     
     // Select Leaderboard by default
@@ -59,7 +59,56 @@ document.addEventListener('DOMContentLoaded', () => {
     MinimalMD.render('considerations');
 });
 
-
+// Define table configs for NEW and OLD leaderboards
+const tableConfigs = {
+    [Screen.LEADERBOARD_NEW]: {
+        columns: [
+            { title: '#', tooltip: 'Rank of the model', getValue: (cols, idx) => idx + 1, isNumeric: true, isRankColumn: true },
+            { title: 'Player', tooltip: 'Model playing against Random Player', getValue: (cols) => cols[csvIndices.player], isNumeric: false },
+            { title: 'Wins-Losses', tooltip: 'Difference between wins & losses', getValue: (cols) =>
+                ((parseInt(cols[csvIndices.player_wins]) -
+                  parseInt(cols[csvIndices.opponent_wins])) /
+                  parseInt(cols[csvIndices.total_games]) * 100).toFixed(2) + '%', 
+              isNumeric: true 
+            },
+            { title: 'Avg Moves', getValue: (cols) => parseFloat(cols[csvIndices.average_moves]).toFixed(1), isNumeric: true },
+            { title: 'Mistakes', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true },
+            { title: 'Tokens', getValue: (cols) => parseFloat(cols[csvIndices.completion_tokens_black_per_move]).toFixed(2), isNumeric: true }
+        ],
+        defaultSortCompare: (colsA, colsB) => {
+            const winsMinusLossesA = parseFloat(colsA[csvIndices.player_wins_percent]) - parseFloat(colsA[csvIndices.opponent_wins_percent]);
+            const winsMinusLossesB = parseFloat(colsB[csvIndices.player_wins_percent]) - parseFloat(colsB[csvIndices.opponent_wins_percent]);
+            const avgMovesA = parseFloat(colsA[csvIndices.average_moves]);
+            const avgMovesB = parseFloat(colsB[csvIndices.average_moves]);
+            const mistakesA = parseFloat(colsA[csvIndices.mistakes_per_1000moves]);
+            const mistakesB = parseFloat(colsB[csvIndices.mistakes_per_1000moves]);
+            return (winsMinusLossesB - winsMinusLossesA) || (avgMovesB - avgMovesA) || (mistakesA - mistakesB);
+        }
+    },
+    [Screen.LEADERBOARD_OLD]: {
+        columns: [
+            { title: '#', tooltip: 'Rank of the model', getValue: (cols, idx) => idx + 1, isNumeric: true, isRankColumn: true },
+            { title: 'Player', tooltip: 'Model playing against Random Player', getValue: (cols) => cols[csvIndices.player], isNumeric: false },
+            { title: 'Wins', tooltip: 'Wins as a percentage of all games', getValue: (cols) =>
+                ((parseInt(cols[csvIndices.player_wins]) / parseInt(cols[csvIndices.total_games])) * 100).toFixed(2) + '%',
+              isNumeric: true
+            },
+            { title: 'Draws', getValue: (cols) => parseFloat(cols[csvIndices.player_draws_percent]).toFixed(2) + '%', isNumeric: true },
+            { title: 'Mistakes', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true },
+            { title: 'Tokens', getValue: (cols) => parseFloat(cols[csvIndices.completion_tokens_black_per_move]).toFixed(2), isNumeric: true }
+        ],
+        // Sorting priority for OLD leaderboard: Wins DESC, Draws DESC, Mistakes ASC
+        defaultSortCompare: (colsA, colsB) => {
+            const winsA = parseFloat(colsA[csvIndices.player_wins]) / parseFloat(colsA[csvIndices.total_games]) * 100;
+            const winsB = parseFloat(colsB[csvIndices.player_wins]) / parseFloat(colsB[csvIndices.total_games]) * 100;
+            const drawsA = parseFloat(colsA[csvIndices.player_draws_percent]);
+            const drawsB = parseFloat(colsB[csvIndices.player_draws_percent]);
+            const mistakesA = parseFloat(colsA[csvIndices.mistakes_per_1000moves]);
+            const mistakesB = parseFloat(colsB[csvIndices.mistakes_per_1000moves]);
+            return (winsB - winsA) || (drawsB - drawsA) || (mistakesA - mistakesB);
+        }
+    }
+};
 
 function showPane(screen) {
     const scrollPos = window.scrollY;
@@ -72,7 +121,7 @@ function showPane(screen) {
             document.getElementById('how-it-works').style.display = 'none';
             document.getElementById('considerations').style.display = 'none';
             document.querySelector('.dropbtn').textContent = 'Leaderboard ▼';
-            buildTable();
+            buildTableGeneric(tableConfigs[Screen.LEADERBOARD_NEW]);
             break;
 
         case Screen.LEADERBOARD_OLD:
@@ -80,7 +129,7 @@ function showPane(screen) {
             document.getElementById('how-it-works').style.display = 'none';
             document.getElementById('considerations').style.display = 'none';
             document.querySelector('.dropbtn').textContent = 'Leaderboard (O) ▼';
-            buildTable();
+            buildTableGeneric(tableConfigs[Screen.LEADERBOARD_OLD]);
             break;
 
         case Screen.HOW_IT_WORKS:
@@ -122,99 +171,16 @@ function showPane(screen) {
     });
 }
 
-function buildTable() {
-    const lines = data.trim().split('\n').filter(line => line.trim() !== '');
-    const rows = lines.slice(1).map(row => row.split(','));
-
-    // Clear the table body first
-    const tbody = document.querySelector('#leaderboard tbody');
-    tbody.innerHTML = ''; // Clear existing rows
-
-    // Separate the rows that should always be at the bottom
-    const bottomRows = [];
-    const otherRows = rows.filter(columns => {
-        const player = columns[csvIndices.player];
-        if (player === SPECIAL_ROWS.STOCKFISH ||
-            player === SPECIAL_ROWS.RANDOM_WHITE ||
-            player === SPECIAL_ROWS.RANDOM_BLACK) {
-            bottomRows.push(columns);
-            return false;
-        }
-        return true;
-    });
-
-    // Sort the remaining rows based on difficulty mode
-    otherRows.sort((a, b) => {
-        // Always use the new mode calculation
-        const winsA = (parseInt(a[csvIndices.player_wins]) - parseInt(a[csvIndices.opponent_wins])) / parseInt(a[csvIndices.total_games]) * 100;
-        const winsB = (parseInt(b[csvIndices.player_wins]) - parseInt(b[csvIndices.opponent_wins])) / parseInt(b[csvIndices.total_games]) * 100;
-
-        const drawsA = parseFloat(a[csvIndices.player_draws_percent]);
-        const drawsB = parseFloat(b[csvIndices.player_draws_percent]);
-        const mistakesA = parseFloat(a[csvIndices.mistakes_per_1000moves]);
-        const mistakesB = parseFloat(b[csvIndices.mistakes_per_1000moves]);
-
-        // Hierarchical sorting: Wins DESC, Draws DESC, Mistakes ASC
-        return winsB - winsA || drawsB - drawsA || mistakesA - mistakesB;
-    });
-    [...otherRows, ...bottomRows].forEach((columns, index) => {
-        const isBottomRow = bottomRows.includes(columns); // Check if the row is a bottom row
-        const player = columns[csvIndices.player];
-        const player_wins_percent = parseFloat(columns[csvIndices.player_wins_percent]);
-        const player_draws_percent = parseFloat(columns[csvIndices.player_draws_percent]);
-        const wrong_actions_per_1000moves = parseFloat(columns[csvIndices.wrong_actions_per_1000moves]);
-        const wrong_moves_per_1000moves = parseFloat(columns[csvIndices.wrong_moves_per_1000moves]);
-        const mistakes = parseFloat(columns[csvIndices.mistakes_per_1000moves]);
-        const tokens = parseFloat(columns[csvIndices.completion_tokens_black_per_move]);
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${isBottomRow ? '' : index + 1}</td> <!-- Empty rank for bottom rows -->
-            <td>${player}</td> <!-- Player first -->
-            <td>${((parseInt(columns[csvIndices.player_wins]) - parseInt(columns[csvIndices.opponent_wins])) / parseInt(columns[csvIndices.total_games]) * 100).toFixed(2)}%</td>
-            <td>${parseFloat(columns[csvIndices.average_moves]).toFixed(1)}</td>
-            <td>${mistakes.toFixed(2)}</td>
-            <td>${tokens.toFixed(2)}</td>
-        `;
-        tbody.appendChild(tr);
-
-        // Add event listeners for hover and tap
-        tr.addEventListener('mouseenter', () => showPopup(tr, columns));
-        tr.addEventListener('mouseleave', hidePopup);
-        tr.addEventListener('click', () => showPopup(tr, columns));
-    });
-
-    // Update column headers for the new format
-    const winsHeader = document.querySelector('#leaderboard th:nth-child(3)');
-    const drawsMovesHeader = document.querySelector('#leaderboard th:nth-child(4)');
-    
-    winsHeader.textContent = 'Wins-Losses';
-    winsHeader.title = 'Difference between wins and losses as percentage of total games';
-    drawsMovesHeader.textContent = 'Avg Moves';
-    drawsMovesHeader.title = 'Average number of moves per game';
-
-    // Add a non-breaking space to all headers
-    document.querySelectorAll('#leaderboard th').forEach((headerCell) => {
-        const baseText = headerCell.textContent.trim();
-        headerCell.innerHTML = `${baseText}&nbsp;&nbsp;`;
-    });
-
-    document.querySelectorAll('#leaderboard th').forEach((headerCell, index) => {
-        headerCell.addEventListener('click', () => {
-            sortTable(index);
-        });
-    });
-}
-
 function sortTable(columnIndex) {
     const table = document.querySelector('#leaderboard tbody');
     const rows = Array.from(table.rows);
     const isNumericColumn = columnIndex !== 0; // Assuming first column is not numeric
 
     // Determine the current sort order for the column
-    const currentOrder = currentSortOrder[columnIndex] || 'asc';
+    const sortOrderObj = sortOrderState[currentScreen];
+    const currentOrder = sortOrderObj[columnIndex] || 'asc';
     const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
-    currentSortOrder[columnIndex] = newOrder;
+    sortOrderObj[columnIndex] = newOrder;
 
     // Separate the rows that should always be at the bottom
     const bottomRows = [];
@@ -253,7 +219,7 @@ function sortTable(columnIndex) {
     // Update header text with sorting indicator for the sorted column
     const sortedHeaderCell = document.querySelectorAll('#leaderboard th')[columnIndex];
     const baseText = sortedHeaderCell.textContent.replace(/[▲▼]/g, '').trim();
-    const indicator = currentSortOrder[columnIndex] === 'asc' ? '▲' : '▼';
+    const indicator = sortOrderObj[columnIndex] === 'asc' ? '▲' : '▼';
     sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
 }
 
@@ -295,7 +261,7 @@ function fetchAndAnimateBoard() {
         });
 }
 
-function showPopup(row, columns) {
+function showPlayerDetailsPopup(row, columns) {
     const popup = document.getElementById('popup');
     const totalGames = columns[csvIndices.total_games];
 
@@ -379,4 +345,60 @@ function toggleSnippet(button) {
         snippet.style.display = "none";
         button.textContent = "Show Snippet";
     }
+}
+function buildTableGeneric(config) {
+    const lines = data.trim().split('\n').filter(line => line.trim() !== '');
+    const rawRows = lines.slice(1).map(row => row.split(','));
+
+    // Clear table body
+    const tbody = document.querySelector('#leaderboard tbody');
+    tbody.innerHTML = '';
+
+    // Separate bottom rows (e.g. Stockfish, random, etc.)
+    const bottomRows = [];
+    const normalRows = rawRows.filter(cols => {
+        const playerName = cols[csvIndices.player];
+        if (Object.values(SPECIAL_ROWS).includes(playerName)) {
+            bottomRows.push(cols);
+            return false;
+        }
+        return true;
+    });
+
+    // Sort main rows using config's defaultSortCompare
+    normalRows.sort(config.defaultSortCompare);
+
+    // Reassemble
+    const allRows = [...normalRows, ...bottomRows];
+
+    // Build rows
+    allRows.forEach((cols, i) => {
+        const tr = document.createElement('tr');
+        config.columns.forEach((col, colIndex) => {
+            // If it’s a rank column and row is in bottomRows, show blank
+            const isBottomRow = bottomRows.includes(cols);
+            const cellValue = (col.isRankColumn && isBottomRow)
+                ? ''
+                : col.getValue(cols, i);
+            const td = document.createElement('td');
+            td.textContent = cellValue;
+            tr.appendChild(td);
+        });
+        // Add hover and click
+        tr.addEventListener('mouseenter', () => showPlayerDetailsPopup(tr, cols));
+        tr.addEventListener('mouseleave', hidePopup);
+        tr.addEventListener('click', () => showPlayerDetailsPopup(tr, cols));
+
+        tbody.appendChild(tr);
+    });
+
+    // Update table headers
+    const theadCells = document.querySelectorAll('#leaderboard thead th');
+    config.columns.forEach((col, i) => {
+        theadCells[i].textContent = col.title;
+        theadCells[i].setAttribute('title', col.tooltip || col.title);
+    });
+    theadCells.forEach((headerCell, idx) => {
+        headerCell.addEventListener('click', () => sortTable(idx));
+    });
 }
