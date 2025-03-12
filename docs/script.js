@@ -17,6 +17,7 @@ let sortOrderState = {
 };
 
 let currentScreen = Screen.LEADERBOARD_NEW;
+let allRows = []; // Will store row objects for sorting/drawing
 
 const csvIndices = {
     player: 0,
@@ -63,32 +64,43 @@ document.addEventListener('DOMContentLoaded', () => {
 const tableConfigs = {
     [Screen.LEADERBOARD_NEW]: {
         columns: [
-            { title: '#', tooltip: 'Rank of the model', getValue: (cols, idx) => idx + 1, isNumeric: true, isRankColumn: true },
-            { title: 'Player', tooltip: 'Model playing against Random Player', getValue: (cols) => cols[csvIndices.player], isNumeric: false },
-            { title: 'Wins-Losses', tooltip: 'Difference between wins & losses', getValue: (cols) =>
+            { title: '#', tooltip: 'Rank of the model', getValue: (cols, idx) => idx + 1, isNumeric: true, removeFromSpecialRows: true, compareFn: (a, b) => a.originalIndex - b.originalIndex },
+            { title: 'Player', tooltip: 'Model playing against Random Player', getValue: (cols) => cols[csvIndices.player], isNumeric: false, compareFn: (a, b) => a.cols[csvIndices.player].localeCompare(b.cols[csvIndices.player]) },
+            { title: 'Wins - Losses', tooltip: 'Difference between wins & losses. Better all round model wins more but also loses less.', getValue: (cols) =>
                 ((parseInt(cols[csvIndices.player_wins]) -
                   parseInt(cols[csvIndices.opponent_wins])) /
                   parseInt(cols[csvIndices.total_games]) * 100).toFixed(2) + '%', 
               isNumeric: true 
             },
-            { title: 'Avg Moves', getValue: (cols) => parseFloat(cols[csvIndices.average_moves]).toFixed(1), isNumeric: true },
-            { title: 'Mistakes', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true },
+            { title: 'Avg Moves', tooltip: 'Average duration of a game (in number of moves made) before it ended due to a win, an error, or reaching the 200 limit. For stronger winning models, lower game duration indicates higher capability—lower is better. For weak losing models, a higher value is better as it means the model can stay in the game longer without interrupting the game loop due to a mistake.', getValue: (cols) => parseFloat(cols[csvIndices.average_moves]).toFixed(1), isNumeric: true },
+            { title: 'Mistakes', tooltip: 'Number of mistakes per 1000 moves made by the model.', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true },
             { title: 'Tokens', getValue: (cols) => parseFloat(cols[csvIndices.completion_tokens_black_per_move]).toFixed(2), isNumeric: true }
         ],
         defaultSortCompare: (colsA, colsB) => {
-            const winsMinusLossesA = parseFloat(colsA[csvIndices.player_wins_percent]) - parseFloat(colsA[csvIndices.opponent_wins_percent]);
-            const winsMinusLossesB = parseFloat(colsB[csvIndices.player_wins_percent]) - parseFloat(colsB[csvIndices.opponent_wins_percent]);
-            const avgMovesA = parseFloat(colsA[csvIndices.average_moves]);
-            const avgMovesB = parseFloat(colsB[csvIndices.average_moves]);
-            const mistakesA = parseFloat(colsA[csvIndices.mistakes_per_1000moves]);
-            const mistakesB = parseFloat(colsB[csvIndices.mistakes_per_1000moves]);
-            return (winsMinusLossesB - winsMinusLossesA) || (avgMovesB - avgMovesA) || (mistakesA - mistakesB);
+            const playerWinsA = parseInt(colsA[csvIndices.player_wins]) || 0;
+            const oppWinsA = parseInt(colsA[csvIndices.opponent_wins]) || 0;
+            const totalGamesA = parseInt(colsA[csvIndices.total_games]) || 0;
+            const winsMinusLossesA = totalGamesA > 0 ? ((playerWinsA - oppWinsA) / totalGamesA) * 100 : 0;
+
+            const playerWinsB = parseInt(colsB[csvIndices.player_wins]) || 0;
+            const oppWinsB = parseInt(colsB[csvIndices.opponent_wins]) || 0;
+            const totalGamesB = parseInt(colsB[csvIndices.total_games]) || 0;
+            const winsMinusLossesB = totalGamesB > 0 ? ((playerWinsB - oppWinsB) / totalGamesB) * 100 : 0;
+
+            const avgMovesA = parseFloat(colsA[csvIndices.average_moves]) || 0;
+            const avgMovesB = parseFloat(colsB[csvIndices.average_moves]) || 0;
+            const mistakesA = parseFloat(colsA[csvIndices.mistakes_per_1000moves]) || 0;
+            const mistakesB = parseFloat(colsB[csvIndices.mistakes_per_1000moves]) || 0;
+
+            return (winsMinusLossesB - winsMinusLossesA)
+                || (avgMovesB - avgMovesA)
+                || (mistakesA - mistakesB);
         }
     },
     [Screen.LEADERBOARD_OLD]: {
         columns: [
-            { title: '#', tooltip: 'Rank of the model', getValue: (cols, idx) => idx + 1, isNumeric: true, isRankColumn: true },
-            { title: 'Player', tooltip: 'Model playing against Random Player', getValue: (cols) => cols[csvIndices.player], isNumeric: false },
+            { title: '#', tooltip: 'Rank of the model', getValue: (cols, idx) => idx + 1, isNumeric: true, removeFromSpecialRows: true, compareFn: (a, b) => a.originalIndex - b.originalIndex },
+            { title: 'Player', tooltip: 'Model playing against Random Player', getValue: (cols) => cols[csvIndices.player], isNumeric: false, compareFn: (a, b) => a.cols[csvIndices.player].localeCompare(b.cols[csvIndices.player]) },
             { title: 'Wins', tooltip: 'Wins as a percentage of all games', getValue: (cols) =>
                 ((parseInt(cols[csvIndices.player_wins]) / parseInt(cols[csvIndices.total_games])) * 100).toFixed(2) + '%',
               isNumeric: true
@@ -297,46 +309,30 @@ function toggleSnippet(button) {
 
 function buildTableGeneric(config) {
     const lines = data.trim().split('\n').filter(line => line.trim() !== '');
-    const rawRows = lines.slice(1).map(row => row.split(','));
+    const rowObjects = lines.slice(1).map((line, i) => {
+        const cols = line.split(',');
+        return { originalIndex: i, cols };
+    });
 
     // Clear table body
     const tbody = document.querySelector('#leaderboard tbody');
     tbody.innerHTML = '';
 
-    // Separate bottom rows (e.g. Stockfish, random, etc.)
-    const bottomRows = [];
-    const normalRows = rawRows.filter(cols => {
-        const playerName = cols[csvIndices.player];
-        if (Object.values(SPECIAL_ROWS).includes(playerName)) {
-            bottomRows.push(cols);
-            return false;
-        }
-        return true;
-    });
-
-    // Sort main rows using config's defaultSortCompare
-    normalRows.sort(config.defaultSortCompare);
-
-    // Reassemble
-    const allRows = [...normalRows, ...bottomRows];
+    allRows = sortAllRows(rowObjects, config);
 
     // Build rows
-    allRows.forEach((cols, i) => {
+    allRows.forEach((row, idx) => {
         const tr = document.createElement('tr');
-        config.columns.forEach((col, colIndex) => {
-            // If it’s a rank column and row is in bottomRows, show blank
-            const isBottomRow = bottomRows.includes(cols);
-            const cellValue = (col.isRankColumn && isBottomRow)
-                ? ''
-                : col.getValue(cols, i);
+        config.columns.forEach((col) => {
+            const cellValue = col.getValue(row.cols, idx);
             const td = document.createElement('td');
             td.textContent = cellValue;
             tr.appendChild(td);
         });
         // Add hover and click
-        tr.addEventListener('mouseenter', () => showPlayerDetailsPopup(tr, cols));
+        tr.addEventListener('mouseenter', () => showPlayerDetailsPopup(tr, row.cols));
         tr.addEventListener('mouseleave', hidePopup);
-        tr.addEventListener('click', () => showPlayerDetailsPopup(tr, cols));
+        tr.addEventListener('click', () => showPlayerDetailsPopup(tr, row.cols));
 
         tbody.appendChild(tr);
     });
@@ -357,54 +353,86 @@ function buildTableGeneric(config) {
 }
 
 function sortTable(columnIndex) {
-    console.log('sorting ' + columnIndex)
-    const table = document.querySelector('#leaderboard tbody');
-    const rows = Array.from(table.rows);
-    const isNumericColumn = columnIndex !== 0; // Assuming first column is not numeric
+    const config = tableConfigs[currentScreen];
+    const col = config.columns[columnIndex];
 
-    // Determine the current sort order for the column
+    // Determine current sort order
     const sortOrderObj = sortOrderState[currentScreen];
     const currentOrder = sortOrderObj[columnIndex] || 'asc';
     const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
     sortOrderObj[columnIndex] = newOrder;
 
-    // Separate the rows that should always be at the bottom
+    allRows = sortAllRows(allRows, config, columnIndex, newOrder);
+
+    // Re-draw table
+    const tbody = document.querySelector('#leaderboard tbody');
+    tbody.innerHTML = '';
+    allRows.forEach((row) => {
+        const tr = document.createElement('tr');
+        config.columns.forEach((col) => {
+            const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
+            const cellValue = (col.removeFromSpecialRows && isBottomRow)
+                ? ''
+                : col.getValue(row.cols, row.originalIndex);
+            const td = document.createElement('td');
+            td.textContent = cellValue;
+            tr.appendChild(td);
+        });
+        tr.addEventListener('mouseenter', () => showPlayerDetailsPopup(tr, row.cols));
+        tr.addEventListener('mouseleave', hidePopup);
+        tr.addEventListener('click', () => showPlayerDetailsPopup(tr, row.cols));
+        tbody.appendChild(tr);
+    });
+
+    // Clear the sort indicators
+    document.querySelectorAll('#leaderboard th').forEach(headerCell => {
+        const cleanText = headerCell.textContent.replace(/[▲▼]/g, '').trim();
+        headerCell.innerHTML = `${cleanText}&nbsp;&nbsp;`;
+    });
+
+    // Show indicator for this column
+    const sortedHeaderCell = document.querySelectorAll('#leaderboard th')[columnIndex];
+    const baseText = sortedHeaderCell.textContent.replace(/[▲▼]/g, '').trim();
+    const indicator = sortOrderObj[columnIndex] === 'asc' ? '▲' : '▼';
+    sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
+}
+function sortAllRows(rows, config, overrideColumnIndex = null, newOrder = 'asc') {
+    // Separate bottom rows
     const bottomRows = [];
-    const otherRows = rows.filter(row => {
-        const player = row.cells[1].textContent.trim(); // Use the Player column to identify special rows
-        if (player === SPECIAL_ROWS.STOCKFISH ||
-            player === SPECIAL_ROWS.RANDOM_WHITE ||
-            player === SPECIAL_ROWS.RANDOM_BLACK) {
+    const normalRows = rows.filter(row => {
+        const playerName = row.cols[csvIndices.player];
+        if (Object.values(SPECIAL_ROWS).includes(playerName)) {
             bottomRows.push(row);
             return false;
         }
         return true;
     });
 
-    // Sort only the other rows
-    otherRows.sort((a, b) => {
-        const aText = a.cells[columnIndex].textContent.trim();
-        const bText = b.cells[columnIndex].textContent.trim();
+    // If no override column is given, use default
+    if (overrideColumnIndex === null) {
+        normalRows.sort((a, b) => config.defaultSortCompare(a.cols, b.cols));
+    } else {
+        const col = config.columns[overrideColumnIndex];
 
-        const comparison = isNumericColumn
-            ? parseFloat(aText) - parseFloat(bText)
-            : aText.localeCompare(bText);
+        normalRows.sort((a, b) => {
+            if (col.compareFn) {
+                const res = col.compareFn(a, b);
+                // For the rank column (#), ignore newOrder and preserve original order
+                if (col.title === '#') {
+                    return res; 
+                }
+                return newOrder === 'asc' ? res : -res;
+            } else {
+                const aText = a.cols[overrideColumnIndex].trim();
+                const bText = b.cols[overrideColumnIndex].trim();
+                const comparison = col.isNumeric
+                    ? parseFloat(aText) - parseFloat(bText)
+                    : aText.localeCompare(bText);
+                return newOrder === 'asc' ? comparison : -comparison;
+            }
+        });
+    }
 
-        return newOrder === 'asc' ? comparison : -comparison;
-    });
-
-    // Append sorted rows and then the bottom rows
-    [...otherRows, ...bottomRows].forEach(row => table.appendChild(row));
-
-    // Clear all sort indicators
-    document.querySelectorAll('#leaderboard th').forEach((headerCell) => {
-        const baseText = headerCell.textContent.replace(/[▲▼]/g, '').trim();
-        headerCell.innerHTML = `${baseText}&nbsp;&nbsp;`;
-    });
-
-    // Update header text with sorting indicator for the sorted column
-    const sortedHeaderCell = document.querySelectorAll('#leaderboard th')[columnIndex];
-    const baseText = sortedHeaderCell.textContent.replace(/[▲▼]/g, '').trim();
-    const indicator = sortOrderObj[columnIndex] === 'asc' ? '▲' : '▼';
-    sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
+    // Reassemble and return
+    return [...normalRows, ...bottomRows];
 }
