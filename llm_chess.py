@@ -1,24 +1,13 @@
-import time
-import traceback
+import time, traceback, chess, chess.svg
 from typing import Any, Dict
 from enum import Enum
-import chess
-import chess.svg
-from custom_agents import (
-    GameAgent,
-    RandomPlayerAgent,
-    AutoReplyAgent,
-    ChessEngineStockfishAgent,
-)
+from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent
+from utils import calculate_material_count, generate_game_stats, get_llms_autogen, display_board, display_store_game_video_and_stats
 
-from utils import (
-    calculate_material_count,
-    generate_game_stats,
-    get_llms_autogen,
-    display_board,
-    display_store_game_video_and_stats,
-)
-from typing_extensions import Annotated
+class BoardRepresentation(Enum):
+    FEN_ONLY = 1
+    UNICODE_ONLY = 2
+    UNICODE_WITH_PGN = 3
 
 
 class TerminationReason(Enum):
@@ -38,15 +27,15 @@ class PlayerType(Enum):
     LLM_WHITE = 1  # Represents a white player controlled by an LLM and using *_W config keys from .env
     LLM_BLACK = 2  # Represents a black player controlled by an LLM and using *_B config keys from .env
     RANDOM_PLAYER = 3  # Represents a player making random moves
-    # CHESS_ENGINE_SUNFISH = 4 # Removed in 2025
     CHESS_ENGINE_STOCKFISH = 5
-
 
 # Hyper params such as temperature are defined in `utils.py`
 white_player_type = PlayerType.RANDOM_PLAYER
 black_player_type = PlayerType.LLM_BLACK
 enable_reflection = False  # Whether to offer the LLM time to think and evaluate moves
-use_fen_board = False  # Whther to use graphical UNICODE representation board OR single line FEN format (returned from get_current_board)
+board_representation_mode = BoardRepresentation.UNICODE_ONLY  # What kind of board is printed in response to get_current_board
+
+# Game configuration
 max_game_moves = 200  # maximum number of game moves before terminating, dafault 200
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times, default 10
 max_failed_attempts = 3  # number of wrong replies within a dialog (e.g. non existing action) before stopping/giving a loss, default 3
@@ -55,7 +44,7 @@ dialog_turn_delay = 1  # adds a delay in seconds inside LLM agent, i.e. delays b
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
-visualize_board = False  # You can skip board visualization to speed up execution
+visualize_board = False  # You can skip board visualization (animated board in popup window) to speed up execution
 
 # Set to None to use defaults, "remove" to not send it
 # o1-mini fails with any params other than 1.0 or not present, R1 distil recomends 0.5-0.7, kimi-k1.5-preview 0.3
@@ -93,6 +82,74 @@ stockfish_time_per_move = (
     0.1  # Time limit (in seconds) for Stockfish to think per move, default is 0.1
 )
 
+## Actions
+
+board = chess.Board()
+game_moves = []
+
+def get_current_board() -> str:
+    """
+    Returns:
+        str: A text representation of the current board state.
+    """
+    if board_representation_mode == BoardRepresentation.FEN_ONLY:
+        return board.fen()
+    elif board_representation_mode == BoardRepresentation.UNICODE_ONLY:
+        return board.unicode()
+    elif board_representation_mode == BoardRepresentation.UNICODE_WITH_PGN:
+        pgn_header = (
+            "[Event \"Chess Game\"]\n"
+            f"[Date \"{time.strftime('%Y.%m.%d')}\"]\n"
+            "[White \"Player White\"]\n"
+            "[Black \"Player Black\"]\n"
+            "[Result \"*\"]\n\n"
+        )
+
+        pgn_moves = ""
+        for i, move in enumerate(game_moves):
+            if i % 2 == 0:
+                pgn_moves += f"{(i // 2) + 1}. {move} "
+            else:
+                pgn_moves += f"{move} "
+
+            if i > 0 and i % 10 == 9:
+                pgn_moves += "\n"
+
+        return f"{board.unicode()}\n\nPGN:\n{pgn_header}{pgn_moves}"
+
+
+def get_legal_moves() -> str:
+    """
+    Returns:
+        str: A list of legal moves in UCI format, separated by commas.
+    """
+    if board.legal_moves.count() == 0:
+        return None
+    return ",".join([str(move) for move in board.legal_moves])
+
+
+def make_move(move: str) -> str:
+    """
+    Args:
+        move (str): A move in UCI format.
+
+    Returns:
+        str: Result of the move.
+    """
+    move_obj = chess.Move.from_uci(move)
+    
+    # Get the SAN representation of the move before making it
+    san_move = board.san(move_obj)
+    
+    # Make the move and record it
+    board.push(move_obj)
+    game_moves.append(san_move)
+    
+    # Visualize the board if enabled
+    if visualize_board:
+        display_board(board, move_obj)
+    # print(",".join([str(move) for move in board.legal_moves]))
+
 
 def run(log_dir="_logs", save_logs=True):
 
@@ -104,39 +161,17 @@ def run(log_dir="_logs", save_logs=True):
     make_move_action = "make_move"
 
     # LLM
-
     llm_config_white, llm_config_black = get_llms_autogen(temp_override, reasoning_effort)
     # llm_config_white = llm_config_black  # Quick hack to use same model
 
-    # Init chess board
+    # Init chess board and game state
     material_count = {"white": 0, "black": 0}
-    board = chess.Board()
+    global board, game_moves
+    board.reset()
+    game_moves.clear()
     game_over = False
     winner = None
     reason = None
-
-    # Actions
-
-    def get_legal_moves() -> Annotated[str, "A list of legal moves in UCI format"]:
-        if board.legal_moves.count() == 0:
-            return None
-        return ",".join([str(move) for move in board.legal_moves])
-
-    def get_current_board() -> (
-        Annotated[str, "A text representation of the current board state"]
-    ):
-        return board.fen() if use_fen_board else board.unicode()
-
-    def make_move(
-        move: Annotated[str, "A move in UCI format."]
-    ) -> Annotated[str, "Result of the move."]:
-        move = chess.Move.from_uci(move)
-        board.push_uci(str(move))
-        if visualize_board:
-            display_board(board, move)
-        # print(",".join([str(move) for move in board.legal_moves]))
-
-    # Agents
 
     # termination_messages = ["You won!", "I won!", "It's a tie!"]
     move_was_made = "Move made, switching player"
@@ -288,6 +323,43 @@ def run(log_dir="_logs", save_logs=True):
         player.reflections_used_before_board = 0
         player.material_count = {"white": 0, "black": 0}
 
+    # Function to generate PGN string
+    def get_pgn_string():
+        # Determine result based on game state
+        result = "*"  # Default for in-progress games
+        if winner == "NONE":
+            result = "1/2-1/2"  # Draw
+        elif winner == player_white.name:
+            result = "1-0"  # White wins
+        elif winner == player_black.name:
+            result = "0-1"  # Black wins
+            
+        # Create PGN header
+        pgn_header = (
+            "[Event \"Chess Game\"]\n"
+            f"[Date \"{time.strftime('%Y.%m.%d')}\"]\n"
+            "[White \"Player White\"]\n"
+            "[Black \"Player Black\"]\n"
+            f"[Result \"{result}\"]\n\n"
+        )
+        
+        # Format the moves list into PGN format
+        pgn_moves = ""
+        for i, move in enumerate(game_moves):
+            if i % 2 == 0:  # White's move - add move number
+                pgn_moves += f"{(i // 2) + 1}. {move} "
+            else:  # Black's move
+                pgn_moves += f"{move} "
+                
+            # Add newline every 5 full moves for readability
+            if i > 0 and i % 10 == 9:
+                pgn_moves += "\n"
+        
+        # Add result at the end
+        pgn_moves += f" {result}"
+        
+        return pgn_header + pgn_moves
+    
     try:
         current_move = 0
 
@@ -393,6 +465,9 @@ def run(log_dir="_logs", save_logs=True):
         winner = "NONE"
         reason = TerminationReason.ERROR.value
 
+    # Generate the PGN string for the complete game
+    pgn_string = get_pgn_string()
+    
     game_stats = generate_game_stats(
         time_started,
         winner,
@@ -401,6 +476,7 @@ def run(log_dir="_logs", save_logs=True):
         player_white,
         player_black,
         material_count,
+        pgn_string,
     )
 
     display_store_game_video_and_stats(game_stats, log_dir, save_logs)

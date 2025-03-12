@@ -2,12 +2,14 @@ import unittest
 import multiprocessing
 import time
 import os
+import llm_chess 
 from llm_chess import (
     PlayerType,
     run,
     TerminationReason
 )
 from tests.mock_openai_server import start_server
+
 
 class TestRandomVsRandomGame(unittest.TestCase):
     def setUp(self):
@@ -179,3 +181,53 @@ class TestLLMvsRandomGame(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+import unittest
+import chess
+from llm_chess import (
+    board,
+    game_moves,
+    BoardRepresentation,
+    board_representation_mode,
+    get_current_board
+)
+
+class TestBoardRepresentationIntegration(unittest.TestCase):
+    def setUp(self):
+        global board, game_moves, board_representation_mode
+        self.original_mode = board_representation_mode
+        board.reset()
+        game_moves.clear()
+
+    def tearDown(self):
+        global board_representation_mode
+        board_representation_mode = self.original_mode
+
+    def test_fen_only_mode(self):
+        llm_chess.board_representation_mode = BoardRepresentation.FEN_ONLY
+        actual = get_current_board()
+        self.assertEqual(
+            actual,
+            board.fen(),
+            "When BoardRepresentation.FEN_ONLY, get_current_board() should match board.fen()."
+        )
+
+    def test_unicode_only_mode(self):
+        llm_chess.board_representation_mode = BoardRepresentation.UNICODE_ONLY
+        move = chess.Move.from_uci("e2e4")
+        board.push(move)
+        self.assertEqual(
+            get_current_board(),
+            board.unicode(),
+            "When BoardRepresentation.UNICODE_ONLY, get_current_board() should match board.unicode()."
+        )
+
+    def test_unicode_with_pgn_mode(self):
+        llm_chess.board_representation_mode = BoardRepresentation.UNICODE_WITH_PGN
+        move = chess.Move.from_uci("e2e4")
+        san = board.san(move)
+        board.push(move)
+        game_moves.append(san)
+        output = get_current_board()
+        self.assertIn(board.unicode(), output, "Should include a unicode board representation.")
+        self.assertIn("[Event \"Chess Game\"]", output, "Should include the PGN header.")
+        self.assertIn("1. e4", output, "Should include the SAN move in the PGN portion.")
