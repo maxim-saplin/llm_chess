@@ -96,7 +96,7 @@ const tableConfigs = {
                   return aVal - bVal;
               }
             },
-            { title: 'Mistakes', tooltip: 'Number of mistakes per 1000 moves made by the model.', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true,
+            { title: 'Mis-takes', tooltip: 'Number of mistakes per 1000 moves made by the model.', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true,
               compareFn: (a, b) => {
                   const aVal = parseFloat(a.cols[csvIndices.mistakes_per_1000moves]) || 0;
                   const bVal = parseFloat(b.cols[csvIndices.mistakes_per_1000moves]) || 0;
@@ -156,7 +156,7 @@ const tableConfigs = {
                   return aVal - bVal;
               }
             },
-            { title: 'Mistakes', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true,
+            { title: 'Mis-takes', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true,
               compareFn: (a, b) => {
                   const aVal = parseFloat(a.cols[csvIndices.mistakes_per_1000moves]) || 0;
                   const bVal = parseFloat(b.cols[csvIndices.mistakes_per_1000moves]) || 0;
