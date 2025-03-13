@@ -52,10 +52,10 @@ const csvIndices = {
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchAndAnimateBoard();
-    
+
     // Select Leaderboard by default
     showPane(Screen.LEADERBOARD_NEW);
-    
+
     // Initialize markdown rendering
     MinimalMD.render('considerations');
 });
@@ -64,51 +64,70 @@ document.addEventListener('DOMContentLoaded', () => {
 const tableConfigs = {
     [Screen.LEADERBOARD_NEW]: {
         columns: [
-            { title: '#', tooltip: 'Rank of the model (default)', isNumeric: true, removeFromSpecialRows: true,
-              getValue: (cols, idx) => '', 
-              compareFn: (a, b) => a.defaultIndex - b.defaultIndex
+            {
+                title: '#', tooltip: 'Rank of the model (default)', isNumeric: true, removeFromSpecialRows: true,
+                getValue: (cols, idx) => '',
+                compareFn: (a, b) => a.defaultIndex - b.defaultIndex
             },
             { title: 'Player', tooltip: 'Model playing against Random Player', getValue: (cols) => cols[csvIndices.player], isNumeric: false, compareFn: (a, b) => a.cols[csvIndices.player].localeCompare(b.cols[csvIndices.player]) },
-            { title: 'Wins - Losses', tooltip: 'Difference between wins & losses. Better all round model wins more but also loses less.', getValue: (cols) =>
-                ((parseInt(cols[csvIndices.player_wins]) -
-                  parseInt(cols[csvIndices.opponent_wins])) /
-                  parseInt(cols[csvIndices.total_games]) * 100).toFixed(2) + '%', 
-              isNumeric: true,
-              compareFn: (a, b) => {
-                  const aWins = parseInt(a.cols[csvIndices.player_wins]) || 0;
-                  const aLosses = parseInt(a.cols[csvIndices.opponent_wins]) || 0;
-                  const aGames = parseInt(a.cols[csvIndices.total_games]) || 0;
-                  const aDiff = aGames ? ((aWins - aLosses) / aGames) * 100 : 0;
+            {
+                title: 'Wins - Losses', tooltip: 'Difference between wins & losses. Better all round model wins more but also loses less.', getValue: (cols) => {
+                    const value = ((parseInt(cols[csvIndices.player_wins]) -
+                        parseInt(cols[csvIndices.opponent_wins])) /
+                        parseInt(cols[csvIndices.total_games]) * 100);
 
-                  const bWins = parseInt(b.cols[csvIndices.player_wins]) || 0;
-                  const bLosses = parseInt(b.cols[csvIndices.opponent_wins]) || 0;
-                  const bGames = parseInt(b.cols[csvIndices.total_games]) || 0;
-                  const bDiff = bGames ? ((bWins - bLosses) / bGames) * 100 : 0;
+                    return (value >= 100 || value <= -100 ? value.toFixed(1) : value.toFixed(2)) + '%';
+                },
+                isNumeric: true,
+                compareFn: (a, b) => {
+                    const aWins = parseInt(a.cols[csvIndices.player_wins]) || 0;
+                    const aLosses = parseInt(a.cols[csvIndices.opponent_wins]) || 0;
+                    const aGames = parseInt(a.cols[csvIndices.total_games]) || 0;
+                    const aDiff = aGames ? ((aWins - aLosses) / aGames) * 100 : 0;
 
-                  // Return ascending by difference; sortAllRows will invert if 'desc' is used
-                  return aDiff - bDiff;
-              }
+                    const bWins = parseInt(b.cols[csvIndices.player_wins]) || 0;
+                    const bLosses = parseInt(b.cols[csvIndices.opponent_wins]) || 0;
+                    const bGames = parseInt(b.cols[csvIndices.total_games]) || 0;
+                    const bDiff = bGames ? ((bWins - bLosses) / bGames) * 100 : 0;
+
+                    // Return ascending by difference; sortAllRows will invert if 'desc' is used
+                    return aDiff - bDiff;
+                }
             },
-            { title: 'Avg Moves', tooltip: 'Average duration of a game (in number of moves made) before it ended due to a win, an error, or reaching the 200 limit. For stronger winning models, lower game duration indicates higher capability—lower is better. For weak losing models, a higher value is better as it means the model can stay in the game longer without interrupting the game loop due to a mistake.', getValue: (cols) => parseFloat(cols[csvIndices.average_moves]).toFixed(1), isNumeric: true,
-              compareFn: (a, b) => {
-                  const aVal = parseFloat(a.cols[csvIndices.average_moves]) || 0;
-                  const bVal = parseFloat(b.cols[csvIndices.average_moves]) || 0;
-                  return aVal - bVal;
-              }
+            {
+                title: 'Avg Moves', tooltip: 'Average duration of a game (in number of moves made) before it ended due to a win, an error, or reaching the 200 limit. For stronger winning models, lower game duration indicates higher capability—lower is better. For weak losing models, a higher value is better as it means the model can stay in the game longer without interrupting the game loop due to a mistake.',
+                getValue: (cols) => parseFloat(cols[csvIndices.average_moves]).toFixed(2), isNumeric: true,
+                compareFn: (a, b) => {
+                    const aVal = parseFloat(a.cols[csvIndices.average_moves]) || 0;
+                    const bVal = parseFloat(b.cols[csvIndices.average_moves]) || 0;
+                    return aVal - bVal;
+                }
             },
-            { title: 'Mis-takes', tooltip: 'Number of mistakes per 1000 moves made by the model.', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true,
-              compareFn: (a, b) => {
-                  const aVal = parseFloat(a.cols[csvIndices.mistakes_per_1000moves]) || 0;
-                  const bVal = parseFloat(b.cols[csvIndices.mistakes_per_1000moves]) || 0;
-                  return aVal - bVal;
-              }
+            {
+                title: 'Mis-takes', tooltip: 'Number of mistakes per 1000 moves made by the model.',
+                getValue: (cols) => {
+                    const value = parseFloat(cols[csvIndices.mistakes_per_1000moves]) || 0;
+                    return value > 1000 ? value.toFixed(1) : value.toFixed(2);
+                },
+                isNumeric: true,
+                compareFn: (a, b) => {
+                    const aVal = parseFloat(a.cols[csvIndices.mistakes_per_1000moves]) || 0;
+                    const bVal = parseFloat(b.cols[csvIndices.mistakes_per_1000moves]) || 0;
+                    return aVal - bVal;
+                }
             },
-            { title: 'Tokens', getValue: (cols) => parseFloat(cols[csvIndices.completion_tokens_black_per_move]).toFixed(2), isNumeric: true,
-              compareFn: (a, b) => {
-                  const aVal = parseFloat(a.cols[csvIndices.completion_tokens_black_per_move]) || 0;
-                  const bVal = parseFloat(b.cols[csvIndices.completion_tokens_black_per_move]) || 0;
-                  return aVal - bVal;
-              }
+            {
+                title: 'Tokens',
+                getValue: (cols) => {
+                    const value = parseFloat(cols[csvIndices.completion_tokens_black_per_move]) || 0;
+                    return value > 1000 ? value.toFixed(1) : value.toFixed(2);
+                },
+                isNumeric: true,
+                compareFn: (a, b) => {
+                    const aVal = parseFloat(a.cols[csvIndices.completion_tokens_black_per_move]) || 0;
+                    const bVal = parseFloat(b.cols[csvIndices.completion_tokens_black_per_move]) || 0;
+                    return aVal - bVal;
+                }
             }
         ],
         defaultSortCompare: (colsA, colsB) => {
@@ -134,41 +153,56 @@ const tableConfigs = {
     },
     [Screen.LEADERBOARD_OLD]: {
         columns: [
-            { title: '#', tooltip: 'Rank of the model (default)', isNumeric: true, removeFromSpecialRows: true,
-              getValue: (cols, idx) => '', 
-              compareFn: (a, b) => a.defaultIndex - b.defaultIndex
+            {
+                title: '#', tooltip: 'Rank of the model (default)', isNumeric: true, removeFromSpecialRows: true,
+                getValue: (cols, idx) => '',
+                compareFn: (a, b) => a.defaultIndex - b.defaultIndex
             },
             { title: 'Player', tooltip: 'Model playing against Random Player', getValue: (cols) => cols[csvIndices.player], isNumeric: false, compareFn: (a, b) => a.cols[csvIndices.player].localeCompare(b.cols[csvIndices.player]) },
-            { title: 'Wins', tooltip: 'Wins as a percentage of all games', getValue: (cols) =>
-                ((parseInt(cols[csvIndices.player_wins]) / parseInt(cols[csvIndices.total_games])) * 100).toFixed(2) + '%',
-              isNumeric: true,
-              compareFn: (a, b) => {
-                  const aVal = (parseInt(a.cols[csvIndices.player_wins]) / parseInt(a.cols[csvIndices.total_games]) * 100) || 0;
-                  const bVal = (parseInt(b.cols[csvIndices.player_wins]) / parseInt(b.cols[csvIndices.total_games]) * 100) || 0;
-                  return aVal - bVal;
-              }
+            {
+                title: 'Wins', tooltip: 'Wins as a percentage of all games', getValue: (cols) =>
+                    ((parseInt(cols[csvIndices.player_wins]) / parseInt(cols[csvIndices.total_games])) * 100).toFixed(2) + '%',
+                isNumeric: true,
+                compareFn: (a, b) => {
+                    const aVal = (parseInt(a.cols[csvIndices.player_wins]) / parseInt(a.cols[csvIndices.total_games]) * 100) || 0;
+                    const bVal = (parseInt(b.cols[csvIndices.player_wins]) / parseInt(b.cols[csvIndices.total_games]) * 100) || 0;
+                    return aVal - bVal;
+                }
             },
-            { title: 'Draws', getValue: (cols) => parseFloat(cols[csvIndices.player_draws_percent]).toFixed(2) + '%', isNumeric: true,
-              compareFn: (a, b) => {
-                  // parseFloat("24.56%") => 24.56
-                  const aVal = parseFloat(a.cols[csvIndices.player_draws_percent]) || 0;
-                  const bVal = parseFloat(b.cols[csvIndices.player_draws_percent]) || 0;
-                  return aVal - bVal;
-              }
+            {
+                title: 'Draws', getValue: (cols) => parseFloat(cols[csvIndices.player_draws_percent]).toFixed(2) + '%', isNumeric: true,
+                compareFn: (a, b) => {
+                    // parseFloat("24.56%") => 24.56
+                    const aVal = parseFloat(a.cols[csvIndices.player_draws_percent]) || 0;
+                    const bVal = parseFloat(b.cols[csvIndices.player_draws_percent]) || 0;
+                    return aVal - bVal;
+                }
             },
-            { title: 'Mis-takes', getValue: (cols) => parseFloat(cols[csvIndices.mistakes_per_1000moves]).toFixed(2), isNumeric: true,
-              compareFn: (a, b) => {
-                  const aVal = parseFloat(a.cols[csvIndices.mistakes_per_1000moves]) || 0;
-                  const bVal = parseFloat(b.cols[csvIndices.mistakes_per_1000moves]) || 0;
-                  return aVal - bVal;
-              }
+            {
+                title: 'Mis-takes',
+                getValue: (cols) => {
+                    const value = parseFloat(cols[csvIndices.mistakes_per_1000moves]) || 0;
+                    return value > 1000 ? value.toFixed(1) : value.toFixed(2);
+                },
+                isNumeric: true,
+                compareFn: (a, b) => {
+                    const aVal = parseFloat(a.cols[csvIndices.mistakes_per_1000moves]) || 0;
+                    const bVal = parseFloat(b.cols[csvIndices.mistakes_per_1000moves]) || 0;
+                    return aVal - bVal;
+                }
             },
-            { title: 'Tokens', getValue: (cols) => parseFloat(cols[csvIndices.completion_tokens_black_per_move]).toFixed(2), isNumeric: true,
-              compareFn: (a, b) => {
-                  const aVal = parseFloat(a.cols[csvIndices.completion_tokens_black_per_move]) || 0;
-                  const bVal = parseFloat(b.cols[csvIndices.completion_tokens_black_per_move]) || 0;
-                  return aVal - bVal;
-              }
+            {
+                title: 'Tokens',
+                getValue: (cols) => {
+                    const value = parseFloat(cols[csvIndices.completion_tokens_black_per_move]) || 0;
+                    return value > 1000 ? value.toFixed(1) : value.toFixed(2);
+                },
+                isNumeric: true,
+                compareFn: (a, b) => {
+                    const aVal = parseFloat(a.cols[csvIndices.completion_tokens_black_per_move]) || 0;
+                    const bVal = parseFloat(b.cols[csvIndices.completion_tokens_black_per_move]) || 0;
+                    return aVal - bVal;
+                }
             }
         ],
         // Sorting priority for OLD leaderboard: Wins DESC, Draws DESC, Mistakes ASC
@@ -189,7 +223,7 @@ function showPane(screen) {
     currentScreen = screen;
 
     // Update UI based on screen
-    switch(screen) {
+    switch (screen) {
         case Screen.LEADERBOARD_NEW:
             document.getElementById('leaderboard').style.display = 'block';
             document.getElementById('how-it-works').style.display = 'none';
@@ -294,7 +328,7 @@ function showPlayerDetailsPopup(row, columns) {
     const moeWins = columns[csvIndices.moe_black_llm_win_rate];
     const moeLosses = columns[csvIndices.moe_black_llm_loss_rate];
     const moeDraws = columns[csvIndices.moe_draw_rate];
-    
+
     const averageMoves = columns[csvIndices.average_moves];
     const materialDiff = columns[csvIndices.material_diff_player_llm_minus_opponent];
     const mistakesPer1000Moves = columns[csvIndices.mistakes_per_1000moves];
@@ -306,15 +340,15 @@ function showPlayerDetailsPopup(row, columns) {
     const moeCompletionTokensBlackPerMove = columns[csvIndices.moe_completion_tokens_black_per_move];
 
     document.getElementById('total-games').textContent = `Games: ${parseInt(totalGames)}`;
-    document.getElementById('wins').textContent = 
-    `Wins: ${parseInt(wins)} (`+
-    `${((parseInt(wins) / parseInt(totalGames))).toFixed(3)} ± ${parseFloat(moeWins).toFixed(3)})`;
-    document.getElementById('losses').textContent = 
+    document.getElementById('wins').textContent =
+        `Wins: ${parseInt(wins)} (` +
+        `${((parseInt(wins) / parseInt(totalGames))).toFixed(3)} ± ${parseFloat(moeWins).toFixed(3)})`;
+    document.getElementById('losses').textContent =
         `Losses: ${parseInt(losses)} (` +
         `${((parseInt(losses) / parseInt(totalGames))).toFixed(2)} ± ${parseFloat(moeLosses).toFixed(3)})`;
     const winsMinusLosses = ((parseInt(wins) - parseInt(losses)) / parseInt(totalGames)).toFixed(3);
     document.getElementById('wins_minus_losses').innerHTML = `&nbsp;&nbsp;&nbsp;Wins - Losses: ${winsMinusLosses}`;
-    document.getElementById('draws').textContent = 
+    document.getElementById('draws').textContent =
         `Draws: ${parseInt(draws)} (` +
         `${((parseInt(draws) / parseInt(totalGames))).toFixed(3)} ± ${parseFloat(moeDraws).toFixed(3)})`;
     document.getElementById('average-moves').textContent = `Average Moves: ${parseFloat(averageMoves).toFixed(2)} ± ${parseFloat(moeAverageMoves).toFixed(2)}`;
@@ -324,7 +358,7 @@ function showPlayerDetailsPopup(row, columns) {
 
     const rect = row.getBoundingClientRect();
     if (window.innerWidth < 1350) {
-        popup.style.top = `${rect.bottom + window.scrollY}px`;                
+        popup.style.top = `${rect.bottom + window.scrollY}px`;
         popup.style.right = `${rect.left + window.scrollX}px`;
         popup.style.left = '';
     }
@@ -346,7 +380,7 @@ function toggleDropdown() {
 }
 
 // Close the dropdown if clicked outside
-window.onclick = function(event) {
+window.onclick = function (event) {
     if (!event.target.matches('.dropbtn')) {
         var dropdowns = document.getElementsByClassName('dropdown-content');
         for (var i = 0; i < dropdowns.length; i++) {
@@ -453,7 +487,7 @@ function sortTable(columnIndex) {
                 // Always show default rank + 1
                 cellValue = row.defaultIndex + 1;
             } else {
-                cellValue = col.getValue(row.cols, rowIndex); 
+                cellValue = col.getValue(row.cols, rowIndex);
             }
             const td = document.createElement('td');
             td.textContent = cellValue;
@@ -500,7 +534,7 @@ function sortAllRows(rows, config, overrideColumnIndex = null, newOrder = 'asc')
                 const res = col.compareFn(a, b);
                 // For the rank column (#), ignore newOrder and preserve original order
                 if (col.title === '#') {
-                    return res; 
+                    return res;
                 }
                 return newOrder === 'asc' ? res : -res;
             } else {
