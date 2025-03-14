@@ -29,7 +29,7 @@ class TestCustomAgents(unittest.TestCase):
             get_legal_moves=lambda: "legal_moves",
             make_move=lambda move: None,
             move_was_made_message="Move made",
-            invalid_action_message="Invalid action",
+            invalid_action_message="Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>",
             too_many_failed_actions_message="Too many failed actions",
             max_failed_attempts=3,
             get_current_board_action="get_current_board",
@@ -43,7 +43,7 @@ class TestCustomAgents(unittest.TestCase):
         self.assertEqual(agent.name, "AutoReplyAgent")
         self.assertEqual(agent.max_failed_attempts, 3)
         self.assertEqual(agent.move_was_made, "Move made")
-        self.assertEqual(agent.invalid_action_message, "Invalid action")
+        self.assertEqual(agent.invalid_action_message, "Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>")
 
     def test_chess_engine_stockfish_agent_initialization(self):
         board = chess.Board()
@@ -151,7 +151,7 @@ class TestAutoReplyAgent(unittest.TestCase):
             get_legal_moves=self.get_legal_moves,
             make_move=self.make_move,
             move_was_made_message="Move made",
-            invalid_action_message="Invalid action",
+            invalid_action_message="Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>",
             too_many_failed_actions_message="Too many failed actions",
             max_failed_attempts=3,
             get_current_board_action="get_current_board",
@@ -190,7 +190,7 @@ class TestAutoReplyAgent(unittest.TestCase):
             get_legal_moves=self.get_legal_moves,
             make_move=self.make_move,
             move_was_made_message="Move made",
-            invalid_action_message="Invalid action",
+            invalid_action_message="Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>",
             too_many_failed_actions_message="Too many failed actions",
             max_failed_attempts=3,
             get_current_board_action="get_current_board",
@@ -257,11 +257,31 @@ class TestAutoReplyAgent(unittest.TestCase):
         self.assertEqual(self.mock_sender.wrong_moves, 1)
         self.assertEqual(self.agent.failed_action_attempts, 1)
 
+    def test_make_move_illegal_d4d5(self):
+        """
+        Test scenario for an illegal move 'd4d5' from a custom FEN,
+        verifying the full returned message matches exactly.
+        """
+        self.board.set_fen("r1bqkbnr/pppppppp/4B3/8/3n4/3P2P1/PPP1PP1P/RNBQK1NR b KQkq - 2 5")
+        
+        def mock_make_move(move):
+            if move == "d4d5":
+                raise ValueError(f"illegal uci: 'd4d5' in {self.board.fen()}")
+
+        self.agent.make_move = mock_make_move
+        messages = [{"content": "make_move d4d5"}]
+        reply = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
+        expected_reply = f"Failed to make move: illegal uci: 'd4d5' in {self.board.fen()}"
+        self.assertEqual(reply, expected_reply)
+        self.assertEqual(self.mock_sender.wrong_moves, 1)
+        self.assertEqual(self.agent.failed_action_attempts, 1)
+
     def test_invalid_action_format(self):
         """Test handling of incorrectly formatted actions."""
         messages = [{"content": "invalid_action"}]
         reply = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
-        self.assertEqual(reply, self.agent.invalid_action_message)
+        expected_reply = "Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>"
+        self.assertEqual(reply, expected_reply)
         self.assertEqual(self.mock_sender.wrong_actions, 1)
         self.assertEqual(self.agent.failed_action_attempts, 1)
 
