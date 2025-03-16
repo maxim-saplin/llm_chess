@@ -304,8 +304,6 @@ class TestAutoReplyAgent(unittest.TestCase):
         self.mock_sender.prep_to_move()
         
         self.assertEqual(self.agent.failed_action_attempts, 0)
-        self.assertEqual(self.mock_sender.wrong_moves, 0)
-        self.assertEqual(self.mock_sender.wrong_actions, 0)
         self.assertFalse(self.mock_sender.has_requested_board)
 
 

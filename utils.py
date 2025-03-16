@@ -241,14 +241,13 @@ def save_video(filename):
         print("No frames to save to a video file")
 
 
-def display_store_game_video_and_stats(game_stats, log_dir="_logs", save_logs=True):
+def display_store_game_video_and_stats(game_stats, log_dir="_logs"):
     white_summary = gather_usage_summary([game_stats["player_white"]])
     black_summary = gather_usage_summary([game_stats["player_black"]])
 
-    video_dir = f"{log_dir}/videos"
-    os.makedirs(video_dir, exist_ok=True)
-
-    if save_logs:
+    if log_dir != None:
+        video_dir = f"{log_dir}/videos"
+        os.makedirs(video_dir, exist_ok=True)
         log_filename = f"{log_dir}/{game_stats['time_started']}.json"
         if os.path.exists(
             log_filename
@@ -260,7 +259,8 @@ def display_store_game_video_and_stats(game_stats, log_dir="_logs", save_logs=Tr
             log_filename = f"{base}_{timestamp}{ext}"
         with open(log_filename, "w") as log_file:
             json.dump(game_stats, log_file, indent=4)
-    save_video(f"{video_dir}/{game_stats['time_started']}.mp4")
+        save_video(f"{video_dir}/{game_stats['time_started']}.mp4")
+
     print("\033[92m\nGAME OVER\n\033[0m")
     print(f"\033[92m{game_stats['winner']} wins due to {game_stats['reason']}.\033[0m")
     print(f"\033[92mNumber of moves made: {game_stats['number_of_moves']}\033[0m")

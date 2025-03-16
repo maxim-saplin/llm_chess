@@ -5,8 +5,8 @@ from llm_chess import run
 from utils import setup_console_logging
 
 # Parameters
-NUM_REPETITIONS = 5  # Set the number of games to run
-LOG_FOLDER = "_logs/no_reflection/2025-03_anthropic.claude-3-7-sonnet-20250219-v1:0/2025-03-04_anthropic.claude-3-7-sonnet-20250219-v1:0"  # Set the folder to store logs
+NUM_REPETITIONS = 67  # Set the number of games to run
+LOG_FOLDER = "_logs/no_reflection/2025-03-Gemma_3/2025-03-13_google_gemma-3-27b-it@q4_k_m"  # Set the folder to store logs
 
 STORE_INDIVIDUAL_LOGS = True
 
@@ -50,7 +50,7 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
     for _ in range(num_repetitions):
         # Call the run function and get the game stats
         game_stats, player_white, player_black = run(
-            log_dir=LOG_FOLDER, save_logs=STORE_INDIVIDUAL_LOGS
+            log_dir=LOG_FOLDER
         )
 
         moves_list.append(game_stats["number_of_moves"])  # Track moves

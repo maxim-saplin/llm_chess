@@ -1,5 +1,5 @@
 import time, traceback, chess, chess.svg
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 from enum import Enum
 from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent
 from utils import calculate_material_count, generate_game_stats, get_llms_autogen, display_board, display_store_game_video_and_stats
@@ -39,8 +39,8 @@ board_representation_mode = BoardRepresentation.UNICODE_ONLY  # What kind of boa
 max_game_moves = 200  # maximum number of game moves before terminating, dafault 200
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times, default 10
 max_failed_attempts = 3  # number of wrong replies within a dialog (e.g. non existing action) before stopping/giving a loss, default 3
-throttle_delay = 1 # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
-dialog_turn_delay = 1  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
+throttle_delay = 0 # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+dialog_turn_delay = 0  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
@@ -128,30 +128,37 @@ def get_legal_moves() -> str:
     return ",".join([str(move) for move in board.legal_moves])
 
 
-def make_move(move: str) -> str:
+def make_move(move: str):
     """
     Args:
         move (str): A move in UCI format.
 
-    Returns:
-        str: Result of the move.
     """
-    move_obj = chess.Move.from_uci(move)
-    
-    # Get the SAN representation of the move before making it
-    san_move = board.san(move_obj)
-    
-    # Make the move and record it
-    board.push(move_obj)
-    game_moves.append(san_move)
+    if (board_representation_mode == BoardRepresentation.UNICODE_WITH_PGN):
+        san_board = board.copy() # make a copy of the board in order not to spoil it with san() call
+
+    move_obj = chess.Move.from_uci(move) # this conversation will fail if the move is invalid, proxy will bubble the error to counterpart agent
+    board.push_uci(str(move_obj))
+
+    if (board_representation_mode == BoardRepresentation.UNICODE_WITH_PGN):
+        san_move = san_board.san(move_obj)
+        game_moves.append(san_move)
     
     # Visualize the board if enabled
     if visualize_board:
         display_board(board, move_obj)
-    # print(",".join([str(move) for move in board.legal_moves]))
 
 
-def run(log_dir="_logs", save_logs=True):
+def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
+    """
+    Runs the chess game simulation.
+
+    Args:
+        log_dir (str): Directory to save log file with game result. Set to NONE to not create one
+
+    Returns:
+        tuple: A tuple containing game statistics, the white player, and the black player.
+    """
 
     time_started = time.strftime("%Y.%m.%d_%H:%M")
 
@@ -370,10 +377,6 @@ def run(log_dir="_logs", save_logs=True):
                 # Reset player state variables before each move: wrong_moves, wrong_actions, has_requested_board, failed_action_attempts
                 proxy_agent.prep_to_move()
                 player.prep_to_move()
-                # player.wrong_moves = 0
-                # player.wrong_actions = 0
-                # player.has_requested_board = False
-                # proxy_agent.failed_action_attempts = 0
                 chat_result = proxy_agent.initiate_chat(
                     recipient=player,
                     message=player.description,
@@ -383,7 +386,7 @@ def run(log_dir="_logs", save_logs=True):
                 last_message = chat_result.summary
 
                 print(f"\033[94mMADE MOVE {current_move}\033[0m")
-                print(f"\033[94mLast Message: {last_message}\033[0m")
+                # print(f"\033[94mLast Message: {last_message}\033[0m")
                 _, last_usage = list(
                     chat_result.cost["usage_including_cached_inference"].items()
                 )[-1]
@@ -415,7 +418,6 @@ def run(log_dir="_logs", save_logs=True):
                         if player == player_white
                         else player_white.name
                     )
-                    # reason = f"{player.name} chose wrong actions to many times failing to make a move"
                     reason = TerminationReason.TOO_MANY_WRONG_ACTIONS.value
                 elif board.is_game_over():
                     game_over = True
@@ -445,7 +447,28 @@ def run(log_dir="_logs", save_logs=True):
                         else player_white.name
                     )
                     reason = TerminationReason.MAX_TURNS.value
-                elif last_message.lower().strip() != move_was_made.lower().strip():
+                elif last_message.lower().strip() == "invalid_action" or last_message.lower().startswith("invalid action."):
+                    # Mark a wrong action attempt
+                    player.wrong_actions += 1
+                    proxy_agent.failed_action_attempts += 1
+                    # If too many wrong actions, we end the game
+                    if proxy_agent.failed_action_attempts >= max_failed_attempts:
+                        game_over = True
+                        winner = (
+                            player_black.name
+                            if player == player_white
+                            else player_white.name
+                        )
+                        reason = TerminationReason.TOO_MANY_WRONG_ACTIONS.value
+                    # Overwrite last_message so it won't trigger unknown issue
+                    last_message = invalid_action_message.lower().strip()
+                elif (
+                    last_message.lower().strip() not in [
+                        move_was_made.lower().strip(),
+                        invalid_action_message.lower().strip()
+                    ]
+                    and not last_message.lower().startswith("failed to make move:")
+                ):
                     game_over = True
                     winner = "NONE"
                     reason = TerminationReason.UNKNOWN_ISSUE.value
@@ -479,7 +502,7 @@ def run(log_dir="_logs", save_logs=True):
         pgn_string,
     )
 
-    display_store_game_video_and_stats(game_stats, log_dir, save_logs)
+    display_store_game_video_and_stats(game_stats, log_dir)
     return game_stats, player_white, player_black
 
 

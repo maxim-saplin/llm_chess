@@ -1,7 +1,9 @@
+import re
 import unittest
 import multiprocessing
 import time
 import os
+import requests
 import llm_chess 
 from llm_chess import (
     PlayerType,
@@ -13,8 +15,6 @@ from tests.mock_openai_server import start_server
 
 class TestRandomVsRandomGame(unittest.TestCase):
     def setUp(self):
-        # Configure game settings for testing
-        import llm_chess
         # Override global variables for testing
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
         llm_chess.black_player_type = PlayerType.RANDOM_PLAYER
@@ -26,7 +26,7 @@ class TestRandomVsRandomGame(unittest.TestCase):
 
     def test_ten_turn_game(self):
         # Run a 10-turn game
-        game_stats, player_white, player_black = run(save_logs=False)
+        game_stats, player_white, player_black = run(log_dir=None)
         
         # Basic game completion checks
         self.assertIsNotNone(game_stats)
@@ -77,8 +77,9 @@ class TestLLMvsRandomGame(unittest.TestCase):
         cls.server_process.join()
 
     def setUp(self):
+        # Reset the mock OpenAI server state before each test
+        requests.post("http://localhost:8080/v1/reset", json={"useNegative": False, "useThinking": False})
         # Configure game settings for testing
-        import llm_chess
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
         llm_chess.black_player_type = PlayerType.LLM_BLACK
         llm_chess.max_game_moves = 10
@@ -88,7 +89,7 @@ class TestLLMvsRandomGame(unittest.TestCase):
         llm_chess.random_print_board = False
 
     def test_random_vs_mock_llm_game(self):
-        game_stats, player_white, player_black = run(save_logs=False)
+        game_stats, player_white, player_black = run(log_dir=None)
         
         # Verify game completed
         self.assertIsNotNone(game_stats["winner"])
@@ -114,29 +115,22 @@ class TestLLMvsRandomGame(unittest.TestCase):
     def test_multiple_games(self):
         # Run multiple games to ensure stability
         for _ in range(3):
-            game_stats, _, _ = run(save_logs=False)
+            game_stats, _, _ = run(log_dir=None)
             self.assertIsNotNone(game_stats["winner"])
             self.assertLessEqual(game_stats["number_of_moves"], 10)
 
     def test_remove_text_removes_think_tags(self):
         """Test that remove_text properly removes think tags during game."""
-        import llm_chess
-        import requests
-        
-        # Enable think tags in mock server
-        requests.post("http://localhost:8080/v1/config/think_tags/true")
+
+        requests.post("http://localhost:8080/v1/reset", json={"useNegative": False, "useThinking": True})
         
         # Configure game with remove_text
-        llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
-        llm_chess.black_player_type = PlayerType.LLM_BLACK
+
         llm_chess.max_game_moves = 3
-        llm_chess.visualize_board = False
-        llm_chess.throttle_delay = 0
-        llm_chess.dialog_turn_delay = 0
         llm_chess.remove_text = r"<think>.*?</think>"
         
         # Run game
-        _, _, black_player = run(save_logs=False)
+        _, _, black_player = run(log_dir=None)
         
         # Verify think tags were removed from all messages
         for msgs in black_player._oai_messages.values():
@@ -147,23 +141,17 @@ class TestLLMvsRandomGame(unittest.TestCase):
 
     def test_preserve_think_tags_when_remove_text_disabled(self):
         """Test that think tags are preserved when remove_text is disabled."""
-        import llm_chess
-        import requests
         
-        # Enable think tags in mock server
-        requests.post("http://localhost:8080/v1/config/think_tags/true")
+        requests.post("http://localhost:8080/v1/reset", json={"useNegative": False, "useThinking": True})
         
         # Configure game without remove_text
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
         llm_chess.black_player_type = PlayerType.LLM_BLACK
         llm_chess.max_game_moves = 3
-        llm_chess.visualize_board = False
-        llm_chess.throttle_delay = 0
-        llm_chess.dialog_turn_delay = 0
         llm_chess.remove_text = None
         
         # Run game
-        _, _, black_player = run(save_logs=False)
+        _, _, black_player = run(log_dir=None)
         
         # Verify at least one message contains think tags
         found_think_tags = False
@@ -179,55 +167,131 @@ class TestLLMvsRandomGame(unittest.TestCase):
         self.assertTrue(found_think_tags, "Expected to find think tags in messages when remove_text is disabled")
 
 
-if __name__ == "__main__":
-    unittest.main()
-import unittest
-import chess
-from llm_chess import (
-    board,
-    game_moves,
-    BoardRepresentation,
-    board_representation_mode,
-    get_current_board
-)
+    def test_pgn_board_representation_used(self):
+        """Test that PGN board representation is used when configured."""
+
+        # Configure game to use PGN board representation
+        llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
+        llm_chess.max_game_moves = 2
+
+        # Run game
+        _, _, black_player = run(log_dir=None)
+
+        # Verify that the PGN board representation is present in the message log
+        pgn_found = False
+        for msgs in black_player._oai_messages.values():
+            for msg in msgs:
+                if "PGN:" in msg["content"]:
+                    pgn_found = True
+                    break
+            if pgn_found:
+                break
+
+        self.assertTrue(pgn_found, "Expected PGN board representation in messages when configured.")
+
+
+    def test_llm_illegal_move_and_invalid_action(self):
+        """
+        The mock server's first response is invalid_action,
+        the second is an illegal move 'd4d5',
+        then normal moves. Verify the proxy's error handling and stats.
+        """
+
+        llm_chess.max_game_moves = 2
+        requests.post("http://localhost:8080/v1/reset", json={"useNegative": True, "useThinking": False})
+
+        game_stats, _, black_player = run(log_dir=None)
+
+        # We expect exactly one wrong action and one wrong move in the LLM stats
+        self.assertEqual(game_stats["player_black"]["wrong_actions"], 1)
+        self.assertEqual(black_player.wrong_actions, 1)
+        self.assertEqual(game_stats["player_black"]["wrong_moves"], 1)
+        self.assertEqual(black_player.wrong_moves, 1)
+
+        foundWrongActionPrompt = False
+        foundIllegalMovePrompt = False
+        # Check prompts/error messages by the proxy are correct
+
+        for msgs in black_player._oai_messages.values():
+            for msg in msgs:
+                if msg["content"] == "Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>":
+                    foundWrongActionPrompt = True
+                if re.match(r"Failed to make move: illegal uci: 'd4d5' in .*?", msg["content"]):
+                    foundIllegalMovePrompt = True
+        
+        self.assertTrue(foundWrongActionPrompt, "Expected wrong action response/prompt not found.")
+        self.assertTrue(foundIllegalMovePrompt, "Expected illegal move response/prompt not found.")
+
+    def test_proxy_prompts_are_not_changed(self):
+        """
+        Verify there're no surprises in how the proxy proimpts an LLM, any prompt changes must be changed in this test manually.
+        """
+
+        llm_chess.max_game_moves = 2
+        requests.post("http://localhost:8080/v1/reset", json={"useNegative": False, "useThinking": False})
+
+        _, _, black_player = run(log_dir=None)
+
+        # Define valid prompt patterns
+        valid_prompts = [
+            r"You are a professional chess player and you play as black\. Now is your turn to make a move\.",
+            r"([♜♞♝♛♚♝♞♜♟♙♖♘♗♕♔⭘\s]+)",  # Chess board pattern
+            r"([a-h][1-8][a-h][1-8][qrbn]?,?)+",  # UCI moves list
+            r"Move made, switching player"
+        ]
+
+        found_prompts = {prompt: False for prompt in valid_prompts}
+
+        # Check prompts/error messages by the proxy are correct
+        for msgs in black_player._oai_messages.values():
+            for msg in msgs:
+                for prompt in valid_prompts:
+                    if re.match(prompt, msg["content"]):
+                        found_prompts[prompt] = True
+
+        for prompt, found in found_prompts.items():
+            self.assertTrue(found, f"Expected prompt matching '{prompt}' not found.")
+
 
 class TestBoardRepresentationIntegration(unittest.TestCase):
     def setUp(self):
-        global board, game_moves, board_representation_mode
-        self.original_mode = board_representation_mode
-        board.reset()
-        game_moves.clear()
+        self.original_mode = llm_chess.board_representation_mode
+        llm_chess.board.reset()
+        llm_chess.game_moves.clear()
 
     def tearDown(self):
-        global board_representation_mode
-        board_representation_mode = self.original_mode
+        llm_chess.board_representation_mode = self.original_mode
 
     def test_fen_only_mode(self):
-        llm_chess.board_representation_mode = BoardRepresentation.FEN_ONLY
-        actual = get_current_board()
+        llm_chess.board_representation_mode = llm_chess.BoardRepresentation.FEN_ONLY
+        actual = llm_chess.get_current_board()
         self.assertEqual(
             actual,
-            board.fen(),
+            llm_chess.board.fen(),
             "When BoardRepresentation.FEN_ONLY, get_current_board() should match board.fen()."
         )
 
     def test_unicode_only_mode(self):
-        llm_chess.board_representation_mode = BoardRepresentation.UNICODE_ONLY
-        move = chess.Move.from_uci("e2e4")
-        board.push(move)
+        llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_ONLY
+        move = llm_chess.chess.Move.from_uci("e2e4")
+        llm_chess.board.push(move)
         self.assertEqual(
-            get_current_board(),
-            board.unicode(),
+            llm_chess.get_current_board(),
+            llm_chess.board.unicode(),
             "When BoardRepresentation.UNICODE_ONLY, get_current_board() should match board.unicode()."
         )
 
     def test_unicode_with_pgn_mode(self):
-        llm_chess.board_representation_mode = BoardRepresentation.UNICODE_WITH_PGN
-        move = chess.Move.from_uci("e2e4")
-        san = board.san(move)
-        board.push(move)
-        game_moves.append(san)
-        output = get_current_board()
-        self.assertIn(board.unicode(), output, "Should include a unicode board representation.")
+        llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
+        move = llm_chess.chess.Move.from_uci("e2e4")
+        san = llm_chess.board.san(move)
+        llm_chess.board.push(move)
+        llm_chess.game_moves.append(san)
+        output = llm_chess.get_current_board()
+        self.assertIn(llm_chess.board.unicode(), output, "Should include a unicode board representation.")
         self.assertIn("[Event \"Chess Game\"]", output, "Should include the PGN header.")
         self.assertIn("1. e4", output, "Should include the SAN move in the PGN portion.")
+
+
+if __name__ == "__main__":
+    unittest.main()

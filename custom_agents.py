@@ -38,8 +38,6 @@ class GameAgent(ConversableAgent):
         """
         Prepares the agent to make a move by resetting relevant state variables.
         """
-        self.wrong_moves = 0
-        self.wrong_actions = 0
         self.has_requested_board = False
         self.failed_action_attempts = 0
 

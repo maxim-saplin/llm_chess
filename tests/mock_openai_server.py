@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from typing import List, Optional
 import uvicorn
@@ -8,6 +8,8 @@ import re
 app = FastAPI()
 
 USE_THINKING = True # This doesn't influence rest of the tests anyway but is needed for `remove_text` tests
+NEGATIVE_SCENARIO = False
+CALL_COUNT = 0
 
 class ChatCompletionRequest(BaseModel):
     model: str
@@ -23,8 +25,16 @@ class MockChessBot:
         self.flip_flag = True
         
     def generate_reply(self, messages: List[dict]) -> str:
+        global NEGATIVE_SCENARIO, CALL_COUNT
         last_message = messages[-1]["content"].strip()
-        
+        CALL_COUNT += 1
+
+        if NEGATIVE_SCENARIO:
+            if CALL_COUNT == 1:
+                return "invalid_action"
+            elif CALL_COUNT == 2:
+                return "make_move d4d5"
+
         # Emulate Random Player logic
         try:
             if self.flip_flag:
@@ -69,8 +79,24 @@ async def create_chat_completion(request: ChatCompletionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/v1/reset")
+async def reset_server_state(request: Request):
+    try:
+        data = await request.json()
+        global NEGATIVE_SCENARIO, CALL_COUNT, USE_THINKING
+
+        CALL_COUNT = 0
+        NEGATIVE_SCENARIO = data.get("useNegative", False)
+        USE_THINKING = data.get("useThinking", False)
+        
+        return {"status": "success", "message": "Server state has been reset."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 def start_server(port: int = 8080):
     uvicorn.run(app, host="127.0.0.1", port=port)
+
 
 if __name__ == "__main__":
     start_server()
