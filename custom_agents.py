@@ -6,7 +6,7 @@ import chess.engine
 
 # Using local fork since autogen 0.2 used to pass in system message (even empty) and it broke o1-mini,
 # made a quick fix there (conversable_agent.py)
-from _ag import ConversableAgent
+from autogen import ConversableAgent
 from typing import Any, Dict, List, Optional, Union
 
 
