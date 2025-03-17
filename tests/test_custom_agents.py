@@ -295,7 +295,7 @@ class TestAutoReplyAgent(unittest.TestCase):
         reply = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
         self.assertTrue(reply.startswith("Failed to make move:"))
         self.assertEqual(self.mock_sender.wrong_moves, 1)
-        self.assertEqual(self.agent.failed_action_attempts, 1)
+        self.assertEqual(self.mock_sender.failed_action_attempts, 1)
 
     def test_make_move_illegal_d4d5(self):
         """
@@ -314,7 +314,7 @@ class TestAutoReplyAgent(unittest.TestCase):
         expected_reply = f"Failed to make move: illegal uci: 'd4d5' in {self.board.fen()}"
         self.assertEqual(reply, expected_reply)
         self.assertEqual(self.mock_sender.wrong_moves, 1)
-        self.assertEqual(self.agent.failed_action_attempts, 1)
+        self.assertEqual(self.mock_sender.failed_action_attempts, 1)
 
     def test_invalid_action_format(self):
         """Test handling of incorrectly formatted actions."""
@@ -323,12 +323,12 @@ class TestAutoReplyAgent(unittest.TestCase):
         expected_reply = "Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>"
         self.assertEqual(reply, expected_reply)
         self.assertEqual(self.mock_sender.wrong_actions, 1)
-        self.assertEqual(self.agent.failed_action_attempts, 1)
+        self.assertEqual(self.mock_sender.failed_action_attempts, 1)
 
 
     def test_max_failed_attempts(self):
         """Test that agent stops after reaching max failed attempts."""
-        self.agent.failed_action_attempts = self.agent.max_failed_attempts - 1
+        self.mock_sender.failed_action_attempts = self.agent.max_failed_attempts - 1
         messages = [{"content": "invalid_action"}]
         reply = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
         self.assertEqual(reply, self.agent.too_many_failed_actions_message)

@@ -39,7 +39,7 @@ class GameAgent(ConversableAgent):
 
     def prep_to_move(self):
         """
-        Prepares the agent to make a move by resetting relevant state variables.
+        Prepares the player agent to make a move by resetting relevant state variables.
         """
         self.has_requested_board = False
         self.failed_action_attempts = 0
@@ -223,14 +223,14 @@ class AutoReplyAgent(GameAgent):
                     reply = self.move_was_made
                 except Exception as e:
                     reply = f"Failed to make move: {e}"
-                    self.failed_action_attempts += 1
+                    sender.failed_action_attempts += 1
                     sender.wrong_moves += 1
             else:
                 reply = self.invalid_action_message
-                self.failed_action_attempts += 1
+                sender.failed_action_attempts += 1
                 sender.wrong_actions += 1
 
-        if self.failed_action_attempts >= self.max_failed_attempts:
+        if sender.failed_action_attempts >= self.max_failed_attempts:
             print("BREAKING >>> " + reply)
             reply = self.too_many_failed_actions_message
 

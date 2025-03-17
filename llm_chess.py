@@ -374,8 +374,7 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
             current_move < max_game_moves and not board.is_game_over() and not game_over
         ):
             for player in [player_white, player_black]:
-                # Reset player state variables before each move: wrong_moves, wrong_actions, has_requested_board, failed_action_attempts
-                proxy_agent.prep_to_move()
+                # Reset player state variables before each move: has_requested_board, failed_action_attempts
                 player.prep_to_move()
                 chat_result = proxy_agent.initiate_chat(
                     recipient=player,
@@ -447,21 +446,6 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                         else player_white.name
                     )
                     reason = TerminationReason.MAX_TURNS.value
-                elif last_message.lower().strip() == "invalid_action" or last_message.lower().startswith("invalid action."):
-                    # Mark a wrong action attempt
-                    player.wrong_actions += 1
-                    proxy_agent.failed_action_attempts += 1
-                    # If too many wrong actions, we end the game
-                    if proxy_agent.failed_action_attempts >= max_failed_attempts:
-                        game_over = True
-                        winner = (
-                            player_black.name
-                            if player == player_white
-                            else player_white.name
-                        )
-                        reason = TerminationReason.TOO_MANY_WRONG_ACTIONS.value
-                    # Overwrite last_message so it won't trigger unknown issue
-                    last_message = invalid_action_message.lower().strip()
                 elif (
                     last_message.lower().strip() not in [
                         move_was_made.lower().strip(),
