@@ -55,9 +55,7 @@ class TestRandomVsRandomGame(unittest.TestCase):
         self.assertGreaterEqual(game_stats["material_count"]["white"], 0)
         self.assertGreaterEqual(game_stats["material_count"]["black"], 0)
 
-        # If game ended due to max moves, verify it was exactly 10 moves
-        if game_stats["reason"] == TerminationReason.MAX_MOVES.value:
-            self.assertEqual(game_stats["number_of_moves"], 10)
+        self.assertEqual(game_stats["reason"], TerminationReason.MAX_MOVES.value)
 
 
 class TestLLMvsRandomGame(unittest.TestCase):
@@ -364,6 +362,53 @@ class TestBoardRepresentationIntegration(unittest.TestCase):
         self.assertIn("[Event \"Chess Game\"]", output, "Should include the PGN header.")
         self.assertIn("1. e4", output, "Should include the SAN move in the PGN portion.")
 
+
+class TestRandomVsStockfishGame(unittest.TestCase):
+    """
+    TestRandomVsStockfishGame tests the integration of a random player against the Stockfish chess engine.
+    This test requires Stockfish to be installed and accessible at the specified path in llm_chess.py.
+
+    Quick install on WSL (using default path used by the engine):
+    ```
+    cd ~
+    wget https://github.com/official-stockfish/Stockfish/releases/latest/download/stockfish-ubuntu-x86-64-avx2.tar
+    tar -xvf stockfish-ubuntu-x86-64-avx2.tar
+    sudo mkdir -p /opt/homebrew/bin
+    sudo cp stockfish/stockfish-ubuntu-x86-64-avx2 /opt/homebrew/bin/stockfish
+    ```
+    """
+    def setUp(self):
+        llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
+        llm_chess.black_player_type = PlayerType.CHESS_ENGINE_STOCKFISH
+        llm_chess.stockfish_level = 20
+        llm_chess.max_game_moves = 50 
+        llm_chess.visualize_board = False
+        llm_chess.throttle_delay = 0
+        llm_chess.dialog_turn_delay = 0
+        llm_chess.random_print_board = False
+
+    def test_game(self):
+        game_stats, player_white, player_black = run(log_dir=None)
+        
+        # Basic game completion checks
+        self.assertIsNotNone(game_stats)
+        self.assertIsNotNone(game_stats["winner"])
+        self.assertIsNotNone(game_stats["reason"])
+        
+        # Verify number of moves is 10 or less (could be less if game ended earlier)
+        self.assertLessEqual(game_stats["number_of_moves"], 50)
+        
+        self.assertEqual(player_white.name, "Random_Player")
+        self.assertEqual(player_black.name, "Chess_Engine_Stockfish_Black")
+        
+        self.assertEqual(game_stats["player_white"]["wrong_moves"], 0)
+        self.assertEqual(game_stats["player_white"]["wrong_actions"], 0)
+        self.assertEqual(game_stats["player_black"]["wrong_moves"], 0)
+        self.assertEqual(game_stats["player_black"]["wrong_actions"], 0)
+
+        self.assertGreater(game_stats["material_count"]["black"], game_stats["material_count"]["white"])
+
+        self.assertEqual(game_stats["reason"] , TerminationReason.CHECKMATE.value)
 
 if __name__ == "__main__":
     unittest.main()
