@@ -1,6 +1,7 @@
 import unittest
 import chess
 from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent
+from utils import generate_game_stats
 
 class TestCustomAgents(unittest.TestCase):
     def test_game_agent_initialization(self):
@@ -61,6 +62,45 @@ class TestCustomAgents(unittest.TestCase):
         self.assertEqual(agent.stockfish_path, "/path/to/stockfish")
         self.assertEqual(agent.time_limit, 0.1)
         self.assertEqual(agent.level, 5)
+
+    def test_game_stats_includes_action_counters(self):
+        agent_white = GameAgent(name="WhiteAgent")
+        agent_black = GameAgent(name="BlackAgent")
+
+        # Simulate some increments
+        agent_white.get_board_count = 2
+        agent_white.get_legal_moves_count = 1
+        agent_white.make_move_count = 3
+        agent_white.reflections_used = 1
+        agent_white.reflections_used_before_board = 0
+        agent_black.get_board_count = 5
+        agent_black.get_legal_moves_count = 6
+        agent_black.make_move_count = 7
+        agent_black.reflections_used = 2
+        agent_black.reflections_used_before_board = 1
+
+        game_stats = generate_game_stats(
+            time_started="2025.03.16_22:18",
+            winner="WhiteAgent",
+            reason="Checkmate",
+            current_move=10,
+            player_white=agent_white,
+            player_black=agent_black,
+            material_count={"white": 39, "black": 38},
+            pgn_string=""
+        )
+
+        # Check JSON for counters
+        self.assertEqual(game_stats["player_white"]["get_board_count"], 2)
+        self.assertEqual(game_stats["player_white"]["get_legal_moves_count"], 1)
+        self.assertEqual(game_stats["player_white"]["make_move_count"], 3)
+        self.assertEqual(game_stats["player_white"]["reflections_used"], 1)
+        self.assertEqual(game_stats["player_white"]["reflections_used_before_board"], 0)
+        self.assertEqual(game_stats["player_black"]["get_board_count"], 5)
+        self.assertEqual(game_stats["player_black"]["get_legal_moves_count"], 6)
+        self.assertEqual(game_stats["player_black"]["make_move_count"], 7)
+        self.assertEqual(game_stats["player_black"]["reflections_used"], 2)
+        self.assertEqual(game_stats["player_black"]["reflections_used_before_board"], 1)
 
 class TestRandomPlayerAgentLogic(unittest.TestCase):
     def setUp(self):
@@ -305,6 +345,22 @@ class TestAutoReplyAgent(unittest.TestCase):
         
         self.assertEqual(self.agent.failed_action_attempts, 0)
         self.assertFalse(self.mock_sender.has_requested_board)
+
+    def test_auto_reply_action_counters(self):
+        # Check get_current_board increments sender counter
+        messages = [{"content": "get_current_board"}]
+        _ = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
+        self.assertEqual(self.mock_sender.get_board_count, 1)
+
+        # Check get_legal_moves increments sender counter
+        messages = [{"content": "get_legal_moves"}]
+        _ = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
+        self.assertEqual(self.mock_sender.get_legal_moves_count, 1)
+
+        # Check make_move increments sender counter
+        messages = [{"content": "make_move e2e4"}]
+        _ = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
+        self.assertEqual(self.mock_sender.make_move_count, 1)
 
 
 if __name__ == "__main__":

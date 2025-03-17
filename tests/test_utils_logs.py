@@ -38,6 +38,9 @@ class TestUtils(unittest.TestCase):
                 "wrong_actions": 1,
                 "reflections_used": 0,
                 "reflections_used_before_board": 0,
+                "get_board_count": 0,
+                "get_legal_moves_count": 0,
+                "make_move_count": 0,
                 "llm_config": {"config_list": [{"model": "test_model"}]},
             },
         )()
@@ -51,6 +54,9 @@ class TestUtils(unittest.TestCase):
                 "wrong_actions": 2,
                 "reflections_used": 0,
                 "reflections_used_before_board": 0,
+                "get_board_count": 0,
+                "get_legal_moves_count": 0,
+                "make_move_count": 0,
                 "llm_config": {"config_list": [{"model": "test_model"}]},
             },
         )()

@@ -28,6 +28,9 @@ class GameAgent(ConversableAgent):
         self.wrong_moves = 0
         # Initialize the counter for wrong actions performed by the agent.
         self.wrong_actions = 0
+        self.get_board_count = 0
+        self.get_legal_moves_count = 0
+        self.make_move_count = 0
         # Flag to track if the agent has requested the board state (either current board or legal moves).
         self.has_requested_board = False
         # Counter to track the number of failed action attempts by the agent.
@@ -192,9 +195,11 @@ class AutoReplyAgent(GameAgent):
         reply = ""
 
         if self.get_current_board_action in action_choice:
+            sender.get_board_count += 1
             reply = self.get_current_board()
             sender.has_requested_board = True
         elif self.get_legal_moves_action in action_choice:
+            sender.get_legal_moves_count += 1
             reply = self.get_legal_moves()
             sender.has_requested_board = True
         elif len(messages) > 2 and messages[-2]["content"] == self.reflect_prompt:
@@ -211,6 +216,7 @@ class AutoReplyAgent(GameAgent):
                 rf"{self.make_move_action} ([a-zA-Z0-9]{{4,5}})", action_choice
             )
             if match:
+                sender.make_move_count += 1
                 try:
                     move = match.group(1)
                     self.make_move(move)

@@ -1,10 +1,13 @@
 import re
 import unittest
 import multiprocessing
+import json
 import time
 import os
 import requests
 import llm_chess 
+import shutil
+import tempfile
 from llm_chess import (
     PlayerType,
     run,
@@ -70,11 +73,13 @@ class TestLLMvsRandomGame(unittest.TestCase):
         os.environ["LOCAL_MODEL_NAME_B"] = "gpt-3.5-turbo"
         os.environ["LOCAL_BASE_URL_B"] = "http://localhost:8080/v1"
         os.environ["LOCAL_API_KEY_B"] = "mock-key"
+        cls.temp_dir = tempfile.mkdtemp(prefix="test_llm_chess_integration_")
 
     @classmethod
     def tearDownClass(cls):
         cls.server_process.terminate()
         cls.server_process.join()
+        shutil.rmtree(cls.temp_dir, ignore_errors=True)
 
     def setUp(self):
         # Reset the mock OpenAI server state before each test
@@ -189,6 +194,103 @@ class TestLLMvsRandomGame(unittest.TestCase):
 
         self.assertTrue(pgn_found, "Expected PGN board representation in messages when configured.")
 
+    def test_random_vs_llm_game_logging_and_stats(self):
+        """
+        Runs a short game (max 5 moves) between a random player (white) and LLM (black),
+        checks that game_stats and the saved JSON log match.
+        """
+        llm_chess.max_game_moves = 6  # override for a short test
+        game_stats, _, _ = run(log_dir=self.temp_dir)
+        self.assertIn("winner", game_stats)
+        self.assertIn("reason", game_stats)
+        self.assertLessEqual(game_stats["number_of_moves"], 6)
+
+        # Verify the JSON log file is produced
+        import os, json
+        log_filepath = os.path.join(self.temp_dir, f"{game_stats['time_started']}.json")
+        self.assertTrue(os.path.exists(log_filepath), "Expected game result JSON not found.")
+        with open(log_filepath, "r") as f:
+            logged_stats = json.load(f)
+
+        expected_stats = {
+            "time_started": game_stats["time_started"],
+            "winner": "NONE",
+            "reason": "Max moves reached",
+            "number_of_moves": 6,
+            "player_white": {
+                "name": "Random_Player",
+                "wrong_moves": 0,
+                "wrong_actions": 0,
+                "reflections_used": 0,
+                "reflections_used_before_board": 0,
+                "get_board_count": 0,
+                "get_legal_moves_count": 3,
+                "make_move_count": 3,
+                "model": "N/A"
+            },
+            "material_count": {
+                "white": 39,
+                "black": 39
+            },
+            "player_black": {
+                "name": "Player_Black",
+                "wrong_moves": 0,
+                "wrong_actions": 0,
+                "reflections_used": 0,
+                "reflections_used_before_board": 0,
+                "get_board_count": 3,
+                "get_legal_moves_count": 3,
+                "make_move_count": 3,
+                "model": "gpt-3.5-turbo"
+            },
+            "usage_stats": {
+                "white": {
+                    "total_cost": 0
+                },
+                "black": {
+                    "total_cost": 0,
+                    "null": {
+                        "cost": 0,
+                        "prompt_tokens": 90,
+                        "completion_tokens": 90,
+                        "total_tokens": 180
+                    }
+                }
+            },
+            "pgn": game_stats["pgn"]
+        }
+
+        self.assertEqual(logged_stats, expected_stats)
+
+    def test_proxy_prompts_are_not_changed(self):
+        """
+        Verify there're no surprises in how the proxy proimpts an LLM, any prompt changes must be changed in this test manually.
+        """
+
+        llm_chess.max_game_moves = 2
+        requests.post("http://localhost:8080/v1/reset", json={"useNegative": False, "useThinking": False})
+
+        _, _, black_player = run(log_dir=None)
+
+        # Define valid prompt patterns
+        valid_prompts = [
+            r"You are a professional chess player and you play as black\. Now is your turn to make a move\.",
+            r"([♜♞♝♛♚♝♞♜♟♙♖♘♗♕♔⭘\s]+)",  # Chess board pattern
+            r"([a-h][1-8][a-h][1-8][qrbn]?,?)+",  # UCI moves list
+            r"Move made, switching player"
+        ]
+
+        found_prompts = {prompt: False for prompt in valid_prompts}
+
+        # Check prompts/error messages by the proxy are correct
+        for msgs in black_player._oai_messages.values():
+            for msg in msgs:
+                for prompt in valid_prompts:
+                    if re.match(prompt, msg["content"]):
+                        found_prompts[prompt] = True
+
+        for prompt, found in found_prompts.items():
+            self.assertTrue(found, f"Expected prompt matching '{prompt}' not found.")
 
     def test_llm_illegal_move_and_invalid_action(self):
         """
@@ -221,36 +323,6 @@ class TestLLMvsRandomGame(unittest.TestCase):
         
         self.assertTrue(foundWrongActionPrompt, "Expected wrong action response/prompt not found.")
         self.assertTrue(foundIllegalMovePrompt, "Expected illegal move response/prompt not found.")
-
-    def test_proxy_prompts_are_not_changed(self):
-        """
-        Verify there're no surprises in how the proxy proimpts an LLM, any prompt changes must be changed in this test manually.
-        """
-
-        llm_chess.max_game_moves = 2
-        requests.post("http://localhost:8080/v1/reset", json={"useNegative": False, "useThinking": False})
-
-        _, _, black_player = run(log_dir=None)
-
-        # Define valid prompt patterns
-        valid_prompts = [
-            r"You are a professional chess player and you play as black\. Now is your turn to make a move\.",
-            r"([♜♞♝♛♚♝♞♜♟♙♖♘♗♕♔⭘\s]+)",  # Chess board pattern
-            r"([a-h][1-8][a-h][1-8][qrbn]?,?)+",  # UCI moves list
-            r"Move made, switching player"
-        ]
-
-        found_prompts = {prompt: False for prompt in valid_prompts}
-
-        # Check prompts/error messages by the proxy are correct
-        for msgs in black_player._oai_messages.values():
-            for msg in msgs:
-                for prompt in valid_prompts:
-                    if re.match(prompt, msg["content"]):
-                        found_prompts[prompt] = True
-
-        for prompt, found in found_prompts.items():
-            self.assertTrue(found, f"Expected prompt matching '{prompt}' not found.")
 
 
 class TestBoardRepresentationIntegration(unittest.TestCase):

@@ -150,6 +150,9 @@ def generate_game_stats(
             "wrong_actions": player_white.wrong_actions,
             "reflections_used": player_white.reflections_used,
             "reflections_used_before_board": player_white.reflections_used_before_board,
+            "get_board_count": player_white.get_board_count,
+            "get_legal_moves_count": player_white.get_legal_moves_count,
+            "make_move_count": player_white.make_move_count,
             "model": (
                 player_white.llm_config["config_list"][0]["model"]
                 if isinstance(player_white.llm_config, dict)
@@ -163,6 +166,9 @@ def generate_game_stats(
             "wrong_actions": player_black.wrong_actions,
             "reflections_used": player_black.reflections_used,
             "reflections_used_before_board": player_black.reflections_used_before_board,
+            "get_board_count": player_black.get_board_count,
+            "get_legal_moves_count": player_black.get_legal_moves_count,
+            "make_move_count": player_black.make_move_count,
             "model": (
                 player_black.llm_config["config_list"][0]["model"]
                 if isinstance(player_black.llm_config, dict)
@@ -242,51 +248,56 @@ def save_video(filename):
 
 
 def display_store_game_video_and_stats(game_stats, log_dir="_logs"):
+    # 1) Gather usage summaries
     white_summary = gather_usage_summary([game_stats["player_white"]])
     black_summary = gather_usage_summary([game_stats["player_black"]])
 
-    if log_dir != None:
-        video_dir = f"{log_dir}/videos"
-        os.makedirs(video_dir, exist_ok=True)
-        log_filename = f"{log_dir}/{game_stats['time_started']}.json"
-        if os.path.exists(
-            log_filename
-        ):  # if running automated games they can complete within same second
-            base, ext = os.path.splitext(log_filename)
-            import time
+    # 2) Save results to file and video
+    _save_game_to_file_and_video(game_stats, log_dir)
 
-            timestamp = int(time.time() * 1000)
-            log_filename = f"{base}_{timestamp}{ext}"
-        with open(log_filename, "w") as log_file:
-            json.dump(game_stats, log_file, indent=4)
-        save_video(f"{video_dir}/{game_stats['time_started']}.mp4")
+    # 3) Print outcome
+    _print_game_outcome(game_stats, white_summary, black_summary)
 
+
+
+
+def _save_game_to_file_and_video(game_stats, log_dir):
+    if log_dir is None:
+        return
+    video_dir = f"{log_dir}/videos"
+    os.makedirs(video_dir, exist_ok=True)
+    log_filename = f"{log_dir}/{game_stats['time_started']}.json"
+    if os.path.exists(log_filename):
+        base, ext = os.path.splitext(log_filename)
+        import time
+        timestamp = int(time.time() * 1000)
+        log_filename = f"{base}_{timestamp}{ext}"
+    with open(log_filename, "w") as log_file:
+        json.dump(game_stats, log_file, indent=4)
+    save_video(f"{video_dir}/{game_stats['time_started']}.mp4")
+
+
+def _print_game_outcome(game_stats, white_summary, black_summary):
     print("\033[92m\nGAME OVER\n\033[0m")
     print(f"\033[92m{game_stats['winner']} wins due to {game_stats['reason']}.\033[0m")
     print(f"\033[92mNumber of moves made: {game_stats['number_of_moves']}\033[0m")
     print("\nWrong Moves (LLM asked to make illegal/impossible move):")
     print(f"Player White: {game_stats['player_white']['wrong_moves']}")
     print(f"Player Black: {game_stats['player_black']['wrong_moves']}")
-
     print("\nWrong Actions (LLM responded with non parseable message):")
     print(f"Player White: {game_stats['player_white']['wrong_actions']}")
     print(f"Player Black: {game_stats['player_black']['wrong_actions']}")
-
     print("\nMaterial Count:")
     print(f"Player White: {game_stats['material_count']['white']}")
     print(f"Player Black: {game_stats['material_count']['black']}")
-    
-    # Print PGN if available
     if "pgn" in game_stats:
         print("\n\033[96mGame PGN:\033[0m")
         print(game_stats["pgn"])
-
     print("\nCosts per agent (white and black):\n")
     if white_summary:
         pprint(white_summary["usage_excluding_cached_inference"])
     if black_summary:
         pprint(black_summary["usage_excluding_cached_inference"])
-
 
 def setup_console_logging(log_folder, filename="output.txt"):
     """
