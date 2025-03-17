@@ -7,9 +7,9 @@ import re
 
 app = FastAPI()
 
-USE_THINKING = True # This doesn't influence rest of the tests anyway but is needed for `remove_text` tests
-NEGATIVE_SCENARIO = False
+USE_THINKING = True
 CALL_COUNT = 0
+SCENARIO_TYPE = "default"  # Can be: "default", "wrong_actions", "max_turns", "max_moves", "invalid_action"
 
 class ChatCompletionRequest(BaseModel):
     model: str
@@ -25,17 +25,41 @@ class MockChessBot:
         self.flip_flag = True
         
     def generate_reply(self, messages: List[dict]) -> str:
-        global NEGATIVE_SCENARIO, CALL_COUNT
+        global CALL_COUNT, SCENARIO_TYPE
         last_message = messages[-1]["content"].strip()
         CALL_COUNT += 1
 
-        if NEGATIVE_SCENARIO:
+        # Handle different scenarios
+        if SCENARIO_TYPE == "wrong_actions":
+            # Always return invalid responses to trigger too many wrong actions
+            # Return something that's not a valid action format
+            return "I'm thinking about my next move..."
+                
+        elif SCENARIO_TYPE == "max_turns":
+            # Keep requesting the board without making a move to hit max_turns
+            return "get_current_board"
+            
+        elif SCENARIO_TYPE == "max_moves":
+            # Normal behavior but we'll let the test run until max_moves is reached
+            if self.flip_flag:
+                self.flip_flag = False
+                return "get_current_board"
+            
+            legal_moves = last_message.split(",")
+            if legal_moves and all(self._is_valid_move(move) for move in legal_moves):
+                random_move = random.choice(legal_moves)
+                self.flip_flag = True
+                return f"make_move {random_move}" 
+            
+            return "get_legal_moves"
+            
+        elif SCENARIO_TYPE == "invalid_action":
             if CALL_COUNT == 1:
                 return "invalid_action"
             elif CALL_COUNT == 2:
                 return "make_move d4d5"
 
-        # Emulate Random Player logic
+        # Default behavior (same as original)
         try:
             if self.flip_flag:
                 self.flip_flag = False
@@ -83,11 +107,11 @@ async def create_chat_completion(request: ChatCompletionRequest):
 async def reset_server_state(request: Request):
     try:
         data = await request.json()
-        global NEGATIVE_SCENARIO, CALL_COUNT, USE_THINKING
+        global CALL_COUNT, USE_THINKING, SCENARIO_TYPE
 
         CALL_COUNT = 0
-        NEGATIVE_SCENARIO = data.get("useNegative", False)
         USE_THINKING = data.get("useThinking", False)
+        SCENARIO_TYPE = data.get("scenarioType", "default")
         
         return {"status": "success", "message": "Server state has been reset."}
     except Exception as e:

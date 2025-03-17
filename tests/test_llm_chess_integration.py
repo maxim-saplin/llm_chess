@@ -125,7 +125,7 @@ class TestLLMvsRandomGame(unittest.TestCase):
     def test_remove_text_removes_think_tags(self):
         """Test that remove_text properly removes think tags during game."""
 
-        requests.post("http://localhost:8080/v1/reset", json={"useNegative": False, "useThinking": True})
+        requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "default", "useThinking": True})
         
         # Configure game with remove_text
 
@@ -145,7 +145,7 @@ class TestLLMvsRandomGame(unittest.TestCase):
     def test_preserve_think_tags_when_remove_text_disabled(self):
         """Test that think tags are preserved when remove_text is disabled."""
         
-        requests.post("http://localhost:8080/v1/reset", json={"useNegative": False, "useThinking": True})
+        requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "default", "useThinking": True})
         
         # Configure game without remove_text
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
@@ -298,9 +298,18 @@ class TestLLMvsRandomGame(unittest.TestCase):
         """
 
         llm_chess.max_game_moves = 2
-        requests.post("http://localhost:8080/v1/reset", json={"useNegative": True, "useThinking": False})
+        # Reset the server with the invalid_action scenario
+        requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "invalid_action", "useThinking": False})
+
+        # Make sure we're using the default values for these parameters
+        llm_chess.max_failed_attempts = 3
+        llm_chess.max_llm_turns = 10
 
         game_stats, _, black_player = run(log_dir=None)
+
+        # Debug output to help diagnose the issue
+        print(f"Debug - wrong_actions: {black_player.wrong_actions}, wrong_moves: {black_player.wrong_moves}")
+        print(f"Debug - game stats: {game_stats['player_black']}")
 
         # We expect exactly one wrong action and one wrong move in the LLM stats
         self.assertEqual(game_stats["player_black"]["wrong_actions"], 1)
@@ -321,6 +330,57 @@ class TestLLMvsRandomGame(unittest.TestCase):
         
         self.assertTrue(foundWrongActionPrompt, "Expected wrong action response/prompt not found.")
         self.assertTrue(foundIllegalMovePrompt, "Expected illegal move response/prompt not found.")
+
+    def test_too_many_wrong_actions(self):
+        """
+        Test that the game ends with TOO_MANY_WRONG_ACTIONS when the LLM consistently
+        provides invalid responses.
+        """
+        llm_chess.max_game_moves = 100  # Set higher to ensure we hit wrong actions first
+        llm_chess.max_failed_attempts = 3
+        llm_chess.max_llm_turns = 20  # Set higher to ensure we hit wrong actions first
+        requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "wrong_actions"})
+
+        game_stats, _, black_player = run(log_dir=None)
+
+        # Verify the game ended due to too many wrong actions
+        self.assertEqual(game_stats["reason"], TerminationReason.TOO_MANY_WRONG_ACTIONS.value)
+        self.assertEqual(game_stats["winner"], "Random_Player")  # White player should win
+        self.assertEqual(black_player.wrong_actions, 3)  # Should have 3 wrong actions
+
+    def test_max_turns_in_dialog(self):
+        """
+        Test that the game ends with MAX_TURNS when the LLM keeps requesting the board
+        without making a move, hitting the max_llm_turns limit.
+        """
+        llm_chess.max_game_moves = 100  # Set higher to ensure we hit max turns first
+        llm_chess.max_llm_turns = 5  # Set a low value to trigger quickly
+        requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "max_turns"})
+
+        game_stats, _, _ = run(log_dir=None)
+
+        # Verify the game ended due to max turns in a dialog
+        self.assertEqual(game_stats["reason"], TerminationReason.MAX_TURNS.value)
+        self.assertEqual(game_stats["winner"], "Random_Player")  # White player should win
+
+    def test_max_moves_reached(self):
+        """
+        Test that the game ends with MAX_MOVES when the maximum number of moves is reached.
+        """
+        llm_chess.max_game_moves = 4 
+        requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "max_moves"})
+
+        game_stats, _, _ = run(log_dir=None)
+        self.assertEqual(game_stats["reason"], TerminationReason.MAX_MOVES.value)
+        self.assertEqual(game_stats["winner"], "NONE") 
+        self.assertEqual(game_stats["number_of_moves"], 4) 
+
+        # Verify odd number of moves
+        llm_chess.max_game_moves = 3
+        game_stats, _, _ = run(log_dir=None)
+        self.assertEqual(game_stats["reason"], TerminationReason.MAX_MOVES.value)
+        self.assertEqual(game_stats["winner"], "NONE") 
+        self.assertEqual(game_stats["number_of_moves"], 3) 
 
 
 class TestBoardRepresentationIntegration(unittest.TestCase):

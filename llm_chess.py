@@ -369,9 +369,10 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
     
     try:
         current_move = 0
+        reason = None
 
         while (
-            current_move < max_game_moves and not board.is_game_over() and not game_over
+            current_move < max_game_moves and not reason
         ):
             for player in [player_white, player_black]:
                 # Reset player state variables before each move: has_requested_board, failed_action_attempts
@@ -411,7 +412,6 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                     last_message.lower().strip()
                     == TerminationReason.TOO_MANY_WRONG_ACTIONS.value.lower().strip()
                 ):
-                    game_over = True
                     winner = (
                         player_black.name
                         if player == player_white
@@ -419,7 +419,6 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                     )
                     reason = TerminationReason.TOO_MANY_WRONG_ACTIONS.value
                 elif board.is_game_over():
-                    game_over = True
                     if board.is_checkmate():
                         winner = player_black.name if board.turn else player_white.name
                         reason = TerminationReason.CHECKMATE.value
@@ -439,13 +438,15 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                     last_message.lower().strip() != move_was_made.lower().strip()
                     and len(chat_result.chat_history) >= max_llm_turns * 2
                 ):
-                    game_over = True
                     winner = (
                         player_black.name
                         if player == player_white
                         else player_white.name
                     )
                     reason = TerminationReason.MAX_TURNS.value
+                elif current_move >= max_game_moves:
+                    winner = "NONE"
+                    reason = TerminationReason.MAX_MOVES.value
                 elif (
                     last_message.lower().strip() not in [
                         move_was_made.lower().strip(),
@@ -453,17 +454,14 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                     ]
                     and not last_message.lower().startswith("failed to make move:")
                 ):
-                    game_over = True
                     winner = "NONE"
                     reason = TerminationReason.UNKNOWN_ISSUE.value
+
                 proxy_agent.clear_history()
                 time.sleep(throttle_delay)
-                if game_over:
+                if reason:
                     break
 
-        if not reason and current_move >= max_game_moves:
-            winner = "NONE"
-            reason = TerminationReason.MAX_MOVES.value
 
     except Exception as e:
         print("\033[91mExecution was halted due to error.\033[0m")
