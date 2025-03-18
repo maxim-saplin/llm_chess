@@ -15,9 +15,20 @@ Usage:
     Set constants to path and run as script OR call the convert_aggregate_to_refined() function
 """
 
+import sys
 import os
 import csv
-from .aggregate_logs_to_csv import aggregate_models_to_csv, MODEL_OVERRIDES
+
+# Try relative import first (for tests)
+try:
+    from .aggregate_logs_to_csv import aggregate_models_to_csv, MODEL_OVERRIDES
+except ImportError:
+    # Add project root to path (for direct script execution)
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if project_root not in sys.path:
+        sys.path.append(project_root)
+    # Now try the direct import
+    from data_processing.aggregate_logs_to_csv import aggregate_models_to_csv, MODEL_OVERRIDES
 
 LOGS_DIR = "_logs/no_reflection"
 AGGREGATE_CSV = os.path.join(LOGS_DIR, "aggregate_models.csv")
@@ -86,12 +97,16 @@ def convert_aggregate_to_refined(
             "moe_material_diff_llm_minus_rand",
             "completion_tokens_black_per_move",
             "moe_completion_tokens_black_per_move",
-            "std_dev_black_llm_win_rate",
             "moe_black_llm_win_rate",
-            "std_dev_draw_rate",
             "moe_draw_rate",
-            "std_dev_black_llm_loss_rate",
             "moe_black_llm_loss_rate",
+            "win_loss",
+            "moe_win_loss", 
+            "game_duration",
+            "moe_game_duration",
+            "games_interrupted",
+            "games_interrupted_percent",
+            "moe_games_interrupted",
         ]
 
         # Prepare to write to the refined CSV
@@ -144,14 +159,20 @@ def convert_aggregate_to_refined(
                 player_wins_percent = float(row["black_llm_wins_percent"])
                 player_draws_percent = float(row["black_llm_draws_percent"])
 
-                std_dev_black_llm_win_rate = float(row["std_dev_black_llm_win_rate"])
                 moe_black_llm_win_rate = float(row["moe_black_llm_win_rate"])
-                std_dev_draw_rate = float(row["std_dev_draw_rate"])
                 moe_draw_rate = float(row["moe_draw_rate"])
 
                 # Calculate loss rate statistics
-                std_dev_black_llm_loss_rate = float(row["std_dev_black_llm_loss_rate"])
                 moe_black_llm_loss_rate = float(row["moe_black_llm_loss_rate"])
+
+                # Get new metrics
+                win_loss = float(row["win_loss"])
+                moe_win_loss = float(row["moe_win_loss"])
+                game_duration = float(row["game_duration"])
+                moe_game_duration = float(row["moe_game_duration"])
+                games_interrupted = int(row["games_interrupted"])
+                games_interrupted_percent = float(row["games_interrupted_percent"])
+                moe_games_interrupted = float(row["moe_games_interrupted"])
 
                 # Append the row to the list of rows to write
                 rows_to_write.append(
@@ -178,12 +199,16 @@ def convert_aggregate_to_refined(
                         "moe_material_diff_llm_minus_rand": moe_material_diff_llm_minus_rand,
                         "completion_tokens_black_per_move": completion_tokens_black_per_move,
                         "moe_completion_tokens_black_per_move": moe_completion_tokens_black_per_move,
-                        "std_dev_black_llm_win_rate": std_dev_black_llm_win_rate,
                         "moe_black_llm_win_rate": moe_black_llm_win_rate,
-                        "std_dev_draw_rate": std_dev_draw_rate,
                         "moe_draw_rate": moe_draw_rate,
-                        "std_dev_black_llm_loss_rate": std_dev_black_llm_loss_rate,
                         "moe_black_llm_loss_rate": moe_black_llm_loss_rate,
+                        "win_loss": win_loss,
+                        "moe_win_loss": moe_win_loss,
+                        "game_duration": game_duration,
+                        "moe_game_duration": moe_game_duration,
+                        "games_interrupted": games_interrupted,
+                        "games_interrupted_percent": games_interrupted_percent,
+                        "moe_games_interrupted": moe_games_interrupted,
                     }
                 )
 

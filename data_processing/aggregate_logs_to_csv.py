@@ -13,7 +13,23 @@ from dataclasses import dataclass, field
 from typing import ClassVar, Dict, Any
 from statistics import mean, stdev
 
-from llm_chess import TerminationReason
+import sys
+import os
+
+# Try direct import first
+try:
+    from llm_chess import TerminationReason
+except ImportError:
+    # Try relative import (for tests)
+    try:
+        from ..llm_chess import TerminationReason
+    except ImportError:
+        # Add project root to path (for direct script execution)
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if project_root not in sys.path:
+            sys.path.append(project_root)
+        # Now try the direct import again
+        from llm_chess import TerminationReason
 
 # Directory where log files are stored
 LOGS_DIR = "_logs/no_reflection"
@@ -42,10 +58,10 @@ class PlayerStats:
     wrong_actions: int
     reflections_used: int
     reflections_used_before_board: int
-    get_board_count: int
-    get_legal_moves_count: int
-    make_move_count: int
     model: str
+    get_board_count: int = -1
+    get_legal_moves_count: int = -1
+    make_move_count: int = -1
 
     @property
     def mistakes(self) -> int:
