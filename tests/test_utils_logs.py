@@ -107,6 +107,9 @@ class TestAggrToRefined(unittest.TestCase):
                         "wrong_actions": 0,
                         "reflections_used": 0,
                         "reflections_used_before_board": 0,
+                        "get_board_count": 0,
+                        "get_legal_moves_count": 0,
+                        "make_move_count": 0,
                         "model": "N/A"
                     },
                     "material_count": {
@@ -119,6 +122,9 @@ class TestAggrToRefined(unittest.TestCase):
                         "wrong_actions": 0,
                         "reflections_used": 0,
                         "reflections_used_before_board": 0,
+                        "get_board_count": 0,
+                        "get_legal_moves_count": 0,
+                        "make_move_count": 0,
                         "model": "internlm3-8b-instruct"
                     },
                     "usage_stats": {
@@ -150,6 +156,9 @@ class TestAggrToRefined(unittest.TestCase):
                         "wrong_actions": 0,
                         "reflections_used": 0,
                         "reflections_used_before_board": 0,
+                        "get_board_count": 0,
+                        "get_legal_moves_count": 0,
+                        "make_move_count": 0,
                         "model": "N/A"
                     },
                     "material_count": {
@@ -162,6 +171,9 @@ class TestAggrToRefined(unittest.TestCase):
                         "wrong_actions": 0,
                         "reflections_used": 0,
                         "reflections_used_before_board": 0,
+                        "get_board_count": 0,
+                        "get_legal_moves_count": 0,
+                        "make_move_count": 0,
                         "model": "llama3-8b"
                     },
                     "usage_stats": {

@@ -1,10 +1,19 @@
+"""
+The main processing module that collects all individual game log JSON files, groups by model IDs
+and produces a CSV with a set of aggregate statistics
+
+Contain types definitnions for a Game log
+"""
+
 import os
 import json
 import csv
 import math
 from dataclasses import dataclass, field
-from typing import Dict, Any
+from typing import ClassVar, Dict, Any
 from statistics import mean, stdev
+
+from llm_chess import TerminationReason
 
 # Directory where log files are stored
 LOGS_DIR = "_logs/no_reflection"
@@ -33,6 +42,9 @@ class PlayerStats:
     wrong_actions: int
     reflections_used: int
     reflections_used_before_board: int
+    get_board_count: int
+    get_legal_moves_count: int
+    make_move_count: int
     model: str
 
     @property
@@ -57,6 +69,31 @@ class GameLog:
     material_count: Dict[str, int]
     usage_stats_white: UsageStats
     usage_stats_black: UsageStats
+
+    max_moves_in_game: ClassVar[int] = 200  # Global config defing the max duration of a game used to define relative duration, change in case non default game durations were used
+
+    @property
+    def is_interrupted(self) -> int:
+        """
+        Aka 'game loop broken'. A flag determining is the game was endeddue to a normal flows (e.g. check mate or max moves limmit was reached)
+        or due to abnormal execution (too many wrong actiuons, to many actions in a dialog, error - i.e. any failures within the game loop)
+
+        Reasons for game interruption include:
+            - Error: An error occurred during execution.
+            - Unknown Issue: An unknown issue prevented the game from proceeding.
+            - Max Turns: The maximum number of turns in a dialog was reached.
+            - Too Many Wrong Actions: The player made too many wrong actions in the dialog.
+        """
+        return self.reason in {
+            TerminationReason.ERROR.value,
+            TerminationReason.UNKNOWN_ISSUE.value,
+            TerminationReason.MAX_TURNS.value,
+            TerminationReason.TOO_MANY_WRONG_ACTIONS.value,
+        }
+    
+    @property
+    def game_duration(self) -> float:
+        return 1.0 if not self.is_interrupted else self.number_of_moves / GameLog.max_moves_in_game
 
 
 def load_game_logs(logs_dir, model_overrides):
