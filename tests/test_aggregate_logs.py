@@ -3,7 +3,13 @@ import tempfile
 import os
 import json
 import csv
-from data_processing.aggregate_logs_to_csv import aggregate_models_to_csv
+from data_processing.aggregate_logs_to_csv import (
+    aggregate_models_to_csv,
+    GameLog,
+    PlayerStats,
+    UsageStats
+)
+from llm_chess import TerminationReason
 
 
 class TestAggregateMetrics(unittest.TestCase):
@@ -457,6 +463,162 @@ def read_csv_as_dict(csv_path):
     with open(csv_path, "r") as f:
         reader = csv.DictReader(f)
         return list(reader)
+
+
+class TestGameLog(unittest.TestCase):
+    def setUp(self):
+        """Set up common test data."""
+        self.player_white = PlayerStats(
+            name="Random_Player",
+            wrong_moves=0,
+            wrong_actions=0,
+            reflections_used=0,
+            reflections_used_before_board=0,
+            get_board_count=0,
+            get_legal_moves_count=0,
+            make_move_count=0,
+            model="N/A",
+        )
+        
+        self.player_black = PlayerStats(
+            name="Player_Black",
+            wrong_moves=0,
+            wrong_actions=0,
+            reflections_used=0,
+            reflections_used_before_board=0,
+            get_board_count=0,
+            get_legal_moves_count=0,
+            make_move_count=0,
+            model="model_1",
+        )
+        
+        self.usage_stats_white = UsageStats(total_cost=0)
+        self.usage_stats_black = UsageStats(
+            total_cost=0.08589000000000013,
+            details={
+                "cost": 0.08589000000000013,
+                "prompt_tokens": 111510,
+                "completion_tokens": 20090,
+                "total_tokens": 131600,
+            },
+        )
+
+    def test_is_interrupted_true(self):
+        """Test that is_interrupted returns True for interrupted games."""
+        # Test each interruption reason
+        for reason in [
+            TerminationReason.ERROR.value,
+            TerminationReason.UNKNOWN_ISSUE.value,
+            TerminationReason.MAX_TURNS.value,
+            TerminationReason.TOO_MANY_WRONG_ACTIONS.value,
+        ]:
+            game_log = GameLog(
+                time_started="2025.02.09_09:31",
+                winner="Random_Player",
+                reason=reason,
+                number_of_moves=50,
+                player_white=self.player_white,
+                player_black=self.player_black,
+                material_count={"white": 11, "black": 12},
+                usage_stats_white=self.usage_stats_white,
+                usage_stats_black=self.usage_stats_black,
+            )
+            self.assertTrue(
+                game_log.is_interrupted,
+                f"Game with reason '{reason}' should be marked as interrupted",
+            )
+
+    def test_is_interrupted_false(self):
+        """Test that is_interrupted returns False for normal game endings."""
+        # Test non-interruption reasons
+        for reason in [
+            "Checkmate",
+            "Stalemate",
+            "Max moves reached",
+            "Insufficient material",
+            "Threefold repetition",
+        ]:
+            game_log = GameLog(
+                time_started="2025.02.09_09:31",
+                winner="Random_Player",
+                reason=reason,
+                number_of_moves=50,
+                player_white=self.player_white,
+                player_black=self.player_black,
+                material_count={"white": 11, "black": 12},
+                usage_stats_white=self.usage_stats_white,
+                usage_stats_black=self.usage_stats_black,
+            )
+            self.assertFalse(
+                game_log.is_interrupted,
+                f"Game with reason '{reason}' should not be marked as interrupted",
+            )
+
+    def test_game_duration_interrupted(self):
+        """Test that game_duration returns relative duration for interrupted games."""
+        # Test with different move counts for interrupted games
+        test_cases = [
+            (50, 50 / GameLog.max_moves_in_game),
+            (100, 100 / GameLog.max_moves_in_game),
+            (150, 150 / GameLog.max_moves_in_game),
+        ]
+        
+        for moves, expected_duration in test_cases:
+            game_log = GameLog(
+                time_started="2025.02.09_09:31",
+                winner="Random_Player",
+                reason=TerminationReason.TOO_MANY_WRONG_ACTIONS.value,
+                number_of_moves=moves,
+                player_white=self.player_white,
+                player_black=self.player_black,
+                material_count={"white": 11, "black": 12},
+                usage_stats_white=self.usage_stats_white,
+                usage_stats_black=self.usage_stats_black,
+            )
+            self.assertAlmostEqual(
+                game_log.game_duration,
+                expected_duration,
+                msg=f"Game with {moves} moves should have duration {expected_duration}",
+            )
+
+    def test_game_duration_completed(self):
+        """Test that game_duration returns 1.0 for completed games."""
+        # Test with different move counts for completed games
+        test_cases = [50, 100, GameLog.max_moves_in_game]
+        
+        for moves in test_cases:
+            game_log = GameLog(
+                time_started="2025.02.09_09:31",
+                winner="Random_Player",
+                reason="Checkmate",
+                number_of_moves=moves,
+                player_white=self.player_white,
+                player_black=self.player_black,
+                material_count={"white": 11, "black": 12},
+                usage_stats_white=self.usage_stats_white,
+                usage_stats_black=self.usage_stats_black,
+            )
+            self.assertEqual(
+                game_log.game_duration,
+                1.0,
+                f"Completed game with {moves} moves should have duration 1.0",
+            )
+
+    def test_max_moves_reached(self):
+        """Test that 'Max moves reached' is not considered an interruption."""
+        game_log = GameLog(
+            time_started="2025.02.09_09:31",
+            winner="NONE",
+            reason="Max moves reached",
+            number_of_moves=GameLog.max_moves_in_game,
+            player_white=self.player_white,
+            player_black=self.player_black,
+            material_count={"white": 11, "black": 12},
+            usage_stats_white=self.usage_stats_white,
+            usage_stats_black=self.usage_stats_black,
+        )
+        self.assertFalse(game_log.is_interrupted)
+        self.assertEqual(game_log.game_duration, 1.0)
 
 
 if __name__ == "__main__":
