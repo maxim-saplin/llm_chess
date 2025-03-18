@@ -197,6 +197,16 @@ def aggregate_models_to_csv(
         "black_llm_wins_percent",
         "black_llm_draws_percent",
         "white_rand_wins_percent",
+        "win_loss",
+        "std_dev_win_loss",
+        "moe_win_loss",
+        "game_duration",
+        "std_dev_game_duration", 
+        "moe_game_duration",
+        "games_interrupted",
+        "games_interrupted_percent",
+        "std_dev_games_interrupted",
+        "moe_games_interrupted",
         "llm_total_moves",
         "average_moves",
         "std_dev_moves",
@@ -247,10 +257,30 @@ def aggregate_models_to_csv(
         white_rand_wins = sum(1 for log in model_logs if log.winner == "Random_Player")
         draws = total_games - black_llm_wins - white_rand_wins
 
-        black_llm_wins_percent = (
-            (black_llm_wins / total_games) * 100 if total_games > 0 else 0
-        )
+        black_llm_wins_percent = (black_llm_wins / total_games) * 100 if total_games > 0 else 0
         black_llm_draws_percent = (draws / total_games) * 100 if total_games > 0 else 0
+
+        # Calculate win_loss metric
+        win_loss = ((black_llm_wins - white_rand_wins) / total_games) / 2 + 0.5 if total_games > 0 else 0.5
+
+        # Calculate standard deviation and margin of error for win_loss
+        per_game_win_loss = [(1 / 2 + 0.5) if log.winner == "Player_Black" else 
+                            (-1 / 2 + 0.5) if log.winner == "Random_Player" else 
+                            0.5 for log in model_logs]
+        std_dev_win_loss = stdev(per_game_win_loss) if total_games > 1 else 0
+        moe_win_loss = 1.96 * (std_dev_win_loss / math.sqrt(total_games)) if total_games > 1 else 0
+
+        # Calculate game_duration metric
+        game_duration = mean([log.game_duration for log in model_logs]) if model_logs else 0
+        std_dev_game_duration = stdev([log.game_duration for log in model_logs]) if total_games > 1 else 0
+        moe_game_duration = 1.96 * (std_dev_game_duration / math.sqrt(total_games)) if total_games > 1 else 0
+
+        # Calculate games_interrupted metric
+        games_interrupted = sum(1 for log in model_logs if log.is_interrupted)
+        games_interrupted_percent = (games_interrupted / total_games * 100) if total_games > 0 else 0
+        p_interrupted = games_interrupted / total_games if total_games > 0 else 0
+        std_dev_games_interrupted = math.sqrt((p_interrupted * (1 - p_interrupted)) / total_games) if total_games > 1 else 0
+        moe_games_interrupted = 1.96 * std_dev_games_interrupted if total_games > 1 else 0
 
         # Calculate win rate, standard deviation, and margin of error
         black_llm_win_rate = black_llm_wins / total_games if total_games > 0 else 0
@@ -510,6 +540,16 @@ def aggregate_models_to_csv(
                 black_llm_wins_percent,
                 black_llm_draws_percent,
                 (white_rand_wins / total_games) * 100 if total_games > 0 else 0,
+                win_loss,
+                std_dev_win_loss,
+                moe_win_loss,
+                game_duration,
+                std_dev_game_duration, 
+                moe_game_duration,
+                games_interrupted,
+                games_interrupted_percent,
+                std_dev_games_interrupted,
+                moe_games_interrupted,
                 llm_total_moves,
                 average_moves,
                 std_dev_moves,

@@ -3,6 +3,7 @@ import tempfile
 import os
 import json
 import csv
+import math
 from data_processing.aggregate_logs_to_csv import (
     aggregate_models_to_csv,
     GameLog,
@@ -203,6 +204,96 @@ class TestAggregateMetrics(unittest.TestCase):
             float(model_2_data["moe_black_llm_loss_rate"]), 0.69296465
         )
 
+    def test_win_loss_metric(self):
+        """Tests that the win_loss metric is correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the win_loss metric for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        # For both models, we have 0 wins, 1 draw, and 1 loss
+        # win_loss = ((wins - losses) / total_games) / 2 + 0.5
+        # = ((-1) / 2) / 2 + 0.5 = -0.25 + 0.5 = 0.25
+        expected_win_loss = 0.25
+        
+        self.assertAlmostEqual(float(model_1_data["win_loss"]), expected_win_loss)
+        self.assertAlmostEqual(float(model_2_data["win_loss"]), expected_win_loss)
+        
+        # Check standard deviation and margin of error
+        # We should have values for these since we have more than 1 game
+        self.assertGreater(float(model_1_data["std_dev_win_loss"]), 0)
+        self.assertGreater(float(model_1_data["moe_win_loss"]), 0)
+        self.assertGreater(float(model_2_data["std_dev_win_loss"]), 0)
+        self.assertGreater(float(model_2_data["moe_win_loss"]), 0)
+
+    def test_game_duration_metric(self):
+        """Tests that the game_duration metric is correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the game_duration metric for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        # For model_1:
+        # - Game 1: 200 moves, not interrupted -> duration = 1.0
+        # - Game 2: 132 moves, interrupted -> duration = 132/200 = 0.66
+        # Average: (1.0 + 0.66) / 2 = 0.83
+        expected_duration_model_1 = (1.0 + (132/200)) / 2
+        
+        # For model_2:
+        # - Game 1: 200 moves, not interrupted -> duration = 1.0
+        # - Game 2: 164 moves, interrupted -> duration = 164/200 = 0.82
+        # Average: (1.0 + 0.82) / 2 = 0.91
+        expected_duration_model_2 = (1.0 + (164/200)) / 2
+        
+        self.assertAlmostEqual(float(model_1_data["game_duration"]), expected_duration_model_1)
+        self.assertAlmostEqual(float(model_2_data["game_duration"]), expected_duration_model_2)
+        
+        # Check standard deviation and margin of error
+        self.assertGreater(float(model_1_data["std_dev_game_duration"]), 0)
+        self.assertGreater(float(model_1_data["moe_game_duration"]), 0)
+        self.assertGreater(float(model_2_data["std_dev_game_duration"]), 0)
+        self.assertGreater(float(model_2_data["moe_game_duration"]), 0)
+
+    def test_games_interrupted_metric(self):
+        """Tests that the games_interrupted metric is correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the games_interrupted metric for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        # For both models, we have 1 interrupted game out of 2 total games
+        expected_interrupted = 1
+        expected_interrupted_percent = 50.0
+        
+        self.assertEqual(int(model_1_data["games_interrupted"]), expected_interrupted)
+        self.assertEqual(int(model_2_data["games_interrupted"]), expected_interrupted)
+        
+        self.assertAlmostEqual(float(model_1_data["games_interrupted_percent"]), expected_interrupted_percent)
+        self.assertAlmostEqual(float(model_2_data["games_interrupted_percent"]), expected_interrupted_percent)
+        
+        # Check standard deviation and margin of error
+        # For binary outcomes with p=0.5, std_dev should be sqrt((0.5 * 0.5) / 2) = 0.3535...
+        expected_std_dev = math.sqrt((0.5 * 0.5) / 2)
+        self.assertAlmostEqual(float(model_1_data["std_dev_games_interrupted"]), expected_std_dev, places=5)
+        self.assertAlmostEqual(float(model_2_data["std_dev_games_interrupted"]), expected_std_dev, places=5)
+        
+        # MoE should be 1.96 * std_dev
+        expected_moe = 1.96 * expected_std_dev
+        self.assertAlmostEqual(float(model_1_data["moe_games_interrupted"]), expected_moe, places=5)
+        self.assertAlmostEqual(float(model_2_data["moe_games_interrupted"]), expected_moe, places=5)
+
     def test_aggregation_output_fields(self):
         aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
 
@@ -229,6 +320,16 @@ class TestAggregateMetrics(unittest.TestCase):
             "black_llm_wins_percent",
             "black_llm_draws_percent",
             "white_rand_wins_percent",
+            "win_loss",
+            "std_dev_win_loss", 
+            "moe_win_loss",
+            "game_duration",
+            "std_dev_game_duration",
+            "moe_game_duration",
+            "games_interrupted",
+            "games_interrupted_percent",
+            "std_dev_games_interrupted",
+            "moe_games_interrupted",
             "llm_total_moves",
             "average_moves",
             "std_dev_moves",
