@@ -6,7 +6,7 @@ from utils import setup_console_logging
 
 # Parameters
 NUM_REPETITIONS = 67  # Set the number of games to run
-LOG_FOLDER = "_logs/new/2025-03-Gemma_3/2025-03-16_google_gemma-3-27b-it@iq4_xs"  # Set the folder to store logs
+LOG_FOLDER = "_logs/new/2025-03-Gemma_3/2025-03-18_google_gemma-3-27b-it@iq4_xs"  # Set the folder to store logs
 
 STORE_INDIVIDUAL_LOGS = True
 
