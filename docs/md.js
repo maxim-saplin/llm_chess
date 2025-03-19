@@ -1,12 +1,34 @@
 class MinimalMD {
     static async render(elementId) {
         try {
+            console.log(`Attempting to render markdown to element: ${elementId}`);
+            const element = document.getElementById(elementId);
+            if (!element) {
+                throw new Error(`Element with ID '${elementId}' not found`);
+            }
+            
+            console.log('Fetching notes.md...');
             const response = await fetch('notes.md');
+            if (!response.ok) {
+                throw new Error(`Failed to load markdown: ${response.status}`);
+            }
+            
             const text = await response.text();
+            console.log('Markdown content loaded, length:', text.length);
+            
             const html = this.parseMarkdown(text);
-            document.getElementById(elementId).innerHTML = html;
+            console.log('Markdown parsed, setting innerHTML');
+            
+            element.innerHTML = html;
+            console.log('Markdown rendering complete');
         } catch (error) {
             console.error('Error loading markdown:', error);
+            // Display a fallback message when notes.md can't be loaded
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = 
+                    '<p class="descriptions">Notes content could not be loaded. Please check back later.</p>';
+            }
         }
     }
 

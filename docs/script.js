@@ -1,3 +1,33 @@
+// Navigation configuration
+const navConfig = {
+    screens: {
+        LEADERBOARD_NEW: {
+            id: 'leaderboard_new',
+            title: 'Leaderboard',
+            elementId: 'leaderboard',
+            isDefault: true,
+            onShow: function() {
+                buildTableGeneric(tableConfigs[this.id]);
+            }
+        },
+        HOW_IT_WORKS: {
+            id: 'how_it_works',
+            title: 'How it works',
+            elementId: 'how-it-works'
+        },
+        NOTES: {
+            id: 'notes',
+            title: 'Notes',
+            elementId: 'considerations',
+            onShow: function() {
+                MinimalMD.render(this.elementId);
+            }
+        }
+    },
+    
+    dropdowns: []
+};
+
 const Screen = {
     LEADERBOARD_NEW: 'leaderboard_new',
     LEADERBOARD_OLD: 'leaderboard_old',
@@ -16,7 +46,7 @@ let sortOrderState = {
     [Screen.LEADERBOARD_OLD]: {}
 };
 
-let currentScreen = Screen.LEADERBOARD_NEW;
+let currentScreen = null;
 let allRows = []; // Will store row objects for sorting/drawing
 
 const csvIndices = {
@@ -42,241 +72,172 @@ const csvIndices = {
     moe_material_diff_llm_minus_rand: 19,
     completion_tokens_black_per_move: 20,
     moe_completion_tokens_black_per_move: 21,
-    std_dev_black_llm_win_rate: 22,
-    moe_black_llm_win_rate: 23,
-    std_dev_draw_rate: 24,
-    moe_draw_rate: 25,
-    std_dev_black_llm_loss_rate: 26,
-    moe_black_llm_loss_rate: 27,
+    moe_black_llm_win_rate: 22,
+    moe_draw_rate: 23,
+    moe_black_llm_loss_rate: 24,
+    win_loss: 25,
+    moe_win_loss: 26,
+    game_duration: 27,
+    moe_game_duration: 28,
+    games_interrupted: 29,
+    games_interrupted_percent: 30,
+    moe_games_interrupted: 31
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Create navigation elements first
+    createNavigation();
+    
+    // Initialize board animation
     fetchAndAnimateBoard();
 
-    // Select Leaderboard by default
-    showPane(Screen.LEADERBOARD_NEW);
-
+    // Show default screen after navigation is created
+    showDefaultScreen();
+    
     // Initialize markdown rendering
-    MinimalMD.render('considerations');
+    setTimeout(() => {
+        MinimalMD.render('considerations');
+    }, 100);
 });
 
 // Define table configs for NEW and OLD leaderboards
 const tableConfigs = {
     [Screen.LEADERBOARD_NEW]: {
-        columns: [
-            {
-                title: '#', tooltip: 'Rank of the model (default)', isNumeric: true, removeFromSpecialRows: true,
-                getValue: (cols, idx) => '',
-                compareFn: (a, b) => a.defaultIndex - b.defaultIndex
-            },
-            { title: 'Player', tooltip: 'Model playing against Random Player', getValue: (cols) => cols[csvIndices.player], isNumeric: false, compareFn: (a, b) => a.cols[csvIndices.player].localeCompare(b.cols[csvIndices.player]) },
-            {
-                title: 'Wins - Losses', tooltip: 'Difference between wins & losses. Better all round model wins more but also loses less.', getValue: (cols) => {
-                    const value = ((parseInt(cols[csvIndices.player_wins]) -
-                        parseInt(cols[csvIndices.opponent_wins])) /
-                        parseInt(cols[csvIndices.total_games]) * 100);
-
-                    return (value >= 100 || value <= -100 ? value.toFixed(1) : value.toFixed(2)) + '%';
-                },
-                isNumeric: true,
-                compareFn: (a, b) => {
-                    const aWins = parseInt(a.cols[csvIndices.player_wins]) || 0;
-                    const aLosses = parseInt(a.cols[csvIndices.opponent_wins]) || 0;
-                    const aGames = parseInt(a.cols[csvIndices.total_games]) || 0;
-                    const aDiff = aGames ? ((aWins - aLosses) / aGames) * 100 : 0;
-
-                    const bWins = parseInt(b.cols[csvIndices.player_wins]) || 0;
-                    const bLosses = parseInt(b.cols[csvIndices.opponent_wins]) || 0;
-                    const bGames = parseInt(b.cols[csvIndices.total_games]) || 0;
-                    const bDiff = bGames ? ((bWins - bLosses) / bGames) * 100 : 0;
-
-                    // Return ascending by difference; sortAllRows will invert if 'desc' is used
-                    return aDiff - bDiff;
-                }
-            },
-            {
-                title: 'Avg Moves', tooltip: 'Average duration of a game (in number of moves made) before it ended due to a win, an error, or reaching the 200 limit. For stronger winning models, lower game duration indicates higher capability—lower is better. For weak losing models, a higher value is better as it means the model can stay in the game longer without interrupting the game loop due to a mistake.',
-                getValue: (cols) => parseFloat(cols[csvIndices.average_moves]).toFixed(2), isNumeric: true,
-                compareFn: (a, b) => {
-                    const aVal = parseFloat(a.cols[csvIndices.average_moves]) || 0;
-                    const bVal = parseFloat(b.cols[csvIndices.average_moves]) || 0;
-                    return aVal - bVal;
-                }
-            },
-            {
-                title: 'Mis-takes', tooltip: 'Number of mistakes per 1000 moves made by the model.',
-                getValue: (cols) => {
-                    const value = parseFloat(cols[csvIndices.mistakes_per_1000moves]) || 0;
-                    return value > 1000 ? value.toFixed(1) : value.toFixed(2);
-                },
-                isNumeric: true,
-                compareFn: (a, b) => {
-                    const aVal = parseFloat(a.cols[csvIndices.mistakes_per_1000moves]) || 0;
-                    const bVal = parseFloat(b.cols[csvIndices.mistakes_per_1000moves]) || 0;
-                    return aVal - bVal;
-                }
-            },
-            {
-                title: 'Tokens',
-                getValue: (cols) => {
-                    const value = parseFloat(cols[csvIndices.completion_tokens_black_per_move]) || 0;
-                    return value > 1000 ? value.toFixed(1) : value.toFixed(2);
-                },
-                isNumeric: true,
-                compareFn: (a, b) => {
-                    const aVal = parseFloat(a.cols[csvIndices.completion_tokens_black_per_move]) || 0;
-                    const bVal = parseFloat(b.cols[csvIndices.completion_tokens_black_per_move]) || 0;
-                    return aVal - bVal;
-                }
-            }
-        ],
-        defaultSortCompare: (colsA, colsB) => {
-            const playerWinsA = parseInt(colsA[csvIndices.player_wins]) || 0;
-            const oppWinsA = parseInt(colsA[csvIndices.opponent_wins]) || 0;
-            const totalGamesA = parseInt(colsA[csvIndices.total_games]) || 0;
-            const winsMinusLossesA = totalGamesA > 0 ? ((playerWinsA - oppWinsA) / totalGamesA) * 100 : 0;
-
-            const playerWinsB = parseInt(colsB[csvIndices.player_wins]) || 0;
-            const oppWinsB = parseInt(colsB[csvIndices.opponent_wins]) || 0;
-            const totalGamesB = parseInt(colsB[csvIndices.total_games]) || 0;
-            const winsMinusLossesB = totalGamesB > 0 ? ((playerWinsB - oppWinsB) / totalGamesB) * 100 : 0;
-
-            const avgMovesA = parseFloat(colsA[csvIndices.average_moves]) || 0;
-            const avgMovesB = parseFloat(colsB[csvIndices.average_moves]) || 0;
-            const mistakesA = parseFloat(colsA[csvIndices.mistakes_per_1000moves]) || 0;
-            const mistakesB = parseFloat(colsB[csvIndices.mistakes_per_1000moves]) || 0;
-
-            return (winsMinusLossesB - winsMinusLossesA)
-                || (avgMovesB - avgMovesA)
-                || (mistakesA - mistakesB);
+      columns: [
+        {
+          title: '#',
+          tooltip: 'Rank of the model',
+          isNumeric: true,
+          removeFromSpecialRows: true,
+          getValue: (cols, idx) => '',
+          compareFn: (a, b) => a.defaultIndex - b.defaultIndex
+        },
+        {
+          title: 'Player',
+          tooltip: 'Model playing as black against Random Player',
+          getValue: (cols) => cols[csvIndices.player],
+          isNumeric: false,
+          compareFn: (a, b) => a.cols[csvIndices.player].localeCompare(b.cols[csvIndices.player])
+        },
+        {
+          title: 'Win/Loss',
+          tooltip: 'Win-Loss as a percent',
+          isNumeric: true,
+          getValue: (cols) => {
+            const val = parseFloat(cols[csvIndices.win_loss]) || 0;
+            return (val * 100).toFixed(2) + '%';
+          },
+          compareFn: (a, b) => {
+            const aVal = parseFloat(a.cols[csvIndices.win_loss]) || 0;
+            const bVal = parseFloat(b.cols[csvIndices.win_loss]) || 0;
+            return aVal - bVal;
+          }
+        },
+        {
+          title: 'Game Duration',
+          tooltip: 'Game Duration as a percent',
+          isNumeric: true,
+          getValue: (cols) => {
+            const val = parseFloat(cols[csvIndices.game_duration]) || 0;
+            return (val * 100).toFixed(2) + '%';
+          },
+          compareFn: (a, b) => {
+            const aVal = parseFloat(a.cols[csvIndices.game_duration]) || 0;
+            const bVal = parseFloat(b.cols[csvIndices.game_duration]) || 0;
+            return aVal - bVal;
+          }
+        },
+        {
+          title: 'Tokens',
+          getValue: (cols) => {
+            const value = parseFloat(cols[csvIndices.completion_tokens_black_per_move]) || 0;
+            return value > 1000 ? value.toFixed(1) : value.toFixed(2);
+          },
+          isNumeric: true,
+          compareFn: (a, b) => {
+            const aVal = parseFloat(a.cols[csvIndices.completion_tokens_black_per_move]) || 0;
+            const bVal = parseFloat(b.cols[csvIndices.completion_tokens_black_per_move]) || 0;
+            return aVal - bVal;
+          }
         }
+      ],
+      defaultSortCompare: (colsA, colsB) => {
+        const wlA = parseFloat(colsA[csvIndices.win_loss]) || 0;
+        const wlB = parseFloat(colsB[csvIndices.win_loss]) || 0;
+        const gdA = parseFloat(colsA[csvIndices.game_duration]) || 0;
+        const gdB = parseFloat(colsB[csvIndices.game_duration]) || 0;
+        const tokA = parseFloat(colsA[csvIndices.completion_tokens_black_per_move]) || 0;
+        const tokB = parseFloat(colsB[csvIndices.completion_tokens_black_per_move]) || 0;
+        // Sort by Win/Loss DESC, then Game Duration DESC, then Tokens ASC
+        return (wlB - wlA) || (gdB - gdA) || (tokA - tokB);
+      }
     },
-    [Screen.LEADERBOARD_OLD]: {
-        columns: [
-            {
-                title: '#', tooltip: 'Rank of the model (default)', isNumeric: true, removeFromSpecialRows: true,
-                getValue: (cols, idx) => '',
-                compareFn: (a, b) => a.defaultIndex - b.defaultIndex
-            },
-            { title: 'Player', tooltip: 'Model playing against Random Player', getValue: (cols) => cols[csvIndices.player], isNumeric: false, compareFn: (a, b) => a.cols[csvIndices.player].localeCompare(b.cols[csvIndices.player]) },
-            {
-                title: 'Wins', tooltip: 'Wins as a percentage of all games', getValue: (cols) =>
-                    ((parseInt(cols[csvIndices.player_wins]) / parseInt(cols[csvIndices.total_games])) * 100).toFixed(2) + '%',
-                isNumeric: true,
-                compareFn: (a, b) => {
-                    const aVal = (parseInt(a.cols[csvIndices.player_wins]) / parseInt(a.cols[csvIndices.total_games]) * 100) || 0;
-                    const bVal = (parseInt(b.cols[csvIndices.player_wins]) / parseInt(b.cols[csvIndices.total_games]) * 100) || 0;
-                    return aVal - bVal;
-                }
-            },
-            {
-                title: 'Draws', getValue: (cols) => parseFloat(cols[csvIndices.player_draws_percent]).toFixed(2) + '%', isNumeric: true,
-                compareFn: (a, b) => {
-                    // parseFloat("24.56%") => 24.56
-                    const aVal = parseFloat(a.cols[csvIndices.player_draws_percent]) || 0;
-                    const bVal = parseFloat(b.cols[csvIndices.player_draws_percent]) || 0;
-                    return aVal - bVal;
-                }
-            },
-            {
-                title: 'Mis-takes',
-                getValue: (cols) => {
-                    const value = parseFloat(cols[csvIndices.mistakes_per_1000moves]) || 0;
-                    return value > 1000 ? value.toFixed(1) : value.toFixed(2);
-                },
-                isNumeric: true,
-                compareFn: (a, b) => {
-                    const aVal = parseFloat(a.cols[csvIndices.mistakes_per_1000moves]) || 0;
-                    const bVal = parseFloat(b.cols[csvIndices.mistakes_per_1000moves]) || 0;
-                    return aVal - bVal;
-                }
-            },
-            {
-                title: 'Tokens',
-                getValue: (cols) => {
-                    const value = parseFloat(cols[csvIndices.completion_tokens_black_per_move]) || 0;
-                    return value > 1000 ? value.toFixed(1) : value.toFixed(2);
-                },
-                isNumeric: true,
-                compareFn: (a, b) => {
-                    const aVal = parseFloat(a.cols[csvIndices.completion_tokens_black_per_move]) || 0;
-                    const bVal = parseFloat(b.cols[csvIndices.completion_tokens_black_per_move]) || 0;
-                    return aVal - bVal;
-                }
-            }
-        ],
-        // Sorting priority for OLD leaderboard: Wins DESC, Draws DESC, Mistakes ASC
-        defaultSortCompare: (colsA, colsB) => {
-            const winsA = parseFloat(colsA[csvIndices.player_wins]) / parseFloat(colsA[csvIndices.total_games]) * 100;
-            const winsB = parseFloat(colsB[csvIndices.player_wins]) / parseFloat(colsB[csvIndices.total_games]) * 100;
-            const drawsA = parseFloat(colsA[csvIndices.player_draws_percent]);
-            const drawsB = parseFloat(colsB[csvIndices.player_draws_percent]);
-            const mistakesA = parseFloat(colsA[csvIndices.mistakes_per_1000moves]);
-            const mistakesB = parseFloat(colsB[csvIndices.mistakes_per_1000moves]);
-            return (winsB - winsA) || (drawsB - drawsA) || (mistakesA - mistakesB);
-        }
-    }
 };
 
-function showPane(screen) {
+function showPane(screenId) {
     const scrollPos = window.scrollY;
-    currentScreen = screen;
-
-    // Update UI based on screen
-    switch (screen) {
-        case Screen.LEADERBOARD_NEW:
-            document.getElementById('leaderboard').style.display = 'block';
-            document.getElementById('how-it-works').style.display = 'none';
-            document.getElementById('considerations').style.display = 'none';
-            document.querySelector('.dropbtn').textContent = 'Leaderboard ▼';
-            buildTableGeneric(tableConfigs[Screen.LEADERBOARD_NEW]);
-            break;
-
-        case Screen.LEADERBOARD_OLD:
-            document.getElementById('leaderboard').style.display = 'block';
-            document.getElementById('how-it-works').style.display = 'none';
-            document.getElementById('considerations').style.display = 'none';
-            document.querySelector('.dropbtn').textContent = 'Leaderboard (O) ▼';
-            buildTableGeneric(tableConfigs[Screen.LEADERBOARD_OLD]);
-            break;
-
-        case Screen.HOW_IT_WORKS:
-            document.getElementById('leaderboard').style.display = 'none';
-            document.getElementById('how-it-works').style.display = 'block';
-            document.getElementById('considerations').style.display = 'none';
-            break;
-
-        case Screen.NOTES:
-            document.getElementById('leaderboard').style.display = 'none';
-            document.getElementById('how-it-works').style.display = 'none';
-            document.getElementById('considerations').style.display = 'block';
-            break;
+    const screenConfig = Object.values(navConfig.screens).find(s => s.id === screenId);
+    
+    if (!screenConfig) {
+        console.error(`Screen ${screenId} not found in configuration`);
+        return;
     }
-
-    // Update button states
-    document.querySelectorAll('.button-container button, .dropbtn').forEach(button => {
-        button.classList.remove('selected');
+    
+    currentScreen = screenId;
+    
+    // Hide all panes
+    Object.values(navConfig.screens).forEach(screen => {
+        const element = document.getElementById(screen.elementId);
+        if (element) element.style.display = 'none';
     });
-
-    if (screen === Screen.LEADERBOARD_NEW || screen === Screen.LEADERBOARD_OLD) {
-        document.querySelector('.dropbtn').classList.add('selected');
-    } else if (screen === Screen.HOW_IT_WORKS) {
-        document.querySelector('button[onclick="showPane(Screen.HOW_IT_WORKS)"]').classList.add('selected');
-    } else if (screen === Screen.NOTES) {
-        document.querySelector('button[onclick="showPane(Screen.NOTES)"]').classList.add('selected');
+    
+    // Show the selected pane
+    const selectedElement = document.getElementById(screenConfig.elementId);
+    if (selectedElement) selectedElement.style.display = 'block';
+    
+    // Update button states - add null checks
+    document.querySelectorAll('.button-container button').forEach(button => {
+        if (button) button.classList.remove('selected');
+    });
+    
+    // Find and select the appropriate button - add null checks
+    const parentDropdown = navConfig.dropdowns.find(dropdown => 
+        dropdown.defaultScreen === screenId || 
+        (dropdown.items && dropdown.items.some(item => item.screen === screenId))
+    );
+    
+    if (parentDropdown) {
+        const dropbtn = document.querySelector('.dropbtn');
+        if (dropbtn) dropbtn.classList.add('selected');
+        
+        if (parentDropdown.items && parentDropdown.items.length > 0) {
+            const item = parentDropdown.items.find(item => item.screen === screenId);
+            if (item) {
+                const dropbtn = document.querySelector('.dropbtn');
+                if (dropbtn) dropbtn.textContent = item.title;
+            }
+        }
+    } else {
+        const button = Array.from(document.querySelectorAll('.button-container button'))
+            .find(btn => btn && btn.textContent === screenConfig.title);
+        if (button) button.classList.add('selected');
     }
-
-    // Close dropdown
-    document.querySelector('.dropdown-content').classList.remove('show');
-
+    
+    // Run onShow handler if defined
+    if (screenConfig.onShow && typeof screenConfig.onShow === 'function') {
+        screenConfig.onShow.call(screenConfig);
+    }
+    
     // Restore scroll position
     window.scrollTo(0, scrollPos);
-
+    
     // Analytics
-    gtag('event', 'page_view', {
-        'page_title': document.title + ' - ' + screen,
-        'page_path': '/' + screen
-    });
+    if (typeof gtag === 'function') {
+        gtag('event', 'page_view', {
+            'page_title': document.title + ' - ' + screenId,
+            'page_path': '/' + screenId
+        });
+    }
 }
 
 function fetchAndAnimateBoard() {
@@ -375,8 +336,93 @@ function hidePopup() {
     popup.style.display = 'none';
 }
 
-function toggleDropdown() {
-    document.querySelector('.dropdown-content').classList.toggle('show');
+// Create navigation elements dynamically
+function createNavigation() {
+    const buttonContainer = document.querySelector('.button-container');
+    if (!buttonContainer) return;
+    
+    // Clear existing content
+    buttonContainer.innerHTML = '';
+    
+    // Create buttons based on configuration
+    Object.values(navConfig.screens).forEach(screen => {
+        // Skip screens that should be in dropdowns
+        if (isScreenInDropdown(screen.id)) return;
+        
+        const button = document.createElement('button');
+        button.textContent = screen.title;
+        button.onclick = () => showPane(screen.id);
+        buttonContainer.appendChild(button);
+    });
+    
+    // Create dropdowns
+    navConfig.dropdowns.forEach(dropdown => {
+        const dropdownContainer = document.createElement('div');
+        dropdownContainer.className = 'custom-dropdown';
+        
+        const dropbtn = document.createElement('button');
+        dropbtn.className = 'dropbtn';
+        dropbtn.textContent = dropdown.title;
+        
+        // If dropdown has items, create dropdown content
+        if (dropdown.items && dropdown.items.length > 0) {
+            dropbtn.onclick = () => toggleDropdown(dropdownContainer);
+            
+            const dropdownContent = document.createElement('div');
+            dropdownContent.className = 'dropdown-content';
+            
+            dropdown.items.forEach(item => {
+                const option = document.createElement('div');
+                option.textContent = item.title;
+                option.onclick = () => showPane(item.screen);
+                dropdownContent.appendChild(option);
+            });
+            
+            dropdownContainer.appendChild(dropbtn);
+            dropdownContainer.appendChild(dropdownContent);
+        } else {
+            // If no items, just make the button show the default screen
+            dropbtn.onclick = () => showPane(dropdown.defaultScreen);
+            dropdownContainer.appendChild(dropbtn);
+        }
+        
+        buttonContainer.appendChild(dropdownContainer);
+    });
+}
+
+function isScreenInDropdown(screenId) {
+    for (const dropdown of navConfig.dropdowns) {
+        if (dropdown.defaultScreen === screenId) return true;
+        if (dropdown.items) {
+            for (const item of dropdown.items) {
+                if (item.screen === screenId) return true;
+            }
+        }
+    }
+    return false;
+}
+
+function showDefaultScreen() {
+    const defaultScreen = Object.values(navConfig.screens).find(screen => screen.isDefault);
+    if (defaultScreen) {
+        showPane(defaultScreen.id);
+    } else {
+        const firstScreen = Object.values(navConfig.screens)[0];
+        if (firstScreen) showPane(firstScreen.id);
+    }
+}
+
+function toggleDropdown(dropdownContainer) {
+    const dropdownContent = dropdownContainer.querySelector('.dropdown-content');
+    if (dropdownContent) {
+        dropdownContent.classList.toggle('show');
+    } else {
+        const dropdownConfig = navConfig.dropdowns.find(d => 
+            d.title === dropdownContainer.querySelector('.dropbtn').textContent);
+        if (dropdownConfig) {
+            showPane(dropdownConfig.defaultScreen);
+        }
+    }
 }
 
 // Close the dropdown if clicked outside
@@ -385,7 +431,7 @@ window.onclick = function (event) {
         var dropdowns = document.getElementsByClassName('dropdown-content');
         for (var i = 0; i < dropdowns.length; i++) {
             var openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show')) {
+            if (openDropdown && openDropdown.classList.contains('show')) {
                 openDropdown.classList.remove('show');
             }
         }
