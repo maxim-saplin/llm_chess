@@ -106,9 +106,6 @@ button.selected, .dropbtn.selected {
     left: 1px;
 }
 
-
-
-
 button:hover {
     background-color: #808080;
     color: #FFFFFF;
@@ -286,13 +283,15 @@ p, pre {
 .table-container {
     overflow-x: auto;
     padding: 0;
+    padding-right: 8px;
 }
 
 table {
     margin-bottom: 40px;
     min-width: 720px;
-    width: 100%;
-    border-collapse: collapse;
+    width: calc(100% - 8px);
+    border-collapse: separate;
+    border-spacing: 0;
     border: 0;
     table-layout: fixed;
 }
@@ -330,7 +329,7 @@ td {
 th:nth-child(3), td:nth-child(3), th:nth-child(5), td:nth-child(5) {
     background-color: lightgray;
     color: black;
-    box-shadow: 8px 8px;
+    box-shadow: 8px 8px black;
 }
 
 /* Setting column widths */
@@ -367,8 +366,6 @@ table tbody tr:nth-last-child(-n+3) td {
     font-weight: normal;
     color: white;
 }
-
-
 
 #popup {
     display: none;
