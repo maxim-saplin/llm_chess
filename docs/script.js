@@ -10,6 +10,14 @@ const navConfig = {
                 buildTableGeneric(tableConfigs[this.id]);
             }
         },
+        MATRIX: {
+            id: 'matrix',
+            title: 'Matrix',
+            elementId: 'matrix-view',
+            onShow: function() {
+                renderPlayerMatrix();
+            }
+        },
         HOW_IT_WORKS: {
             id: 'how_it_works',
             title: 'How it works',
@@ -25,11 +33,21 @@ const navConfig = {
         }
     },
     
-    dropdowns: []
+    dropdowns: [
+        {
+            title: 'Leaderboard',
+            defaultScreen: 'leaderboard_new',
+            items: [
+                { title: 'Leaderboard', screen: 'leaderboard_new' },
+                { title: 'Matrix', screen: 'matrix' }
+            ]
+        }
+    ]
 };
 
 const Screen = {
     LEADERBOARD_NEW: 'leaderboard_new',
+    MATRIX: 'matrix',
     HOW_IT_WORKS: 'how_it_works',
     NOTES: 'notes'
 };
@@ -75,11 +93,16 @@ const csvIndices = {
     moe_black_llm_loss_rate: 24,
     win_loss: 25,
     moe_win_loss: 26,
-    game_duration: 27,
-    moe_game_duration: 28,
-    games_interrupted: 29,
-    games_interrupted_percent: 30,
-    moe_games_interrupted: 31
+    win_loss_non_interrupted: 27,
+    moe_win_loss_non_interrupted: 28,
+    game_duration: 29,
+    moe_game_duration: 30,
+    games_interrupted: 31,
+    games_interrupted_percent: 32,
+    moe_games_interrupted: 33,
+    games_not_interrupted: 34,
+    games_not_interrupted_percent: 35,
+    moe_games_not_interrupted: 36
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -213,7 +236,10 @@ function showPane(screenId) {
             const item = parentDropdown.items.find(item => item.screen === screenId);
             if (item) {
                 const dropbtn = document.querySelector('.dropbtn');
-                if (dropbtn) dropbtn.textContent = item.title;
+                if (dropbtn) {
+                    // Keep the arrow when updating button text
+                    dropbtn.innerHTML = `${item.title} <span class="dropdown-arrow">▼</span>`;
+                }
             }
         }
     } else {
@@ -361,28 +387,17 @@ function createNavigation() {
     // Clear existing content
     buttonContainer.innerHTML = '';
     
-    // Create buttons based on configuration
-    Object.values(navConfig.screens).forEach(screen => {
-        // Skip screens that should be in dropdowns
-        if (isScreenInDropdown(screen.id)) return;
-        
-        const button = document.createElement('button');
-        button.textContent = screen.title;
-        button.onclick = () => showPane(screen.id);
-        buttonContainer.appendChild(button);
-    });
-    
-    // Create dropdowns
+    // Create dropdowns first to make them appear on the left
     navConfig.dropdowns.forEach(dropdown => {
         const dropdownContainer = document.createElement('div');
         dropdownContainer.className = 'custom-dropdown';
         
         const dropbtn = document.createElement('button');
         dropbtn.className = 'dropbtn';
-        dropbtn.textContent = dropdown.title;
         
-        // If dropdown has items, create dropdown content
+        // If dropdown has items, create dropdown content and add arrow
         if (dropdown.items && dropdown.items.length > 0) {
+            dropbtn.innerHTML = `${dropdown.title} <span class="dropdown-arrow">▼</span>`;
             dropbtn.onclick = () => toggleDropdown(dropdownContainer);
             
             const dropdownContent = document.createElement('div');
@@ -399,11 +414,23 @@ function createNavigation() {
             dropdownContainer.appendChild(dropdownContent);
         } else {
             // If no items, just make the button show the default screen
+            dropbtn.textContent = dropdown.title;
             dropbtn.onclick = () => showPane(dropdown.defaultScreen);
             dropdownContainer.appendChild(dropbtn);
         }
         
         buttonContainer.appendChild(dropdownContainer);
+    });
+    
+    // Create regular buttons after dropdowns
+    Object.values(navConfig.screens).forEach(screen => {
+        // Skip screens that should be in dropdowns
+        if (isScreenInDropdown(screen.id)) return;
+        
+        const button = document.createElement('button');
+        button.textContent = screen.title;
+        button.onclick = () => showPane(screen.id);
+        buttonContainer.appendChild(button);
     });
 }
 
@@ -434,8 +461,12 @@ function toggleDropdown(dropdownContainer) {
     if (dropdownContent) {
         dropdownContent.classList.toggle('show');
     } else {
+        const dropdownBtn = dropdownContainer.querySelector('.dropbtn');
+        // Extract title text without the arrow
+        const buttonText = dropdownBtn ? dropdownBtn.textContent.replace('▼', '').trim() : '';
+        
         const dropdownConfig = navConfig.dropdowns.find(d => 
-            d.title === dropdownContainer.querySelector('.dropbtn').textContent);
+            d.title === buttonText);
         if (dropdownConfig) {
             showPane(dropdownConfig.defaultScreen);
         }
@@ -444,7 +475,7 @@ function toggleDropdown(dropdownContainer) {
 
 // Close the dropdown if clicked outside
 window.onclick = function (event) {
-    if (!event.target.matches('.dropbtn')) {
+    if (!event.target.matches('.dropbtn') && !event.target.matches('.dropdown-arrow')) {
         var dropdowns = document.getElementsByClassName('dropdown-content');
         for (var i = 0; i < dropdowns.length; i++) {
             var openDropdown = dropdowns[i];
@@ -613,4 +644,154 @@ function sortAllRows(rows, config, overrideColumnIndex = null, newOrder = 'asc')
 
     // Reassemble and return
     return [...normalRows, ...bottomRows];
+}
+
+// Function to render the player matrix visualization
+function renderPlayerMatrix() {
+    const canvas = document.getElementById('player-matrix');
+    const ctx = canvas.getContext('2d');
+    
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Set up dimensions
+    const padding = { top: 50, right: 50, bottom: 50, left: 80 };
+    const chartWidth = canvas.width - padding.left - padding.right;
+    const chartHeight = canvas.height - padding.top - padding.bottom;
+    
+    // Parse data from the CSV
+    const lines = data.trim().split('\n').filter(line => line.trim() !== '');
+    
+    // Get top 10 models based on the leaderboard ranking
+    const allRows = lines.slice(1).map(line => {
+        const cols = line.split(',');
+        return { cols };
+    });
+    
+    // Use the default sort function from tableConfigs to sort rows the same way as the leaderboard
+    const config = tableConfigs[Screen.LEADERBOARD_NEW];
+    const sortedRows = [...allRows].filter(row => {
+        // Filter out special rows
+        const playerName = row.cols[csvIndices.player];
+        return !Object.values(SPECIAL_ROWS).includes(playerName);
+    }).sort((a, b) => config.defaultSortCompare(a.cols, b.cols));
+    
+    // Get the top 10 player names
+    const top10Players = sortedRows.slice(0, 10).map(row => row.cols[csvIndices.player]);
+    
+    // Filter data to only include top 10 players
+    const playerData = lines.slice(1).filter(line => {
+        const cols = line.split(',');
+        const playerName = cols[csvIndices.player];
+        return top10Players.includes(playerName);
+    }).map(line => {
+        const cols = line.split(',');
+        return {
+            player: cols[csvIndices.player],
+            winLossNonInterrupted: parseFloat(cols[csvIndices.win_loss_non_interrupted]) || 0,
+            gameDuration: parseFloat(cols[csvIndices.game_duration]) || 0
+        };
+    });
+    
+    // Set fixed min and max values for axes (0% to 100%)
+    const minWinLoss = 0;
+    const maxWinLoss = 1;
+    const minDuration = 0;
+    const maxDuration = 1;
+    
+    // Draw background
+    ctx.fillStyle = 'black';
+    ctx.fillRect(padding.left, padding.top, chartWidth, chartHeight);
+    
+    // Draw axes
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    // X-axis
+    ctx.moveTo(padding.left, padding.top + chartHeight);
+    ctx.lineTo(padding.left + chartWidth, padding.top + chartHeight);
+    
+    // Y-axis
+    ctx.moveTo(padding.left, padding.top);
+    ctx.lineTo(padding.left, padding.top + chartHeight);
+    ctx.stroke();
+    
+    // Draw grid lines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 1;
+    
+    // X-axis grid lines and labels (0%, 20%, 40%, 60%, 80%, 100%)
+    for (let i = 0; i <= 5; i++) {
+        const x = padding.left + (chartWidth / 5) * i;
+        const value = i * 0.2; // 0 to 1 in steps of 0.2
+        
+        ctx.beginPath();
+        ctx.moveTo(x, padding.top);
+        ctx.lineTo(x, padding.top + chartHeight);
+        ctx.stroke();
+        
+        // X-axis label
+        ctx.fillStyle = 'white';
+        ctx.font = '14px "Web IBM VGA 8x16"';
+        ctx.textAlign = 'center';
+        ctx.fillText((value * 100).toFixed(0) + '%', x, padding.top + chartHeight + 25);
+    }
+    
+    // Y-axis grid lines and labels (0%, 25%, 50%, 75%, 100%)
+    for (let i = 0; i <= 4; i++) {
+        const y = padding.top + chartHeight - (chartHeight / 4) * i;
+        const value = i * 0.25; // 0 to 1 in steps of 0.25
+        
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(padding.left + chartWidth, y);
+        ctx.stroke();
+        
+        // Y-axis label
+        ctx.fillStyle = 'white';
+        ctx.font = '14px "Web IBM VGA 8x16"';
+        ctx.textAlign = 'right';
+        ctx.fillText((value * 100).toFixed(0) + '%', padding.left - 10, y + 5);
+    }
+    
+    // Axis titles
+    ctx.fillStyle = 'white';
+    ctx.font = '16px "Web IBM VGA 8x16"';
+    ctx.textAlign = 'center';
+    
+    // X-axis title
+    ctx.fillText('Game Duration', padding.left + chartWidth / 2, padding.top + chartHeight + 45);
+    
+    // Y-axis title - rotated
+    ctx.save();
+    ctx.translate(padding.left - 50, padding.top + chartHeight / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Win/Loss (Non-Interrupted)', 0, 0);
+    ctx.restore();
+    
+    // Plot data points
+    playerData.forEach(player => {
+        // Scale the values to canvas coordinates
+        const x = padding.left + chartWidth * (player.gameDuration);
+        const y = padding.top + chartHeight - chartHeight * (player.winLossNonInterrupted);
+        
+        // Draw point
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = 'yellow';
+        ctx.fill();
+        
+        // Add player name
+        ctx.fillStyle = 'lightgreen';
+        ctx.font = '12px "Web IBM VGA 8x16"';
+        ctx.textAlign = 'left';
+        ctx.fillText(player.player, x + 10, y + 4);
+    });
+    
+    // Add title
+    ctx.fillStyle = 'white';
+    ctx.font = '18px "Web IBM VGA 8x16"';
+    ctx.textAlign = 'center';
+    ctx.fillText('Top 10 LLM Chess Players Matrix', canvas.width / 2, 25);
 }

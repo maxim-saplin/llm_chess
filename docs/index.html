@@ -120,6 +120,27 @@
                 - The default sorting is by Win/Loss (DESC), Game Duration (DESC) and Mistakes (ASC).<br>
             </p>
         </div>
+        
+        <!-- ############################ -->
+        <!-- MATRIX VIEW                  -->
+        <!-- ############################ -->
+        <div id="matrix-view" class="pane" style="display: none;">
+            <div class="matrix-container">
+                <canvas id="player-matrix" width="680" height="500"></canvas>
+            </div>
+            <p class="descriptions">
+                <strong>MATRIX VISUALIZATION:</strong><br><br>
+                This matrix plots the top 10 LLM chess players based on two key metrics:<br><br>
+                <strong>- X-Axis:</strong> Game Duration (0-100%) - Shows how well models maintain correct communication protocols throughout the game. Higher values indicate better instruction following ability.<br><br>
+                <strong>- Y-Axis:</strong> Win/Loss (Non-Interrupted) (0-100%) - Shows the model's actual chess playing ability when successfully following instructions. Higher values indicate better chess strategy and decision making.<br><br>
+                <strong>INTERPRETATION:</strong><br><br>
+                - <strong>Top-Right:</strong> Models with both excellent chess skill and instruction following.<br>
+                - <strong>Top-Left:</strong> Models with good chess skill but struggle to maintain communication protocol.<br>
+                - <strong>Bottom-Right:</strong> Models that follow instructions well but make poor chess moves.<br>
+                - <strong>Bottom-Left:</strong> Models that struggle with both chess strategy and following instructions.<br><br>
+                <strong>NOTE:</strong> Only the top 10 models from the leaderboard are displayed in this visualization.
+            </p>
+        </div>
         <!-- ############ -->
         <!-- HOW IT WORKS -->
         <!-- ############ -->
