@@ -75,12 +75,14 @@
             <span style="color: yellow;">GPT-4o Mini (Black)</span>
         </div>
         <p class="intro">
-            Can a Large Language Model play chess? Prompt it to move based on the board state, 
+            Can Large Language Models play chess effectively? This leaderboard evaluates both chess skill and instruction following ability.
+            <br><br>
+            Prompt an LLM to move based on the board state, 
             hint it with legal moves, and it can make moves (though some struggle with instruction following) 
             and even explain its tactics or strategy.
             <br><br>
             But can LLMs make meaningful moves and win? 
-            Let’s test them against a random player (a bot that picks legal moves randomly). 
+            Let's test them against a random player (a bot that picks legal moves randomly). 
             These Foundational Models, with their vast knowledge and reasoning abilities,
             should easily defeat a chaos monkey, right?
             <br><br>
@@ -96,14 +98,7 @@
             <div class="table-container">
                 <table>
                     <thead>
-                        <tr>
-                            <th title="Rank">#&nbsp;&nbsp;</th>
-                            <th title="Model playing as black against a Random Player">Player&nbsp;&nbsp;</th>
-                            <th title="How often the player scored a win (due to checkmate or the opponent failing to make a move) in Easy mode, or difference between wins and losses in Medium mode">Wins/Diff&nbsp;&nbsp;</th>
-                            <th id="draws-moves-header" title="Percentage of games without a winner in Easy mode, or average number of moves per game in Medium mode">Draws&nbsp;&nbsp;</th>
-                            <th title="Number of LLM erroneous replies per 1000 moves">Mistakes&nbsp;&nbsp;</th>
-                            <th title="Number of token's generated per one move">Tokens&nbsp;&nbsp;</th>
-                        </tr>
+                        <!-- Headers will be populated here -->
                     </thead>
                     <tbody>
                         <!-- Data will be populated here -->
@@ -114,25 +109,15 @@
             <p class="descriptions">
                 <strong>METRICS:</strong><br><br>
                 <strong>- Player:</strong> Model playing as black against a Random Player.<br>
-                <strong>- Wins-Losses:</strong> Difference between wins and losses as a percentage of total games. This metric highlights LLMs' proficiency in chess by showing their ability to win more games while losing fewer.<br>
-                <strong>- Wins (old leaderboard):</strong> How often the player scored a win (due to checkmate or the opponent failing to make a move). This metric reflects LLMs' proficiency in chess by focusing on their success rate in achieving victories.<br>
-                <strong>- Avg Moves:</strong> Average number of moves per game. For stronger winning models, a lower game duration indicates higher capability—lower is better. For weaker losing models, a higher value is better as it means the model can stay in the game longer without interrupting the game loop due to a mistake.<br>
-                <strong>- Draws (old leaderboard):</strong> Percentage of games without a winner (e.g., reaching the maximum number of 200 moves or stalemate). Displays weaks' LLMs' proficiency in chess if it can't win.<br>
-                <strong>- Mistakes:</strong> Number of LLM erroneous replies per 1000 moves - how often did an LLM fail to follow the instructions 
-                and make a move. E.g., due to hallucinations, picking illegal moves, not conforming to the communication protocol. Shows the model's instruction-following capabilities and hallucination resistance.<br>
-                <strong>- Tokens:</strong> Number of tokens generated per move. Demonstrates the model's verbosity.<br><br>
+                <strong>- Win/Loss:</strong> Difference between wins and losses as a percentage of total games (0-100%). This is the primary ranking metric that measures BOTH chess skill AND instruction following ability. A model needs to understand chess strategy AND follow game instructions correctly to score well. 50% represents equal wins/losses, higher scores mean more wins than losses.<br>
+                <strong>- Game Duration:</strong> Percentage of maximum possible game length completed before termination (0-100%). This specifically measures instruction following reliability across many moves. 100% indicates the model either reached a natural conclusion (checkmate, stalemate) or the maximum 200 moves without protocol violations. Lower scores show the model struggled to maintain correct communication as the game progressed.<br>
+                <strong>- Tokens:</strong> Number of tokens generated per move. Demonstrates the model's verbosity. Lower token counts may indicate efficiency, while higher counts may show more detailed reasoning OR more garbage generation (depending on the overaal rank, reasoning models generate more tokens anre scrore better, weak models can also be verbose yet show poor performance).<br><br>
                 <strong>NOTES:</strong><br><br>
                 - LLMs played as black against a Random Player (as white).<br>
                 - 30+ game simulations for Random Player vs. LLM.<br>
                 - Bottom rows in green demonstrate how a Chess Engine (Stockfish v17) fares against a Random Player.<br>
                 - 1000 simulations for Random Player vs. Chess Engine and Random vs. Random.<br>
-                - <s>You see it right, LLMs scored 0 wins.</s> No longer the case, o1-mini being the 1st LLM scroging wins<br>
-                - <s>Using Draws instead of Wins to evaluate LLMs' chess proficiency</s>.<br>
-                - The default soritng is by Wins-Losses DESC, Draws DESC and Mistakes ASC (new leaderboard) and for older leaderboard by Wins DESC, Draws DESC and Mistakes ASC <br>
-                <br>
-                - Strong models (those ones winning) are judged (in Chess proficiency) by % Won, weak ones - by % Draws <br>
-                - <strong>Mistakes</strong> metric gives an evaluation of LLMs' instruction-following capabilities and resistance to hallucinations (making up non-legal moves while having a list of legal moves provided in the prompt).<br>
-                - Sort by <strong>Mistakes</strong> column and get a ranking by instruction-following ability (models with the least mistakes being better) <br>
+                - The default sorting is by Win/Loss (DESC), Game Duration (DESC) and Mistakes (ASC).<br>
             </p>
         </div>
         <!-- ############ -->
@@ -141,9 +126,9 @@
         <div id="how-it-works" class="pane" style="display: none;">
             <p class="descriptions">
                 <strong>Libraries and Dependencies Used:</strong><br><br>
-                - <strong>chess:</strong> A Python library for handling chess game rules and basic operations, including board representation, legal move evaluation, and game state evaluation. This is not a chess engine runnig the actual caclulation of the best move.<br>
+                - <strong>chess:</strong> A Python library for handling chess game rules and basic operations, including board representation, legal move evaluation, and game state evaluation. This is not a chess engine running the actual calculation of the best move.<br>
                 - <strong>Microsoft Autogen</strong> is used as a backbone for LLM communication. It also implements the interaction between a Chess Board and custom agents like GameAgent, RandomPlayerAgent, AutoReplyAgent, and others for simulating different player types.<br>
-                - <strong>Stockfish</strong> - the chess engine doing the actual best move calculation, used as a referrence to demonstrate what a real chess player's peformance is.<br>
+                - <strong>Stockfish</strong> - the chess engine doing the actual best move calculation, used as a reference to demonstrate what a real chess player's performance is.<br>
                 <br>
                 <strong>Workflow:</strong><br><br>
                 1. The game is initialized with a chess board and two players: a Random Player (as white) and an LLM (as black).<br>
@@ -154,7 +139,7 @@
                 6. Game statistics are generated and stored at the end of the game.<br>
                 <br>
                 <strong>Dialog:</strong><br><br>
-                Here is an example of a dialog that prompts a model to make a move:<br>
+                Here is an example of a dialog that prompts a model to make a move. UCI format refers to Universal Chess Interface notation, which uses source and destination squares (e.g., e2e4 means move from e2 to e4):<br>
             </p>
             <pre class="snippet">
 <span style="color:green">Proxy (to Player_Black):</span>
@@ -191,9 +176,9 @@ make_move e7e5
 Move made, switching player
             </pre>
             <p class="descriptions">
-                1 move - 1 dialog. The dialog is limmited to 10 turns (10 pairs of Proxy/Agent Request/Response messages). A maximum of 3 mistakes (not conforming to 
+                1 move = 1 dialog. The dialog is limited to 10 turns (10 pairs of Proxy/Agent Request/Response messages). A maximum of 3 mistakes (not conforming to 
                 communication notation, picking wrong action or wrong move) are allowed per dialog. 
-                The game is terminanted and LLM is given a loss if the max turns OR of number of LLM mistakes is reached in the given dialog.
+                The game is terminated and LLM is given a loss if the max turns OR number of LLM mistakes is reached in the given dialog. Models that excel at both chess strategy and following instructions precisely will perform best.
             </p>
         </div>
         <!-- ############ -->
@@ -210,9 +195,11 @@ Move made, switching player
 </div>
     <div id="popup" style="display: none;">
         <p id="total-games"></p>
+        <p id="win_loss"></p>
+        <p id="game-duration"></p>
+        <p id="games-interrupted"></p>
         <p id="wins"></p>
         <p id="losses"></p>
-        <p id="wins_minus_losses"></p>
         <p id="draws"></p> 
         <p id="average-moves"></p>
         <p id="material-diff"></p>

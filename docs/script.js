@@ -30,7 +30,6 @@ const navConfig = {
 
 const Screen = {
     LEADERBOARD_NEW: 'leaderboard_new',
-    LEADERBOARD_OLD: 'leaderboard_old',
     HOW_IT_WORKS: 'how_it_works',
     NOTES: 'notes'
 };
@@ -42,8 +41,7 @@ const SPECIAL_ROWS = {
 };
 
 let sortOrderState = {
-    [Screen.LEADERBOARD_NEW]: {},
-    [Screen.LEADERBOARD_OLD]: {}
+    [Screen.LEADERBOARD_NEW]: {}
 };
 
 let currentScreen = null;
@@ -286,6 +284,15 @@ function showPlayerDetailsPopup(row, columns) {
     const losses = columns[csvIndices.opponent_wins];
     const draws = columns[csvIndices.draws];
 
+    const winLoss = columns[csvIndices.win_loss];
+    const moeWinLoss = columns[csvIndices.moe_win_loss];
+    const gameDuration = columns[csvIndices.game_duration];
+    const moeGameDuration = columns[csvIndices.moe_game_duration];
+    
+    const gamesInterrupted = columns[csvIndices.games_interrupted];
+    const gamesInterruptedPercent = columns[csvIndices.games_interrupted_percent];
+    const moeGamesInterrupted = columns[csvIndices.moe_games_interrupted];
+
     const moeWins = columns[csvIndices.moe_black_llm_win_rate];
     const moeLosses = columns[csvIndices.moe_black_llm_loss_rate];
     const moeDraws = columns[csvIndices.moe_draw_rate];
@@ -301,14 +308,23 @@ function showPlayerDetailsPopup(row, columns) {
     const moeCompletionTokensBlackPerMove = columns[csvIndices.moe_completion_tokens_black_per_move];
 
     document.getElementById('total-games').textContent = `Games: ${parseInt(totalGames)}`;
+    
+    // Add win_loss and game_duration at the top with MoE
+    document.getElementById('win_loss').textContent = 
+        `Win/Loss: ${parseFloat(winLoss)} ± ${parseFloat(moeWinLoss)}`;
+    document.getElementById('game-duration').textContent = 
+        `Game Duration: ${parseFloat(gameDuration)} ± ${parseFloat(moeGameDuration)}`;
+    
+    // Add games interrupted
+    document.getElementById('games-interrupted').textContent = 
+        `Games Interrupted: ${parseInt(gamesInterrupted)} (${parseFloat(gamesInterruptedPercent/100).toFixed(3)} ± ${parseFloat(moeGamesInterrupted).toFixed(3)})`;
+    
     document.getElementById('wins').textContent =
         `Wins: ${parseInt(wins)} (` +
         `${((parseInt(wins) / parseInt(totalGames))).toFixed(3)} ± ${parseFloat(moeWins).toFixed(3)})`;
     document.getElementById('losses').textContent =
         `Losses: ${parseInt(losses)} (` +
         `${((parseInt(losses) / parseInt(totalGames))).toFixed(2)} ± ${parseFloat(moeLosses).toFixed(3)})`;
-    const winsMinusLosses = ((parseInt(wins) - parseInt(losses)) / parseInt(totalGames)).toFixed(3);
-    document.getElementById('wins_minus_losses').innerHTML = `&nbsp;&nbsp;&nbsp;Wins - Losses: ${winsMinusLosses}`;
     document.getElementById('draws').textContent =
         `Draws: ${parseInt(draws)} (` +
         `${((parseInt(draws) / parseInt(totalGames))).toFixed(3)} ± ${parseFloat(moeDraws).toFixed(3)})`;

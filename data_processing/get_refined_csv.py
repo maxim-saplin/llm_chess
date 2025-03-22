@@ -43,6 +43,8 @@ FILTER_OUT_MODELS = [
     "meta-llama-3.1-8b-instruct-fp16",  # local
     "gemini-2.0-pro-exp-02-05", # to many errors, I'm done with EXP models, to much trouble, going to use only release versions
     "qwq-32b-thinking-not-cleaned",
+    "google_gemma-3-27b-it@q4_k_m",
+    "google_gemma-3-12b-it@q4_k_m",
     "ignore",  # models marked to be ignored via aggregate_models_to_csv.MODEL_OVERRIDES
 ]
 
@@ -55,7 +57,10 @@ ALIASES = {
     "anthropic.claude-v3-5-sonnet-v2": "claude-v3-5-sonnet-v2",
     "anthropic.claude-v3-haiku": "claude-v3-haiku",
     "anthropic.claude-v3-opus": "claude-v3-opus",
-    "anthropic.claude-3-7-sonnet-20250219-v1:0": "claude-v3-7-sonnet" 
+    "anthropic.claude-3-7-sonnet-20250219-v1:0": "claude-v3-7-sonnet",
+    "google_gemma-3-12b-it@iq4_xs": "gemma-3-12b-it@iq4_xs",
+    "google_gemma-3-12b-it@q8_0": "gemma-3-12b-it@q8_0",
+    "google_gemma-3-27b-it@iq4_xs": "gemma-3-27b-it@iq4_xs",
 }
 
 def convert_aggregate_to_refined(

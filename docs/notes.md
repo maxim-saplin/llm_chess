@@ -1,3 +1,29 @@
+# March 22, 2025: Metric Overhaul and Leaderboard Redesign
+
+After months of testing various LLMs on chess games, I've completely redesigned the leaderboard and metrics to better capture what we're actually measuring. With the old approach the metrics weren't clearly communicating what they represented.
+
+Two key insights drove this change:
+
+1. We're simultaneously measuring TWO distinct abilities: chess skill AND instruction following capability
+2. The previous metrics blended these abilities in confusing ways
+
+The redesigned leaderboard now uses these core metrics:
+
+- **Win/Loss**: This is now our primary ranking metric (0-100%). It combines BOTH chess skill AND instruction following ability. A model needs both to score well - understanding chess strategy AND adhering to the protocol correctly. 50% means equal wins/losses, higher scores indicate more wins than losses. This replaces the previous "Wins-Losses" metric but with clearer explanation of what it represents.
+
+- **Game Duration**: This specifically isolates instruction following reliability (0-100%). A score of 100% means the model either completed a full game naturally or reached maximum 200 moves without protocol errors. Lower percentages indicate the model broke down in communication as the game progressed. This better captures what we previously tried to measure with "Avg Moves" but in a more intuitive way.
+
+- **Tokens**: Unchanged, but with better explanation that this measures verbosity which can indicate either detailed reasoning (for stronger models) or garbage generation (for weaker ones).
+
+This redesign eliminates several confusing aspects of the previous leaderboard:
+
+- Clearer separation between chess skill and instruction following metrics
+- Consistent 0-100% scale for main metrics making comparisons more intuitive
+- No more confusion about whether higher or lower "Avg Moves" is better, or how to interpret "Mistakes" (per 1000 moves) absolute values
+
+The reorganization also better showcases how some models (like GPT-4-32k-0613) can achieve perfect instruction following (100% Game Duration) while demonstrating mediocre chess strategy (48.5% Win/Loss). OR how Deepseek R1 while achieving solid Win rates (22%) also demonstrated horrible game stability (losing in 58% games due to game loop interruptions and multiple haluscinations) - something that was harder to discern in the previous format.
+
+
 # March 9, Claude 3.7 Sonnet
 
 The model took its place near the top of the list, yet it is behind Sonnet 3.5 v1 in terms of wins.
