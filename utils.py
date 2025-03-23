@@ -96,7 +96,6 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
             "top_p": 1.0,
             "frequency_penalty": 0.0,
             "presence_penalty": 0.0,
-            # "stream": False,
             "timeout": 600
         }
 
