@@ -4,11 +4,11 @@ import json
 import statistics  # Import the statistics module
 from llm_chess import run
 from utils import setup_console_logging
-date = datetime.now().strftime("%Y-%m-%d")
+date = datetime.datetime.now().strftime("%Y-%m-%d")
 
 # Parameters
 NUM_REPETITIONS = 2  # Set the number of games to run
-LOG_FOLDER = f"_logs/new/2025-03_o1-2024-12-17-medium/{date}_o1-2024-12-17"  # Set the folder to store logs
+LOG_FOLDER = f"_logs/new/2025-03-o1-2024-12-17-medium/{date}"  # Set the folder to store logs
 
 STORE_INDIVIDUAL_LOGS = True
 
@@ -17,7 +17,7 @@ STORE_INDIVIDUAL_LOGS = True
 
 
 def run_games(num_repetitions, log_folder=LOG_FOLDER):
-    setup_console_logging(LOG_FOLDER) # save raw console output to output.txt
+    setup_console_logging(log_folder) # save raw console output to output.txt
     aggregate_data = {
         "total_games": 0,
         "white_wins": 0,
@@ -52,7 +52,7 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
     for _ in range(num_repetitions):
         # Call the run function and get the game stats
         game_stats, player_white, player_black = run(
-            log_dir=LOG_FOLDER
+            log_dir=log_folder
         )
 
         moves_list.append(game_stats["number_of_moves"])  # Track moves
