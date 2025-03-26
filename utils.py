@@ -81,6 +81,10 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
             "model": os.environ[f"LOCAL_MODEL_NAME_{key}"],
             "base_url": os.environ[f"LOCAL_BASE_URL_{key}"],
             "api_key": os.environ.get(f"LOCAL_API_KEY_{key}", "any"),
+            # For some providers that might work
+            "default_headers": {
+                "Api-Key": os.environ[f"LOCAL_API_KEY_{key}"]
+            }
         }
 
     def gemini_config(key):
