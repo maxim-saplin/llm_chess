@@ -31,16 +31,18 @@ def main():
 
     os.makedirs(LOG_FOLDER, exist_ok=True)
 
-    # Logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler(os.path.join(LOG_FOLDER, 'execution.log')),
-            logging.StreamHandler()
-        ]
-    )
+    # Configure a module-specific logger
     logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    
+    # Add file handler specifically for this module
+    file_handler = logging.FileHandler(os.path.join(LOG_FOLDER, 'execution.log'))
+    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    logger.addHandler(file_handler)
+    
+    # Prevent propagation to root logger to avoid capturing other modules' logs
+    logger.propagate = False
+    
     logger.info(f"Starting chess experiment with {file_name}")
     logger.info(f"Running {NUM_REPETITIONS} games")
 
