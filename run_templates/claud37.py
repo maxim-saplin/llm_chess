@@ -10,7 +10,7 @@ import llm_chess
 from run_multiple_games import run_games
 from dotenv import load_dotenv
 from utils import get_llms_autogen
-current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+current_date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
 
 ## CONFIGS
 

@@ -3,18 +3,19 @@ import os
 import json
 import statistics  # Import the statistics module
 from llm_chess import run
-from utils import setup_console_logging
-date = datetime.datetime.now().strftime("%Y-%m-%d")
+from utils import setup_console_logging, get_llms_autogen
+
+# Get model configurations
+_, black_config = get_llms_autogen()
+model_name = black_config["config_list"][0]["model"]
 
 # Parameters
-NUM_REPETITIONS = 2  # Set the number of games to run
-LOG_FOLDER = f"_logs/new/2025-03-o1-2024-12-17-medium/{date}"  # Set the folder to store logs
-
+NUM_REPETITIONS = 42  # Set the number of games to run
+LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 STORE_INDIVIDUAL_LOGS = True
 
 # ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`
 # Hyper params such as temperature are defined in `utils.py`
-
 
 def run_games(num_repetitions, log_folder=LOG_FOLDER):
     setup_console_logging(log_folder) # save raw console output to output.txt
