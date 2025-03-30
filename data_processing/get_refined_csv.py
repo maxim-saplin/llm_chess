@@ -30,9 +30,17 @@ except ImportError:
     # Now try the direct import
     from data_processing.aggregate_logs_to_csv import aggregate_models_to_csv, MODEL_OVERRIDES
 
-LOGS_DIR = "_logs/no_reflection"
-AGGREGATE_CSV = os.path.join(LOGS_DIR, "aggregate_models.csv")
-REFINED_CSV = "data_processing/refined.csv"
+# Define a list of log directories to process
+LOGS_DIRS = [
+    "_logs/no_reflection",
+    "_logs/new/deepseek-v3-0324"
+]
+
+# Output files
+OUTPUT_DIR = "data_processing"
+AGGREGATE_CSV = os.path.join(OUTPUT_DIR, "aggregate_models.csv")
+REFINED_CSV = os.path.join(OUTPUT_DIR, "refined.csv")
+
 FILTER_OUT_MODELS = [
     "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp03",
     "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp03",
@@ -52,6 +60,7 @@ ALIASES = {
     "deepseek-r1-distill-qwen-32b@q4_k_m|isol_temp06": "deepseek-r1-distill-qwen-32b@q4_k_m",
     "deepseek-reasoner": "deepseek-reasoner-r1",  # at the time of testing (Jan 2025) R1 was called "deepseek-reasoner"
     "deepseek-chat": "deepseek-chat-v3",  # at the time of testing (Jan 2025) V3 was called "deepseek-chat"
+    "deepseek-chat-0324": "deepseek-chat-v3-0324",
     "gemma2-9b-it": "gemma2-9b-it-groq",
     "anthropic.claude-v3-5-sonnet-v1": "claude-v3-5-sonnet-v1",
     "anthropic.claude-v3-5-sonnet-v2": "claude-v3-5-sonnet-v2",
@@ -222,8 +231,10 @@ def convert_aggregate_to_refined(
 
 
 def main():
-    # Step 1: Aggregate logs to CSV
-    aggregate_models_to_csv(LOGS_DIR, AGGREGATE_CSV, MODEL_OVERRIDES)
+    # Step 1: Aggregate logs from all directories to a single CSV
+    print(f"Processing logs from {len(LOGS_DIRS)} directories")
+    aggregate_models_to_csv(LOGS_DIRS, AGGREGATE_CSV, MODEL_OVERRIDES)
+    print(f"Successfully aggregated data to {AGGREGATE_CSV}")
 
     # Step 2: Convert aggregated CSV to refined CSV
     convert_aggregate_to_refined(
@@ -233,6 +244,7 @@ def main():
         filter_out_models=FILTER_OUT_MODELS,
         model_aliases=ALIASES,
     )
+    print(f"Successfully refined data to {REFINED_CSV}")
 
 
 if __name__ == "__main__":
