@@ -18,6 +18,7 @@ Usage:
 import sys
 import os
 import csv
+from tabulate import tabulate  # Add this import for the print_leaderboard function
 
 # Try relative import first (for tests)
 try:
@@ -230,6 +231,53 @@ def convert_aggregate_to_refined(
             writer.writerows(rows_to_write)
 
 
+def print_leaderboard(csv_file, top_n=None):
+    """Print a formatted leaderboard to the console with the same metrics as the web version."""
+    rows = []
+    
+    with open(csv_file, 'r') as f:
+        reader = csv.DictReader(f)
+        data = list(reader)
+    
+    # Sort data using the same logic as in the web version:
+    # Win/Loss DESC, then Game Duration DESC, then Tokens ASC
+    sorted_data = sorted(
+        data, 
+        key=lambda x: (
+            -float(x['win_loss']),  # DESC
+            -float(x['game_duration']),  # DESC
+            float(x['completion_tokens_black_per_move'])  # ASC
+        )
+    )
+    
+    # Limit to top N if specified
+    if top_n:
+        sorted_data = sorted_data[:top_n]
+    
+    # Prepare data for tabulate
+    for rank, row in enumerate(sorted_data, 1):
+        # Skip special rows styling (we'll just include them in the ranking)
+        player_name = row['Player']
+        
+        # Format the metrics like in the web version
+        win_loss = f"{float(row['win_loss']) * 100:.2f}%"
+        game_duration = f"{float(row['game_duration']) * 100:.2f}%"
+        tokens = float(row['completion_tokens_black_per_move'])
+        tokens_str = f"{tokens:.1f}" if tokens > 1000 else f"{tokens:.2f}"
+        
+        rows.append([
+            rank,
+            player_name,
+            win_loss,
+            game_duration,
+            tokens_str
+        ])
+    
+    # Print the table with headers
+    headers = ['#', 'Player', 'Win/Loss', 'Game Duration', 'Tokens']
+    print(tabulate(rows, headers=headers, tablefmt='grid'))
+
+
 def main():
     # Step 1: Aggregate logs from all directories to a single CSV
     print(f"Processing logs from {len(LOGS_DIRS)} directories")
@@ -245,6 +293,15 @@ def main():
         model_aliases=ALIASES,
     )
     print(f"Successfully refined data to {REFINED_CSV}")
+    
+    # Step 3: Print the leaderboard
+    print("\n=== LLM CHESS LEADERBOARD ===\n")
+    print_leaderboard(REFINED_CSV)
+    
+    print("\nMETRICS EXPLANATION:")
+    print("- Win/Loss: Difference between wins and losses as a percentage (0-100%). Higher is better.")
+    print("- Game Duration: Percentage of maximum possible game length completed (0-100%). Higher indicates better instruction following.")
+    print("- Tokens: Number of tokens generated per move. Shows model verbosity/efficiency.")
 
 
 if __name__ == "__main__":
