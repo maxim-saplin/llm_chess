@@ -1,21 +1,29 @@
+import datetime
 import os
 import json
 import statistics  # Import the statistics module
 from llm_chess import run
-from utils import setup_console_logging
+from utils import setup_console_logging, get_llms_autogen
+import llm_chess
+
+# Get model configurations
+_, black_config = get_llms_autogen()
+model_name = black_config["config_list"][0]["model"]
 
 # Parameters
-NUM_REPETITIONS = 67  # Set the number of games to run
-LOG_FOLDER = "_logs/new/2025-03-Gemma_3/2025-03-18_google_gemma-3-27b-it@iq4_xs"  # Set the folder to store logs
-
+NUM_REPETITIONS = 14  # Set the number of games to run
+LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 STORE_INDIVIDUAL_LOGS = True
+
+# llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
+llm_chess.throttle_delay = 1
+llm_chess.dialog_turn_delay = 2
 
 # ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`
 # Hyper params such as temperature are defined in `utils.py`
 
-
 def run_games(num_repetitions, log_folder=LOG_FOLDER):
-    setup_console_logging(LOG_FOLDER) # save raw console output to output.txt
+    setup_console_logging(log_folder) # save raw console output to output.txt
     aggregate_data = {
         "total_games": 0,
         "white_wins": 0,
@@ -50,7 +58,7 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
     for _ in range(num_repetitions):
         # Call the run function and get the game stats
         game_stats, player_white, player_black = run(
-            log_dir=LOG_FOLDER
+            log_dir=log_folder
         )
 
         moves_list.append(game_stats["number_of_moves"])  # Track moves

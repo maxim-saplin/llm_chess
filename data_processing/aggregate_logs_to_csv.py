@@ -6,15 +6,13 @@ Contain types definitnions for a Game log
 """
 
 import os
+import sys
 import json
 import csv
 import math
 from dataclasses import dataclass, field
-from typing import ClassVar, Dict, Any
+from typing import ClassVar, Dict, Any, List, Union
 from statistics import mean, stdev
-
-import sys
-import os
 
 # Try direct import first
 try:
@@ -32,10 +30,13 @@ except ImportError:
         from llm_chess import TerminationReason
 
 # Directory where log files are stored
-LOGS_DIR = "_logs/no_reflection"
+LOGS_DIRS = [
+    "_logs/no_reflection",
+    # Add other log directories here as needed
+]
 
 # Path to the output CSV file where aggregated results will be saved
-OUTPUT_CSV = "_logs/no_reflection/aggregate_models.csv"
+OUTPUT_CSV = "_logs/aggregate_models.csv"
 
 # Dictionary to override model names in the logs with more descriptive names, matches key as a substring in log file path
 MODEL_OVERRIDES = {
@@ -112,9 +113,23 @@ class GameLog:
         return 1.0 if not self.is_interrupted else self.number_of_moves / GameLog.max_moves_in_game
 
 
-def load_game_logs(logs_dir, model_overrides):
+def load_game_logs(logs_dirs: Union[str, List[str]], model_overrides):
+    """
+    Load game logs from one or more directories.
+    
+    Args:
+        logs_dirs: Either a single directory path or a list of directory paths
+        model_overrides: Dictionary for model name overrides
+    
+    Returns:
+        List of GameLog objects
+    """
     logs = []
-
+    
+    # Convert single directory to list for consistent handling
+    if isinstance(logs_dirs, str):
+        logs_dirs = [logs_dirs]
+    
     def _load_game_log(file_path: str) -> GameLog:
         with open(file_path, "r") as f:
             data = json.load(f)
@@ -146,54 +161,56 @@ def load_game_logs(logs_dir, model_overrides):
                 ),
             )
 
-    for root, _, files in os.walk(logs_dir):
-        for file in files:
-            if file.endswith(".json") and not file.endswith("_aggregate_results.json"):
-                file_path = os.path.join(root, file)
-                try:
-                    game_log = _load_game_log(file_path)
-                    # Use model ID from log, override if specified
-                    model_name = game_log.player_black.model
-                    if model_overrides:
-                        key = next(
-                            (
-                                k
-                                for k in model_overrides
-                                if os.path.dirname(file_path).endswith(k)
-                            ),
-                            None,
-                        )
-                        if key:
-                            original_model_name = model_name
-                            model_name = model_overrides[key]
-                            print(
-                                f"Warning: Overriding model name from '{original_model_name}' to '{model_name}' for file '{file_path}'"
+    for logs_dir in logs_dirs:
+        print(f"Loading logs from directory: {logs_dir}")
+        
+        for root, _, files in os.walk(logs_dir):
+            for file in files:
+                if file.endswith(".json") and not file.endswith("_aggregate_results.json"):
+                    file_path = os.path.join(root, file)
+                    try:
+                        game_log = _load_game_log(file_path)
+                        # Use model ID from log, override if specified
+                        model_name = game_log.player_black.model
+                        if model_overrides:
+                            key = next(
+                                (
+                                    k
+                                    for k in model_overrides
+                                    if os.path.dirname(file_path).endswith(k)
+                                ),
+                                None,
                             )
-                    game_log.player_black.model = model_name
-                    logs.append(game_log)
-                except Exception as e:
-                    print(f"Skipping invalid JSON file: {file_path}. Error: {e}")
-
+                            if key:
+                                original_model_name = model_name
+                                model_name = model_overrides[key]
+                                print(
+                                    f"Warning: Overriding model name from '{original_model_name}' to '{model_name}' for file '{file_path}'"
+                                )
+                        game_log.player_black.model = model_name
+                        logs.append(game_log)
+                    except Exception as e:
+                        print(f"Skipping invalid JSON file: {file_path}. Error: {e}")
+    
+    print(f"Total logs loaded from all directories: {len(logs)}")
     return logs
 
 
 def aggregate_models_to_csv(
-    logs_dir: str, output_csv: str, model_overrides: dict = None
+    logs_dirs: Union[str, List[str]], output_csv: str, model_overrides: dict = None
 ) -> None:
     """
-    Aggregates game logs from a specified directory and writes the results to a CSV file.
+    Aggregates game logs from one or more directories and writes the results to a CSV file.
 
     Args:
-        logs_dir (str): The directory containing the game log files in JSON format.
-        output_csv (str): The path to the output CSV file where aggregated results will be saved.
-        model_overrides (dict, optional): A dictionary mapping file path (the last part of the path
-                                          i.e. 'def' from '/abc/def/') to model names,
-                                          used to override the model name in the logs if specified.
+        logs_dirs: Either a single directory path or a list of directory paths containing game logs
+        output_csv: The path to the output CSV file where aggregated results will be saved
+        model_overrides: A dictionary mapping file path to model names for overriding
 
     Returns:
         None
     """
-    logs = load_game_logs(logs_dir, model_overrides)
+    logs = load_game_logs(logs_dirs, model_overrides)
 
     headers = [
         "model_name",
@@ -651,4 +668,4 @@ def aggregate_models_to_csv(
 
 
 if __name__ == "__main__":
-    aggregate_models_to_csv(LOGS_DIR, OUTPUT_CSV, MODEL_OVERRIDES)
+    aggregate_models_to_csv(LOGS_DIRS, OUTPUT_CSV, MODEL_OVERRIDES)

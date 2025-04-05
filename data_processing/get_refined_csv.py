@@ -18,6 +18,7 @@ Usage:
 import sys
 import os
 import csv
+from tabulate import tabulate  # Add this import for the print_leaderboard function
 
 # Try relative import first (for tests)
 try:
@@ -30,9 +31,17 @@ except ImportError:
     # Now try the direct import
     from data_processing.aggregate_logs_to_csv import aggregate_models_to_csv, MODEL_OVERRIDES
 
-LOGS_DIR = "_logs/no_reflection"
-AGGREGATE_CSV = os.path.join(LOGS_DIR, "aggregate_models.csv")
-REFINED_CSV = "data_processing/refined.csv"
+# Define a list of log directories to process
+LOGS_DIRS = [
+    "_logs/no_reflection",
+    "_logs/new/deepseek-v3-0324"
+]
+
+# Output files
+OUTPUT_DIR = "data_processing"
+AGGREGATE_CSV = os.path.join(OUTPUT_DIR, "aggregate_models.csv")
+REFINED_CSV = os.path.join(OUTPUT_DIR, "refined.csv")
+
 FILTER_OUT_MODELS = [
     "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp03",
     "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp03",
@@ -52,6 +61,7 @@ ALIASES = {
     "deepseek-r1-distill-qwen-32b@q4_k_m|isol_temp06": "deepseek-r1-distill-qwen-32b@q4_k_m",
     "deepseek-reasoner": "deepseek-reasoner-r1",  # at the time of testing (Jan 2025) R1 was called "deepseek-reasoner"
     "deepseek-chat": "deepseek-chat-v3",  # at the time of testing (Jan 2025) V3 was called "deepseek-chat"
+    "deepseek-chat-0324": "deepseek-chat-v3-0324",
     "gemma2-9b-it": "gemma2-9b-it-groq",
     "anthropic.claude-v3-5-sonnet-v1": "claude-v3-5-sonnet-v1",
     "anthropic.claude-v3-5-sonnet-v2": "claude-v3-5-sonnet-v2",
@@ -236,9 +246,58 @@ def convert_aggregate_to_refined(
             writer.writerows(rows_to_write)
 
 
+def print_leaderboard(csv_file, top_n=None):
+    """Print a formatted leaderboard to the console with the same metrics as the web version."""
+    rows = []
+    
+    with open(csv_file, 'r') as f:
+        reader = csv.DictReader(f)
+        data = list(reader)
+    
+    # Sort data using the same logic as in the web version:
+    # Win/Loss DESC, then Game Duration DESC, then Tokens ASC
+    sorted_data = sorted(
+        data, 
+        key=lambda x: (
+            -float(x['win_loss']),  # DESC
+            -float(x['game_duration']),  # DESC
+            float(x['completion_tokens_black_per_move'])  # ASC
+        )
+    )
+    
+    # Limit to top N if specified
+    if top_n:
+        sorted_data = sorted_data[:top_n]
+    
+    # Prepare data for tabulate
+    for rank, row in enumerate(sorted_data, 1):
+        # Skip special rows styling (we'll just include them in the ranking)
+        player_name = row['Player']
+        
+        # Format the metrics like in the web version
+        win_loss = f"{float(row['win_loss']) * 100:.2f}%"
+        game_duration = f"{float(row['game_duration']) * 100:.2f}%"
+        tokens = float(row['completion_tokens_black_per_move'])
+        tokens_str = f"{tokens:.1f}" if tokens > 1000 else f"{tokens:.2f}"
+        
+        rows.append([
+            rank,
+            player_name,
+            win_loss,
+            game_duration,
+            tokens_str
+        ])
+    
+    # Print the table with headers
+    headers = ['#', 'Player', 'Win/Loss', 'Game Duration', 'Tokens']
+    print(tabulate(rows, headers=headers, tablefmt='grid'))
+
+
 def main():
-    # Step 1: Aggregate logs to CSV
-    aggregate_models_to_csv(LOGS_DIR, AGGREGATE_CSV, MODEL_OVERRIDES)
+    # Step 1: Aggregate logs from all directories to a single CSV
+    print(f"Processing logs from {len(LOGS_DIRS)} directories")
+    aggregate_models_to_csv(LOGS_DIRS, AGGREGATE_CSV, MODEL_OVERRIDES)
+    print(f"Successfully aggregated data to {AGGREGATE_CSV}")
 
     # Step 2: Convert aggregated CSV to refined CSV
     convert_aggregate_to_refined(
@@ -248,6 +307,16 @@ def main():
         filter_out_models=FILTER_OUT_MODELS,
         model_aliases=ALIASES,
     )
+    print(f"Successfully refined data to {REFINED_CSV}")
+    
+    # Step 3: Print the leaderboard
+    print("\n=== LLM CHESS LEADERBOARD ===\n")
+    print_leaderboard(REFINED_CSV)
+    
+    print("\nMETRICS EXPLANATION:")
+    print("- Win/Loss: Difference between wins and losses as a percentage (0-100%). Higher is better.")
+    print("- Game Duration: Percentage of maximum possible game length completed (0-100%). Higher indicates better instruction following.")
+    print("- Tokens: Number of tokens generated per move. Shows model verbosity/efficiency.")
 
 
 if __name__ == "__main__":
