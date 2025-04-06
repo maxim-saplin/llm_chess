@@ -11,13 +11,13 @@ _, black_config = get_llms_autogen()
 model_name = black_config["config_list"][0]["model"]
 
 # Parameters
-NUM_REPETITIONS = 12  # Set the number of games to run
+NUM_REPETITIONS = 67  # Set the number of games to run
 LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 STORE_INDIVIDUAL_LOGS = True
 
 # llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
-llm_chess.throttle_delay = 1
-llm_chess.dialog_turn_delay = 2
+llm_chess.throttle_delay = 0
+llm_chess.dialog_turn_delay = 0
 
 # ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`
 # Hyper params such as temperature are defined in `utils.py`
