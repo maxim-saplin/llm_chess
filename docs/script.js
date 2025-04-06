@@ -661,7 +661,7 @@ function renderPlayerMatrix() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Set up dimensions
-    const padding = { top: 50, right: 50, bottom: 50, left: 80 };
+    const padding = { top: 20, right: 50, bottom: 60, left: 80 };
     const chartWidth = canvas.width - padding.left - padding.right;
     const chartHeight = canvas.height - padding.top - padding.bottom;
     
@@ -696,6 +696,8 @@ function renderPlayerMatrix() {
             player: cols[csvIndices.player],
             winLossNonInterrupted: parseFloat(cols[csvIndices.win_loss_non_interrupted]) || 0,
             gameDuration: parseFloat(cols[csvIndices.game_duration]) || 0,
+            averageMoves: parseFloat(cols[csvIndices.average_moves]) || 0,
+            moeAverageMoves: parseFloat(cols[csvIndices.moe_average_moves]) || 0,
             gamesNotInterruptedPercent: parseFloat(cols[csvIndices.games_not_interrupted_percent]) || 0,
             totalGames: parseFloat(cols[csvIndices.total_games]) || 0,
             wins: parseFloat(cols[csvIndices.player_wins]) || 0,
@@ -805,6 +807,8 @@ function renderPlayerMatrix() {
             player: player.player,
             winLossNonInterrupted: player.winLossNonInterrupted,
             gameDuration: player.gameDuration,
+            averageMoves: player.averageMoves,
+            moeAverageMoves: player.moeAverageMoves,
             gamesNotInterruptedPercent: player.gamesNotInterruptedPercent,
             totalGames: player.totalGames,
             wins: player.wins,
@@ -814,11 +818,11 @@ function renderPlayerMatrix() {
         });
     });
     
-    // Add title
-    ctx.fillStyle = 'white';
-    ctx.font = '18px "Web IBM VGA 8x16"';
-    ctx.textAlign = 'center';
-    ctx.fillText('LLM Chess Players Matrix', canvas.width / 2, 25);
+    // // Add title
+    // ctx.fillStyle = 'white';
+    // ctx.font = '18px "Web IBM VGA 8x16"';
+    // ctx.textAlign = 'center';
+    // ctx.fillText('LLM Chess Players Matrix', canvas.width / 2, 25);
     
     // Remove old tooltip if exists
     const oldTooltip = document.getElementById('matrix-tooltip');
@@ -880,14 +884,15 @@ function renderPlayerMatrix() {
             // Highlight the point
             ctx.beginPath();
             ctx.arc(hoveredPoint.x, hoveredPoint.y, 5, 0, Math.PI * 2);
-            ctx.fillStyle = 'lightgreen'; // Change color when hovering
+            ctx.fillStyle = 'blue'; // Change color when hovering
             ctx.fill();
             highlightedPoint = hoveredPoint;
             
             // Show tooltip with model name
-            tooltipElement.innerHTML = `${hoveredPoint.player}<br>
+            tooltipElement.innerHTML = `<span style="color: yellow; font-weight: bold">${hoveredPoint.player}</span><br>
 Win/Loss (Non-interrupted): ${(hoveredPoint.winLossNonInterrupted * 100).toFixed(1)}%<br>
-Game duration: ${(hoveredPoint.gameDuration * 100).toFixed(1)}% moves<br>
+Game duration: ${(hoveredPoint.gameDuration * 100).toFixed(1)}%<br>
+Average moves: ${hoveredPoint.averageMoves} ± ${hoveredPoint.moeAverageMoves}<br>
 Total games: ${hoveredPoint.totalGames}<br>
 Wins: ${hoveredPoint.wins} ± ${hoveredPoint.moeWins}<br>
 Losses: ${hoveredPoint.losses} ± ${hoveredPoint.moeLosses}<br>
