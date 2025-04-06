@@ -695,7 +695,13 @@ function renderPlayerMatrix() {
         return {
             player: cols[csvIndices.player],
             winLossNonInterrupted: parseFloat(cols[csvIndices.win_loss_non_interrupted]) || 0,
-            gameDuration: parseFloat(cols[csvIndices.game_duration]) || 0
+            gameDuration: parseFloat(cols[csvIndices.game_duration]) || 0,
+            gamesNotInterruptedPercent: parseFloat(cols[csvIndices.games_not_interrupted_percent]) || 0,
+            totalGames: parseFloat(cols[csvIndices.total_games]) || 0,
+            wins: parseFloat(cols[csvIndices.player_wins]) || 0,
+            losses: parseFloat(cols[csvIndices.opponent_wins]) || 0,
+            moeWins: parseFloat(cols[csvIndices.moe_black_llm_win_rate]) || 0,
+            moeLosses: parseFloat(cols[csvIndices.moe_black_llm_loss_rate]) || 0
         };
     });
     
@@ -780,7 +786,7 @@ function renderPlayerMatrix() {
     const points = [];
     
     // Plot data points
-    playerData.forEach((player, index) => {
+    playerData.forEach((player, _) => {
         // Scale the values to canvas coordinates
         const x = padding.left + chartWidth * (player.gameDuration);
         const y = padding.top + chartHeight - chartHeight * (player.winLossNonInterrupted);
@@ -791,14 +797,20 @@ function renderPlayerMatrix() {
         ctx.fillStyle = 'yellow';
         ctx.fill();
         
-        // No longer display any names - removed the code that displayed every 10th name
-        
         // Store point data for hover with larger hit area for easier hovering
         points.push({
             x: x,
             y: y,
             radius: 10, // Increased from 5 to 10 for easier hover detection
-            player: player.player
+            player: player.player,
+            winLossNonInterrupted: player.winLossNonInterrupted,
+            gameDuration: player.gameDuration,
+            gamesNotInterruptedPercent: player.gamesNotInterruptedPercent,
+            totalGames: player.totalGames,
+            wins: player.wins,
+            losses: player.losses,
+            moeWins: player.moeWins,
+            moeLosses: player.moeLosses
         });
     });
     
@@ -873,10 +885,17 @@ function renderPlayerMatrix() {
             highlightedPoint = hoveredPoint;
             
             // Show tooltip with model name
-            tooltipElement.textContent = hoveredPoint.player;
+            tooltipElement.innerHTML = `${hoveredPoint.player}<br>
+Win/Loss (Non-interrupted): ${(hoveredPoint.winLossNonInterrupted * 100).toFixed(1)}%<br>
+Game duration: ${(hoveredPoint.gameDuration * 100).toFixed(1)}% moves<br>
+Total games: ${hoveredPoint.totalGames}<br>
+Wins: ${hoveredPoint.wins} ± ${hoveredPoint.moeWins}<br>
+Losses: ${hoveredPoint.losses} ± ${hoveredPoint.moeLosses}<br>
+Non-interrupted games: ${hoveredPoint.gamesNotInterruptedPercent}%`;
             tooltipElement.style.left = (e.clientX + 15) + 'px';
             tooltipElement.style.top = (e.clientY - 15) + 'px';
             tooltipElement.style.display = 'block';
+            tooltipElement.style.textAlign = 'left';
         } else {
             // Hide tooltip immediately when not over a point
             tooltipElement.style.display = 'none';
