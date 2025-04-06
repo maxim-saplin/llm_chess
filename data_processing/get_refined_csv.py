@@ -73,6 +73,7 @@ ALIASES = {
     "google_gemma-3-27b-it@iq4_xs": "gemma-3-27b-it@iq4_xs",
 }
 
+
 def convert_aggregate_to_refined(
     aggregate_file,
     refined_file,
@@ -244,7 +245,6 @@ def convert_aggregate_to_refined(
 
             # Write all rows to the refined CSV
             writer.writerows(rows_to_write)
-
 
 def print_leaderboard(csv_file, top_n=None):
     """Print a formatted leaderboard to the console with the same metrics as the web version."""
