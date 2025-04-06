@@ -15,7 +15,7 @@ const navConfig = {
             title: 'Matrix',
             elementId: 'matrix-view',
             onShow: function() {
-                renderPlayerMatrix();
+                initializeMatrixView();
             }
         },
         HOW_IT_WORKS: {
@@ -649,6 +649,12 @@ function sortAllRows(rows, config, overrideColumnIndex = null, newOrder = 'asc')
 // Function to render the player matrix visualization
 function renderPlayerMatrix() {
     const canvas = document.getElementById('player-matrix');
+    const container = document.getElementById('matrix-view');
+    
+    // Set canvas dimensions to match container
+    canvas.width = container.clientWidth;
+    canvas.height = 600;
+    
     const ctx = canvas.getContext('2d');
     
     // Clear the canvas
@@ -662,7 +668,7 @@ function renderPlayerMatrix() {
     // Parse data from the CSV
     const lines = data.trim().split('\n').filter(line => line.trim() !== '');
     
-    // Get top 10 models based on the leaderboard ranking
+    // Get all models (not just top 10)
     const allRows = lines.slice(1).map(line => {
         const cols = line.split(',');
         return { cols };
@@ -676,14 +682,14 @@ function renderPlayerMatrix() {
         return !Object.values(SPECIAL_ROWS).includes(playerName);
     }).sort((a, b) => config.defaultSortCompare(a.cols, b.cols));
     
-    // Get the top 10 player names
-    const top10Players = sortedRows.slice(0, 10).map(row => row.cols[csvIndices.player]);
+    // Get all player names (no top 10 limit)
+    const allPlayers = sortedRows.map(row => row.cols[csvIndices.player]);
     
-    // Filter data to only include top 10 players
+    // Filter data to include all players (not just top 10)
     const playerData = lines.slice(1).filter(line => {
         const cols = line.split(',');
         const playerName = cols[csvIndices.player];
-        return top10Players.includes(playerName);
+        return allPlayers.includes(playerName);
     }).map(line => {
         const cols = line.split(',');
         return {
@@ -770,8 +776,11 @@ function renderPlayerMatrix() {
     ctx.fillText('Win/Loss (Non-Interrupted)', 0, 0);
     ctx.restore();
     
+    // Store point data for hover detection
+    const points = [];
+    
     // Plot data points
-    playerData.forEach(player => {
+    playerData.forEach((player, index) => {
         // Scale the values to canvas coordinates
         const x = padding.left + chartWidth * (player.gameDuration);
         const y = padding.top + chartHeight - chartHeight * (player.winLossNonInterrupted);
@@ -782,16 +791,122 @@ function renderPlayerMatrix() {
         ctx.fillStyle = 'yellow';
         ctx.fill();
         
-        // Add player name
-        ctx.fillStyle = 'lightgreen';
-        ctx.font = '12px "Web IBM VGA 8x16"';
-        ctx.textAlign = 'left';
-        ctx.fillText(player.player, x + 10, y + 4);
+        // No longer display any names - removed the code that displayed every 10th name
+        
+        // Store point data for hover with larger hit area for easier hovering
+        points.push({
+            x: x,
+            y: y,
+            radius: 10, // Increased from 5 to 10 for easier hover detection
+            player: player.player
+        });
     });
     
     // Add title
     ctx.fillStyle = 'white';
     ctx.font = '18px "Web IBM VGA 8x16"';
     ctx.textAlign = 'center';
-    ctx.fillText('Top 10 LLM Chess Players Matrix', canvas.width / 2, 25);
+    ctx.fillText('LLM Chess Players Matrix', canvas.width / 2, 25);
+    
+    // Remove old tooltip if exists
+    const oldTooltip = document.getElementById('matrix-tooltip');
+    if (oldTooltip) {
+        document.body.removeChild(oldTooltip);
+    }
+    
+    // Create new tooltip element
+    const tooltipElement = document.createElement('div');
+    tooltipElement.id = 'matrix-tooltip';
+    tooltipElement.style.position = 'fixed'; // Changed from absolute to fixed for better positioning
+    tooltipElement.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+    tooltipElement.style.color = 'white';
+    tooltipElement.style.padding = '8px';
+    tooltipElement.style.borderRadius = '5px';
+    tooltipElement.style.border = '1px solid #ffffff';
+    tooltipElement.style.pointerEvents = 'none';
+    tooltipElement.style.display = 'none';
+    tooltipElement.style.zIndex = '1000';
+    tooltipElement.style.fontSize = '14px';
+    tooltipElement.style.fontFamily = '"Web IBM VGA 8x16", monospace';
+    document.body.appendChild(tooltipElement);
+    
+    // Store currently highlighted point for resetting
+    let highlightedPoint = null;
+    
+    // Mouse move handler
+    canvas.addEventListener('mousemove', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        let hoveredPoint = null;
+        
+        // Reset previously highlighted point if exists
+        if (highlightedPoint) {
+            ctx.beginPath();
+            ctx.arc(highlightedPoint.x, highlightedPoint.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = 'yellow';
+            ctx.fill();
+            highlightedPoint = null;
+        }
+        
+        // Check if mouse is over any point
+        for (const point of points) {
+            const distance = Math.sqrt(
+                Math.pow(mouseX - point.x, 2) + 
+                Math.pow(mouseY - point.y, 2)
+            );
+            
+            if (distance <= point.radius) {
+                hoveredPoint = point;
+                break;
+            }
+        }
+        
+        // Show tooltip if hovering over a point
+        if (hoveredPoint) {
+            // Highlight the point
+            ctx.beginPath();
+            ctx.arc(hoveredPoint.x, hoveredPoint.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = 'lightgreen'; // Change color when hovering
+            ctx.fill();
+            highlightedPoint = hoveredPoint;
+            
+            // Show tooltip with model name
+            tooltipElement.textContent = hoveredPoint.player;
+            tooltipElement.style.left = (e.clientX + 15) + 'px';
+            tooltipElement.style.top = (e.clientY - 15) + 'px';
+            tooltipElement.style.display = 'block';
+        } else {
+            // Hide tooltip immediately when not over a point
+            tooltipElement.style.display = 'none';
+        }
+    });
+    
+    // Hide tooltip when mouse leaves canvas
+    canvas.addEventListener('mouseleave', function() {
+        tooltipElement.style.display = 'none';
+        
+        // Reset any highlighted point
+        if (highlightedPoint) {
+            ctx.beginPath();
+            ctx.arc(highlightedPoint.x, highlightedPoint.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = 'yellow';
+            ctx.fill();
+            highlightedPoint = null;
+        }
+    });
+}
+
+// Add window resize handler to make the matrix responsive
+window.addEventListener('resize', function() {
+    if (currentScreen === Screen.MATRIX) {
+        renderPlayerMatrix();
+    }
+});
+
+// Add this function to your existing code to be called when switching to matrix view
+function initializeMatrixView() {
+    // Make sure the matrix is rendered at the correct size initially
+    setTimeout(renderPlayerMatrix, 0);
 }
