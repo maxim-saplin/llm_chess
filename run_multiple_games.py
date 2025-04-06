@@ -11,7 +11,7 @@ _, black_config = get_llms_autogen()
 model_name = black_config["config_list"][0]["model"]
 
 # Parameters
-NUM_REPETITIONS = 14  # Set the number of games to run
+NUM_REPETITIONS = 12  # Set the number of games to run
 LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 STORE_INDIVIDUAL_LOGS = True
 
