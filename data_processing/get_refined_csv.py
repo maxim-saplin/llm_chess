@@ -39,7 +39,7 @@ LOGS_DIRS = [
 
 # Output files
 OUTPUT_DIR = "data_processing"
-AGGREGATE_CSV = os.path.join(OUTPUT_DIR, "aggregate_models.csv")
+AGGREGATE_CSV = os.path.join(OUTPUT_DIR, "aggregate.csv")
 REFINED_CSV = os.path.join(OUTPUT_DIR, "refined.csv")
 
 FILTER_OUT_MODELS = [
