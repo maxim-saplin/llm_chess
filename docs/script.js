@@ -686,6 +686,12 @@ function sortAllRows(rows, config, overrideColumnIndex = null, newOrder = 'asc')
     return [...normalRows, ...bottomRows];
 }
 
+
+function initializeMatrixView() {
+    // Then render the matrix
+    setTimeout(renderPlayerMatrix, 0);
+}
+
 // Function to render the player matrix visualization
 function renderPlayerMatrix() {
     // Configuration
@@ -699,11 +705,13 @@ function renderPlayerMatrix() {
             axes: 'white',
             gridLines: 'rgba(255, 255, 255, 0.2)',
             points: 'yellow',
-            pointHover: 'blue'
+            pointHover: 'blue',
+            labels: 'white'
         },
         fonts: {
             axis: '14px "Web IBM VGA 8x16"',
-            title: '16px "Web IBM VGA 8x16"'
+            title: '16px "Web IBM VGA 8x16"',
+            labels: '12px "Web IBM VGA 8x16"'
         },
         titles: {
             x: 'Game Duration',
@@ -724,20 +732,33 @@ function renderPlayerMatrix() {
                 fontSize: '14px',
                 fontFamily: '"Web IBM VGA 8x16", monospace'
             }
-        }
+        },
+        // Simple hardcoded list of models to label
+        labeledModels: ["o1-2024-12-17-low", "o1-preview-2024-09-12", "o3-mini-2025-01-31-medium", "o1-mini-2024-09-12", "deepseek-reasoner-r1", "claude-v3-5-sonnet-v1", "grok-2-1212", "gemini-2.0-flash-lite-001" ]
     };
 
     const canvas = document.getElementById('player-matrix');
     const container = document.getElementById('matrix-view');
     
-    canvas.width = container.clientWidth;
-    canvas.height = config.height;
+    // Get the device pixel ratio
+    const dpr = window.devicePixelRatio || 1;
+    
+    // Set canvas dimensions accounting for device pixel ratio
+    const containerWidth = container.clientWidth;
+    canvas.style.width = containerWidth + 'px';
+    canvas.style.height = config.height + 'px';
+    canvas.width = containerWidth * dpr;
+    canvas.height = config.height * dpr;
     
     const ctx = canvas.getContext('2d');
-    const chartWidth = canvas.width - config.padding.left - config.padding.right;
-    const chartHeight = canvas.height - config.padding.top - config.padding.bottom;
     
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Scale all drawing operations by the device pixel ratio
+    ctx.scale(dpr, dpr);
+    
+    const chartWidth = containerWidth - config.padding.left - config.padding.right;
+    const chartHeight = config.height - config.padding.top - config.padding.bottom;
+    
+    ctx.clearRect(0, 0, containerWidth, config.height);
     
     // Use pre-parsed data instead of parsing again
     const normalRows = parsedCsvData.normalRows;
@@ -848,6 +869,28 @@ function renderPlayerMatrix() {
         ctx.fillStyle = config.colors.points;
         ctx.fill();
         
+        // Draw labels for selected models
+        if (config.labeledModels.includes(player.player)) {
+            ctx.fillStyle = config.colors.labels;
+            ctx.font = config.fonts.labels;
+            
+            // Measure text width to determine if it will be clipped
+            const textWidth = ctx.measureText(player.player).width;
+            const rightEdgeX = config.padding.left + chartWidth;
+            const bottomEdgeY = config.padding.top + chartHeight;
+            
+            // Determine text alignment and position
+            if (x + textWidth + 10 > rightEdgeX) {
+                // Too close to right edge, place text to the left
+                ctx.textAlign = 'right';
+                ctx.fillText(player.player, x - config.pointRadius - 5, y);
+            } else {
+                // Default: place text to the right
+                ctx.textAlign = 'left';
+                ctx.fillText(player.player, x + config.pointRadius + 5, y);
+            }
+        }
+        
         const point = {
             x: x,
             y: y,
@@ -883,14 +926,7 @@ function renderPlayerMatrix() {
         
         let hoveredPoint = null;
         
-        if (highlightedPoint) {
-            ctx.beginPath();
-            ctx.arc(highlightedPoint.x, highlightedPoint.y, config.pointRadius, 0, Math.PI * 2);
-            ctx.fillStyle = config.colors.points;
-            ctx.fill();
-            highlightedPoint = null;
-        }
-        
+        // Find if we're hovering over a point
         for (const point of points) {
             const distance = Math.sqrt(
                 Math.pow(mouseX - point.x, 2) + 
@@ -903,13 +939,116 @@ function renderPlayerMatrix() {
             }
         }
         
-        if (hoveredPoint) {
-            ctx.beginPath();
-            ctx.arc(hoveredPoint.x, hoveredPoint.y, config.pointRadius, 0, Math.PI * 2);
-            ctx.fillStyle = config.colors.pointHover;
-            ctx.fill();
-            highlightedPoint = hoveredPoint;
+        // Only redraw if hover state changes
+        if ((hoveredPoint && !highlightedPoint) || 
+            (!hoveredPoint && highlightedPoint) || 
+            (hoveredPoint && highlightedPoint && hoveredPoint.player !== highlightedPoint.player)) {
             
+            // Redraw the entire chart
+            ctx.clearRect(0, 0, containerWidth, config.height);
+            
+            // Redraw background
+            ctx.fillStyle = config.colors.background;
+            ctx.fillRect(config.padding.left, config.padding.top, chartWidth, chartHeight);
+            
+            // Redraw axes
+            ctx.strokeStyle = config.colors.axes;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(config.padding.left, config.padding.top + chartHeight);
+            ctx.lineTo(config.padding.left + chartWidth, config.padding.top + chartHeight);
+            ctx.moveTo(config.padding.left, config.padding.top);
+            ctx.lineTo(config.padding.left, config.padding.top + chartHeight);
+            ctx.stroke();
+            
+            // Redraw grid lines and labels
+            ctx.strokeStyle = config.colors.gridLines;
+            ctx.lineWidth = 1;
+            
+            // X-axis grid lines and labels
+            for (let i = 0; i <= 5; i++) {
+                const x = config.padding.left + (chartWidth / 5) * i;
+                const value = i * 0.2;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, config.padding.top);
+                ctx.lineTo(x, config.padding.top + chartHeight);
+                ctx.stroke();
+                
+                ctx.fillStyle = config.colors.axes;
+                ctx.font = config.fonts.axis;
+                ctx.textAlign = 'center';
+                ctx.fillText((value * 100).toFixed(0) + '%', x, config.padding.top + chartHeight + 25);
+            }
+            
+            // Y-axis grid lines and labels
+            for (let i = 0; i <= 4; i++) {
+                const y = config.padding.top + chartHeight - (chartHeight / 4) * i;
+                const value = i * 0.25;
+                
+                ctx.beginPath();
+                ctx.moveTo(config.padding.left, y);
+                ctx.lineTo(config.padding.left + chartWidth, y);
+                ctx.stroke();
+                
+                ctx.fillStyle = config.colors.axes;
+                ctx.font = config.fonts.axis;
+                ctx.textAlign = 'right';
+                ctx.fillText((value * 100).toFixed(0) + '%', config.padding.left - 10, y + 5);
+            }
+            
+            // Redraw axis titles
+            ctx.fillStyle = config.colors.axes;
+            ctx.font = config.fonts.title;
+            ctx.textAlign = 'center';
+            
+            // X-axis title
+            ctx.fillText(config.titles.x, config.padding.left + chartWidth / 2, config.padding.top + chartHeight + 45);
+            
+            // Y-axis title - rotated
+            ctx.save();
+            ctx.translate(config.padding.left - 50, config.padding.top + chartHeight / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(config.titles.y, 0, 0);
+            ctx.restore();
+            
+            // Draw all points and labels
+            points.forEach(point => {
+                const isHighlighted = hoveredPoint && point.player === hoveredPoint.player;
+                
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, config.pointRadius, 0, Math.PI * 2);
+                ctx.fillStyle = isHighlighted ? config.colors.pointHover : config.colors.points;
+                ctx.fill();
+                
+                // Draw labels for selected models
+                if (config.labeledModels.includes(point.player)) {
+                    ctx.fillStyle = config.colors.labels;
+                    ctx.font = config.fonts.labels;
+                    
+                    // Measure text width to determine if it will be clipped
+                    const textWidth = ctx.measureText(point.player).width;
+                    const rightEdgeX = config.padding.left + chartWidth;
+                    
+                    // Determine text alignment and position
+                    if (point.x + textWidth + 10 > rightEdgeX) {
+                        // Too close to right edge, place text to the left
+                        ctx.textAlign = 'right';
+                        ctx.fillText(point.player, point.x - config.pointRadius - 5, point.y);
+                    } else {
+                        // Default: place text to the right
+                        ctx.textAlign = 'left';
+                        ctx.fillText(point.player, point.x + config.pointRadius + 5, point.y);
+                    }
+                }
+            });
+            
+            // Update highlighted point reference
+            highlightedPoint = hoveredPoint;
+        }
+        
+        // Update tooltip
+        if (hoveredPoint) {
             tooltipElement.innerHTML = `<span style="color: yellow; font-weight: bold">${hoveredPoint.player}</span><br>
 Win Rate: ${(hoveredPoint.winRate * 100).toFixed(1)}%<br>
 Game duration: ${(hoveredPoint.gameDuration * 100).toFixed(1)}%<br>
@@ -931,10 +1070,103 @@ Non-interrupted games: ${hoveredPoint.gamesNotInterruptedPercent}%`;
         tooltipElement.style.display = 'none';
         
         if (highlightedPoint) {
+            // Redraw the entire chart to its initial state
+            ctx.clearRect(0, 0, containerWidth, config.height);
+            
+            // Redraw background
+            ctx.fillStyle = config.colors.background;
+            ctx.fillRect(config.padding.left, config.padding.top, chartWidth, chartHeight);
+            
+            // Redraw axes
+            ctx.strokeStyle = config.colors.axes;
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(highlightedPoint.x, highlightedPoint.y, config.pointRadius, 0, Math.PI * 2);
-            ctx.fillStyle = config.colors.points;
-            ctx.fill();
+            ctx.moveTo(config.padding.left, config.padding.top + chartHeight);
+            ctx.lineTo(config.padding.left + chartWidth, config.padding.top + chartHeight);
+            ctx.moveTo(config.padding.left, config.padding.top);
+            ctx.lineTo(config.padding.left, config.padding.top + chartHeight);
+            ctx.stroke();
+            
+            // Redraw grid lines and labels
+            ctx.strokeStyle = config.colors.gridLines;
+            ctx.lineWidth = 1;
+            
+            // X-axis grid lines and labels
+            for (let i = 0; i <= 5; i++) {
+                const x = config.padding.left + (chartWidth / 5) * i;
+                const value = i * 0.2;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, config.padding.top);
+                ctx.lineTo(x, config.padding.top + chartHeight);
+                ctx.stroke();
+                
+                ctx.fillStyle = config.colors.axes;
+                ctx.font = config.fonts.axis;
+                ctx.textAlign = 'center';
+                ctx.fillText((value * 100).toFixed(0) + '%', x, config.padding.top + chartHeight + 25);
+            }
+            
+            // Y-axis grid lines and labels
+            for (let i = 0; i <= 4; i++) {
+                const y = config.padding.top + chartHeight - (chartHeight / 4) * i;
+                const value = i * 0.25;
+                
+                ctx.beginPath();
+                ctx.moveTo(config.padding.left, y);
+                ctx.lineTo(config.padding.left + chartWidth, y);
+                ctx.stroke();
+                
+                ctx.fillStyle = config.colors.axes;
+                ctx.font = config.fonts.axis;
+                ctx.textAlign = 'right';
+                ctx.fillText((value * 100).toFixed(0) + '%', config.padding.left - 10, y + 5);
+            }
+            
+            // Redraw axis titles
+            ctx.fillStyle = config.colors.axes;
+            ctx.font = config.fonts.title;
+            ctx.textAlign = 'center';
+            
+            // X-axis title
+            ctx.fillText(config.titles.x, config.padding.left + chartWidth / 2, config.padding.top + chartHeight + 45);
+            
+            // Y-axis title - rotated
+            ctx.save();
+            ctx.translate(config.padding.left - 50, config.padding.top + chartHeight / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(config.titles.y, 0, 0);
+            ctx.restore();
+            
+            // Draw all points and labels in normal state
+            points.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, config.pointRadius, 0, Math.PI * 2);
+                ctx.fillStyle = config.colors.points;
+                ctx.fill();
+                
+                // Draw labels for selected models
+                if (config.labeledModels.includes(point.player)) {
+                    ctx.fillStyle = config.colors.labels;
+                    ctx.font = config.fonts.labels;
+                    
+                    // Measure text width to determine if it will be clipped
+                    const textWidth = ctx.measureText(point.player).width;
+                    const rightEdgeX = config.padding.left + chartWidth;
+                    
+                    // Determine text alignment and position
+                    if (point.x + textWidth + 10 > rightEdgeX) {
+                        // Too close to right edge, place text to the left
+                        ctx.textAlign = 'right';
+                        ctx.fillText(point.player, point.x - config.pointRadius - 5, point.y);
+                    } else {
+                        // Default: place text to the right
+                        ctx.textAlign = 'left';
+                        ctx.fillText(point.player, point.x + config.pointRadius + 5, point.y);
+                    }
+                }
+            });
+            
             highlightedPoint = null;
         }
     });
@@ -946,7 +1178,3 @@ window.addEventListener('resize', function() {
         renderPlayerMatrix();
     }
 });
-
-function initializeMatrixView() {
-    setTimeout(renderPlayerMatrix, 0);
-}
