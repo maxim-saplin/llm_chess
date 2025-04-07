@@ -378,31 +378,27 @@ function showPlayerDetailsPopup(row, columns) {
     const moeMistakesPer1000Moves = columns[csvIndices.moe_mistakes_per_1000moves];
     const moeCompletionTokensBlackPerMove = columns[csvIndices.moe_completion_tokens_black_per_move];
 
-    document.getElementById('total-games').textContent = `Games: ${parseInt(totalGames)}`;
-    
-    // Add win_loss and game_duration at the top with MoE
-    document.getElementById('win_loss').textContent = 
-        `Win/Loss: ${parseFloat(winLoss)} ± ${parseFloat(moeWinLoss)}`;
-    document.getElementById('game-duration').textContent = 
-        `Game Duration: ${parseFloat(gameDuration)} ± ${parseFloat(moeGameDuration)}`;
-    
-    // Add games interrupted
-    document.getElementById('games-interrupted').textContent = 
-        `Games Interrupted: ${parseInt(gamesInterrupted)} (${parseFloat(gamesInterruptedPercent/100).toFixed(3)} ± ${parseFloat(moeGamesInterrupted).toFixed(3)})`;
-    
-    document.getElementById('wins').textContent =
-        `Wins: ${parseInt(wins)} (` +
+    document.getElementById('total-games').innerHTML = 
+        `<span>Games:</span> ${parseInt(totalGames)}`;
+    document.getElementById('win_loss').innerHTML = 
+        `<span>Win/Loss:</span> ${parseFloat(winLoss)} ± ${parseFloat(moeWinLoss)}`;
+    document.getElementById('game-duration').innerHTML = 
+        `<span>Game Duration:</span> ${parseFloat(gameDuration)} ± ${parseFloat(moeGameDuration)}`;
+    document.getElementById('games-interrupted').innerHTML = 
+        `<span>Games Interrupted:</span> ${parseInt(gamesInterrupted)} (${parseFloat(gamesInterruptedPercent/100).toFixed(3)} ± ${parseFloat(moeGamesInterrupted).toFixed(3)})`;
+    document.getElementById('wins').innerHTML =
+        `<span>Wins:</span> ${parseInt(wins)} (` +
         `${((parseInt(wins) / parseInt(totalGames))).toFixed(3)} ± ${parseFloat(moeWins).toFixed(3)})`;
-    document.getElementById('losses').textContent =
-        `Losses: ${parseInt(losses)} (` +
+    document.getElementById('losses').innerHTML =
+        `<span>Losses:</span> ${parseInt(losses)} (` +
         `${((parseInt(losses) / parseInt(totalGames))).toFixed(2)} ± ${parseFloat(moeLosses).toFixed(3)})`;
-    document.getElementById('draws').textContent =
-        `Draws: ${parseInt(draws)} (` +
+    document.getElementById('draws').innerHTML =
+        `<span>Draws:</span> ${parseInt(draws)} (` +
         `${((parseInt(draws) / parseInt(totalGames))).toFixed(3)} ± ${parseFloat(moeDraws).toFixed(3)})`;
-    document.getElementById('average-moves').textContent = `Average Moves: ${parseFloat(averageMoves).toFixed(2)} ± ${parseFloat(moeAverageMoves).toFixed(2)}`;
-    document.getElementById('material-diff').textContent = `Material Diff: ${parseFloat(materialDiff).toFixed(2)} ± ${parseFloat(moeMaterialDiff).toFixed(2)}`;
-    document.getElementById('mistakes-per-1000moves').textContent = `Mistakes/1k_Moves: ${parseFloat(mistakesPer1000Moves).toFixed(2)} ± ${parseFloat(moeMistakesPer1000Moves).toFixed(2)}`;
-    document.getElementById('completion-tokens-black-per-move').textContent = `Compl.Toks/Move: ${parseFloat(completionTokensBlackPerMove).toFixed(2)} ± ${parseFloat(moeCompletionTokensBlackPerMove).toFixed(2)}`;
+    document.getElementById('average-moves').innerHTML = `<span>Average Moves:</span> ${parseFloat(averageMoves).toFixed(2)} ± ${parseFloat(moeAverageMoves).toFixed(2)}`;
+    document.getElementById('material-diff').innerHTML = `<span>Material Diff:</span> ${parseFloat(materialDiff).toFixed(2)} ± ${parseFloat(moeMaterialDiff).toFixed(2)}`;
+    document.getElementById('mistakes-per-1000moves').innerHTML = `<span>Mistakes/1k_Moves:</span> ${parseFloat(mistakesPer1000Moves).toFixed(2)} ± ${parseFloat(moeMistakesPer1000Moves).toFixed(2)}`;
+    document.getElementById('completion-tokens-black-per-move').innerHTML = `<span>Compl.Toks/Move:</span> ${parseFloat(completionTokensBlackPerMove).toFixed(2)} ± ${parseFloat(moeCompletionTokensBlackPerMove).toFixed(2)}`;
 
     const rect = row.getBoundingClientRect();
     if (window.innerWidth < 1350) {
@@ -701,12 +697,12 @@ function renderPlayerMatrix() {
         pointRadius: 5,
         hoverRadius: 10,
         colors: {
-            background: 'black',
-            axes: 'white',
-            gridLines: 'rgba(255, 255, 255, 0.2)',
-            points: 'yellow',
-            pointHover: 'blue',
-            labels: 'white'
+            background: '#C0C0C0',
+            axes: 'black',
+            gridLines: 'rgba(0, 0, 0, 0.2)',
+            points: '#404040',
+            pointHover: 'yellow',
+            labels: 'black'
         },
         fonts: {
             axis: '14px "Web IBM VGA 8x16"',
@@ -721,11 +717,12 @@ function renderPlayerMatrix() {
         tooltip: {
             style: {
                 position: 'fixed',
-                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                backgroundColor: '#333',
                 color: 'white',
                 padding: '8px',
+                boxShadow: '8px 8px black',
                 borderRadius: '5px',
-                border: '1px solid #ffffff',
+                border: 'none',
                 pointerEvents: 'none',
                 display: 'none',
                 zIndex: '1000',
@@ -758,7 +755,8 @@ function renderPlayerMatrix() {
     const chartWidth = containerWidth - config.padding.left - config.padding.right;
     const chartHeight = config.height - config.padding.top - config.padding.bottom;
     
-    ctx.clearRect(0, 0, containerWidth, config.height);
+    ctx.fillStyle = config.colors.background;
+    ctx.fillRect(0, 0, containerWidth, config.height);
     
     // Use pre-parsed data instead of parsing again
     const normalRows = parsedCsvData.normalRows;
@@ -789,10 +787,6 @@ function renderPlayerMatrix() {
             moeLosses: parseFloat(cols[csvIndices.moe_black_llm_loss_rate]) || 0
         };
     });
-    
-    // Draw background
-    ctx.fillStyle = config.colors.background;
-    ctx.fillRect(config.padding.left, config.padding.top, chartWidth, chartHeight);
     
     // Draw axes
     ctx.strokeStyle = config.colors.axes;
@@ -949,7 +943,7 @@ function renderPlayerMatrix() {
             
             // Redraw background
             ctx.fillStyle = config.colors.background;
-            ctx.fillRect(config.padding.left, config.padding.top, chartWidth, chartHeight);
+            ctx.fillRect(0, 0, containerWidth, config.height);
             
             // Redraw axes
             ctx.strokeStyle = config.colors.axes;
@@ -1075,7 +1069,7 @@ Non-interrupted games: ${hoveredPoint.gamesNotInterruptedPercent}%`;
             
             // Redraw background
             ctx.fillStyle = config.colors.background;
-            ctx.fillRect(config.padding.left, config.padding.top, chartWidth, chartHeight);
+            ctx.fillRect(0, 0, containerWidth, config.height);
             
             // Redraw axes
             ctx.strokeStyle = config.colors.axes;
