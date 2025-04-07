@@ -45,6 +45,14 @@ const navConfig = {
     ]
 };
 
+// Global variable to store parsed CSV data
+let parsedCsvData = {
+    headers: [],      // CSV headers
+    rows: [],         // Array of row objects with parsed data
+    specialRows: [],  // Special rows like Stockfish, Random Players
+    normalRows: []    // Regular model rows
+};
+
 const Screen = {
     LEADERBOARD_NEW: 'leaderboard_new',
     MATRIX: 'matrix',
@@ -106,6 +114,9 @@ const csvIndices = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Parse CSV data from the global data variable (loaded from data.js)
+    parseCSVData();
+    
     // Create navigation elements first
     createNavigation();
     
@@ -120,6 +131,34 @@ document.addEventListener('DOMContentLoaded', () => {
         MinimalMD.render('considerations');
     }, 100);
 });
+
+// Function to parse CSV data
+function parseCSVData() {
+    if (typeof data === 'undefined') {
+        console.error('CSV data not found. Make sure data.js is loaded before script.js');
+        return;
+    }
+    
+    const lines = data.trim().split('\n').filter(line => line.trim() !== '');
+    
+    // Parse headers
+    parsedCsvData.headers = lines[0].split(',');
+    
+    // Parse rows
+    const rowObjects = lines.slice(1).map((line, i) => {
+        const cols = line.split(',');
+        return { originalIndex: i, cols };
+    });
+    
+    // Separate special rows and normal rows
+    parsedCsvData.rows = rowObjects;
+    parsedCsvData.specialRows = rowObjects.filter(row => 
+        Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]));
+    parsedCsvData.normalRows = rowObjects.filter(row => 
+        !Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]));
+    
+    console.log('CSV data parsed successfully');
+}
 
 // Define table configs for NEW and OLD leaderboards
 const tableConfigs = {
@@ -203,6 +242,11 @@ function showPane(screenId) {
     if (!screenConfig) {
         console.error(`Screen ${screenId} not found in configuration`);
         return;
+    }
+    
+    // Ensure CSV data is parsed if not already done
+    if (parsedCsvData.rows.length === 0) {
+        parseCSVData();
     }
     
     currentScreen = screenId;
@@ -498,11 +542,8 @@ function toggleSnippet(button) {
 }
 
 function buildTableGeneric(config) {
-    const lines = data.trim().split('\n').filter(line => line.trim() !== '');
-    const rowObjects = lines.slice(1).map((line, i) => {
-        const cols = line.split(',');
-        return { originalIndex: i, cols };
-    });
+    // Use the pre-parsed data instead of parsing again
+    const rowObjects = parsedCsvData.rows;
 
     // Clear table body
     const tbody = document.querySelector('#leaderboard tbody');
@@ -605,16 +646,15 @@ function sortTable(columnIndex) {
     const indicator = sortOrderObj[columnIndex] === 'asc' ? '▲' : '▼';
     sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
 }
+
 function sortAllRows(rows, config, overrideColumnIndex = null, newOrder = 'asc') {
-    // Separate bottom rows
-    const bottomRows = [];
+    // Use pre-parsed special rows
+    const bottomRows = parsedCsvData.specialRows;
+    
+    // Filter out special rows from the input rows
     const normalRows = rows.filter(row => {
         const playerName = row.cols[csvIndices.player];
-        if (Object.values(SPECIAL_ROWS).includes(playerName)) {
-            bottomRows.push(row);
-            return false;
-        }
-        return true;
+        return !Object.values(SPECIAL_ROWS).includes(playerName);
     });
 
     // If no override column is given, use default
@@ -698,32 +738,20 @@ function renderPlayerMatrix() {
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Parse data from the CSV
-    const lines = data.trim().split('\n').filter(line => line.trim() !== '');
-    
-    const allRows = lines.slice(1).map(line => {
-        const cols = line.split(',');
-        return { cols };
-    });
+    // Use pre-parsed data instead of parsing again
+    const normalRows = parsedCsvData.normalRows;
     
     // Use the default sort function from tableConfigs to sort rows the same way as the leaderboard
     const tableConfig = tableConfigs[Screen.LEADERBOARD_NEW];
-    const sortedRows = [...allRows].filter(row => {
-        // Filter out special rows
-        const playerName = row.cols[csvIndices.player];
-        return !Object.values(SPECIAL_ROWS).includes(playerName);
-    }).sort((a, b) => tableConfig.defaultSortCompare(a.cols, b.cols));
+    const sortedRows = [...normalRows].sort((a, b) => 
+        tableConfig.defaultSortCompare(a.cols, b.cols));
     
     // Get all player names (no top 10 limit)
     const allPlayers = sortedRows.map(row => row.cols[csvIndices.player]);
     
-    // Filter data to include all players (not just top 10)
-    const playerData = lines.slice(1).filter(line => {
-        const cols = line.split(',');
-        const playerName = cols[csvIndices.player];
-        return allPlayers.includes(playerName);
-    }).map(line => {
-        const cols = line.split(',');
+    // Map to the format needed for the visualization
+    const playerData = sortedRows.map(row => {
+        const cols = row.cols;
         return {
             player: cols[csvIndices.player],
             winLossNonInterrupted: parseFloat(cols[csvIndices.win_loss_non_interrupted]) || 0,
