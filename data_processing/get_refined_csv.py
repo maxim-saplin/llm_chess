@@ -35,7 +35,10 @@ except ImportError:
 LOGS_DIRS = [
     "_logs/no_reflection",
     "_logs/new/deepseek-v3-0324"
+    # "_logs/new"
 ]
+
+filter_out_below_n = 30
 
 # Output files
 OUTPUT_DIR = "data_processing"
@@ -280,7 +283,6 @@ def print_leaderboard(csv_file, top_n=None):
     # Prepare data for tabulate
     total_cost_all_models = 0.0
     for rank, row in enumerate(sorted_data, 1):
-        # Skip special rows styling (we'll just include them in the ranking)
         player_name = row['Player']
         
         # Format the metrics like in the web version
@@ -327,7 +329,7 @@ def main():
     convert_aggregate_to_refined(
         AGGREGATE_CSV,
         REFINED_CSV,
-        filter_out_below_n=30,
+        filter_out_below_n=filter_out_below_n,
         filter_out_models=FILTER_OUT_MODELS,
         model_aliases=ALIASES,
     )
