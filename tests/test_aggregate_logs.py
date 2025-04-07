@@ -396,6 +396,17 @@ class TestAggregateMetrics(unittest.TestCase):
             "games_not_interrupted_percent",
             "std_dev_games_not_interrupted",
             "moe_games_not_interrupted",
+            # Termination reason columns using enum names
+            f"reason_{TerminationReason.TOO_MANY_WRONG_ACTIONS.name.lower()}",
+            f"reason_{TerminationReason.CHECKMATE.name.lower()}",
+            f"reason_{TerminationReason.STALEMATE.name.lower()}",
+            f"reason_{TerminationReason.INSUFFICIENT_MATERIAL.name.lower()}",
+            f"reason_{TerminationReason.SEVENTYFIVE_MOVES.name.lower()}",
+            f"reason_{TerminationReason.FIVEFOLD_REPETITION.name.lower()}",
+            f"reason_{TerminationReason.MAX_TURNS.name.lower()}",
+            f"reason_{TerminationReason.UNKNOWN_ISSUE.name.lower()}",
+            f"reason_{TerminationReason.MAX_MOVES.name.lower()}",
+            f"reason_{TerminationReason.ERROR.name.lower()}",
             "llm_total_moves",
             "average_moves",
             "std_dev_moves",
@@ -437,6 +448,106 @@ class TestAggregateMetrics(unittest.TestCase):
         # Fail if there are extra fields in the CSV
         for field in read_headers:
             self.assertIn(field, headers)
+
+    def test_termination_reason_counts(self):
+        """Tests that the termination reason counts are correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Get data for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        # Map from termination reason to expected count for model_1
+        model_1_expected_counts = {
+            TerminationReason.TOO_MANY_WRONG_ACTIONS: 1,  # One game with "Too many wrong actions"
+            TerminationReason.MAX_MOVES: 1,  # One game with "Max moves reached"
+            TerminationReason.CHECKMATE: 0,
+            TerminationReason.STALEMATE: 0,
+            TerminationReason.INSUFFICIENT_MATERIAL: 0,
+            TerminationReason.SEVENTYFIVE_MOVES: 0,
+            TerminationReason.FIVEFOLD_REPETITION: 0,
+            TerminationReason.MAX_TURNS: 0,
+            TerminationReason.UNKNOWN_ISSUE: 0,
+            TerminationReason.ERROR: 0
+        }
+
+        # Map from termination reason to expected count for model_2
+        model_2_expected_counts = {
+            TerminationReason.TOO_MANY_WRONG_ACTIONS: 1,  # One game with "Too many wrong actions"
+            TerminationReason.MAX_MOVES: 1,  # One game with "Max moves reached"
+            TerminationReason.CHECKMATE: 0,
+            TerminationReason.STALEMATE: 0,
+            TerminationReason.INSUFFICIENT_MATERIAL: 0,
+            TerminationReason.SEVENTYFIVE_MOVES: 0,
+            TerminationReason.FIVEFOLD_REPETITION: 0,
+            TerminationReason.MAX_TURNS: 0,
+            TerminationReason.UNKNOWN_ISSUE: 0,
+            TerminationReason.ERROR: 0
+        }
+
+        # Verify counts for model_1
+        for reason, expected_count in model_1_expected_counts.items():
+            column_name = f"reason_{reason.name.lower()}"
+            self.assertEqual(
+                int(model_1_data[column_name]), 
+                expected_count,
+                f"Model 1 expected {expected_count} for {reason.value}, got {model_1_data[column_name]}"
+            )
+
+        # Verify counts for model_2
+        for reason, expected_count in model_2_expected_counts.items():
+            column_name = f"reason_{reason.name.lower()}"
+            self.assertEqual(
+                int(model_2_data[column_name]), 
+                expected_count,
+                f"Model 2 expected {expected_count} for {reason.value}, got {model_2_data[column_name]}"
+            )
+
+    def test_interrupted_games_consistency(self):
+        """Tests that the games_interrupted count matches the sum of interrupted termination reasons."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Get data for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        # List of termination reasons that count as interrupted games
+        interrupted_reasons = [
+            TerminationReason.TOO_MANY_WRONG_ACTIONS,
+            TerminationReason.MAX_TURNS,
+            TerminationReason.UNKNOWN_ISSUE,
+            TerminationReason.ERROR
+        ]
+
+        # Calculate expected interrupted games count for model_1
+        expected_model_1_interrupted = sum(
+            int(model_1_data[f"reason_{reason.name.lower()}"])
+            for reason in interrupted_reasons
+        )
+
+        # Calculate expected interrupted games count for model_2
+        expected_model_2_interrupted = sum(
+            int(model_2_data[f"reason_{reason.name.lower()}"])
+            for reason in interrupted_reasons
+        )
+
+        # Verify that games_interrupted matches the sum of interrupted termination reasons
+        self.assertEqual(
+            int(model_1_data["games_interrupted"]),
+            expected_model_1_interrupted,
+            "games_interrupted should match the sum of interrupted termination reasons for model_1"
+        )
+        self.assertEqual(
+            int(model_2_data["games_interrupted"]),
+            expected_model_2_interrupted,
+            "games_interrupted should match the sum of interrupted termination reasons for model_2"
+        )
 
 
 def create_mock_json_logs():

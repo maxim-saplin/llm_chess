@@ -247,6 +247,16 @@ def aggregate_models_to_csv(
         "games_not_interrupted_percent",
         "std_dev_games_not_interrupted",
         "moe_games_not_interrupted",
+        "reason_too_many_wrong_actions",
+        "reason_checkmate",
+        "reason_stalemate",
+        "reason_insufficient_material",
+        "reason_seventyfive_moves",
+        "reason_fivefold_repetition",
+        "reason_max_turns",
+        "reason_unknown_issue",
+        "reason_max_moves",
+        "reason_error",
         "llm_total_moves",
         "average_moves",
         "std_dev_moves",
@@ -329,6 +339,25 @@ def aggregate_models_to_csv(
         std_dev_games_not_interrupted = math.sqrt((p_not_interrupted * (1 - p_not_interrupted)) / total_games) if total_games > 1 else 0
         moe_games_not_interrupted = 1.96 * std_dev_games_not_interrupted if total_games > 1 else 0
 
+        # Count termination reasons
+        reason_counts = {
+            TerminationReason.TOO_MANY_WRONG_ACTIONS.value: 0,
+            TerminationReason.CHECKMATE.value: 0,
+            TerminationReason.STALEMATE.value: 0,
+            TerminationReason.INSUFFICIENT_MATERIAL.value: 0,
+            TerminationReason.SEVENTYFIVE_MOVES.value: 0,
+            TerminationReason.FIVEFOLD_REPETITION.value: 0,
+            TerminationReason.MAX_TURNS.value: 0,
+            TerminationReason.UNKNOWN_ISSUE.value: 0,
+            TerminationReason.MAX_MOVES.value: 0,
+            TerminationReason.ERROR.value: 0
+        }
+        
+        # Count reasons for each game
+        for log in model_logs:
+            if log.reason in reason_counts:
+                reason_counts[log.reason] += 1
+        
         # Calculate win_loss_non_interrupted metric (excluding interrupted games)
         non_interrupted_logs = [log for log in model_logs if not log.is_interrupted]
         non_interrupted_games = len(non_interrupted_logs)
@@ -624,6 +653,17 @@ def aggregate_models_to_csv(
                 games_not_interrupted_percent,
                 std_dev_games_not_interrupted,
                 moe_games_not_interrupted,
+                # Add termination reason counts
+                reason_counts[TerminationReason.TOO_MANY_WRONG_ACTIONS.value],
+                reason_counts[TerminationReason.CHECKMATE.value],
+                reason_counts[TerminationReason.STALEMATE.value],
+                reason_counts[TerminationReason.INSUFFICIENT_MATERIAL.value],
+                reason_counts[TerminationReason.SEVENTYFIVE_MOVES.value],
+                reason_counts[TerminationReason.FIVEFOLD_REPETITION.value],
+                reason_counts[TerminationReason.MAX_TURNS.value],
+                reason_counts[TerminationReason.UNKNOWN_ISSUE.value],
+                reason_counts[TerminationReason.MAX_MOVES.value],
+                reason_counts[TerminationReason.ERROR.value],
                 llm_total_moves,
                 average_moves,
                 std_dev_moves,
