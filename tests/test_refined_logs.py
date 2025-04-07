@@ -211,6 +211,32 @@ class TestAggrToRefined(unittest.TestCase):
             # (no wins or losses among non-interrupted games, just the default value)
             self.assertEqual(float(row["win_loss_non_interrupted"]), 0.5)
 
+    def test_cost_metrics_propagation(self):
+        """Tests that cost metrics are correctly propagated from aggregate to refined CSV."""
+        # Generate aggregate CSV from mock logs
+        aggregate_models_to_csv(
+            self.mock_logs_dir, self.mock_aggregate_csv, MODEL_OVERRIDES
+        )
+
+        # Convert aggregate CSV to refined CSV
+        convert_aggregate_to_refined(
+            self.mock_aggregate_csv, self.mock_refined_csv, filter_out_below_n=0
+        )
+
+        # Read the refined CSV and validate the presence of cost metrics
+        with open(self.mock_refined_csv, "r") as ref_file:
+            reader = csv.DictReader(ref_file)
+            rows = list(reader)
+
+        # Check that each row has the cost metrics
+        for row in rows:
+            self.assertIn("average_game_cost", row)
+            self.assertIn("moe_average_game_cost", row)
+            
+            # These metrics should be present with default values
+            self.assertIsNotNone(row["average_game_cost"])
+            self.assertIsNotNone(row["moe_average_game_cost"])
+
 
 if __name__ == "__main__":
     unittest.main() 
