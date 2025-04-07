@@ -10,6 +10,14 @@ const navConfig = {
                 buildTableGeneric(tableConfigs[this.id]);
             }
         },
+        MATRIX: {
+            id: 'matrix',
+            title: 'Matrix',
+            elementId: 'matrix-view',
+            onShow: function() {
+                initializeMatrixView();
+            }
+        },
         HOW_IT_WORKS: {
             id: 'how_it_works',
             title: 'How it works',
@@ -25,11 +33,29 @@ const navConfig = {
         }
     },
     
-    dropdowns: []
+    dropdowns: [
+        {
+            title: 'Leaderboard',
+            defaultScreen: 'leaderboard_new',
+            items: [
+                { title: 'Leaderboard', screen: 'leaderboard_new' },
+                { title: 'Matrix', screen: 'matrix' }
+            ]
+        }
+    ]
+};
+
+// Global variable to store parsed CSV data
+let parsedCsvData = {
+    headers: [],      // CSV headers
+    rows: [],         // Array of row objects with parsed data
+    specialRows: [],  // Special rows like Stockfish, Random Players
+    normalRows: []    // Regular model rows
 };
 
 const Screen = {
     LEADERBOARD_NEW: 'leaderboard_new',
+    MATRIX: 'matrix',
     HOW_IT_WORKS: 'how_it_works',
     NOTES: 'notes'
 };
@@ -75,14 +101,22 @@ const csvIndices = {
     moe_black_llm_loss_rate: 24,
     win_loss: 25,
     moe_win_loss: 26,
-    game_duration: 27,
-    moe_game_duration: 28,
-    games_interrupted: 29,
-    games_interrupted_percent: 30,
-    moe_games_interrupted: 31
+    win_loss_non_interrupted: 27,
+    moe_win_loss_non_interrupted: 28,
+    game_duration: 29,
+    moe_game_duration: 30,
+    games_interrupted: 31,
+    games_interrupted_percent: 32,
+    moe_games_interrupted: 33,
+    games_not_interrupted: 34,
+    games_not_interrupted_percent: 35,
+    moe_games_not_interrupted: 36
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Parse CSV data from the global data variable (loaded from data.js)
+    parseCSVData();
+    
     // Create navigation elements first
     createNavigation();
     
@@ -97,6 +131,34 @@ document.addEventListener('DOMContentLoaded', () => {
         MinimalMD.render('considerations');
     }, 100);
 });
+
+// Function to parse CSV data
+function parseCSVData() {
+    if (typeof data === 'undefined') {
+        console.error('CSV data not found. Make sure data.js is loaded before script.js');
+        return;
+    }
+    
+    const lines = data.trim().split('\n').filter(line => line.trim() !== '');
+    
+    // Parse headers
+    parsedCsvData.headers = lines[0].split(',');
+    
+    // Parse rows
+    const rowObjects = lines.slice(1).map((line, i) => {
+        const cols = line.split(',');
+        return { originalIndex: i, cols };
+    });
+    
+    // Separate special rows and normal rows
+    parsedCsvData.rows = rowObjects;
+    parsedCsvData.specialRows = rowObjects.filter(row => 
+        Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]));
+    parsedCsvData.normalRows = rowObjects.filter(row => 
+        !Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]));
+    
+    console.log('CSV data parsed successfully');
+}
 
 // Define table configs for NEW and OLD leaderboards
 const tableConfigs = {
@@ -182,6 +244,11 @@ function showPane(screenId) {
         return;
     }
     
+    // Ensure CSV data is parsed if not already done
+    if (parsedCsvData.rows.length === 0) {
+        parseCSVData();
+    }
+    
     currentScreen = screenId;
     
     // Hide all panes
@@ -213,7 +280,10 @@ function showPane(screenId) {
             const item = parentDropdown.items.find(item => item.screen === screenId);
             if (item) {
                 const dropbtn = document.querySelector('.dropbtn');
-                if (dropbtn) dropbtn.textContent = item.title;
+                if (dropbtn) {
+                    // Keep the arrow when updating button text
+                    dropbtn.innerHTML = `${item.title} <span class="dropdown-arrow">▼</span>`;
+                }
             }
         }
     } else {
@@ -308,31 +378,27 @@ function showPlayerDetailsPopup(row, columns) {
     const moeMistakesPer1000Moves = columns[csvIndices.moe_mistakes_per_1000moves];
     const moeCompletionTokensBlackPerMove = columns[csvIndices.moe_completion_tokens_black_per_move];
 
-    document.getElementById('total-games').textContent = `Games: ${parseInt(totalGames)}`;
-    
-    // Add win_loss and game_duration at the top with MoE
-    document.getElementById('win_loss').textContent = 
-        `Win/Loss: ${parseFloat(winLoss)} ± ${parseFloat(moeWinLoss)}`;
-    document.getElementById('game-duration').textContent = 
-        `Game Duration: ${parseFloat(gameDuration)} ± ${parseFloat(moeGameDuration)}`;
-    
-    // Add games interrupted
-    document.getElementById('games-interrupted').textContent = 
-        `Games Interrupted: ${parseInt(gamesInterrupted)} (${parseFloat(gamesInterruptedPercent/100).toFixed(3)} ± ${parseFloat(moeGamesInterrupted).toFixed(3)})`;
-    
-    document.getElementById('wins').textContent =
-        `Wins: ${parseInt(wins)} (` +
+    document.getElementById('total-games').innerHTML = 
+        `<span>Games:</span> ${parseInt(totalGames)}`;
+    document.getElementById('win_loss').innerHTML = 
+        `<span>Win/Loss:</span> ${parseFloat(winLoss)} ± ${parseFloat(moeWinLoss)}`;
+    document.getElementById('game-duration').innerHTML = 
+        `<span>Game Duration:</span> ${parseFloat(gameDuration)} ± ${parseFloat(moeGameDuration)}`;
+    document.getElementById('games-interrupted').innerHTML = 
+        `<span>Games Interrupted:</span> ${parseInt(gamesInterrupted)} (${parseFloat(gamesInterruptedPercent/100).toFixed(3)} ± ${parseFloat(moeGamesInterrupted).toFixed(3)})`;
+    document.getElementById('wins').innerHTML =
+        `<span>Wins:</span> ${parseInt(wins)} (` +
         `${((parseInt(wins) / parseInt(totalGames))).toFixed(3)} ± ${parseFloat(moeWins).toFixed(3)})`;
-    document.getElementById('losses').textContent =
-        `Losses: ${parseInt(losses)} (` +
+    document.getElementById('losses').innerHTML =
+        `<span>Losses:</span> ${parseInt(losses)} (` +
         `${((parseInt(losses) / parseInt(totalGames))).toFixed(2)} ± ${parseFloat(moeLosses).toFixed(3)})`;
-    document.getElementById('draws').textContent =
-        `Draws: ${parseInt(draws)} (` +
+    document.getElementById('draws').innerHTML =
+        `<span>Draws:</span> ${parseInt(draws)} (` +
         `${((parseInt(draws) / parseInt(totalGames))).toFixed(3)} ± ${parseFloat(moeDraws).toFixed(3)})`;
-    document.getElementById('average-moves').textContent = `Average Moves: ${parseFloat(averageMoves).toFixed(2)} ± ${parseFloat(moeAverageMoves).toFixed(2)}`;
-    document.getElementById('material-diff').textContent = `Material Diff: ${parseFloat(materialDiff).toFixed(2)} ± ${parseFloat(moeMaterialDiff).toFixed(2)}`;
-    document.getElementById('mistakes-per-1000moves').textContent = `Mistakes/1k_Moves: ${parseFloat(mistakesPer1000Moves).toFixed(2)} ± ${parseFloat(moeMistakesPer1000Moves).toFixed(2)}`;
-    document.getElementById('completion-tokens-black-per-move').textContent = `Compl.Toks/Move: ${parseFloat(completionTokensBlackPerMove).toFixed(2)} ± ${parseFloat(moeCompletionTokensBlackPerMove).toFixed(2)}`;
+    document.getElementById('average-moves').innerHTML = `<span>Average Moves:</span> ${parseFloat(averageMoves).toFixed(2)} ± ${parseFloat(moeAverageMoves).toFixed(2)}`;
+    document.getElementById('material-diff').innerHTML = `<span>Material Diff:</span> ${parseFloat(materialDiff).toFixed(2)} ± ${parseFloat(moeMaterialDiff).toFixed(2)}`;
+    document.getElementById('mistakes-per-1000moves').innerHTML = `<span>Mistakes/1k_Moves:</span> ${parseFloat(mistakesPer1000Moves).toFixed(2)} ± ${parseFloat(moeMistakesPer1000Moves).toFixed(2)}`;
+    document.getElementById('completion-tokens-black-per-move').innerHTML = `<span>Compl.Toks/Move:</span> ${parseFloat(completionTokensBlackPerMove).toFixed(2)} ± ${parseFloat(moeCompletionTokensBlackPerMove).toFixed(2)}`;
 
     const rect = row.getBoundingClientRect();
     if (window.innerWidth < 1350) {
@@ -361,28 +427,17 @@ function createNavigation() {
     // Clear existing content
     buttonContainer.innerHTML = '';
     
-    // Create buttons based on configuration
-    Object.values(navConfig.screens).forEach(screen => {
-        // Skip screens that should be in dropdowns
-        if (isScreenInDropdown(screen.id)) return;
-        
-        const button = document.createElement('button');
-        button.textContent = screen.title;
-        button.onclick = () => showPane(screen.id);
-        buttonContainer.appendChild(button);
-    });
-    
-    // Create dropdowns
+    // Create dropdowns first to make them appear on the left
     navConfig.dropdowns.forEach(dropdown => {
         const dropdownContainer = document.createElement('div');
         dropdownContainer.className = 'custom-dropdown';
         
         const dropbtn = document.createElement('button');
         dropbtn.className = 'dropbtn';
-        dropbtn.textContent = dropdown.title;
         
-        // If dropdown has items, create dropdown content
+        // If dropdown has items, create dropdown content and add arrow
         if (dropdown.items && dropdown.items.length > 0) {
+            dropbtn.innerHTML = `${dropdown.title} <span class="dropdown-arrow">▼</span>`;
             dropbtn.onclick = () => toggleDropdown(dropdownContainer);
             
             const dropdownContent = document.createElement('div');
@@ -399,11 +454,23 @@ function createNavigation() {
             dropdownContainer.appendChild(dropdownContent);
         } else {
             // If no items, just make the button show the default screen
+            dropbtn.textContent = dropdown.title;
             dropbtn.onclick = () => showPane(dropdown.defaultScreen);
             dropdownContainer.appendChild(dropbtn);
         }
         
         buttonContainer.appendChild(dropdownContainer);
+    });
+    
+    // Create regular buttons after dropdowns
+    Object.values(navConfig.screens).forEach(screen => {
+        // Skip screens that should be in dropdowns
+        if (isScreenInDropdown(screen.id)) return;
+        
+        const button = document.createElement('button');
+        button.textContent = screen.title;
+        button.onclick = () => showPane(screen.id);
+        buttonContainer.appendChild(button);
     });
 }
 
@@ -434,8 +501,12 @@ function toggleDropdown(dropdownContainer) {
     if (dropdownContent) {
         dropdownContent.classList.toggle('show');
     } else {
+        const dropdownBtn = dropdownContainer.querySelector('.dropbtn');
+        // Extract title text without the arrow
+        const buttonText = dropdownBtn ? dropdownBtn.textContent.replace('▼', '').trim() : '';
+        
         const dropdownConfig = navConfig.dropdowns.find(d => 
-            d.title === dropdownContainer.querySelector('.dropbtn').textContent);
+            d.title === buttonText);
         if (dropdownConfig) {
             showPane(dropdownConfig.defaultScreen);
         }
@@ -444,7 +515,7 @@ function toggleDropdown(dropdownContainer) {
 
 // Close the dropdown if clicked outside
 window.onclick = function (event) {
-    if (!event.target.matches('.dropbtn')) {
+    if (!event.target.matches('.dropbtn') && !event.target.matches('.dropdown-arrow')) {
         var dropdowns = document.getElementsByClassName('dropdown-content');
         for (var i = 0; i < dropdowns.length; i++) {
             var openDropdown = dropdowns[i];
@@ -467,11 +538,8 @@ function toggleSnippet(button) {
 }
 
 function buildTableGeneric(config) {
-    const lines = data.trim().split('\n').filter(line => line.trim() !== '');
-    const rowObjects = lines.slice(1).map((line, i) => {
-        const cols = line.split(',');
-        return { originalIndex: i, cols };
-    });
+    // Use the pre-parsed data instead of parsing again
+    const rowObjects = parsedCsvData.rows;
 
     // Clear table body
     const tbody = document.querySelector('#leaderboard tbody');
@@ -574,16 +642,15 @@ function sortTable(columnIndex) {
     const indicator = sortOrderObj[columnIndex] === 'asc' ? '▲' : '▼';
     sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
 }
+
 function sortAllRows(rows, config, overrideColumnIndex = null, newOrder = 'asc') {
-    // Separate bottom rows
-    const bottomRows = [];
+    // Use pre-parsed special rows
+    const bottomRows = parsedCsvData.specialRows;
+    
+    // Filter out special rows from the input rows
     const normalRows = rows.filter(row => {
         const playerName = row.cols[csvIndices.player];
-        if (Object.values(SPECIAL_ROWS).includes(playerName)) {
-            bottomRows.push(row);
-            return false;
-        }
-        return true;
+        return !Object.values(SPECIAL_ROWS).includes(playerName);
     });
 
     // If no override column is given, use default
@@ -614,3 +681,494 @@ function sortAllRows(rows, config, overrideColumnIndex = null, newOrder = 'asc')
     // Reassemble and return
     return [...normalRows, ...bottomRows];
 }
+
+
+function initializeMatrixView() {
+    // Then render the matrix
+    setTimeout(renderPlayerMatrix, 0);
+}
+
+// Function to render the player matrix visualization
+function renderPlayerMatrix() {
+    // Configuration
+    const config = {
+        padding: { top: 20, right: 50, bottom: 60, left: 80 },
+        height: 600,
+        pointRadius: 5,
+        hoverRadius: 10,
+        colors: {
+            background: '#C0C0C0',
+            axes: 'black',
+            gridLines: 'rgba(0, 0, 0, 0.2)',
+            points: '#404040',
+            pointHover: 'yellow',
+            labels: 'black'
+        },
+        fonts: {
+            axis: '14px "Web IBM VGA 8x16"',
+            title: '16px "Web IBM VGA 8x16"',
+            labels: '12px "Web IBM VGA 8x16"'
+        },
+        titles: {
+            x: 'Game Duration',
+            // y: 'Win/Loss (Non-Interrupted)'
+            y: 'Win Rate'
+        },
+        tooltip: {
+            style: {
+                position: 'fixed',
+                backgroundColor: '#333',
+                color: 'white',
+                padding: '8px',
+                boxShadow: '8px 8px black',
+                borderRadius: '5px',
+                border: 'none',
+                pointerEvents: 'none',
+                display: 'none',
+                zIndex: '1000',
+                fontSize: '14px',
+                fontFamily: '"Web IBM VGA 8x16", monospace'
+            }
+        },
+        // Simple hardcoded list of models to label
+        labeledModels: ["o1-2024-12-17-low", "o1-preview-2024-09-12", "o3-mini-2025-01-31-medium", "o1-mini-2024-09-12", "deepseek-reasoner-r1", "claude-v3-5-sonnet-v1", "grok-2-1212", "gemini-2.0-flash-lite-001" ]
+    };
+
+    const canvas = document.getElementById('player-matrix');
+    const container = document.getElementById('matrix-view');
+    
+    // Get the device pixel ratio
+    const dpr = window.devicePixelRatio || 1;
+    
+    // Set canvas dimensions accounting for device pixel ratio
+    const containerWidth = container.clientWidth;
+    canvas.style.width = containerWidth + 'px';
+    canvas.style.height = config.height + 'px';
+    canvas.width = containerWidth * dpr;
+    canvas.height = config.height * dpr;
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Scale all drawing operations by the device pixel ratio
+    ctx.scale(dpr, dpr);
+    
+    const chartWidth = containerWidth - config.padding.left - config.padding.right;
+    const chartHeight = config.height - config.padding.top - config.padding.bottom;
+    
+    ctx.fillStyle = config.colors.background;
+    ctx.fillRect(0, 0, containerWidth, config.height);
+    
+    // Use pre-parsed data instead of parsing again
+    const normalRows = parsedCsvData.normalRows;
+    
+    // Use the default sort function from tableConfigs to sort rows the same way as the leaderboard
+    const tableConfig = tableConfigs[Screen.LEADERBOARD_NEW];
+    const sortedRows = [...normalRows].sort((a, b) => 
+        tableConfig.defaultSortCompare(a.cols, b.cols));
+    
+    // Get all player names (no top 10 limit)
+    const allPlayers = sortedRows.map(row => row.cols[csvIndices.player]);
+    
+    // Map to the format needed for the visualization
+    const playerData = sortedRows.map(row => {
+        const cols = row.cols;
+        return {
+            player: cols[csvIndices.player],
+            // winLossNonInterrupted: parseFloat(cols[csvIndices.win_loss_non_interrupted]) || 0,
+            winRate: parseFloat(cols[csvIndices.player_wins]) / parseFloat(cols[csvIndices.total_games]) || 0,
+            gameDuration: parseFloat(cols[csvIndices.game_duration]) || 0,
+            averageMoves: parseFloat(cols[csvIndices.average_moves]) || 0,
+            moeAverageMoves: parseFloat(cols[csvIndices.moe_average_moves]) || 0,
+            gamesNotInterruptedPercent: parseFloat(cols[csvIndices.games_not_interrupted_percent]) || 0,
+            totalGames: parseFloat(cols[csvIndices.total_games]) || 0,
+            wins: parseFloat(cols[csvIndices.player_wins]) || 0,
+            losses: parseFloat(cols[csvIndices.opponent_wins]) || 0,
+            moeWins: parseFloat(cols[csvIndices.moe_black_llm_win_rate]) || 0,
+            moeLosses: parseFloat(cols[csvIndices.moe_black_llm_loss_rate]) || 0
+        };
+    });
+    
+    // Draw axes
+    ctx.strokeStyle = config.colors.axes;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(config.padding.left, config.padding.top + chartHeight);
+    ctx.lineTo(config.padding.left + chartWidth, config.padding.top + chartHeight);
+    ctx.moveTo(config.padding.left, config.padding.top);
+    ctx.lineTo(config.padding.left, config.padding.top + chartHeight);
+    ctx.stroke();
+    
+    // Draw grid lines
+    ctx.strokeStyle = config.colors.gridLines;
+    ctx.lineWidth = 1;
+    
+    // X-axis grid lines and labels (0%, 20%, 40%, 60%, 80%, 100%)
+    for (let i = 0; i <= 5; i++) {
+        const x = config.padding.left + (chartWidth / 5) * i;
+        const value = i * 0.2;
+        
+        ctx.beginPath();
+        ctx.moveTo(x, config.padding.top);
+        ctx.lineTo(x, config.padding.top + chartHeight);
+        ctx.stroke();
+        
+        ctx.fillStyle = config.colors.axes;
+        ctx.font = config.fonts.axis;
+        ctx.textAlign = 'center';
+        ctx.fillText((value * 100).toFixed(0) + '%', x, config.padding.top + chartHeight + 25);
+    }
+    
+    // Y-axis grid lines and labels (0%, 25%, 50%, 75%, 100%)
+    for (let i = 0; i <= 4; i++) {
+        const y = config.padding.top + chartHeight - (chartHeight / 4) * i;
+        const value = i * 0.25;
+        
+        ctx.beginPath();
+        ctx.moveTo(config.padding.left, y);
+        ctx.lineTo(config.padding.left + chartWidth, y);
+        ctx.stroke();
+        
+        ctx.fillStyle = config.colors.axes;
+        ctx.font = config.fonts.axis;
+        ctx.textAlign = 'right';
+        ctx.fillText((value * 100).toFixed(0) + '%', config.padding.left - 10, y + 5);
+    }
+    
+    // Axis titles
+    ctx.fillStyle = config.colors.axes;
+    ctx.font = config.fonts.title;
+    ctx.textAlign = 'center';
+    
+    // X-axis title
+    ctx.fillText(config.titles.x, config.padding.left + chartWidth / 2, config.padding.top + chartHeight + 45);
+    
+    // Y-axis title - rotated
+    ctx.save();
+    ctx.translate(config.padding.left - 50, config.padding.top + chartHeight / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText(config.titles.y, 0, 0);
+    ctx.restore();
+    
+    // Store point data for hover detection
+    const points = [];
+    
+    // Plot data points
+    playerData.forEach((player, _) => {
+        const x = config.padding.left + chartWidth * (player.gameDuration);
+        // const y = config.padding.top + chartHeight - chartHeight * (player.winLossNonInterrupted);
+        const y = config.padding.top + chartHeight - chartHeight * (player.winRate);
+        
+        ctx.beginPath();
+        ctx.arc(x, y, config.pointRadius, 0, Math.PI * 2);
+        ctx.fillStyle = config.colors.points;
+        ctx.fill();
+        
+        // Draw labels for selected models
+        if (config.labeledModels.includes(player.player)) {
+            ctx.fillStyle = config.colors.labels;
+            ctx.font = config.fonts.labels;
+            
+            // Measure text width to determine if it will be clipped
+            const textWidth = ctx.measureText(player.player).width;
+            const rightEdgeX = config.padding.left + chartWidth;
+            const bottomEdgeY = config.padding.top + chartHeight;
+            
+            // Determine text alignment and position
+            if (x + textWidth + 10 > rightEdgeX) {
+                // Too close to right edge, place text to the left
+                ctx.textAlign = 'right';
+                ctx.fillText(player.player, x - config.pointRadius - 5, y);
+            } else {
+                // Default: place text to the right
+                ctx.textAlign = 'left';
+                ctx.fillText(player.player, x + config.pointRadius + 5, y);
+            }
+        }
+        
+        const point = {
+            x: x,
+            y: y,
+            radius: config.hoverRadius
+        };
+        
+        for (const [key, value] of Object.entries(player)) {
+            point[key] = value;
+        }
+        
+        points.push(point);
+    });
+    
+    // Remove old tooltip if exists
+    const oldTooltip = document.getElementById('matrix-tooltip');
+    if (oldTooltip) {
+        document.body.removeChild(oldTooltip);
+    }
+    
+    // Create new tooltip element
+    const tooltipElement = document.createElement('div');
+    tooltipElement.id = 'matrix-tooltip';
+    Object.assign(tooltipElement.style, config.tooltip.style);
+    document.body.appendChild(tooltipElement);
+    
+    let highlightedPoint = null;
+    
+    // Mouse move handler
+    canvas.addEventListener('mousemove', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        let hoveredPoint = null;
+        
+        // Find if we're hovering over a point
+        for (const point of points) {
+            const distance = Math.sqrt(
+                Math.pow(mouseX - point.x, 2) + 
+                Math.pow(mouseY - point.y, 2)
+            );
+            
+            if (distance <= point.radius) {
+                hoveredPoint = point;
+                break;
+            }
+        }
+        
+        // Only redraw if hover state changes
+        if ((hoveredPoint && !highlightedPoint) || 
+            (!hoveredPoint && highlightedPoint) || 
+            (hoveredPoint && highlightedPoint && hoveredPoint.player !== highlightedPoint.player)) {
+            
+            // Redraw the entire chart
+            ctx.clearRect(0, 0, containerWidth, config.height);
+            
+            // Redraw background
+            ctx.fillStyle = config.colors.background;
+            ctx.fillRect(0, 0, containerWidth, config.height);
+            
+            // Redraw axes
+            ctx.strokeStyle = config.colors.axes;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(config.padding.left, config.padding.top + chartHeight);
+            ctx.lineTo(config.padding.left + chartWidth, config.padding.top + chartHeight);
+            ctx.moveTo(config.padding.left, config.padding.top);
+            ctx.lineTo(config.padding.left, config.padding.top + chartHeight);
+            ctx.stroke();
+            
+            // Redraw grid lines and labels
+            ctx.strokeStyle = config.colors.gridLines;
+            ctx.lineWidth = 1;
+            
+            // X-axis grid lines and labels
+            for (let i = 0; i <= 5; i++) {
+                const x = config.padding.left + (chartWidth / 5) * i;
+                const value = i * 0.2;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, config.padding.top);
+                ctx.lineTo(x, config.padding.top + chartHeight);
+                ctx.stroke();
+                
+                ctx.fillStyle = config.colors.axes;
+                ctx.font = config.fonts.axis;
+                ctx.textAlign = 'center';
+                ctx.fillText((value * 100).toFixed(0) + '%', x, config.padding.top + chartHeight + 25);
+            }
+            
+            // Y-axis grid lines and labels
+            for (let i = 0; i <= 4; i++) {
+                const y = config.padding.top + chartHeight - (chartHeight / 4) * i;
+                const value = i * 0.25;
+                
+                ctx.beginPath();
+                ctx.moveTo(config.padding.left, y);
+                ctx.lineTo(config.padding.left + chartWidth, y);
+                ctx.stroke();
+                
+                ctx.fillStyle = config.colors.axes;
+                ctx.font = config.fonts.axis;
+                ctx.textAlign = 'right';
+                ctx.fillText((value * 100).toFixed(0) + '%', config.padding.left - 10, y + 5);
+            }
+            
+            // Redraw axis titles
+            ctx.fillStyle = config.colors.axes;
+            ctx.font = config.fonts.title;
+            ctx.textAlign = 'center';
+            
+            // X-axis title
+            ctx.fillText(config.titles.x, config.padding.left + chartWidth / 2, config.padding.top + chartHeight + 45);
+            
+            // Y-axis title - rotated
+            ctx.save();
+            ctx.translate(config.padding.left - 50, config.padding.top + chartHeight / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(config.titles.y, 0, 0);
+            ctx.restore();
+            
+            // Draw all points and labels
+            points.forEach(point => {
+                const isHighlighted = hoveredPoint && point.player === hoveredPoint.player;
+                
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, config.pointRadius, 0, Math.PI * 2);
+                ctx.fillStyle = isHighlighted ? config.colors.pointHover : config.colors.points;
+                ctx.fill();
+                
+                // Draw labels for selected models
+                if (config.labeledModels.includes(point.player)) {
+                    ctx.fillStyle = config.colors.labels;
+                    ctx.font = config.fonts.labels;
+                    
+                    // Measure text width to determine if it will be clipped
+                    const textWidth = ctx.measureText(point.player).width;
+                    const rightEdgeX = config.padding.left + chartWidth;
+                    
+                    // Determine text alignment and position
+                    if (point.x + textWidth + 10 > rightEdgeX) {
+                        // Too close to right edge, place text to the left
+                        ctx.textAlign = 'right';
+                        ctx.fillText(point.player, point.x - config.pointRadius - 5, point.y);
+                    } else {
+                        // Default: place text to the right
+                        ctx.textAlign = 'left';
+                        ctx.fillText(point.player, point.x + config.pointRadius + 5, point.y);
+                    }
+                }
+            });
+            
+            // Update highlighted point reference
+            highlightedPoint = hoveredPoint;
+        }
+        
+        // Update tooltip
+        if (hoveredPoint) {
+            tooltipElement.innerHTML = `<span style="color: yellow; font-weight: bold">${hoveredPoint.player}</span><br>
+Win Rate: ${(hoveredPoint.winRate * 100).toFixed(1)}%<br>
+Game duration: ${(hoveredPoint.gameDuration * 100).toFixed(1)}%<br>
+Average moves: ${hoveredPoint.averageMoves} ± ${hoveredPoint.moeAverageMoves}<br>
+Total games: ${hoveredPoint.totalGames}<br>
+Wins: ${hoveredPoint.wins} ± ${hoveredPoint.moeWins}<br>
+Losses: ${hoveredPoint.losses} ± ${hoveredPoint.moeLosses}<br>
+Non-interrupted games: ${hoveredPoint.gamesNotInterruptedPercent}%`;
+            tooltipElement.style.left = (e.clientX + 15) + 'px';
+            tooltipElement.style.top = (e.clientY - 15) + 'px';
+            tooltipElement.style.display = 'block';
+            tooltipElement.style.textAlign = 'left';
+        } else {
+            tooltipElement.style.display = 'none';
+        }
+    });
+    
+    canvas.addEventListener('mouseleave', function() {
+        tooltipElement.style.display = 'none';
+        
+        if (highlightedPoint) {
+            // Redraw the entire chart to its initial state
+            ctx.clearRect(0, 0, containerWidth, config.height);
+            
+            // Redraw background
+            ctx.fillStyle = config.colors.background;
+            ctx.fillRect(0, 0, containerWidth, config.height);
+            
+            // Redraw axes
+            ctx.strokeStyle = config.colors.axes;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(config.padding.left, config.padding.top + chartHeight);
+            ctx.lineTo(config.padding.left + chartWidth, config.padding.top + chartHeight);
+            ctx.moveTo(config.padding.left, config.padding.top);
+            ctx.lineTo(config.padding.left, config.padding.top + chartHeight);
+            ctx.stroke();
+            
+            // Redraw grid lines and labels
+            ctx.strokeStyle = config.colors.gridLines;
+            ctx.lineWidth = 1;
+            
+            // X-axis grid lines and labels
+            for (let i = 0; i <= 5; i++) {
+                const x = config.padding.left + (chartWidth / 5) * i;
+                const value = i * 0.2;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, config.padding.top);
+                ctx.lineTo(x, config.padding.top + chartHeight);
+                ctx.stroke();
+                
+                ctx.fillStyle = config.colors.axes;
+                ctx.font = config.fonts.axis;
+                ctx.textAlign = 'center';
+                ctx.fillText((value * 100).toFixed(0) + '%', x, config.padding.top + chartHeight + 25);
+            }
+            
+            // Y-axis grid lines and labels
+            for (let i = 0; i <= 4; i++) {
+                const y = config.padding.top + chartHeight - (chartHeight / 4) * i;
+                const value = i * 0.25;
+                
+                ctx.beginPath();
+                ctx.moveTo(config.padding.left, y);
+                ctx.lineTo(config.padding.left + chartWidth, y);
+                ctx.stroke();
+                
+                ctx.fillStyle = config.colors.axes;
+                ctx.font = config.fonts.axis;
+                ctx.textAlign = 'right';
+                ctx.fillText((value * 100).toFixed(0) + '%', config.padding.left - 10, y + 5);
+            }
+            
+            // Redraw axis titles
+            ctx.fillStyle = config.colors.axes;
+            ctx.font = config.fonts.title;
+            ctx.textAlign = 'center';
+            
+            // X-axis title
+            ctx.fillText(config.titles.x, config.padding.left + chartWidth / 2, config.padding.top + chartHeight + 45);
+            
+            // Y-axis title - rotated
+            ctx.save();
+            ctx.translate(config.padding.left - 50, config.padding.top + chartHeight / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(config.titles.y, 0, 0);
+            ctx.restore();
+            
+            // Draw all points and labels in normal state
+            points.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, config.pointRadius, 0, Math.PI * 2);
+                ctx.fillStyle = config.colors.points;
+                ctx.fill();
+                
+                // Draw labels for selected models
+                if (config.labeledModels.includes(point.player)) {
+                    ctx.fillStyle = config.colors.labels;
+                    ctx.font = config.fonts.labels;
+                    
+                    // Measure text width to determine if it will be clipped
+                    const textWidth = ctx.measureText(point.player).width;
+                    const rightEdgeX = config.padding.left + chartWidth;
+                    
+                    // Determine text alignment and position
+                    if (point.x + textWidth + 10 > rightEdgeX) {
+                        // Too close to right edge, place text to the left
+                        ctx.textAlign = 'right';
+                        ctx.fillText(point.player, point.x - config.pointRadius - 5, point.y);
+                    } else {
+                        // Default: place text to the right
+                        ctx.textAlign = 'left';
+                        ctx.fillText(point.player, point.x + config.pointRadius + 5, point.y);
+                    }
+                }
+            });
+            
+            highlightedPoint = null;
+        }
+    });
+}
+
+// Add window resize handler to make the matrix responsive
+window.addEventListener('resize', function() {
+    if (currentScreen === Screen.MATRIX) {
+        renderPlayerMatrix();
+    }
+});

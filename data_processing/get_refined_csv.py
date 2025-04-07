@@ -73,6 +73,7 @@ ALIASES = {
     "google_gemma-3-27b-it@iq4_xs": "gemma-3-27b-it@iq4_xs",
 }
 
+
 def convert_aggregate_to_refined(
     aggregate_file,
     refined_file,
@@ -117,11 +118,16 @@ def convert_aggregate_to_refined(
             "moe_black_llm_loss_rate",
             "win_loss",
             "moe_win_loss", 
+            "win_loss_non_interrupted",
+            "moe_win_loss_non_interrupted",
             "game_duration",
             "moe_game_duration",
             "games_interrupted",
             "games_interrupted_percent",
             "moe_games_interrupted",
+            "games_not_interrupted",
+            "games_not_interrupted_percent",
+            "moe_games_not_interrupted",
         ]
 
         # Prepare to write to the refined CSV
@@ -183,11 +189,16 @@ def convert_aggregate_to_refined(
                 # Get new metrics
                 win_loss = float(row["win_loss"])
                 moe_win_loss = float(row["moe_win_loss"])
+                win_loss_non_interrupted = float(row["win_loss_non_interrupted"])
+                moe_win_loss_non_interrupted = float(row["moe_win_loss_non_interrupted"])
                 game_duration = float(row["game_duration"])
                 moe_game_duration = float(row["moe_game_duration"])
                 games_interrupted = int(row["games_interrupted"])
                 games_interrupted_percent = float(row["games_interrupted_percent"])
                 moe_games_interrupted = float(row["moe_games_interrupted"])
+                games_not_interrupted = int(row["games_not_interrupted"])
+                games_not_interrupted_percent = float(row["games_not_interrupted_percent"])
+                moe_games_not_interrupted = float(row["moe_games_not_interrupted"])
 
                 # Append the row to the list of rows to write
                 rows_to_write.append(
@@ -219,17 +230,21 @@ def convert_aggregate_to_refined(
                         "moe_black_llm_loss_rate": round(moe_black_llm_loss_rate, 3),
                         "win_loss": round(win_loss, 3),
                         "moe_win_loss": round(moe_win_loss, 3),
+                        "win_loss_non_interrupted": round(win_loss_non_interrupted, 3),
+                        "moe_win_loss_non_interrupted": round(moe_win_loss_non_interrupted, 3),
                         "game_duration": round(game_duration, 3),
                         "moe_game_duration": round(moe_game_duration, 3),
                         "games_interrupted": games_interrupted,
                         "games_interrupted_percent": round(games_interrupted_percent, 3),
                         "moe_games_interrupted": round(moe_games_interrupted, 3),
+                        "games_not_interrupted": games_not_interrupted,
+                        "games_not_interrupted_percent": round(games_not_interrupted_percent, 3),
+                        "moe_games_not_interrupted": round(moe_games_not_interrupted, 3),
                     }
                 )
 
             # Write all rows to the refined CSV
             writer.writerows(rows_to_write)
-
 
 def print_leaderboard(csv_file, top_n=None):
     """Print a formatted leaderboard to the console with the same metrics as the web version."""

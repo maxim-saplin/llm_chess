@@ -233,6 +233,9 @@ def aggregate_models_to_csv(
         "win_loss",
         "std_dev_win_loss",
         "moe_win_loss",
+        "win_loss_non_interrupted",
+        "std_dev_win_loss_non_interrupted",
+        "moe_win_loss_non_interrupted",
         "game_duration",
         "std_dev_game_duration", 
         "moe_game_duration",
@@ -240,6 +243,10 @@ def aggregate_models_to_csv(
         "games_interrupted_percent",
         "std_dev_games_interrupted",
         "moe_games_interrupted",
+        "games_not_interrupted",
+        "games_not_interrupted_percent",
+        "std_dev_games_not_interrupted",
+        "moe_games_not_interrupted",
         "llm_total_moves",
         "average_moves",
         "std_dev_moves",
@@ -314,6 +321,33 @@ def aggregate_models_to_csv(
         p_interrupted = games_interrupted / total_games if total_games > 0 else 0
         std_dev_games_interrupted = math.sqrt((p_interrupted * (1 - p_interrupted)) / total_games) if total_games > 1 else 0
         moe_games_interrupted = 1.96 * std_dev_games_interrupted if total_games > 1 else 0
+
+        # Calculate games_not_interrupted metrics
+        games_not_interrupted = total_games - games_interrupted
+        games_not_interrupted_percent = (games_not_interrupted / total_games * 100) if total_games > 0 else 0
+        p_not_interrupted = games_not_interrupted / total_games if total_games > 0 else 0
+        std_dev_games_not_interrupted = math.sqrt((p_not_interrupted * (1 - p_not_interrupted)) / total_games) if total_games > 1 else 0
+        moe_games_not_interrupted = 1.96 * std_dev_games_not_interrupted if total_games > 1 else 0
+
+        # Calculate win_loss_non_interrupted metric (excluding interrupted games)
+        non_interrupted_logs = [log for log in model_logs if not log.is_interrupted]
+        non_interrupted_games = len(non_interrupted_logs)
+        black_llm_wins_non_interrupted = sum(1 for log in non_interrupted_logs if log.winner == "Player_Black")
+        white_rand_wins_non_interrupted = sum(1 for log in non_interrupted_logs if log.winner == "Random_Player")
+        
+        if non_interrupted_games > 0:
+            win_loss_non_interrupted = ((black_llm_wins_non_interrupted - white_rand_wins_non_interrupted) / non_interrupted_games) / 2 + 0.5
+            
+            # Calculate standard deviation and margin of error for win_loss_non_interrupted
+            per_game_win_loss_non_interrupted = [(1 / 2 + 0.5) if log.winner == "Player_Black" else 
+                                                (-1 / 2 + 0.5) if log.winner == "Random_Player" else 
+                                                0.5 for log in non_interrupted_logs]
+            std_dev_win_loss_non_interrupted = stdev(per_game_win_loss_non_interrupted) if non_interrupted_games > 1 else 0
+            moe_win_loss_non_interrupted = 1.96 * (std_dev_win_loss_non_interrupted / math.sqrt(non_interrupted_games)) if non_interrupted_games > 1 else 0
+        else:
+            win_loss_non_interrupted = 0.5
+            std_dev_win_loss_non_interrupted = 0
+            moe_win_loss_non_interrupted = 0
 
         # Calculate win rate, standard deviation, and margin of error
         black_llm_win_rate = black_llm_wins / total_games if total_games > 0 else 0
@@ -576,6 +610,9 @@ def aggregate_models_to_csv(
                 win_loss,
                 std_dev_win_loss,
                 moe_win_loss,
+                win_loss_non_interrupted,
+                std_dev_win_loss_non_interrupted,
+                moe_win_loss_non_interrupted,
                 game_duration,
                 std_dev_game_duration, 
                 moe_game_duration,
@@ -583,6 +620,10 @@ def aggregate_models_to_csv(
                 games_interrupted_percent,
                 std_dev_games_interrupted,
                 moe_games_interrupted,
+                games_not_interrupted,
+                games_not_interrupted_percent,
+                std_dev_games_not_interrupted,
+                moe_games_not_interrupted,
                 llm_total_moves,
                 average_moves,
                 std_dev_moves,

@@ -204,6 +204,65 @@ class TestAggregateMetrics(unittest.TestCase):
             float(model_2_data["moe_black_llm_loss_rate"]), 0.69296465
         )
 
+    def test_win_loss_non_interrupted_metric(self):
+        """Tests that the win_loss_non_interrupted metric is correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the win_loss_non_interrupted metric for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        # For both models, we need to look at only the non-interrupted games
+        # model_1 and model_2 each have 1 non-interrupted game (game_1 with NONE winner)
+        # So they have 0 wins, 0 losses, and 1 draw among non-interrupted games
+        # win_loss_non_interrupted = ((0 - 0) / 1) / 2 + 0.5 = 0 + 0.5 = 0.5
+        expected_win_loss_non_interrupted = 0.5
+        
+        self.assertAlmostEqual(float(model_1_data["win_loss_non_interrupted"]), expected_win_loss_non_interrupted)
+        self.assertAlmostEqual(float(model_2_data["win_loss_non_interrupted"]), expected_win_loss_non_interrupted)
+        
+        # Check standard deviation and margin of error
+        # Since there's only 1 non-interrupted game (draw), std_dev should be 0
+        self.assertEqual(float(model_1_data["std_dev_win_loss_non_interrupted"]), 0)
+        self.assertEqual(float(model_1_data["moe_win_loss_non_interrupted"]), 0)
+        self.assertEqual(float(model_2_data["std_dev_win_loss_non_interrupted"]), 0)
+        self.assertEqual(float(model_2_data["moe_win_loss_non_interrupted"]), 0)
+
+    def test_games_not_interrupted_metric(self):
+        """Tests that the games_not_interrupted metrics are correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Verify the games_not_interrupted metrics for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        # For both models, we have 1 non-interrupted game out of 2 total games
+        expected_not_interrupted = 1
+        expected_not_interrupted_percent = 50.0
+        
+        self.assertEqual(int(model_1_data["games_not_interrupted"]), expected_not_interrupted)
+        self.assertEqual(int(model_2_data["games_not_interrupted"]), expected_not_interrupted)
+        
+        self.assertAlmostEqual(float(model_1_data["games_not_interrupted_percent"]), expected_not_interrupted_percent)
+        self.assertAlmostEqual(float(model_2_data["games_not_interrupted_percent"]), expected_not_interrupted_percent)
+        
+        # Check standard deviation and margin of error
+        # For binary outcomes with p=0.5, std_dev should be sqrt((0.5 * 0.5) / 2) = 0.3535...
+        expected_std_dev = math.sqrt((0.5 * 0.5) / 2)
+        self.assertAlmostEqual(float(model_1_data["std_dev_games_not_interrupted"]), expected_std_dev, places=5)
+        self.assertAlmostEqual(float(model_2_data["std_dev_games_not_interrupted"]), expected_std_dev, places=5)
+        
+        # MoE should be 1.96 * std_dev
+        expected_moe = 1.96 * expected_std_dev
+        self.assertAlmostEqual(float(model_1_data["moe_games_not_interrupted"]), expected_moe, places=5)
+        self.assertAlmostEqual(float(model_2_data["moe_games_not_interrupted"]), expected_moe, places=5)
+
     def test_win_loss_metric(self):
         """Tests that the win_loss metric is correctly calculated."""
         aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
@@ -323,6 +382,9 @@ class TestAggregateMetrics(unittest.TestCase):
             "win_loss",
             "std_dev_win_loss", 
             "moe_win_loss",
+            "win_loss_non_interrupted",
+            "std_dev_win_loss_non_interrupted",
+            "moe_win_loss_non_interrupted",
             "game_duration",
             "std_dev_game_duration",
             "moe_game_duration",
@@ -330,6 +392,10 @@ class TestAggregateMetrics(unittest.TestCase):
             "games_interrupted_percent",
             "std_dev_games_interrupted",
             "moe_games_interrupted",
+            "games_not_interrupted",
+            "games_not_interrupted_percent",
+            "std_dev_games_not_interrupted",
+            "moe_games_not_interrupted",
             "llm_total_moves",
             "average_moves",
             "std_dev_moves",

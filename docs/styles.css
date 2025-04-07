@@ -131,6 +131,13 @@ button:hover {
     position: relative;
 }
 
+.dropbtn .dropdown-arrow {
+    font-size: 12px;
+    margin-left: 4px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .dropbtn::after {
     content: '';
     position: absolute;
@@ -373,7 +380,7 @@ table tbody tr:nth-last-child(-n+3) td {
     background-color: #333;
     color: #fff;
     z-index: 1000;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    box-shadow: 8px 8px black;
     padding: 10px;
     border-radius: 5px;
     text-align: left;
@@ -381,6 +388,25 @@ table tbody tr:nth-last-child(-n+3) td {
 
 #popup p {
     margin: 0;
+}
+
+#popup span {
+    color: white;
+}
+
+/* Matrix visualization styles */
+.matrix-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+}
+
+#player-matrix {
+    background-color: black;
+    border: 1px solid #ddd;
+    box-shadow: 8px 8px black;
 }
 
 /* Responsive styles for mobile devices */
@@ -439,5 +465,14 @@ table tbody tr:nth-last-child(-n+3) td {
 
     .button-container button {
         margin: 5px 0;
+    }
+
+    .matrix-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    #player-matrix {
+        min-width: 680px;
     }
 }
