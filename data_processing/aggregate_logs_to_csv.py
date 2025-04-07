@@ -236,7 +236,8 @@ def aggregate_models_to_csv(
     logs_dirs: Union[str, List[str]], 
     output_csv: str, 
     model_overrides: dict = None,
-    models_metadata_csv: str = MODELS_METADATA_CSV
+    models_metadata_csv: str = MODELS_METADATA_CSV,
+    only_after_date: str = None
 ) -> None:
     """
     Aggregates game logs from one or more directories and writes the results to a CSV file.
@@ -246,11 +247,17 @@ def aggregate_models_to_csv(
         output_csv: The path to the output CSV file where aggregated results will be saved
         model_overrides: A dictionary mapping file path to model names for overriding
         models_metadata_csv: The path to the models metadata CSV file
+        only_after_date: If provided, only include logs with time_started >= this date (format: YYYY.MM.DD_HH:MM)
 
     Returns:
         None
     """
     logs = load_game_logs(logs_dirs, model_overrides)
+
+    # Filter logs by date if only_after_date is provided
+    if only_after_date:
+        logs = [log for log in logs if log.time_started >= only_after_date]
+        print(f"Filtered to {len(logs)} logs after {only_after_date}")
 
     headers = [
         "model_name",

@@ -609,6 +609,39 @@ class TestAggregateMetrics(unittest.TestCase):
         self.assertAlmostEqual(float(model_1_data["moe_average_game_cost"]), expected_moe_model1, places=6)
         self.assertAlmostEqual(float(model_2_data["moe_average_game_cost"]), expected_moe_model2, places=6)
 
+    def test_only_after_date_filter(self):
+        """Tests that logs before only_after_date are correctly filtered out."""
+        # First aggregation without date filter
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
+        base_csv_data = read_csv_as_dict(self.output_csv)
+        
+        # Get total game counts without filtering
+        base_model_1_data = next(row for row in base_csv_data if row["model_name"] == "model_1")
+        base_model_2_data = next(row for row in base_csv_data if row["model_name"] == "model_2")
+        base_model_1_games = int(base_model_1_data["total_games"])
+        base_model_2_games = int(base_model_2_data["total_games"])
+        
+        # Second aggregation with date filter that should exclude some logs
+        filtered_output_csv = os.path.join(self.temp_dir.name, "filtered_output.csv")
+        aggregate_models_to_csv(
+            self.temp_dir.name, 
+            filtered_output_csv, 
+            models_metadata_csv=self.metadata_csv,
+            only_after_date="2025.02.09_09:32"  # This should exclude the first log
+        )
+        
+        filtered_csv_data = read_csv_as_dict(filtered_output_csv)
+        
+        # Get filtered game counts
+        filtered_model_1_data = next(row for row in filtered_csv_data if row["model_name"] == "model_1")
+        filtered_model_2_data = next(row for row in filtered_csv_data if row["model_name"] == "model_2")
+        filtered_model_1_games = int(filtered_model_1_data["total_games"])
+        filtered_model_2_games = int(filtered_model_2_data["total_games"])
+        
+        # Verify that the filtering worked correctly
+        self.assertEqual(filtered_model_1_games, base_model_1_games - 1)
+        self.assertEqual(filtered_model_2_games, base_model_2_games)
+
 
 def create_mock_json_logs():
     """Creates a list of mock JSON strings representing game logs."""

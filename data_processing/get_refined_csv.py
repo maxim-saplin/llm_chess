@@ -38,7 +38,8 @@ LOGS_DIRS = [
     # "_logs/new"
 ]
 
-filter_out_below_n = 30
+FILTER_OUT_BELOW_N = 30 # 0
+DATE_AFTER = None # "2025.04.01_00:00"
 
 # Output files
 OUTPUT_DIR = "data_processing"
@@ -322,14 +323,14 @@ def print_leaderboard(csv_file, top_n=None):
 def main():
     # Step 1: Aggregate logs from all directories to a single CSV
     print(f"Processing logs from {len(LOGS_DIRS)} directories")
-    aggregate_models_to_csv(LOGS_DIRS, AGGREGATE_CSV, MODEL_OVERRIDES)
+    aggregate_models_to_csv(LOGS_DIRS, AGGREGATE_CSV, MODEL_OVERRIDES, only_after_date=DATE_AFTER)
     print(f"Successfully aggregated data to {AGGREGATE_CSV}")
 
     # Step 2: Convert aggregated CSV to refined CSV
     convert_aggregate_to_refined(
         AGGREGATE_CSV,
         REFINED_CSV,
-        filter_out_below_n=filter_out_below_n,
+        filter_out_below_n=FILTER_OUT_BELOW_N,
         filter_out_models=FILTER_OUT_MODELS,
         model_aliases=ALIASES,
     )
