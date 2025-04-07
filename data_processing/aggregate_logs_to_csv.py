@@ -13,6 +13,7 @@ import math
 from dataclasses import dataclass, field
 from typing import ClassVar, Dict, Any, List, Union
 from statistics import mean, stdev
+import os.path
 
 # Try direct import first
 try:
@@ -37,6 +38,9 @@ LOGS_DIRS = [
 
 # Path to the output CSV file where aggregated results will be saved
 OUTPUT_CSV = "_logs/aggregate_models.csv"
+
+# Update path to the metadata CSV
+MODELS_METADATA_CSV = "data_processing/models_metadata.csv"
 
 # Dictionary to override model names in the logs with more descriptive names, matches key as a substring in log file path
 MODEL_OVERRIDES = {
@@ -196,8 +200,43 @@ def load_game_logs(logs_dirs: Union[str, List[str]], model_overrides):
     return logs
 
 
+def load_model_prices(metadata_file_path):
+    """
+    Load model pricing information from the metadata CSV file.
+    
+    Returns:
+        Dictionary mapping model names to tuples of (prompt_price, completion_price) in dollars per million tokens
+    """
+    model_prices = {}
+    
+    try:
+        with open(metadata_file_path, 'r') as f:
+            reader = csv.reader(f)
+            # Skip header row if present
+            next(reader, None)
+            
+            for row in reader:
+                if len(row) >= 3 and row[0].strip() and row[1].strip() and row[2].strip():
+                    model_name = row[0].strip()
+                    
+                    # Try to parse prompt and completion prices
+                    try:
+                        prompt_price = float(row[1].strip().replace(',', ''))
+                        completion_price = float(row[2].strip().replace(',', ''))
+                        model_prices[model_name] = (prompt_price, completion_price)
+                    except (ValueError, IndexError):
+                        continue  # Skip rows with invalid price data
+    except Exception as e:
+        print(f"Warning: Could not load model prices from {metadata_file_path}: {e}")
+        
+    return model_prices
+
+
 def aggregate_models_to_csv(
-    logs_dirs: Union[str, List[str]], output_csv: str, model_overrides: dict = None
+    logs_dirs: Union[str, List[str]], 
+    output_csv: str, 
+    model_overrides: dict = None,
+    models_metadata_csv: str = MODELS_METADATA_CSV
 ) -> None:
     """
     Aggregates game logs from one or more directories and writes the results to a CSV file.
@@ -206,6 +245,7 @@ def aggregate_models_to_csv(
         logs_dirs: Either a single directory path or a list of directory paths containing game logs
         output_csv: The path to the output CSV file where aggregated results will be saved
         model_overrides: A dictionary mapping file path to model names for overriding
+        models_metadata_csv: The path to the models metadata CSV file
 
     Returns:
         None
@@ -289,6 +329,9 @@ def aggregate_models_to_csv(
         "max_moves",
         "prompt_tokens_black",
         "total_tokens_black",
+        "average_game_cost",
+        "std_dev_game_cost",
+        "moe_average_game_cost",
     ]
 
     csv_data = []
@@ -300,6 +343,9 @@ def aggregate_models_to_csv(
         if model_name not in model_groups:
             model_groups[model_name] = []
         model_groups[model_name].append(log)
+
+    # Load model prices
+    model_prices = load_model_prices(models_metadata_csv)
 
     for model_name, model_logs in model_groups.items():
         total_games = len(model_logs)
@@ -616,6 +662,46 @@ def aggregate_models_to_csv(
             moe_material_diff_llm_minus_rand = 0
             moe_avg_moves = 0
 
+        # Find model price information
+        prompt_price = 0
+        completion_price = 0
+
+        # Try to find exact model name match
+        if model_name in model_prices:
+            prompt_price, completion_price = model_prices[model_name]
+        else:
+            # Try to find partial match
+            matching_models = [m for m in model_prices if m in model_name or model_name in m]
+            if matching_models:
+                closest_match = max(matching_models, key=len)  # Use the longest matching name
+                prompt_price, completion_price = model_prices[closest_match]
+                print(f"Using price from {closest_match} for {model_name}")
+
+        # Calculate per-game costs
+        per_game_costs = []
+        for log in model_logs:
+            prompt_tokens = (
+                log.usage_stats_black.details.get("prompt_tokens", 0)
+                if log.usage_stats_black.details
+                else 0
+            )
+            completion_tokens = (
+                log.usage_stats_black.details.get("completion_tokens", 0)
+                if log.usage_stats_black.details
+                else 0
+            )
+            
+            # Convert prices from dollars per million tokens to dollars per token
+            prompt_cost = prompt_tokens * (prompt_price / 1_000_000)
+            completion_cost = completion_tokens * (completion_price / 1_000_000)
+            
+            game_cost = prompt_cost + completion_cost
+            per_game_costs.append(game_cost)
+
+        average_game_cost = mean(per_game_costs) if per_game_costs else 0
+        std_dev_game_cost = stdev(per_game_costs) if len(per_game_costs) > 1 else 0
+        moe_average_game_cost = 1.96 * (std_dev_game_cost / math.sqrt(total_games)) if total_games > 1 else 0
+
         # Append the calculated data to the CSV data list
         csv_data.append(
             [
@@ -696,6 +782,9 @@ def aggregate_models_to_csv(
                 max_moves,
                 prompt_tokens_black,
                 total_tokens_black,
+                average_game_cost,
+                std_dev_game_cost,
+                moe_average_game_cost,
             ]
         )
 
@@ -708,4 +797,4 @@ def aggregate_models_to_csv(
 
 
 if __name__ == "__main__":
-    aggregate_models_to_csv(LOGS_DIRS, OUTPUT_CSV, MODEL_OVERRIDES)
+    aggregate_models_to_csv(LOGS_DIRS, OUTPUT_CSV, MODEL_OVERRIDES, MODELS_METADATA_CSV)
