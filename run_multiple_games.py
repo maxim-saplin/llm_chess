@@ -16,8 +16,8 @@ LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%
 STORE_INDIVIDUAL_LOGS = True
 
 # llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
-llm_chess.throttle_delay = 0
-llm_chess.dialog_turn_delay = 0
+llm_chess.throttle_delay = 1
+llm_chess.dialog_turn_delay = 1
 
 # ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`
 # Hyper params such as temperature are defined in `utils.py`
