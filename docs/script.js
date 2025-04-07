@@ -648,39 +648,71 @@ function sortAllRows(rows, config, overrideColumnIndex = null, newOrder = 'asc')
 
 // Function to render the player matrix visualization
 function renderPlayerMatrix() {
+    // Configuration
+    const config = {
+        padding: { top: 20, right: 50, bottom: 60, left: 80 },
+        height: 600,
+        pointRadius: 5,
+        hoverRadius: 10,
+        colors: {
+            background: 'black',
+            axes: 'white',
+            gridLines: 'rgba(255, 255, 255, 0.2)',
+            points: 'yellow',
+            pointHover: 'blue'
+        },
+        fonts: {
+            axis: '14px "Web IBM VGA 8x16"',
+            title: '16px "Web IBM VGA 8x16"'
+        },
+        titles: {
+            x: 'Game Duration',
+            y: 'Win/Loss (Non-Interrupted)'
+        },
+        tooltip: {
+            style: {
+                position: 'fixed',
+                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                color: 'white',
+                padding: '8px',
+                borderRadius: '5px',
+                border: '1px solid #ffffff',
+                pointerEvents: 'none',
+                display: 'none',
+                zIndex: '1000',
+                fontSize: '14px',
+                fontFamily: '"Web IBM VGA 8x16", monospace'
+            }
+        }
+    };
+
     const canvas = document.getElementById('player-matrix');
     const container = document.getElementById('matrix-view');
     
-    // Set canvas dimensions to match container
     canvas.width = container.clientWidth;
-    canvas.height = 600;
+    canvas.height = config.height;
     
     const ctx = canvas.getContext('2d');
+    const chartWidth = canvas.width - config.padding.left - config.padding.right;
+    const chartHeight = canvas.height - config.padding.top - config.padding.bottom;
     
-    // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Set up dimensions
-    const padding = { top: 20, right: 50, bottom: 60, left: 80 };
-    const chartWidth = canvas.width - padding.left - padding.right;
-    const chartHeight = canvas.height - padding.top - padding.bottom;
     
     // Parse data from the CSV
     const lines = data.trim().split('\n').filter(line => line.trim() !== '');
     
-    // Get all models (not just top 10)
     const allRows = lines.slice(1).map(line => {
         const cols = line.split(',');
         return { cols };
     });
     
     // Use the default sort function from tableConfigs to sort rows the same way as the leaderboard
-    const config = tableConfigs[Screen.LEADERBOARD_NEW];
+    const tableConfig = tableConfigs[Screen.LEADERBOARD_NEW];
     const sortedRows = [...allRows].filter(row => {
         // Filter out special rows
         const playerName = row.cols[csvIndices.player];
         return !Object.values(SPECIAL_ROWS).includes(playerName);
-    }).sort((a, b) => config.defaultSortCompare(a.cols, b.cols));
+    }).sort((a, b) => tableConfig.defaultSortCompare(a.cols, b.cols));
     
     // Get all player names (no top 10 limit)
     const allPlayers = sortedRows.map(row => row.cols[csvIndices.player]);
@@ -707,81 +739,69 @@ function renderPlayerMatrix() {
         };
     });
     
-    // Set fixed min and max values for axes (0% to 100%)
-    const minWinLoss = 0;
-    const maxWinLoss = 1;
-    const minDuration = 0;
-    const maxDuration = 1;
-    
     // Draw background
-    ctx.fillStyle = 'black';
-    ctx.fillRect(padding.left, padding.top, chartWidth, chartHeight);
+    ctx.fillStyle = config.colors.background;
+    ctx.fillRect(config.padding.left, config.padding.top, chartWidth, chartHeight);
     
     // Draw axes
-    ctx.strokeStyle = 'white';
+    ctx.strokeStyle = config.colors.axes;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    
-    // X-axis
-    ctx.moveTo(padding.left, padding.top + chartHeight);
-    ctx.lineTo(padding.left + chartWidth, padding.top + chartHeight);
-    
-    // Y-axis
-    ctx.moveTo(padding.left, padding.top);
-    ctx.lineTo(padding.left, padding.top + chartHeight);
+    ctx.moveTo(config.padding.left, config.padding.top + chartHeight);
+    ctx.lineTo(config.padding.left + chartWidth, config.padding.top + chartHeight);
+    ctx.moveTo(config.padding.left, config.padding.top);
+    ctx.lineTo(config.padding.left, config.padding.top + chartHeight);
     ctx.stroke();
     
     // Draw grid lines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.strokeStyle = config.colors.gridLines;
     ctx.lineWidth = 1;
     
     // X-axis grid lines and labels (0%, 20%, 40%, 60%, 80%, 100%)
     for (let i = 0; i <= 5; i++) {
-        const x = padding.left + (chartWidth / 5) * i;
-        const value = i * 0.2; // 0 to 1 in steps of 0.2
+        const x = config.padding.left + (chartWidth / 5) * i;
+        const value = i * 0.2;
         
         ctx.beginPath();
-        ctx.moveTo(x, padding.top);
-        ctx.lineTo(x, padding.top + chartHeight);
+        ctx.moveTo(x, config.padding.top);
+        ctx.lineTo(x, config.padding.top + chartHeight);
         ctx.stroke();
         
-        // X-axis label
-        ctx.fillStyle = 'white';
-        ctx.font = '14px "Web IBM VGA 8x16"';
+        ctx.fillStyle = config.colors.axes;
+        ctx.font = config.fonts.axis;
         ctx.textAlign = 'center';
-        ctx.fillText((value * 100).toFixed(0) + '%', x, padding.top + chartHeight + 25);
+        ctx.fillText((value * 100).toFixed(0) + '%', x, config.padding.top + chartHeight + 25);
     }
     
     // Y-axis grid lines and labels (0%, 25%, 50%, 75%, 100%)
     for (let i = 0; i <= 4; i++) {
-        const y = padding.top + chartHeight - (chartHeight / 4) * i;
-        const value = i * 0.25; // 0 to 1 in steps of 0.25
+        const y = config.padding.top + chartHeight - (chartHeight / 4) * i;
+        const value = i * 0.25;
         
         ctx.beginPath();
-        ctx.moveTo(padding.left, y);
-        ctx.lineTo(padding.left + chartWidth, y);
+        ctx.moveTo(config.padding.left, y);
+        ctx.lineTo(config.padding.left + chartWidth, y);
         ctx.stroke();
         
-        // Y-axis label
-        ctx.fillStyle = 'white';
-        ctx.font = '14px "Web IBM VGA 8x16"';
+        ctx.fillStyle = config.colors.axes;
+        ctx.font = config.fonts.axis;
         ctx.textAlign = 'right';
-        ctx.fillText((value * 100).toFixed(0) + '%', padding.left - 10, y + 5);
+        ctx.fillText((value * 100).toFixed(0) + '%', config.padding.left - 10, y + 5);
     }
     
     // Axis titles
-    ctx.fillStyle = 'white';
-    ctx.font = '16px "Web IBM VGA 8x16"';
+    ctx.fillStyle = config.colors.axes;
+    ctx.font = config.fonts.title;
     ctx.textAlign = 'center';
     
     // X-axis title
-    ctx.fillText('Game Duration', padding.left + chartWidth / 2, padding.top + chartHeight + 45);
+    ctx.fillText(config.titles.x, config.padding.left + chartWidth / 2, config.padding.top + chartHeight + 45);
     
     // Y-axis title - rotated
     ctx.save();
-    ctx.translate(padding.left - 50, padding.top + chartHeight / 2);
+    ctx.translate(config.padding.left - 50, config.padding.top + chartHeight / 2);
     ctx.rotate(-Math.PI / 2);
-    ctx.fillText('Win/Loss (Non-Interrupted)', 0, 0);
+    ctx.fillText(config.titles.y, 0, 0);
     ctx.restore();
     
     // Store point data for hover detection
@@ -789,40 +809,26 @@ function renderPlayerMatrix() {
     
     // Plot data points
     playerData.forEach((player, _) => {
-        // Scale the values to canvas coordinates
-        const x = padding.left + chartWidth * (player.gameDuration);
-        const y = padding.top + chartHeight - chartHeight * (player.winLossNonInterrupted);
+        const x = config.padding.left + chartWidth * (player.gameDuration);
+        const y = config.padding.top + chartHeight - chartHeight * (player.winLossNonInterrupted);
         
-        // Draw point
         ctx.beginPath();
-        ctx.arc(x, y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = 'yellow';
+        ctx.arc(x, y, config.pointRadius, 0, Math.PI * 2);
+        ctx.fillStyle = config.colors.points;
         ctx.fill();
         
-        // Store point data for hover with larger hit area for easier hovering
-        points.push({
+        const point = {
             x: x,
             y: y,
-            radius: 10, // Increased from 5 to 10 for easier hover detection
-            player: player.player,
-            winLossNonInterrupted: player.winLossNonInterrupted,
-            gameDuration: player.gameDuration,
-            averageMoves: player.averageMoves,
-            moeAverageMoves: player.moeAverageMoves,
-            gamesNotInterruptedPercent: player.gamesNotInterruptedPercent,
-            totalGames: player.totalGames,
-            wins: player.wins,
-            losses: player.losses,
-            moeWins: player.moeWins,
-            moeLosses: player.moeLosses
-        });
+            radius: config.hoverRadius
+        };
+        
+        for (const [key, value] of Object.entries(player)) {
+            point[key] = value;
+        }
+        
+        points.push(point);
     });
-    
-    // // Add title
-    // ctx.fillStyle = 'white';
-    // ctx.font = '18px "Web IBM VGA 8x16"';
-    // ctx.textAlign = 'center';
-    // ctx.fillText('LLM Chess Players Matrix', canvas.width / 2, 25);
     
     // Remove old tooltip if exists
     const oldTooltip = document.getElementById('matrix-tooltip');
@@ -833,20 +839,9 @@ function renderPlayerMatrix() {
     // Create new tooltip element
     const tooltipElement = document.createElement('div');
     tooltipElement.id = 'matrix-tooltip';
-    tooltipElement.style.position = 'fixed'; // Changed from absolute to fixed for better positioning
-    tooltipElement.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
-    tooltipElement.style.color = 'white';
-    tooltipElement.style.padding = '8px';
-    tooltipElement.style.borderRadius = '5px';
-    tooltipElement.style.border = '1px solid #ffffff';
-    tooltipElement.style.pointerEvents = 'none';
-    tooltipElement.style.display = 'none';
-    tooltipElement.style.zIndex = '1000';
-    tooltipElement.style.fontSize = '14px';
-    tooltipElement.style.fontFamily = '"Web IBM VGA 8x16", monospace';
+    Object.assign(tooltipElement.style, config.tooltip.style);
     document.body.appendChild(tooltipElement);
     
-    // Store currently highlighted point for resetting
     let highlightedPoint = null;
     
     // Mouse move handler
@@ -857,16 +852,14 @@ function renderPlayerMatrix() {
         
         let hoveredPoint = null;
         
-        // Reset previously highlighted point if exists
         if (highlightedPoint) {
             ctx.beginPath();
-            ctx.arc(highlightedPoint.x, highlightedPoint.y, 5, 0, Math.PI * 2);
-            ctx.fillStyle = 'yellow';
+            ctx.arc(highlightedPoint.x, highlightedPoint.y, config.pointRadius, 0, Math.PI * 2);
+            ctx.fillStyle = config.colors.points;
             ctx.fill();
             highlightedPoint = null;
         }
         
-        // Check if mouse is over any point
         for (const point of points) {
             const distance = Math.sqrt(
                 Math.pow(mouseX - point.x, 2) + 
@@ -879,16 +872,13 @@ function renderPlayerMatrix() {
             }
         }
         
-        // Show tooltip if hovering over a point
         if (hoveredPoint) {
-            // Highlight the point
             ctx.beginPath();
-            ctx.arc(hoveredPoint.x, hoveredPoint.y, 5, 0, Math.PI * 2);
-            ctx.fillStyle = 'blue'; // Change color when hovering
+            ctx.arc(hoveredPoint.x, hoveredPoint.y, config.pointRadius, 0, Math.PI * 2);
+            ctx.fillStyle = config.colors.pointHover;
             ctx.fill();
             highlightedPoint = hoveredPoint;
             
-            // Show tooltip with model name
             tooltipElement.innerHTML = `<span style="color: yellow; font-weight: bold">${hoveredPoint.player}</span><br>
 Win/Loss (Non-interrupted): ${(hoveredPoint.winLossNonInterrupted * 100).toFixed(1)}%<br>
 Game duration: ${(hoveredPoint.gameDuration * 100).toFixed(1)}%<br>
@@ -902,20 +892,17 @@ Non-interrupted games: ${hoveredPoint.gamesNotInterruptedPercent}%`;
             tooltipElement.style.display = 'block';
             tooltipElement.style.textAlign = 'left';
         } else {
-            // Hide tooltip immediately when not over a point
             tooltipElement.style.display = 'none';
         }
     });
     
-    // Hide tooltip when mouse leaves canvas
     canvas.addEventListener('mouseleave', function() {
         tooltipElement.style.display = 'none';
         
-        // Reset any highlighted point
         if (highlightedPoint) {
             ctx.beginPath();
-            ctx.arc(highlightedPoint.x, highlightedPoint.y, 5, 0, Math.PI * 2);
-            ctx.fillStyle = 'yellow';
+            ctx.arc(highlightedPoint.x, highlightedPoint.y, config.pointRadius, 0, Math.PI * 2);
+            ctx.fillStyle = config.colors.points;
             ctx.fill();
             highlightedPoint = null;
         }
@@ -929,8 +916,6 @@ window.addEventListener('resize', function() {
     }
 });
 
-// Add this function to your existing code to be called when switching to matrix view
 function initializeMatrixView() {
-    // Make sure the matrix is rendered at the correct size initially
     setTimeout(renderPlayerMatrix, 0);
 }
