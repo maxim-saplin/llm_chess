@@ -1,3 +1,15 @@
+# April 7, 2025: Matrix View
+
+In addition to a Leaderboard offering simple ranking along the Win/Rate axis (capturing both instruction following/prompt stability and chess proficiency), the 2D view offers a look at models through:
+- **Win Rate**, vertical axis, measures chess proficiency. It relaxes the Win/Rate from the leaderboard focusing solely on games where the model succeeded no matter the number of losses (most of them are technical losses due to violation of the game communication protocol anyway).
+- **Game duration** horizontal axis - the secondary metric from the leaderboard, shows how durable the LLM is and if it can stay in the game loop without breaking the loop due to a random hallucination.
+
+Hence vertical axis is chess proficiency/reasoning while horizontal is instruction following/durability.
+
+Now there are 3 areas/clusters. Top right is occupied by OpenAI reasoning models (`o1`, `o3-mini`) demonstrating both good chess games and instruction following stability. Bottom right is where SOTA non-reasoning models (e.g. `GPT-4o`, `Claude Sonnet 3.7`) are gathered - they are fine making the moves yet struggle to make a win. The bottom left is where the majority of weak models are clustered, poor instruction following and hence no wins.
+
+The Matrix view nicely splits the reasoning models from the rest, they are the only models that have non-zero win rates. Besides there are outliers, such as `R1`. It did score a reasonable number of wins yet it failed quite often breaking the game loop - I view it as some crazy wise man, can play chess decently yet sometimes loses sense of reality and starts mumbling nonsense. As for other "reasoning" models, such as `QwQ-32B` or `Gemini 2 Flash Thinking`, they are at the bottom left part, struggling to stay in the game - they do not qualify for any meaningful games due to poor instruction following.
+
 # March 22, 2025: Metric Overhaul and Leaderboard Redesign
 
 After months of testing various LLMs on chess games, I've completely redesigned the leaderboard and metrics to better capture what we're actually measuring. With the old approach the metrics weren't clearly communicating what they represented.

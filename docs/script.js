@@ -707,7 +707,8 @@ function renderPlayerMatrix() {
         },
         titles: {
             x: 'Game Duration',
-            y: 'Win/Loss (Non-Interrupted)'
+            // y: 'Win/Loss (Non-Interrupted)'
+            y: 'Win Rate'
         },
         tooltip: {
             style: {
@@ -754,7 +755,8 @@ function renderPlayerMatrix() {
         const cols = row.cols;
         return {
             player: cols[csvIndices.player],
-            winLossNonInterrupted: parseFloat(cols[csvIndices.win_loss_non_interrupted]) || 0,
+            // winLossNonInterrupted: parseFloat(cols[csvIndices.win_loss_non_interrupted]) || 0,
+            winRate: parseFloat(cols[csvIndices.player_wins]) / parseFloat(cols[csvIndices.total_games]) || 0,
             gameDuration: parseFloat(cols[csvIndices.game_duration]) || 0,
             averageMoves: parseFloat(cols[csvIndices.average_moves]) || 0,
             moeAverageMoves: parseFloat(cols[csvIndices.moe_average_moves]) || 0,
@@ -838,7 +840,8 @@ function renderPlayerMatrix() {
     // Plot data points
     playerData.forEach((player, _) => {
         const x = config.padding.left + chartWidth * (player.gameDuration);
-        const y = config.padding.top + chartHeight - chartHeight * (player.winLossNonInterrupted);
+        // const y = config.padding.top + chartHeight - chartHeight * (player.winLossNonInterrupted);
+        const y = config.padding.top + chartHeight - chartHeight * (player.winRate);
         
         ctx.beginPath();
         ctx.arc(x, y, config.pointRadius, 0, Math.PI * 2);
@@ -908,7 +911,7 @@ function renderPlayerMatrix() {
             highlightedPoint = hoveredPoint;
             
             tooltipElement.innerHTML = `<span style="color: yellow; font-weight: bold">${hoveredPoint.player}</span><br>
-Win/Loss (Non-interrupted): ${(hoveredPoint.winLossNonInterrupted * 100).toFixed(1)}%<br>
+Win Rate: ${(hoveredPoint.winRate * 100).toFixed(1)}%<br>
 Game duration: ${(hoveredPoint.gameDuration * 100).toFixed(1)}%<br>
 Average moves: ${hoveredPoint.averageMoves} ± ${hoveredPoint.moeAverageMoves}<br>
 Total games: ${hoveredPoint.totalGames}<br>
