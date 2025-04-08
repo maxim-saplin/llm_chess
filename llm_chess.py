@@ -176,7 +176,6 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
     global board, game_moves
     board.reset()
     game_moves.clear()
-    game_over = False
     winner = None
     reason = None
 
@@ -241,7 +240,8 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
         name="Player_White",
         # Not using system message as some LLMs can ignore it
         system_message="",
-        description="",
+        description="You are a professional chess player and you play as white. "
+        + common_prompt,
         llm_config=llm_config_white,
         is_termination_msg=is_termination_message,
         human_input_mode="NEVER",
