@@ -35,11 +35,15 @@ except ImportError:
 LOGS_DIRS = [
     "_logs/no_reflection",
     "_logs/new/deepseek-v3-0324"
+    # "_logs/new"
 ]
+
+FILTER_OUT_BELOW_N = 30 # 0
+DATE_AFTER = None # "2025.04.01_00:00"
 
 # Output files
 OUTPUT_DIR = "data_processing"
-AGGREGATE_CSV = os.path.join(OUTPUT_DIR, "aggregate_models.csv")
+AGGREGATE_CSV = os.path.join(OUTPUT_DIR, "aggregate.csv")
 REFINED_CSV = os.path.join(OUTPUT_DIR, "refined.csv")
 
 FILTER_OUT_MODELS = [
@@ -128,6 +132,8 @@ def convert_aggregate_to_refined(
             "games_not_interrupted",
             "games_not_interrupted_percent",
             "moe_games_not_interrupted",
+            "average_game_cost",
+            "moe_average_game_cost",
         ]
 
         # Prepare to write to the refined CSV
@@ -200,6 +206,10 @@ def convert_aggregate_to_refined(
                 games_not_interrupted_percent = float(row["games_not_interrupted_percent"])
                 moe_games_not_interrupted = float(row["moe_games_not_interrupted"])
 
+                # Get cost metrics
+                average_game_cost = float(row.get("average_game_cost", 0))
+                moe_average_game_cost = float(row.get("moe_average_game_cost", 0))
+
                 # Append the row to the list of rows to write
                 rows_to_write.append(
                     {
@@ -240,6 +250,8 @@ def convert_aggregate_to_refined(
                         "games_not_interrupted": games_not_interrupted,
                         "games_not_interrupted_percent": round(games_not_interrupted_percent, 3),
                         "moe_games_not_interrupted": round(moe_games_not_interrupted, 3),
+                        "average_game_cost": round(average_game_cost, 5),
+                        "moe_average_game_cost": round(moe_average_game_cost, 5),
                     }
                 )
 
@@ -270,8 +282,8 @@ def print_leaderboard(csv_file, top_n=None):
         sorted_data = sorted_data[:top_n]
     
     # Prepare data for tabulate
+    total_cost_all_models = 0.0
     for rank, row in enumerate(sorted_data, 1):
-        # Skip special rows styling (we'll just include them in the ranking)
         player_name = row['Player']
         
         # Format the metrics like in the web version
@@ -280,30 +292,45 @@ def print_leaderboard(csv_file, top_n=None):
         tokens = float(row['completion_tokens_black_per_move'])
         tokens_str = f"{tokens:.1f}" if tokens > 1000 else f"{tokens:.2f}"
         
+        # Format the cost with margin of error
+        cost = float(row['average_game_cost'])
+        moe = float(row['moe_average_game_cost'])
+        cost_str = f"${cost:.4f}±{moe:.4f}"
+        
+        # Calculate total cost per model
+        total_games = int(row['total_games'])
+        total_cost = cost * total_games
+        total_cost_str = f"${total_cost:.2f}"
+        total_cost_all_models += total_cost
+        
         rows.append([
             rank,
             player_name,
             win_loss,
             game_duration,
-            tokens_str
+            tokens_str,
+            cost_str,
+            total_games,
+            total_cost_str
         ])
     
     # Print the table with headers
-    headers = ['#', 'Player', 'Win/Loss', 'Game Duration', 'Tokens']
+    headers = ['#', 'Player', 'Win/Loss', 'Game Duration', 'Tokens', 'Cost/Game', 'Games', 'Total Cost']
     print(tabulate(rows, headers=headers, tablefmt='grid'))
+    print(f"\nTotal cost across all models: ${total_cost_all_models:.2f}")
 
 
 def main():
     # Step 1: Aggregate logs from all directories to a single CSV
     print(f"Processing logs from {len(LOGS_DIRS)} directories")
-    aggregate_models_to_csv(LOGS_DIRS, AGGREGATE_CSV, MODEL_OVERRIDES)
+    aggregate_models_to_csv(LOGS_DIRS, AGGREGATE_CSV, MODEL_OVERRIDES, only_after_date=DATE_AFTER)
     print(f"Successfully aggregated data to {AGGREGATE_CSV}")
 
     # Step 2: Convert aggregated CSV to refined CSV
     convert_aggregate_to_refined(
         AGGREGATE_CSV,
         REFINED_CSV,
-        filter_out_below_n=30,
+        filter_out_below_n=FILTER_OUT_BELOW_N,
         filter_out_models=FILTER_OUT_MODELS,
         model_aliases=ALIASES,
     )
@@ -317,6 +344,8 @@ def main():
     print("- Win/Loss: Difference between wins and losses as a percentage (0-100%). Higher is better.")
     print("- Game Duration: Percentage of maximum possible game length completed (0-100%). Higher indicates better instruction following.")
     print("- Tokens: Number of tokens generated per move. Shows model verbosity/efficiency.")
+    print("- Cost/Game: Average cost per game with margin of error. Lower is more economical.")
+    print("- Total Cost: Total cost across all games for this model.")
 
 
 if __name__ == "__main__":

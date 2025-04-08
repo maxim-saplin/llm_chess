@@ -11,6 +11,7 @@ from data_processing.aggregate_logs_to_csv import (
     UsageStats
 )
 from llm_chess import TerminationReason
+from statistics import stdev
 
 
 class TestAggregateMetrics(unittest.TestCase):
@@ -18,10 +19,18 @@ class TestAggregateMetrics(unittest.TestCase):
         """Set up a temporary directory and mock logs for testing."""
         self.temp_dir = tempfile.TemporaryDirectory()
         self.output_csv = os.path.join(self.temp_dir.name, "aggregate_output.csv")
-
+        
+        # Create a mock metadata CSV file
+        self.metadata_csv = os.path.join(self.temp_dir.name, "models_metadata.csv")
+        with open(self.metadata_csv, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["model_name", "prompt_price", "completion_price", "date", "notes"])
+            writer.writerow(["model_1", "0.5", "1.5", "2024-01", ""])
+            writer.writerow(["model_2", "0.7", "2.1", "2024-02", ""])
+        
         # Create mock JSON logs
         self.logs = create_mock_json_logs()
-
+        
         # Write logs to the temporary directory
         write_mock_logs_to_temp_dir(self.logs, self.temp_dir.name)
 
@@ -31,7 +40,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_total_games(self):
         """Tests that the total number of games is correctly aggregated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -45,7 +54,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_black_llm_wins(self):
         """Tests that the number of black LLM wins is correctly aggregated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -59,7 +68,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_draws(self):
         """Tests that the number of draws is correctly aggregated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -73,7 +82,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_average_moves(self):
         """Tests that the average number of moves is correctly calculated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -87,7 +96,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_std_dev_moves(self):
         """Tests that the standard deviation of moves is correctly calculated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -101,7 +110,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_mistakes_per_1000moves(self):
         """Tests that the mistakes per 1000 moves are correctly calculated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -119,7 +128,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_material_diff(self):
         """Tests that the material difference is correctly calculated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -136,7 +145,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_black_llm_win_rate_and_moe(self):
         """Tests that the black LLM win rate and margin of error are correctly calculated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -157,7 +166,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_draw_rate_and_moe(self):
         """Tests that the draw rate and margin of error are correctly calculated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -177,7 +186,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_black_llm_loss_rate_and_moe(self):
         """Tests that the black LLM loss rate and margin of error are correctly calculated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -206,7 +215,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_win_loss_non_interrupted_metric(self):
         """Tests that the win_loss_non_interrupted metric is correctly calculated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -233,7 +242,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_games_not_interrupted_metric(self):
         """Tests that the games_not_interrupted metrics are correctly calculated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -265,7 +274,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_win_loss_metric(self):
         """Tests that the win_loss metric is correctly calculated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -291,7 +300,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_game_duration_metric(self):
         """Tests that the game_duration metric is correctly calculated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -323,7 +332,7 @@ class TestAggregateMetrics(unittest.TestCase):
 
     def test_games_interrupted_metric(self):
         """Tests that the games_interrupted metric is correctly calculated."""
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         # Read the output CSV
         csv_data = read_csv_as_dict(self.output_csv)
@@ -354,7 +363,7 @@ class TestAggregateMetrics(unittest.TestCase):
         self.assertAlmostEqual(float(model_2_data["moe_games_interrupted"]), expected_moe, places=5)
 
     def test_aggregation_output_fields(self):
-        aggregate_models_to_csv(self.temp_dir.name, self.output_csv)
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
 
         with open(self.output_csv, "r") as csvfile:
             reader = csv.DictReader(csvfile)
@@ -396,6 +405,16 @@ class TestAggregateMetrics(unittest.TestCase):
             "games_not_interrupted_percent",
             "std_dev_games_not_interrupted",
             "moe_games_not_interrupted",
+            "reason_too_many_wrong_actions",
+            "reason_checkmate",
+            "reason_stalemate",
+            "reason_insufficient_material",
+            "reason_seventyfive_moves",
+            "reason_fivefold_repetition",
+            "reason_max_turns",
+            "reason_unknown_issue",
+            "reason_max_moves",
+            "reason_error",
             "llm_total_moves",
             "average_moves",
             "std_dev_moves",
@@ -428,6 +447,9 @@ class TestAggregateMetrics(unittest.TestCase):
             "max_moves",
             "prompt_tokens_black",
             "total_tokens_black",
+            "average_game_cost",
+            "std_dev_game_cost",
+            "moe_average_game_cost",
         ]
 
         # Verify that all expected fields are present in the aggregated CSV
@@ -437,6 +459,188 @@ class TestAggregateMetrics(unittest.TestCase):
         # Fail if there are extra fields in the CSV
         for field in read_headers:
             self.assertIn(field, headers)
+
+    def test_termination_reason_counts(self):
+        """Tests that the termination reason counts are correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Get data for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        # Map from termination reason to expected count for model_1
+        model_1_expected_counts = {
+            TerminationReason.TOO_MANY_WRONG_ACTIONS: 1,  # One game with "Too many wrong actions"
+            TerminationReason.MAX_MOVES: 1,  # One game with "Max moves reached"
+            TerminationReason.CHECKMATE: 0,
+            TerminationReason.STALEMATE: 0,
+            TerminationReason.INSUFFICIENT_MATERIAL: 0,
+            TerminationReason.SEVENTYFIVE_MOVES: 0,
+            TerminationReason.FIVEFOLD_REPETITION: 0,
+            TerminationReason.MAX_TURNS: 0,
+            TerminationReason.UNKNOWN_ISSUE: 0,
+            TerminationReason.ERROR: 0
+        }
+
+        # Map from termination reason to expected count for model_2
+        model_2_expected_counts = {
+            TerminationReason.TOO_MANY_WRONG_ACTIONS: 1,  # One game with "Too many wrong actions"
+            TerminationReason.MAX_MOVES: 1,  # One game with "Max moves reached"
+            TerminationReason.CHECKMATE: 0,
+            TerminationReason.STALEMATE: 0,
+            TerminationReason.INSUFFICIENT_MATERIAL: 0,
+            TerminationReason.SEVENTYFIVE_MOVES: 0,
+            TerminationReason.FIVEFOLD_REPETITION: 0,
+            TerminationReason.MAX_TURNS: 0,
+            TerminationReason.UNKNOWN_ISSUE: 0,
+            TerminationReason.ERROR: 0
+        }
+
+        # Verify counts for model_1
+        for reason, expected_count in model_1_expected_counts.items():
+            column_name = f"reason_{reason.name.lower()}"
+            self.assertEqual(
+                int(model_1_data[column_name]), 
+                expected_count,
+                f"Model 1 expected {expected_count} for {reason.value}, got {model_1_data[column_name]}"
+            )
+
+        # Verify counts for model_2
+        for reason, expected_count in model_2_expected_counts.items():
+            column_name = f"reason_{reason.name.lower()}"
+            self.assertEqual(
+                int(model_2_data[column_name]), 
+                expected_count,
+                f"Model 2 expected {expected_count} for {reason.value}, got {model_2_data[column_name]}"
+            )
+
+    def test_interrupted_games_consistency(self):
+        """Tests that the games_interrupted count matches the sum of interrupted termination reasons."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
+
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+
+        # Get data for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+
+        # List of termination reasons that count as interrupted games
+        interrupted_reasons = [
+            TerminationReason.TOO_MANY_WRONG_ACTIONS,
+            TerminationReason.MAX_TURNS,
+            TerminationReason.UNKNOWN_ISSUE,
+            TerminationReason.ERROR
+        ]
+
+        # Calculate expected interrupted games count for model_1
+        expected_model_1_interrupted = sum(
+            int(model_1_data[f"reason_{reason.name.lower()}"])
+            for reason in interrupted_reasons
+        )
+
+        # Calculate expected interrupted games count for model_2
+        expected_model_2_interrupted = sum(
+            int(model_2_data[f"reason_{reason.name.lower()}"])
+            for reason in interrupted_reasons
+        )
+
+        # Verify that games_interrupted matches the sum of interrupted termination reasons
+        self.assertEqual(
+            int(model_1_data["games_interrupted"]),
+            expected_model_1_interrupted,
+            "games_interrupted should match the sum of interrupted termination reasons for model_1"
+        )
+        self.assertEqual(
+            int(model_2_data["games_interrupted"]),
+            expected_model_2_interrupted,
+            "games_interrupted should match the sum of interrupted termination reasons for model_2"
+        )
+
+    def test_average_game_cost(self):
+        """Tests that the average game cost is correctly calculated."""
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
+        
+        # Read the output CSV
+        csv_data = read_csv_as_dict(self.output_csv)
+        
+        # Get data for each model
+        model_1_data = next(row for row in csv_data if row["model_name"] == "model_1")
+        model_2_data = next(row for row in csv_data if row["model_name"] == "model_2")
+        
+        # Calculate expected costs for model_1
+        # Game 1: 111510 prompt tokens * 0.5/1M + 20090 completion tokens * 1.5/1M
+        # Game 2: 73145 prompt tokens * 0.5/1M + 12466 completion tokens * 1.5/1M
+        expected_cost_game1_model1 = (111510 * 0.5 / 1_000_000) + (20090 * 1.5 / 1_000_000)
+        expected_cost_game2_model1 = (73145 * 0.5 / 1_000_000) + (12466 * 1.5 / 1_000_000)
+        expected_avg_cost_model1 = (expected_cost_game1_model1 + expected_cost_game2_model1) / 2
+        
+        # Calculate expected costs for model_2
+        # Game 1: 108030 prompt tokens * 0.7/1M + 18830 completion tokens * 2.1/1M
+        # Game 2: 88387 prompt tokens * 0.7/1M + 14145 completion tokens * 2.1/1M
+        expected_cost_game1_model2 = (108030 * 0.7 / 1_000_000) + (18830 * 2.1 / 1_000_000)
+        expected_cost_game2_model2 = (88387 * 0.7 / 1_000_000) + (14145 * 2.1 / 1_000_000)
+        expected_avg_cost_model2 = (expected_cost_game1_model2 + expected_cost_game2_model2) / 2
+        
+        # Verify costs for each model
+        self.assertAlmostEqual(float(model_1_data["average_game_cost"]), expected_avg_cost_model1, places=6)
+        self.assertAlmostEqual(float(model_2_data["average_game_cost"]), expected_avg_cost_model2, places=6)
+        
+        # Calculate expected standard deviation for model_1
+        model1_costs = [expected_cost_game1_model1, expected_cost_game2_model1]
+        expected_std_dev_model1 = stdev(model1_costs)
+        
+        # Calculate expected standard deviation for model_2
+        model2_costs = [expected_cost_game1_model2, expected_cost_game2_model2]
+        expected_std_dev_model2 = stdev(model2_costs)
+        
+        # Verify standard deviation for each model
+        self.assertAlmostEqual(float(model_1_data["std_dev_game_cost"]), expected_std_dev_model1, places=6)
+        self.assertAlmostEqual(float(model_2_data["std_dev_game_cost"]), expected_std_dev_model2, places=6)
+        
+        # Calculate expected margin of error (95% confidence interval)
+        expected_moe_model1 = 1.96 * (expected_std_dev_model1 / math.sqrt(2))
+        expected_moe_model2 = 1.96 * (expected_std_dev_model2 / math.sqrt(2))
+        
+        # Verify margin of error for each model
+        self.assertAlmostEqual(float(model_1_data["moe_average_game_cost"]), expected_moe_model1, places=6)
+        self.assertAlmostEqual(float(model_2_data["moe_average_game_cost"]), expected_moe_model2, places=6)
+
+    def test_only_after_date_filter(self):
+        """Tests that logs before only_after_date are correctly filtered out."""
+        # First aggregation without date filter
+        aggregate_models_to_csv(self.temp_dir.name, self.output_csv, models_metadata_csv=self.metadata_csv)
+        base_csv_data = read_csv_as_dict(self.output_csv)
+        
+        # Get total game counts without filtering
+        base_model_1_data = next(row for row in base_csv_data if row["model_name"] == "model_1")
+        base_model_2_data = next(row for row in base_csv_data if row["model_name"] == "model_2")
+        base_model_1_games = int(base_model_1_data["total_games"])
+        base_model_2_games = int(base_model_2_data["total_games"])
+        
+        # Second aggregation with date filter that should exclude some logs
+        filtered_output_csv = os.path.join(self.temp_dir.name, "filtered_output.csv")
+        aggregate_models_to_csv(
+            self.temp_dir.name, 
+            filtered_output_csv, 
+            models_metadata_csv=self.metadata_csv,
+            only_after_date="2025.02.09_09:32"  # This should exclude the first log
+        )
+        
+        filtered_csv_data = read_csv_as_dict(filtered_output_csv)
+        
+        # Get filtered game counts
+        filtered_model_1_data = next(row for row in filtered_csv_data if row["model_name"] == "model_1")
+        filtered_model_2_data = next(row for row in filtered_csv_data if row["model_name"] == "model_2")
+        filtered_model_1_games = int(filtered_model_1_data["total_games"])
+        filtered_model_2_games = int(filtered_model_2_data["total_games"])
+        
+        # Verify that the filtering worked correctly
+        self.assertEqual(filtered_model_1_games, base_model_1_games - 1)
+        self.assertEqual(filtered_model_2_games, base_model_2_games)
 
 
 def create_mock_json_logs():

@@ -110,7 +110,9 @@ const csvIndices = {
     moe_games_interrupted: 33,
     games_not_interrupted: 34,
     games_not_interrupted_percent: 35,
-    moe_games_not_interrupted: 36
+    moe_games_not_interrupted: 36,
+    average_game_cost: 37,
+    moe_average_game_cost: 38
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -377,6 +379,10 @@ function showPlayerDetailsPopup(row, columns) {
     const moeMaterialDiff = columns[csvIndices.moe_material_diff_llm_minus_rand];
     const moeMistakesPer1000Moves = columns[csvIndices.moe_mistakes_per_1000moves];
     const moeCompletionTokensBlackPerMove = columns[csvIndices.moe_completion_tokens_black_per_move];
+    
+    // Add cost metrics
+    const averageGameCost = columns[csvIndices.average_game_cost];
+    const moeAverageGameCost = columns[csvIndices.moe_average_game_cost];
 
     document.getElementById('total-games').innerHTML = 
         `<span>Games:</span> ${parseInt(totalGames)}`;
@@ -399,6 +405,9 @@ function showPlayerDetailsPopup(row, columns) {
     document.getElementById('material-diff').innerHTML = `<span>Material Diff:</span> ${parseFloat(materialDiff).toFixed(2)} ± ${parseFloat(moeMaterialDiff).toFixed(2)}`;
     document.getElementById('mistakes-per-1000moves').innerHTML = `<span>Mistakes/1k_Moves:</span> ${parseFloat(mistakesPer1000Moves).toFixed(2)} ± ${parseFloat(moeMistakesPer1000Moves).toFixed(2)}`;
     document.getElementById('completion-tokens-black-per-move').innerHTML = `<span>Compl.Toks/Move:</span> ${parseFloat(completionTokensBlackPerMove).toFixed(2)} ± ${parseFloat(moeCompletionTokensBlackPerMove).toFixed(2)}`;
+    
+    // Add cost information to popup
+    document.getElementById('cost-per-game').innerHTML = `<span>Cost/Game:</span> $${parseFloat(averageGameCost).toFixed(4)} ± $${parseFloat(moeAverageGameCost).toFixed(4)}`;
 
     const rect = row.getBoundingClientRect();
     if (window.innerWidth < 1350) {
