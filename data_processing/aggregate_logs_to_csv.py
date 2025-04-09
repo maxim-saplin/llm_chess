@@ -117,7 +117,7 @@ class GameLog:
         return 1.0 if not self.is_interrupted else self.number_of_moves / GameLog.max_moves_in_game
 
 
-def load_game_logs(logs_dirs: Union[str, List[str]], model_overrides):
+def load_game_logs(logs_dirs: Union[str, List[str]], model_overrides) -> List[GameLog]:
     """
     Load game logs from one or more directories.
     
