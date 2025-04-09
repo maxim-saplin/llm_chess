@@ -364,6 +364,27 @@ table tbody tr:nth-last-child(-n+3) td {
     box-shadow: 0 0;
 }
 
+/* Add styles for fixed rows */
+tr.fixed {
+    background-color: #004477;
+    border-top: 1px solid #00AAFF;
+    border-bottom: 1px solid #00AAFF;
+}
+
+tr.fixed td {
+    color: yellow;
+}
+
+tr.fixed td:first-child {
+    color: gold; /* Star and rank number color */
+}
+
+tr.fixed td:nth-child(3), 
+tr.fixed td:nth-child(5) {
+    background-color: #005588;
+    color: yellow;
+}
+
 .pane strong {
     font-weight: normal;
     color: white;

@@ -7,7 +7,7 @@ const navConfig = {
             elementId: 'leaderboard',
             isDefault: true,
             onShow: function() {
-                buildTableGeneric(tableConfigs[this.id]);
+                buildFreshTable(tableConfigs[this.id]);
             }
         },
         MATRIX: {
@@ -115,6 +115,9 @@ const csvIndices = {
     moe_average_game_cost: 38
 };
 
+// Add this after other global variables
+let nextPrimarySortValue = 0; // Track the next available primarySort value
+
 document.addEventListener('DOMContentLoaded', () => {
     // Parse CSV data from the global data variable (loaded from data.js)
     parseCSVData();
@@ -172,7 +175,7 @@ const tableConfigs = {
           isNumeric: true,
           removeFromSpecialRows: true,
           getValue: (cols, idx) => '',
-          compareFn: (a, b) => a.defaultIndex - b.defaultIndex
+          compareFn: (a, b) => a.rank - b.rank
         },
         {
           title: 'Player',
@@ -546,151 +549,124 @@ function toggleSnippet(button) {
     }
 }
 
-function buildTableGeneric(config) {
-    // Use the pre-parsed data instead of parsing again
-    const rowObjects = parsedCsvData.rows;
-
-    // Clear table body
-    const tbody = document.querySelector('#leaderboard tbody');
-    tbody.innerHTML = '';
-
-    allRows = sortAllRows(rowObjects, config);
-    // Assign defaultIndex based on default sort
-    allRows.forEach((r, i) => {
-        r.defaultIndex = i;
+function sortTable(columnIndex = null, newOrder = null) {
+    const config = tableConfigs[currentScreen];
+    const sortOrderObj = sortOrderState[currentScreen];
+    
+    // If columnIndex is provided, handle sort order toggling
+    if (columnIndex !== null) {
+        const currentOrder = sortOrderObj[columnIndex] || 'asc';
+        newOrder = newOrder || (currentOrder === 'asc' ? 'desc' : 'asc');
+        sortOrderObj[columnIndex] = newOrder;
+    }
+    
+    // Separate special rows
+    const bottomRows = parsedCsvData.specialRows;
+    
+    // Filter out special rows and separate fixed vs unfixed
+    const normalRows = allRows.filter(row => {
+        const playerName = row.cols[csvIndices.player];
+        return !Object.values(SPECIAL_ROWS).includes(playerName);
     });
-
-    // Build rows
-    allRows.forEach((row, idx) => {
-        const tr = document.createElement('tr');
-        const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
-        config.columns.forEach((col) => {
-            let cellValue;
-            if (col.removeFromSpecialRows && isBottomRow) {
-                cellValue = '';
-            } else if (col.title === '#') {
-                // Always show default rank + 1
-                cellValue = row.defaultIndex + 1;
+    
+    const fixedRows = normalRows.filter(row => 
+        row.primarySort !== undefined && row.primarySort < 9999);
+    const unfixedRows = normalRows.filter(row => 
+        row.primarySort === undefined || row.primarySort === 9999);
+    
+    // Sort unfixed rows according to current criteria
+    unfixedRows.sort((a, b) => {
+        if (columnIndex === null) {
+            return config.defaultSortCompare(a.cols, b.cols);
+        } else {
+            const col = config.columns[columnIndex];
+            if (col.compareFn) {
+                const res = col.compareFn(a, b);
+                if (col.title === '#') {
+                    return res;
+                }
+                return newOrder === 'asc' ? res : -res;
             } else {
-                cellValue = col.getValue(row.cols, idx);
+                const aText = a.cols[columnIndex].trim();
+                const bText = b.cols[columnIndex].trim();
+                const comparison = col.isNumeric
+                    ? parseFloat(aText) - parseFloat(bText)
+                    : aText.localeCompare(bText);
+                return newOrder === 'asc' ? comparison : -comparison;
             }
-            const td = document.createElement('td');
-            td.textContent = cellValue;
-            tr.appendChild(td);
-        });
-        // Add hover and click
-        tr.addEventListener('mouseenter', () => showPlayerDetailsPopup(tr, row.cols));
-        tr.addEventListener('mouseleave', hidePopup);
-        tr.addEventListener('click', () => showPlayerDetailsPopup(tr, row.cols));
-
-        tbody.appendChild(tr);
+        }
     });
+    
+    // Sort fixed rows by primarySort
+    fixedRows.sort((a, b) => a.primarySort - b.primarySort);
+    
+    // Combine fixed, unfixed and special rows in the right order
+    allRows = [...fixedRows, ...unfixedRows, ...bottomRows];
+    
+    // Render the table
+    renderTable(config);
+    
+    // Update sort indicators
+    if (columnIndex !== null) {
+        document.querySelectorAll('#leaderboard th').forEach(headerCell => {
+            const cleanText = headerCell.textContent.replace(/[▲▼]/g, '').trim();
+            headerCell.innerHTML = `${cleanText}&nbsp;&nbsp;`;
+        });
+        
+        const sortedHeaderCell = document.querySelectorAll('#leaderboard th')[columnIndex];
+        const baseText = sortedHeaderCell.textContent.replace(/[▲▼]/g, '').trim();
+        const indicator = sortOrderObj[columnIndex] === 'asc' ? '▲' : '▼';
+        sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
+    }
+}
 
+function buildFreshTable(config) {
+    const rowObjects = parsedCsvData.rows;
+    
+    // Separate regular and special rows
+    const normalRows = rowObjects.filter(row => {
+        const playerName = row.cols[csvIndices.player];
+        return !Object.values(SPECIAL_ROWS).includes(playerName);
+    });
+    
+    const specialRows = rowObjects.filter(row => {
+        const playerName = row.cols[csvIndices.player];
+        return Object.values(SPECIAL_ROWS).includes(playerName);
+    });
+    
+    // Sort normal rows by default criteria first
+    normalRows.sort((a, b) => config.defaultSortCompare(a.cols, b.cols));
+    
+    // Assign ranks that will never change
+    normalRows.forEach((row, i) => {
+        row.rank = i + 1;
+    });
+    
+    // Initialize all rows with default primarySort value
+    normalRows.forEach(row => {
+        row.primarySort = 9999;
+    });
+    
+    // Combine rows and set as allRows
+    allRows = [...normalRows, ...specialRows];
+    
+    // Sort with our new function to handle pinned rows
+    sortTable();
+    
     // Clear thead and recreate th elements
     const thead = document.querySelector('#leaderboard thead');
-    thead.innerHTML = ''; // Clear existing headers
+    thead.innerHTML = '';
 
     const headerRow = document.createElement('tr');
     config.columns.forEach((col, i) => {
         const th = document.createElement('th');
         th.textContent = col.title;
         th.setAttribute('title', col.tooltip || col.title);
-        th.addEventListener('click', () => sortTable(i)); // Add click event for sorting
+        th.addEventListener('click', () => sortTable(i));
         headerRow.appendChild(th);
     });
-    thead.appendChild(headerRow); // Append the new header row to thead
+    thead.appendChild(headerRow);
 }
-
-function sortTable(columnIndex) {
-    const config = tableConfigs[currentScreen];
-    const col = config.columns[columnIndex];
-
-    // Determine current sort order
-    const sortOrderObj = sortOrderState[currentScreen];
-    const currentOrder = sortOrderObj[columnIndex] || 'asc';
-    const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
-    sortOrderObj[columnIndex] = newOrder;
-
-    allRows = sortAllRows(allRows, config, columnIndex, newOrder);
-
-    // Re-draw table
-    const tbody = document.querySelector('#leaderboard tbody');
-    tbody.innerHTML = '';
-    allRows.forEach((row, rowIndex) => {
-        const tr = document.createElement('tr');
-        config.columns.forEach((col, i) => {
-            const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
-            let cellValue;
-            if (col.removeFromSpecialRows && isBottomRow) {
-                cellValue = '';
-            } else if (col.title === '#') {
-                // Always show default rank + 1
-                cellValue = row.defaultIndex + 1;
-            } else {
-                cellValue = col.getValue(row.cols, rowIndex);
-            }
-            const td = document.createElement('td');
-            td.textContent = cellValue;
-            tr.appendChild(td);
-        });
-        tr.addEventListener('mouseenter', () => showPlayerDetailsPopup(tr, row.cols));
-        tr.addEventListener('mouseleave', hidePopup);
-        tr.addEventListener('click', () => showPlayerDetailsPopup(tr, row.cols));
-        tbody.appendChild(tr);
-    });
-
-    // Clear the sort indicators
-    document.querySelectorAll('#leaderboard th').forEach(headerCell => {
-        const cleanText = headerCell.textContent.replace(/[▲▼]/g, '').trim();
-        headerCell.innerHTML = `${cleanText}&nbsp;&nbsp;`;
-    });
-
-    // Show indicator for this column
-    const sortedHeaderCell = document.querySelectorAll('#leaderboard th')[columnIndex];
-    const baseText = sortedHeaderCell.textContent.replace(/[▲▼]/g, '').trim();
-    const indicator = sortOrderObj[columnIndex] === 'asc' ? '▲' : '▼';
-    sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
-}
-
-function sortAllRows(rows, config, overrideColumnIndex = null, newOrder = 'asc') {
-    // Use pre-parsed special rows
-    const bottomRows = parsedCsvData.specialRows;
-    
-    // Filter out special rows from the input rows
-    const normalRows = rows.filter(row => {
-        const playerName = row.cols[csvIndices.player];
-        return !Object.values(SPECIAL_ROWS).includes(playerName);
-    });
-
-    // If no override column is given, use default
-    if (overrideColumnIndex === null) {
-        normalRows.sort((a, b) => config.defaultSortCompare(a.cols, b.cols));
-    } else {
-        const col = config.columns[overrideColumnIndex];
-
-        normalRows.sort((a, b) => {
-            if (col.compareFn) {
-                const res = col.compareFn(a, b);
-                // For the rank column (#), ignore newOrder and preserve original order
-                if (col.title === '#') {
-                    return res;
-                }
-                return newOrder === 'asc' ? res : -res;
-            } else {
-                const aText = a.cols[overrideColumnIndex].trim();
-                const bText = b.cols[overrideColumnIndex].trim();
-                const comparison = col.isNumeric
-                    ? parseFloat(aText) - parseFloat(bText)
-                    : aText.localeCompare(bText);
-                return newOrder === 'asc' ? comparison : -comparison;
-            }
-        });
-    }
-
-    // Reassemble and return
-    return [...normalRows, ...bottomRows];
-}
-
 
 function initializeMatrixView() {
     // Then render the matrix
@@ -1181,3 +1157,88 @@ window.addEventListener('resize', function() {
         renderPlayerMatrix();
     }
 });
+
+function renderTable(config) {
+    const tbody = document.querySelector('#leaderboard tbody');
+    tbody.innerHTML = '';
+
+    allRows.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
+        
+        // Add 'fixed' class to rows with primarySort < 9999
+        if (row.primarySort !== undefined && row.primarySort < 9999) {
+            tr.classList.add('fixed');
+        }
+        
+        config.columns.forEach((col) => {
+            let cellValue;
+            if (col.removeFromSpecialRows && isBottomRow) {
+                cellValue = '';
+            } else if (col.title === '#') {
+                // Always use the original rank (assigned once during buildFreshTable)
+                cellValue = row.rank || '';
+            } else {
+                cellValue = col.getValue(row.cols, idx);
+            }
+            const td = document.createElement('td');
+            td.textContent = cellValue;
+            tr.appendChild(td);
+        });
+        
+        // Add event listeners
+        tr.addEventListener('mouseenter', () => showPlayerDetailsPopup(tr, row.cols));
+        tr.addEventListener('mouseleave', hidePopup);
+        tr.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            toggleRowFixed(row, config);
+        });
+        tr.addEventListener('click', () => {
+            showPlayerDetailsPopup(tr, row.cols);
+        });
+        
+        tbody.appendChild(tr);
+    });
+}
+
+function toggleRowFixed(row, config) {
+    const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
+    
+    // Skip special rows
+    if (isBottomRow) return;
+    
+    // Function to recalculate primarySort values to ensure they're sequential
+    function recalculatePrimarySortValues() {
+        // Get all fixed rows
+        const fixedRows = allRows.filter(row => 
+            row.primarySort !== undefined && row.primarySort < 9999
+        ).sort((a, b) => a.primarySort - b.primarySort);
+        
+        // Reassign primarySort values sequentially
+        fixedRows.forEach((row, index) => {
+            row.primarySort = index;
+        });
+        
+        // Update nextPrimarySortValue
+        nextPrimarySortValue = fixedRows.length;
+    }
+    
+    // If row is already fixed, unfix it
+    if (row.primarySort !== undefined && row.primarySort < 9999) {
+        row.primarySort = 9999;
+        
+        // Recalculate all primarySort values to ensure they're sequential
+        recalculatePrimarySortValues();
+    } else {
+        // Fix the row at the top with the next available primarySort value
+        row.primarySort = nextPrimarySortValue++;
+        
+        // Store original rank if not already set
+        if (row.originalRank === undefined) {
+            row.originalRank = row.rank;
+        }
+    }
+    
+    // Use sortTable to re-sort the rows
+    sortTable();
+}
