@@ -34,6 +34,7 @@ white_player_type = PlayerType.RANDOM_PLAYER
 black_player_type = PlayerType.LLM_BLACK
 enable_reflection = False  # Whether to offer the LLM time to think and evaluate moves
 board_representation_mode = BoardRepresentation.UNICODE_ONLY  # What kind of board is printed in response to get_current_board
+rotate_board_for_white = False # Whether to rotate the Uicode board for the white player so it gets it's pieces at the bottom
 
 # Game configuration
 max_game_moves = 200  # maximum number of game moves before terminating, dafault 200
@@ -92,10 +93,11 @@ def get_current_board() -> str:
     Returns:
         str: A text representation of the current board state.
     """
+    orientation = not (rotate_board_for_white and board.turn) # True is default orientation, False is rotated
     if board_representation_mode == BoardRepresentation.FEN_ONLY:
         return board.fen()
     elif board_representation_mode == BoardRepresentation.UNICODE_ONLY:
-        return board.unicode()
+        return board.unicode(orientation=orientation)
     elif board_representation_mode == BoardRepresentation.UNICODE_WITH_PGN:
         pgn_header = (
             "[Event \"Chess Game\"]\n"
@@ -115,7 +117,7 @@ def get_current_board() -> str:
             if i > 0 and i % 10 == 9:
                 pgn_moves += "\n"
 
-        return f"{board.unicode()}\n\nPGN:\n{pgn_header}{pgn_moves}"
+        return f"{board.unicode(orientation=orientation)}\n\nPGN:\n{pgn_header}{pgn_moves}"
 
 
 def get_legal_moves() -> str:

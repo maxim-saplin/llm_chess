@@ -1,1 +1,1 @@
-- White player gets its' pieces at the top, while the black player see it's pieces at the bottom - might be reasonable to change perspective fot he white player.
+- White player gets its' pieces at the top, while the black player see it's pieces at the bottom - might be reasonable to change perspective fot he white player. - FIXED THAT
