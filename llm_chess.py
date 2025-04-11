@@ -44,7 +44,7 @@ rotate_board_for_white = False # Whether to rotate the Uicode board for the whit
 max_game_moves = 200  # maximum number of game moves before terminating, dafault 200
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times, default 10
 max_failed_attempts = 3  # number of wrong replies within a dialog (e.g. non existing action) before stopping/giving a loss, default 3
-throttle_delay = 1 # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+throttle_delay = 0 # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
 dialog_turn_delay = 1  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
@@ -185,7 +185,6 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
     winner = None
     reason = None
 
-    # termination_messages = ["You won!", "I won!", "It's a tie!"]
     move_was_made = "Move made, switching player"
     termination_conditions = [
         move_was_made.lower(),

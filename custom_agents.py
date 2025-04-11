@@ -323,6 +323,12 @@ Your response should not simply replicate the given answers but should offer a r
 Ensure your response is well-structured, coherent and adheres to the highest standards of accuracy and reliability.
 """
         )
+        # Initialize usage statistics tracking
+        self.total_usage_stats = []
+        self.total_prompt_tokens = 0
+        self.total_completion_tokens = 0
+        self.total_tokens = 0
+        self.total_cost = 0
 
 
     def generate_reply(
@@ -331,8 +337,14 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
         sender: Optional[ConversableAgent] = None,
         **kwargs: Any,
     ) -> Union[str, Dict, None]:
+        if self._is_termination_msg(messages[-1]):
+            return None
+
         user_query = messages[-1]["content"]
         responses = []
+        usage_stats = []
+        
+        # First collect all responses from the LLMs
         for i, config in enumerate(self.llm_configs):
             ag = ConversableAgent(
                 name=f"Moa_LLM_{i}",
@@ -340,16 +352,57 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
                 **kwargs,
             )
             responses.append(ag.generate_reply(messages))
+            
+            # Collect usage statistics from the agent
+            ag_usage = ag.get_total_usage()
+            if ag_usage:
+                usage_stats.append(ag_usage)
         
+        # Prepare the merged query for the synthesizer
         merged_query = f"User query\\>\n\n {user_query}\n\n"
-
         for i, response in enumerate(responses):
             merged_query += f"Model {i+1} response\\>\n{response}\n\n"
         
+        # Get synthesizer response
         new_messages = messages[:-1] if messages else []
         new_messages.append({"content": merged_query, "role": "user"})
         response = self.synthesizer.generate_reply(messages=new_messages)
-
-        ## TODO: add accounting for token usage
+        
+        # Add synthesizer usage stats
+        ag_usage = self.synthesizer.get_total_usage()
+        if ag_usage:
+            usage_stats.append(ag_usage)
+        
+        # Update total usage statistics once before returning
+        for i, stats in enumerate(usage_stats):
+            # Ensure we have enough slots in total_usage_stats
+            while i >= len(self.total_usage_stats):
+                self.total_usage_stats.append({})
+                
+            # Update or initialize the stats for this agent
+            if not self.total_usage_stats[i]:
+                self.total_usage_stats[i] = stats.copy()
+            else:
+                # Update existing stats
+                self.total_usage_stats[i]["total_cost"] = self.total_usage_stats[i].get("total_cost", 0) + stats.get("total_cost", 0)
+                
+                for model, data in stats.items():
+                    if model != "total_cost" and isinstance(data, dict):
+                        if model not in self.total_usage_stats[i]:
+                            self.total_usage_stats[i][model] = data.copy()
+                        else:
+                            model_stats = self.total_usage_stats[i][model]
+                            model_stats["cost"] = model_stats.get("cost", 0) + data.get("cost", 0)
+                            model_stats["prompt_tokens"] = model_stats.get("prompt_tokens", 0) + data.get("prompt_tokens", 0)
+                            model_stats["completion_tokens"] = model_stats.get("completion_tokens", 0) + data.get("completion_tokens", 0)
+                            model_stats["total_tokens"] = model_stats.get("total_tokens", 0) + data.get("total_tokens", 0)
+            
+            # Update the global token counters
+            for model_name, model_data in stats.items():
+                if model_name != "total_cost" and isinstance(model_data, dict):
+                    self.total_prompt_tokens += model_data.get("prompt_tokens", 0)
+                    self.total_completion_tokens += model_data.get("completion_tokens", 0)
+                    self.total_tokens += model_data.get("total_tokens", 0)
+                    self.total_cost += model_data.get("cost", 0)
 
         return response
