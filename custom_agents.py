@@ -291,3 +291,65 @@ class ChessEngineStockfishAgent(GameAgent):
         except Exception as e:
             print(f"Error using Stockfish: {e}")
             return None
+
+
+class MoaGameAgent(GameAgent):
+
+    def __init__(
+        self,
+        dialog_turn_delay=0,
+        llm_configs=None,
+        *args,
+        **kwargs,
+    ):
+        """
+        Initialize a MixtureOfAgents Agent that run the question through multiple LLMs and then synthesizes the responses.
+
+        Parameters:
+            dialog_turn_delay (int): The delay (in seconds) before the agent responds during a dialog turn.
+            llm_configs (List[Dict]): List of configuration dictionaries for the multiple LLMs this agent will use.
+            *args, **kwargs: Additional arguments passed to the parent GameAgent class.
+        """
+        super().__init__(dialog_turn_delay=dialog_turn_delay, *args, **kwargs)
+        self.llm_configs = llm_configs
+        self.synthesizer = ConversableAgent(
+            name="Moa_Synthesizer",
+            llm_config=self.llm_config,
+            system_message = """\
+You will be provided with a set of responses from various open-source models to the latest user query.
+Your task is to synthesize these responses into a single, high-quality response in British English spelling.
+It is crucial to critically evaluate the information provided in these responses, recognizing that some of it may be biased or incorrect.
+Your response should not simply replicate the given answers but should offer a refined, accurate, and comprehensive reply to the instruction.
+Ensure your response is well-structured, coherent and adheres to the highest standards of accuracy and reliability.
+"""
+        )
+
+
+    def generate_reply(
+        self,
+        messages: Optional[List[Dict[str, Any]]] = None,
+        sender: Optional[ConversableAgent] = None,
+        **kwargs: Any,
+    ) -> Union[str, Dict, None]:
+        user_query = messages[-1]["content"]
+        responses = []
+        for i, config in enumerate(self.llm_configs):
+            ag = ConversableAgent(
+                name=f"Moa_LLM_{i}",
+                llm_config=config,
+                **kwargs,
+            )
+            responses.append(ag.generate_reply(messages))
+        
+        merged_query = f"User query\\>\n\n {user_query}\n\n"
+
+        for i, response in enumerate(responses):
+            merged_query += f"Model {i+1} response\\>\n{response}\n\n"
+        
+        new_messages = messages[:-1] if messages else []
+        new_messages.append({"content": merged_query, "role": "user"})
+        response = self.synthesizer.generate_reply(messages=new_messages)
+
+        ## TODO: add accounting for token usage
+
+        return response
