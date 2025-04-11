@@ -1,0 +1,53 @@
+{
+    "time_started": "2025.04.10_14:39",
+    "winner": "NONE",
+    "reason": "Max moves reached",
+    "number_of_moves": 200,
+    "player_white": {
+        "name": "Player_White",
+        "wrong_moves": 25,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "get_board_count": 100,
+        "get_legal_moves_count": 125,
+        "make_move_count": 125,
+        "model": "anthropic.claude-v3-5-haiku"
+    },
+    "material_count": {
+        "white": 21,
+        "black": 21
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "wrong_moves": 0,
+        "wrong_actions": 22,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "get_board_count": 100,
+        "get_legal_moves_count": 100,
+        "make_move_count": 100,
+        "model": "gpt-4o-mini-2024-07-18"
+    },
+    "usage_stats": {
+        "white": {
+            "total_cost": 0,
+            "us.anthropic.claude-3-5-haiku-20241022-v1:0": {
+                "cost": 0,
+                "prompt_tokens": 159331,
+                "completion_tokens": 14034,
+                "total_tokens": 173365
+            }
+        },
+        "black": {
+            "total_cost": 0.03041714999999995,
+            "gpt-4o-mini-2024-07-18": {
+                "cost": 0.03041714999999995,
+                "prompt_tokens": 113245,
+                "completion_tokens": 22384,
+                "total_tokens": 135629
+            }
+        }
+    },
+    "pgn": "[Event \"Chess Game\"]\n[Date \"2025.04.10\"]\n[White \"Player White\"]\n[Black \"Player Black\"]\n[Result \"1/2-1/2\"]\n\n 1/2-1/2"
+}
