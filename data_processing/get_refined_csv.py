@@ -34,7 +34,8 @@ except ImportError:
 # Define a list of log directories to process
 LOGS_DIRS = [
     "_logs/no_reflection",
-    "_logs/new/deepseek-v3-0324"
+    "_logs/new/deepseek-v3-0324",
+    "_logs/new/anthropic.claude-v3-5-haiku",
     # "_logs/new"
 ]
 
@@ -70,6 +71,7 @@ ALIASES = {
     "anthropic.claude-v3-5-sonnet-v1": "claude-v3-5-sonnet-v1",
     "anthropic.claude-v3-5-sonnet-v2": "claude-v3-5-sonnet-v2",
     "anthropic.claude-v3-haiku": "claude-v3-haiku",
+    "anthropic.claude-v3-5-haiku": "claude-v3-5-haiku",
     "anthropic.claude-v3-opus": "claude-v3-opus",
     "anthropic.claude-3-7-sonnet-20250219-v1:0": "claude-v3-7-sonnet",
     "google_gemma-3-12b-it@iq4_xs": "gemma-3-12b-it@iq4_xs",
