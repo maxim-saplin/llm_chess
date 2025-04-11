@@ -435,14 +435,21 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                 material_count["white"] = white_material
                 material_count["black"] = black_material
 
-                prompt_tokens = (
-                    last_usage["prompt_tokens"] if isinstance(last_usage, dict) else 0
-                )
-                completion_tokens = (
-                    last_usage["completion_tokens"]
-                    if isinstance(last_usage, dict)
-                    else 0
-                )
+                # Get token usage stats - different for MoA agents
+                if isinstance(player, MoaGameAgent):
+                    # MoA agents store stats directly in the agent
+                    prompt_tokens = player.total_prompt_tokens
+                    completion_tokens = player.total_completion_tokens
+                else:
+                    # Standard agents get stats from chat result
+                    prompt_tokens = (
+                        last_usage["prompt_tokens"] if isinstance(last_usage, dict) else 0
+                    )
+                    completion_tokens = (
+                        last_usage["completion_tokens"]
+                        if isinstance(last_usage, dict)
+                        else 0
+                    )
                 print(f"\033[94mPrompt Tokens: {prompt_tokens}\033[0m")
                 print(f"\033[94mCompletion Tokens: {completion_tokens}\033[0m")
                 if (
