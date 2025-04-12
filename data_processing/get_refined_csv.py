@@ -305,6 +305,22 @@ def print_leaderboard(csv_file, top_n=None):
         total_cost_str = f"${total_cost:.2f}"
         total_cost_all_models += total_cost
         
+        # Calculate estimated time per game - simplified approach
+        avg_moves = float(row['average_moves'])
+        tokens_per_game = tokens * avg_moves
+        # Multiply by 1.05 to account for input processing time
+        adjusted_tokens = tokens_per_game * 1.05
+        # Assume 100 tokens/second processing speed
+        total_time = adjusted_tokens / 100  # seconds
+        
+        # Format time based on duration
+        if total_time < 60:
+            time_str = f"{total_time:.1f}s"
+        elif total_time < 3600:
+            time_str = f"{total_time/60:.1f}m"
+        else:
+            time_str = f"{total_time/3600:.2f}h"
+        
         rows.append([
             rank,
             player_name,
@@ -312,12 +328,13 @@ def print_leaderboard(csv_file, top_n=None):
             game_duration,
             tokens_str,
             cost_str,
+            time_str,
             total_games,
             total_cost_str
         ])
     
     # Print the table with headers
-    headers = ['#', 'Player', 'Win/Loss', 'Game Duration', 'Tokens', 'Cost/Game', 'Games', 'Total Cost']
+    headers = ['#', 'Player', 'Win/Loss', 'Game Duration', 'Tokens', 'Cost/Game', 'Time/Game', 'Games', 'Total Cost']
     print(tabulate(rows, headers=headers, tablefmt='grid'))
     print(f"\nTotal cost across all models: ${total_cost_all_models:.2f}")
 
@@ -347,6 +364,7 @@ def main():
     print("- Game Duration: Percentage of maximum possible game length completed (0-100%). Higher indicates better instruction following.")
     print("- Tokens: Number of tokens generated per move. Shows model verbosity/efficiency.")
     print("- Cost/Game: Average cost per game with margin of error. Lower is more economical.")
+    print("- Time/Game: Estimated time per game (output at 100 tok/s + 5% input processing time).")
     print("- Total Cost: Total cost across all games for this model.")
 
 
