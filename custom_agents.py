@@ -315,6 +315,7 @@ class MoaGameAgent(GameAgent):
         self.synthesizer = ConversableAgent(
             name="Moa_Synthesizer",
             llm_config=self.llm_config,
+            human_input_mode="NEVER",
             system_message = """\
 You will be provided with a set of responses from various open-source models to the latest user query.
 Your task is to synthesize these responses into a single, high-quality response in British English spelling.
@@ -349,9 +350,30 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
             ag = ConversableAgent(
                 name=f"Moa_LLM_{i}",
                 llm_config=config,
+                human_input_mode="NEVER",
                 **kwargs,
             )
-            responses.append(ag.generate_reply(messages))
+            
+            # Add retry logic for generate_reply
+            max_retries = 4
+            retry_count = 0
+            response = None
+            
+            while retry_count < max_retries:
+                try:
+                    response = ag.generate_reply(messages)
+                    break  # Success, exit the retry loop
+                except Exception as e:
+                    retry_count += 1
+                    print(f"API error on model {i} (attempt {retry_count}/{max_retries}): {str(e)}")
+                    if retry_count < max_retries:
+                        print("Retrying in 4 seconds...")
+                        time.sleep(4)
+                    else:
+                        print(f"Failed after {max_retries} attempts.")
+                        response = f"[Error: Failed to get response from model {i} after {max_retries} attempts]"
+            
+            responses.append(response)
             
             # Collect usage statistics from the agent
             ag_usage = ag.get_total_usage()
@@ -363,10 +385,28 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
         for i, response in enumerate(responses):
             merged_query += f"Model {i+1} response\\>\n{response}\n\n"
         
-        # Get synthesizer response
+        # Get synthesizer response with retry logic
         new_messages = messages[:-1] if messages else []
         new_messages.append({"content": merged_query, "role": "user"})
-        response = self.synthesizer.generate_reply(messages=new_messages)
+        
+        # Add retry logic for synthesizer
+        max_retries = 3
+        retry_count = 0
+        response = None
+        
+        while retry_count < max_retries:
+            try:
+                response = self.synthesizer.generate_reply(messages=new_messages)
+                break  # Success, exit the retry loop
+            except Exception as e:
+                retry_count += 1
+                print(f"API error on synthesizer (attempt {retry_count}/{max_retries}): {str(e)}")
+                if retry_count < max_retries:
+                    print("Retrying in 3 seconds...")
+                    time.sleep(3)  # 3 second pause between retries
+                else:
+                    print(f"Failed after {max_retries} attempts.")
+                    response = "[Error: Failed to get synthesized response after multiple attempts]"
         
         # Add synthesizer usage stats
         ag_usage = self.synthesizer.get_total_usage()
