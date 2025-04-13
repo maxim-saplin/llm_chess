@@ -36,6 +36,7 @@ LOGS_DIRS = [
     "_logs/no_reflection",
     "_logs/new/deepseek-v3-0324",
     "_logs/new/anthropic.claude-v3-5-haiku",
+    "_logs/new/mercury-coder-small",
     # "_logs/new"
 ]
 
