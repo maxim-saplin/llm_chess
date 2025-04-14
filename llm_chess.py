@@ -349,10 +349,10 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
             description="You are a professional chess player and you play as black. " + common_prompt,
             llm_config=llm_config_black,
             llm_configs=[{
-                **llm_config_white,
+                **llm_config_black,
                 "temperature": 0.0
             }, {
-                **llm_config_white,
+                **llm_config_black,
                 "temperature": 1.0
             }],
             is_termination_msg=is_termination_message,
@@ -480,6 +480,7 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                         reason = TerminationReason.FIVEFOLD_REPETITION.value
                 elif (
                     last_message.lower().strip() != move_was_made.lower().strip()
+                    # TODO: fix max llm turns for MoA, seems like missing chat history broke this check
                     and len(chat_result.chat_history) >= max_llm_turns * 2
                 ):
                     winner = (
