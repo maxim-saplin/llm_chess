@@ -12,8 +12,8 @@ model_name = black_config["config_list"][0]["model"]
 
 # Parameters
 NUM_REPETITIONS = 30  # Set the number of games to run
-# LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
-LOG_FOLDER = f"_logs/llm_vs_llm/haiku_35_vs_4o_mini/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+# LOG_FOLDER = f"_logs/llm_vs_llm/haiku_35_vs_4o_mini/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 STORE_INDIVIDUAL_LOGS = True
 
 # ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`
