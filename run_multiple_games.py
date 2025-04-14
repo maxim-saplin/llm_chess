@@ -22,6 +22,15 @@ STORE_INDIVIDUAL_LOGS = True
 llm_chess.throttle_delay = 1
 llm_chess.dialog_turn_delay = 1
 
+
+llm_chess.temp_override = "remove"
+# reasoning_effort = None # Default is None, used with OpenAI models low, medium, or high
+
+# r"<think>.*?</think>" - Deepseek R1 Distil
+# r"◁think▷.*?◁/think▷ - Kimi 1.5
+# r"<reasoning>.*?</reasoning>" - Reka Flash
+#remove_text = None
+
 # llm_chess.white_player_type = llm_chess.PlayerType.LLM_WHITE
 # llm_chess.black_player_type = llm_chess.PlayerType.LLM_BLACK
 # llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
