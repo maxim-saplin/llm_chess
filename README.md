@@ -271,6 +271,9 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - gpt-4-turbo-2024-04-09
   - gpt-4-0613
   - gpt-4-32k-0613
+- OpenAI
+  - gpt-4.1-nano-2025-04-14
+  - gpt-4.1-mini-2025-04-14
 - AWS:
   - anthropic.claude-v3-5-sonnet-v1
   - anthropic.claude-v3-5-sonnet-v2
