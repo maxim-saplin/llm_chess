@@ -383,6 +383,7 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                     recipient=player,
                     message=player.description,
                     max_turns=max_llm_turns,
+                    cache=None
                 )
                 current_move += 1
                 last_message = chat_result.summary

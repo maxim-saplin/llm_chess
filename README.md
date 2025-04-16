@@ -156,6 +156,7 @@ Game run results are stored under the `_logs` folder.
 - 08.03.2025 - thinking models with think tags, changing `ignore_text` to `remove_text` ensuring that thinking tags are not inluded in consequent messages shared with the model (i.e. removing think sections returned previously in next messages in multi-turn dialogs, less clutter, recomended by QwQ and I guess assumed by any thinking model they don't need seeing past thinking trails)
 - 12.03.2025 - adding PGN history to logs
 - 16.03.2025 - wrong actions and wrong moves stats has been wrongly collected (underreporting) in all prior logs, the mistakes metric for all prior logs in invalid
+- 16.04.2024 - removing "frequency_penalty": 0.0, "presence_penalty": 0.0 as non relevant and breaking LLM config validations with some models
 
 ## Model vs Random Player
 

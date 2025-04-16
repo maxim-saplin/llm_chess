@@ -5,19 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Mock OpenAI Server",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/tests/mock_openai_server.py",
-            "console": "integratedTerminal",
-            "justMyCode": false,
-            "args": ["--port", "8080"]
-        },
-        {
-            "name": "Python Debugger: Current File",
+            "name": "Python: Debug Unit Tests",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
+            "purpose": ["debug-test"],
             "console": "integratedTerminal",
             "justMyCode": false
         }
