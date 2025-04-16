@@ -67,6 +67,7 @@ class PlayerStats:
     get_board_count: int = -1
     get_legal_moves_count: int = -1
     make_move_count: int = -1
+    accumulated_reply_time_seconds: float = 0.0
 
     @property
     def mistakes(self) -> int:
@@ -91,7 +92,9 @@ class GameLog:
     usage_stats_white: UsageStats
     usage_stats_black: UsageStats
 
-    max_moves_in_game: ClassVar[int] = 200  # Global config defing the max duration of a game used to define relative duration, change in case non default game durations were used
+    max_moves_in_game: ClassVar[int] = (
+        200  # Global config defing the max duration of a game used to define relative duration, change in case non default game durations were used
+    )
 
     @property
     def is_interrupted(self) -> int:
@@ -111,69 +114,76 @@ class GameLog:
             TerminationReason.MAX_TURNS.value,
             TerminationReason.TOO_MANY_WRONG_ACTIONS.value,
         }
-    
+
     @property
     def game_duration(self) -> float:
-        return 1.0 if not self.is_interrupted else self.number_of_moves / GameLog.max_moves_in_game
+        return (
+            1.0
+            if not self.is_interrupted
+            else self.number_of_moves / GameLog.max_moves_in_game
+        )
+
+
+def load_game_log(file_path: str) -> GameLog:
+    with open(file_path, "r") as f:
+        data = json.load(f)
+        white_usage_keys = list(data["usage_stats"]["white"])
+        black_usage_keys = list(data["usage_stats"]["black"])
+        return GameLog(
+            time_started=data["time_started"],
+            winner=data["winner"],
+            reason=data["reason"],
+            number_of_moves=data["number_of_moves"],
+            player_white=PlayerStats(**data["player_white"]),
+            player_black=PlayerStats(**data["player_black"]),
+            material_count=data["material_count"],
+            usage_stats_white=UsageStats(
+                total_cost=data["usage_stats"]["white"][white_usage_keys[0]],
+                details=(
+                    data["usage_stats"]["white"].get(white_usage_keys[1], None)
+                    if len(white_usage_keys) > 1
+                    else None
+                ),
+            ),
+            usage_stats_black=UsageStats(
+                total_cost=data["usage_stats"]["black"][black_usage_keys[0]],
+                details=(
+                    data["usage_stats"]["black"].get(black_usage_keys[1], None)
+                    if len(black_usage_keys) > 1
+                    else None
+                ),
+            ),
+        )
 
 
 def load_game_logs(logs_dirs: Union[str, List[str]], model_overrides) -> List[GameLog]:
     """
     Load game logs from one or more directories.
-    
+
     Args:
         logs_dirs: Either a single directory path or a list of directory paths
         model_overrides: Dictionary for model name overrides
-    
+
     Returns:
         List of GameLog objects
     """
     logs = []
-    
+
     # Convert single directory to list for consistent handling
     if isinstance(logs_dirs, str):
         logs_dirs = [logs_dirs]
-    
-    def _load_game_log(file_path: str) -> GameLog:
-        with open(file_path, "r") as f:
-            data = json.load(f)
-            white_usage_keys = list(data["usage_stats"]["white"])
-            black_usage_keys = list(data["usage_stats"]["black"])
-            return GameLog(
-                time_started=data["time_started"],
-                winner=data["winner"],
-                reason=data["reason"],
-                number_of_moves=data["number_of_moves"],
-                player_white=PlayerStats(**data["player_white"]),
-                player_black=PlayerStats(**data["player_black"]),
-                material_count=data["material_count"],
-                usage_stats_white=UsageStats(
-                    total_cost=data["usage_stats"]["white"][white_usage_keys[0]],
-                    details=(
-                        data["usage_stats"]["white"].get(white_usage_keys[1], None)
-                        if len(white_usage_keys) > 1
-                        else None
-                    ),
-                ),
-                usage_stats_black=UsageStats(
-                    total_cost=data["usage_stats"]["black"][black_usage_keys[0]],
-                    details=(
-                        data["usage_stats"]["black"].get(black_usage_keys[1], None)
-                        if len(black_usage_keys) > 1
-                        else None
-                    ),
-                ),
-            )
 
     for logs_dir in logs_dirs:
         print(f"Loading logs from directory: {logs_dir}")
-        
+
         for root, _, files in os.walk(logs_dir):
             for file in files:
-                if file.endswith(".json") and not file.endswith("_aggregate_results.json"):
+                if file.endswith(".json") and not file.endswith(
+                    "_aggregate_results.json"
+                ):
                     file_path = os.path.join(root, file)
                     try:
-                        game_log = _load_game_log(file_path)
+                        game_log = load_game_log(file_path)
                         # Use model ID from log, override if specified
                         model_name = game_log.player_black.model
                         if model_overrides:
@@ -195,7 +205,7 @@ def load_game_logs(logs_dirs: Union[str, List[str]], model_overrides) -> List[Ga
                         logs.append(game_log)
                     except Exception as e:
                         print(f"Skipping invalid JSON file: {file_path}. Error: {e}")
-    
+
     print(f"Total logs loaded from all directories: {len(logs)}")
     return logs
 
@@ -203,41 +213,46 @@ def load_game_logs(logs_dirs: Union[str, List[str]], model_overrides) -> List[Ga
 def load_model_prices(metadata_file_path):
     """
     Load model pricing information from the metadata CSV file.
-    
+
     Returns:
         Dictionary mapping model names to tuples of (prompt_price, completion_price) in dollars per million tokens
     """
     model_prices = {}
-    
+
     try:
-        with open(metadata_file_path, 'r') as f:
+        with open(metadata_file_path, "r") as f:
             reader = csv.reader(f)
             # Skip header row if present
             next(reader, None)
-            
+
             for row in reader:
-                if len(row) >= 3 and row[0].strip() and row[1].strip() and row[2].strip():
+                if (
+                    len(row) >= 3
+                    and row[0].strip()
+                    and row[1].strip()
+                    and row[2].strip()
+                ):
                     model_name = row[0].strip()
-                    
+
                     # Try to parse prompt and completion prices
                     try:
-                        prompt_price = float(row[1].strip().replace(',', ''))
-                        completion_price = float(row[2].strip().replace(',', ''))
+                        prompt_price = float(row[1].strip().replace(",", ""))
+                        completion_price = float(row[2].strip().replace(",", ""))
                         model_prices[model_name] = (prompt_price, completion_price)
                     except (ValueError, IndexError):
                         continue  # Skip rows with invalid price data
     except Exception as e:
         print(f"Warning: Could not load model prices from {metadata_file_path}: {e}")
-        
+
     return model_prices
 
 
 def aggregate_models_to_csv(
-    logs_dirs: Union[str, List[str]], 
-    output_csv: str, 
+    logs_dirs: Union[str, List[str]],
+    output_csv: str,
     model_overrides: dict = None,
     models_metadata_csv: str = MODELS_METADATA_CSV,
-    only_after_date: str = None
+    only_after_date: str = None,
 ) -> None:
     """
     Aggregates game logs from one or more directories and writes the results to a CSV file.
@@ -284,7 +299,7 @@ def aggregate_models_to_csv(
         "std_dev_win_loss_non_interrupted",
         "moe_win_loss_non_interrupted",
         "game_duration",
-        "std_dev_game_duration", 
+        "std_dev_game_duration",
         "moe_game_duration",
         "games_interrupted",
         "games_interrupted_percent",
@@ -360,37 +375,76 @@ def aggregate_models_to_csv(
         white_rand_wins = sum(1 for log in model_logs if log.winner == "Random_Player")
         draws = total_games - black_llm_wins - white_rand_wins
 
-        black_llm_wins_percent = (black_llm_wins / total_games) * 100 if total_games > 0 else 0
+        black_llm_wins_percent = (
+            (black_llm_wins / total_games) * 100 if total_games > 0 else 0
+        )
         black_llm_draws_percent = (draws / total_games) * 100 if total_games > 0 else 0
 
         # Calculate win_loss metric
-        win_loss = ((black_llm_wins - white_rand_wins) / total_games) / 2 + 0.5 if total_games > 0 else 0.5
+        win_loss = (
+            ((black_llm_wins - white_rand_wins) / total_games) / 2 + 0.5
+            if total_games > 0
+            else 0.5
+        )
 
         # Calculate standard deviation and margin of error for win_loss
-        per_game_win_loss = [(1 / 2 + 0.5) if log.winner == "Player_Black" else 
-                            (-1 / 2 + 0.5) if log.winner == "Random_Player" else 
-                            0.5 for log in model_logs]
+        per_game_win_loss = [
+            (1 / 2 + 0.5)
+            if log.winner == "Player_Black"
+            else (-1 / 2 + 0.5)
+            if log.winner == "Random_Player"
+            else 0.5
+            for log in model_logs
+        ]
         std_dev_win_loss = stdev(per_game_win_loss) if total_games > 1 else 0
-        moe_win_loss = 1.96 * (std_dev_win_loss / math.sqrt(total_games)) if total_games > 1 else 0
+        moe_win_loss = (
+            1.96 * (std_dev_win_loss / math.sqrt(total_games)) if total_games > 1 else 0
+        )
 
         # Calculate game_duration metric
-        game_duration = mean([log.game_duration for log in model_logs]) if model_logs else 0
-        std_dev_game_duration = stdev([log.game_duration for log in model_logs]) if total_games > 1 else 0
-        moe_game_duration = 1.96 * (std_dev_game_duration / math.sqrt(total_games)) if total_games > 1 else 0
+        game_duration = (
+            mean([log.game_duration for log in model_logs]) if model_logs else 0
+        )
+        std_dev_game_duration = (
+            stdev([log.game_duration for log in model_logs]) if total_games > 1 else 0
+        )
+        moe_game_duration = (
+            1.96 * (std_dev_game_duration / math.sqrt(total_games))
+            if total_games > 1
+            else 0
+        )
 
         # Calculate games_interrupted metric
         games_interrupted = sum(1 for log in model_logs if log.is_interrupted)
-        games_interrupted_percent = (games_interrupted / total_games * 100) if total_games > 0 else 0
+        games_interrupted_percent = (
+            (games_interrupted / total_games * 100) if total_games > 0 else 0
+        )
         p_interrupted = games_interrupted / total_games if total_games > 0 else 0
-        std_dev_games_interrupted = math.sqrt((p_interrupted * (1 - p_interrupted)) / total_games) if total_games > 1 else 0
-        moe_games_interrupted = 1.96 * std_dev_games_interrupted if total_games > 1 else 0
+        std_dev_games_interrupted = (
+            math.sqrt((p_interrupted * (1 - p_interrupted)) / total_games)
+            if total_games > 1
+            else 0
+        )
+        moe_games_interrupted = (
+            1.96 * std_dev_games_interrupted if total_games > 1 else 0
+        )
 
         # Calculate games_not_interrupted metrics
         games_not_interrupted = total_games - games_interrupted
-        games_not_interrupted_percent = (games_not_interrupted / total_games * 100) if total_games > 0 else 0
-        p_not_interrupted = games_not_interrupted / total_games if total_games > 0 else 0
-        std_dev_games_not_interrupted = math.sqrt((p_not_interrupted * (1 - p_not_interrupted)) / total_games) if total_games > 1 else 0
-        moe_games_not_interrupted = 1.96 * std_dev_games_not_interrupted if total_games > 1 else 0
+        games_not_interrupted_percent = (
+            (games_not_interrupted / total_games * 100) if total_games > 0 else 0
+        )
+        p_not_interrupted = (
+            games_not_interrupted / total_games if total_games > 0 else 0
+        )
+        std_dev_games_not_interrupted = (
+            math.sqrt((p_not_interrupted * (1 - p_not_interrupted)) / total_games)
+            if total_games > 1
+            else 0
+        )
+        moe_games_not_interrupted = (
+            1.96 * std_dev_games_not_interrupted if total_games > 1 else 0
+        )
 
         # Count termination reasons
         reason_counts = {
@@ -403,29 +457,50 @@ def aggregate_models_to_csv(
             TerminationReason.MAX_TURNS.value: 0,
             TerminationReason.UNKNOWN_ISSUE.value: 0,
             TerminationReason.MAX_MOVES.value: 0,
-            TerminationReason.ERROR.value: 0
+            TerminationReason.ERROR.value: 0,
         }
-        
+
         # Count reasons for each game
         for log in model_logs:
             if log.reason in reason_counts:
                 reason_counts[log.reason] += 1
-        
+
         # Calculate win_loss_non_interrupted metric (excluding interrupted games)
         non_interrupted_logs = [log for log in model_logs if not log.is_interrupted]
         non_interrupted_games = len(non_interrupted_logs)
-        black_llm_wins_non_interrupted = sum(1 for log in non_interrupted_logs if log.winner == "Player_Black")
-        white_rand_wins_non_interrupted = sum(1 for log in non_interrupted_logs if log.winner == "Random_Player")
-        
+        black_llm_wins_non_interrupted = sum(
+            1 for log in non_interrupted_logs if log.winner == "Player_Black"
+        )
+        white_rand_wins_non_interrupted = sum(
+            1 for log in non_interrupted_logs if log.winner == "Random_Player"
+        )
+
         if non_interrupted_games > 0:
-            win_loss_non_interrupted = ((black_llm_wins_non_interrupted - white_rand_wins_non_interrupted) / non_interrupted_games) / 2 + 0.5
-            
+            win_loss_non_interrupted = (
+                (black_llm_wins_non_interrupted - white_rand_wins_non_interrupted)
+                / non_interrupted_games
+            ) / 2 + 0.5
+
             # Calculate standard deviation and margin of error for win_loss_non_interrupted
-            per_game_win_loss_non_interrupted = [(1 / 2 + 0.5) if log.winner == "Player_Black" else 
-                                                (-1 / 2 + 0.5) if log.winner == "Random_Player" else 
-                                                0.5 for log in non_interrupted_logs]
-            std_dev_win_loss_non_interrupted = stdev(per_game_win_loss_non_interrupted) if non_interrupted_games > 1 else 0
-            moe_win_loss_non_interrupted = 1.96 * (std_dev_win_loss_non_interrupted / math.sqrt(non_interrupted_games)) if non_interrupted_games > 1 else 0
+            per_game_win_loss_non_interrupted = [
+                (1 / 2 + 0.5)
+                if log.winner == "Player_Black"
+                else (-1 / 2 + 0.5)
+                if log.winner == "Random_Player"
+                else 0.5
+                for log in non_interrupted_logs
+            ]
+            std_dev_win_loss_non_interrupted = (
+                stdev(per_game_win_loss_non_interrupted)
+                if non_interrupted_games > 1
+                else 0
+            )
+            moe_win_loss_non_interrupted = (
+                1.96
+                * (std_dev_win_loss_non_interrupted / math.sqrt(non_interrupted_games))
+                if non_interrupted_games > 1
+                else 0
+            )
         else:
             win_loss_non_interrupted = 0.5
             std_dev_win_loss_non_interrupted = 0
@@ -678,9 +753,13 @@ def aggregate_models_to_csv(
             prompt_price, completion_price = model_prices[model_name]
         else:
             # Try to find partial match
-            matching_models = [m for m in model_prices if m in model_name or model_name in m]
+            matching_models = [
+                m for m in model_prices if m in model_name or model_name in m
+            ]
             if matching_models:
-                closest_match = max(matching_models, key=len)  # Use the longest matching name
+                closest_match = max(
+                    matching_models, key=len
+                )  # Use the longest matching name
                 prompt_price, completion_price = model_prices[closest_match]
                 print(f"Using price from {closest_match} for {model_name}")
 
@@ -697,17 +776,21 @@ def aggregate_models_to_csv(
                 if log.usage_stats_black.details
                 else 0
             )
-            
+
             # Convert prices from dollars per million tokens to dollars per token
             prompt_cost = prompt_tokens * (prompt_price / 1_000_000)
             completion_cost = completion_tokens * (completion_price / 1_000_000)
-            
+
             game_cost = prompt_cost + completion_cost
             per_game_costs.append(game_cost)
 
         average_game_cost = mean(per_game_costs) if per_game_costs else 0
         std_dev_game_cost = stdev(per_game_costs) if len(per_game_costs) > 1 else 0
-        moe_average_game_cost = 1.96 * (std_dev_game_cost / math.sqrt(total_games)) if total_games > 1 else 0
+        moe_average_game_cost = (
+            1.96 * (std_dev_game_cost / math.sqrt(total_games))
+            if total_games > 1
+            else 0
+        )
 
         # Append the calculated data to the CSV data list
         csv_data.append(
@@ -736,7 +819,7 @@ def aggregate_models_to_csv(
                 std_dev_win_loss_non_interrupted,
                 moe_win_loss_non_interrupted,
                 game_duration,
-                std_dev_game_duration, 
+                std_dev_game_duration,
                 moe_game_duration,
                 games_interrupted,
                 games_interrupted_percent,

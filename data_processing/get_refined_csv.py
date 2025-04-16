@@ -37,6 +37,9 @@ LOGS_DIRS = [
     "_logs/new/deepseek-v3-0324",
     "_logs/new/anthropic.claude-v3-5-haiku",
     "_logs/new/mercury-coder-small",
+    "_logs/new/llama-4-scout-17b-16e-instruct",
+    "_logs/new/gpt-4.1-mini-2025-04-14",
+    "_logs/new/gpt-4.1-nano-2025-04-14",
     # "_logs/new"
 ]
 
@@ -78,6 +81,7 @@ ALIASES = {
     "google_gemma-3-12b-it@iq4_xs": "gemma-3-12b-it@iq4_xs",
     "google_gemma-3-12b-it@q8_0": "gemma-3-12b-it@q8_0",
     "google_gemma-3-27b-it@iq4_xs": "gemma-3-27b-it@iq4_xs",
+    "llama-4-scout-17b-16e-instruct": "llama-4-scout-cerebras",
 }
 
 
