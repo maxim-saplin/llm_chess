@@ -35,7 +35,7 @@ class GameAgent(ConversableAgent):
         self.failed_action_attempts = 0
         self.dialog_turn_delay = dialog_turn_delay  # Store it locally
         # Track execution time of generate_reply
-        self.accumulated_reply_time = 0.0
+        self.accumulated_reply_time_seconds = 0.0
 
     def prep_to_move(self):
         """
@@ -60,7 +60,7 @@ class GameAgent(ConversableAgent):
         end_time = time.time()
         
         # Accumulate only the actual execution time, not the delay
-        self.accumulated_reply_time += (end_time - start_time)
+        self.accumulated_reply_time_seconds += (end_time - start_time)
         
         return reply
 

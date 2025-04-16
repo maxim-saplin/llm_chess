@@ -41,7 +41,7 @@ class TestUtils(unittest.TestCase):
                 "get_board_count": 0,
                 "get_legal_moves_count": 0,
                 "make_move_count": 0,
-                "accumulated_reply_time": 1.25,
+                "accumulated_reply_time_seconds": 1.25,
                 "llm_config": {"config_list": [{"model": "test_model"}]},
             },
         )()
@@ -58,7 +58,7 @@ class TestUtils(unittest.TestCase):
                 "get_board_count": 0,
                 "get_legal_moves_count": 0,
                 "make_move_count": 0,
-                "accumulated_reply_time": 1.75,
+                "accumulated_reply_time_seconds": 1.75,
                 "llm_config": {"config_list": [{"model": "test_model"}]},
             },
         )()
@@ -84,8 +84,8 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(stats["material_count"]["black"], 10)
         self.assertEqual(stats["player_white"]["model"], "test_model")
         self.assertEqual(stats["player_black"]["model"], "test_model")
-        self.assertEqual(stats["player_white"]["accumulated_reply_time"], 1.25)
-        self.assertEqual(stats["player_black"]["accumulated_reply_time"], 1.75)
+        self.assertEqual(stats["player_white"]["accumulated_reply_time_seconds"], 1.25)
+        self.assertEqual(stats["player_black"]["accumulated_reply_time_seconds"], 1.75)
 
 if __name__ == "__main__":
     unittest.main()

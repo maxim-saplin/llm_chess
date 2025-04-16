@@ -368,9 +368,9 @@ class TestAutoReplyAgent(unittest.TestCase):
 class TestReplyTimeTracking(unittest.TestCase):
     
     def test_reply_time_tracking_initialization(self):
-        """Test that the accumulated_reply_time is initialized to 0."""
+        """Test that the accumulated_reply_time_seconds is initialized to 0."""
         agent = GameAgent(name="TestAgent")
-        self.assertEqual(agent.accumulated_reply_time, 0.0)
+        self.assertEqual(agent.accumulated_reply_time_seconds, 0.0)
     
     def test_reply_time_accumulation(self):
         """Test that reply time is properly accumulated across multiple calls."""
@@ -391,15 +391,15 @@ class TestReplyTimeTracking(unittest.TestCase):
                 time.sleep(0.01)
                 agent.generate_reply(messages=mock_messages, sender=mock_sender)
             
-            # Check that accumulated_reply_time is greater than 0
-            self.assertGreater(agent.accumulated_reply_time, 0.0)
+            # Check that accumulated_reply_time_seconds is greater than 0
+            self.assertGreater(agent.accumulated_reply_time_seconds, 0.0)
             
             # Get the current accumulated time for later comparison
-            current_time = agent.accumulated_reply_time
+            current_time = agent.accumulated_reply_time_seconds
             
             # Call again and check that the time increases
             agent.generate_reply(messages=mock_messages, sender=mock_sender)
-            self.assertGreater(agent.accumulated_reply_time, current_time)
+            self.assertGreater(agent.accumulated_reply_time_seconds, current_time)
     
     def test_game_stats_includes_reply_time(self):
         """Test that reply time is included in game stats."""
@@ -407,9 +407,9 @@ class TestReplyTimeTracking(unittest.TestCase):
         white_agent = GameAgent(name="WhitePlayer")
         black_agent = GameAgent(name="BlackPlayer")
         
-        # Set accumulated_reply_time for testing
-        white_agent.accumulated_reply_time = 1.5
-        black_agent.accumulated_reply_time = 2.5
+        # Set accumulated_reply_time_seconds for testing
+        white_agent.accumulated_reply_time_seconds = 1.5
+        black_agent.accumulated_reply_time_seconds = 2.5
         
         # Add required attributes for game_stats
         white_agent.wrong_moves = 0
@@ -441,9 +441,9 @@ class TestReplyTimeTracking(unittest.TestCase):
             material_count={"white": 39, "black": 39}
         )
         
-        # Check that accumulated_reply_time is included in stats
-        self.assertEqual(stats["player_white"]["accumulated_reply_time"], 1.5)
-        self.assertEqual(stats["player_black"]["accumulated_reply_time"], 2.5)
+        # Check that accumulated_reply_time_seconds is included in stats
+        self.assertEqual(stats["player_white"]["accumulated_reply_time_seconds"], 1.5)
+        self.assertEqual(stats["player_black"]["accumulated_reply_time_seconds"], 2.5)
     
     def test_dialog_turn_delay_not_included_in_time(self):
         """Test that dialog_turn_delay is NOT included in the accumulated time."""
@@ -466,7 +466,7 @@ class TestReplyTimeTracking(unittest.TestCase):
             
             # The accumulated time should be very small since we're just measuring
             # the execution time of the mocked generate_reply, not the delay
-            self.assertLess(agent.accumulated_reply_time, 0.01)  # Should be small without delay
+            self.assertLess(agent.accumulated_reply_time_seconds, 0.01)  # Should be small without delay
 
 
 if __name__ == "__main__":

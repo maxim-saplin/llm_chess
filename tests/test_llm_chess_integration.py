@@ -210,7 +210,7 @@ class TestLLMvsRandomGame(unittest.TestCase):
         checks that game_stats and the saved JSON log match.
         """
         llm_chess.max_game_moves = 6  # override for a short test
-        game_stats, _, _ = run(log_dir=self.temp_dir)
+        game_stats, player_white, player_black = run(log_dir=self.temp_dir)
         self.assertIn("winner", game_stats)
         self.assertIn("reason", game_stats)
         self.assertLessEqual(game_stats["number_of_moves"], 6)
@@ -234,7 +234,7 @@ class TestLLMvsRandomGame(unittest.TestCase):
                 "get_board_count": 0,
                 "get_legal_moves_count": 3,
                 "make_move_count": 3,
-                "accumulated_reply_time": 0.0,
+                "accumulated_reply_time_seconds": round(player_white.accumulated_reply_time_seconds, 3),
                 "model": "N/A"
             },
             "material_count": {
@@ -250,7 +250,7 @@ class TestLLMvsRandomGame(unittest.TestCase):
                 "get_board_count": 3,
                 "get_legal_moves_count": 3,
                 "make_move_count": 3,
-                "accumulated_reply_time": 0.0,
+                "accumulated_reply_time_seconds": round(player_black.accumulated_reply_time_seconds, 3),
                 "model": "gpt-3.5-turbo"
             },
             "usage_stats": {

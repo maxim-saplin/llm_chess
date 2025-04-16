@@ -165,7 +165,7 @@ def generate_game_stats(
             "get_board_count": player_white.get_board_count,
             "get_legal_moves_count": player_white.get_legal_moves_count,
             "make_move_count": player_white.make_move_count,
-            "accumulated_reply_time": player_white.accumulated_reply_time,
+            "accumulated_reply_time_seconds": player_white.accumulated_reply_time_seconds,
             "model": (
                 player_white.llm_config["config_list"][0]["model"]
                 if isinstance(player_white.llm_config, dict)
@@ -182,7 +182,7 @@ def generate_game_stats(
             "get_board_count": player_black.get_board_count,
             "get_legal_moves_count": player_black.get_legal_moves_count,
             "make_move_count": player_black.make_move_count,
-            "accumulated_reply_time": player_black.accumulated_reply_time,
+            "accumulated_reply_time_seconds": player_black.accumulated_reply_time_seconds,
             "model": (
                 player_black.llm_config["config_list"][0]["model"]
                 if isinstance(player_black.llm_config, dict)
@@ -273,22 +273,36 @@ def display_store_game_video_and_stats(game_stats, log_dir="_logs"):
     _print_game_outcome(game_stats, white_summary, black_summary)
 
 
-
-
 def _save_game_to_file_and_video(game_stats, log_dir):
     if log_dir is None:
         return
-    video_dir = f"{log_dir}/videos"
-    os.makedirs(video_dir, exist_ok=True)
+        
+    # Save game stats to JSON file
     log_filename = f"{log_dir}/{game_stats['time_started']}.json"
     if os.path.exists(log_filename):
         base, ext = os.path.splitext(log_filename)
         import time
         timestamp = int(time.time() * 1000)
         log_filename = f"{base}_{timestamp}{ext}"
+    
+    # Create a deep copy of game_stats to avoid modifying the original
+    import copy
+    game_stats_copy = copy.deepcopy(game_stats)
+    
+    # Round accumulated reply times to 3 decimal places
+    game_stats_copy['player_white']['accumulated_reply_time_seconds'] = round(
+        game_stats_copy['player_white']['accumulated_reply_time_seconds'], 3)
+    game_stats_copy['player_black']['accumulated_reply_time_seconds'] = round(
+        game_stats_copy['player_black']['accumulated_reply_time_seconds'], 3)
+    
     with open(log_filename, "w") as log_file:
-        json.dump(game_stats, log_file, indent=4)
-    save_video(f"{video_dir}/{game_stats['time_started']}.mp4")
+        json.dump(game_stats_copy, log_file, indent=4)
+    
+    # Only create video directory if there are frames to save
+    if _frames:
+        video_dir = f"{log_dir}/videos"
+        os.makedirs(video_dir, exist_ok=True)
+        save_video(f"{video_dir}/{game_stats['time_started']}.mp4")
 
 
 def _print_game_outcome(game_stats, white_summary, black_summary):
@@ -305,8 +319,8 @@ def _print_game_outcome(game_stats, white_summary, black_summary):
     print(f"Player White: {game_stats['material_count']['white']}")
     print(f"Player Black: {game_stats['material_count']['black']}")
     print("\nAccumulated Reply Time (seconds):")
-    print(f"Player White: {game_stats['player_white']['accumulated_reply_time']:.2f}")
-    print(f"Player Black: {game_stats['player_black']['accumulated_reply_time']:.2f}")
+    print(f"Player White: {game_stats['player_white']['accumulated_reply_time_seconds']:.3f}")
+    print(f"Player Black: {game_stats['player_black']['accumulated_reply_time_seconds']:.3f}")
     if "pgn" in game_stats:
         print("\n\033[96mGame PGN:\033[0m")
         print(game_stats["pgn"])
