@@ -105,8 +105,9 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
         config = {
             "config_list": config_list,
             "top_p": 1.0,
-            "frequency_penalty": 0.0,
-            "presence_penalty": 0.0,
+            # penalties raise exceptions with AG2 0.8.6 doing more thorouhg config validation, OpenAI docs say defaults are 0 anyways
+            # "frequency_penalty": 0.0,
+            # "presence_penalty": 0.0,
             "timeout": 600
         }
 

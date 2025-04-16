@@ -93,7 +93,12 @@ class TestLLMvsRandomGame(unittest.TestCase):
 
     def setUp(self):
         # Reset the mock OpenAI server state before each test
-        requests.post("http://localhost:8080/v1/reset", json={"useNegative": False, "useThinking": False})
+        try:
+            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "default", "useThinking": False}, timeout=5) # Add timeout
+            response.raise_for_status() # Raise exception for bad status codes (4xx or 5xx)
+            print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
+        except requests.exceptions.RequestException as e:
+            print(f"DEBUG: Failed to reset mock server: {e}")
         # Configure game settings for testing
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
         llm_chess.black_player_type = PlayerType.LLM_BLACK
