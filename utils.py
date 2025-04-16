@@ -165,6 +165,7 @@ def generate_game_stats(
             "get_board_count": player_white.get_board_count,
             "get_legal_moves_count": player_white.get_legal_moves_count,
             "make_move_count": player_white.make_move_count,
+            "accumulated_reply_time": player_white.accumulated_reply_time,
             "model": (
                 player_white.llm_config["config_list"][0]["model"]
                 if isinstance(player_white.llm_config, dict)
@@ -181,6 +182,7 @@ def generate_game_stats(
             "get_board_count": player_black.get_board_count,
             "get_legal_moves_count": player_black.get_legal_moves_count,
             "make_move_count": player_black.make_move_count,
+            "accumulated_reply_time": player_black.accumulated_reply_time,
             "model": (
                 player_black.llm_config["config_list"][0]["model"]
                 if isinstance(player_black.llm_config, dict)
@@ -302,6 +304,9 @@ def _print_game_outcome(game_stats, white_summary, black_summary):
     print("\nMaterial Count:")
     print(f"Player White: {game_stats['material_count']['white']}")
     print(f"Player Black: {game_stats['material_count']['black']}")
+    print("\nAccumulated Reply Time (seconds):")
+    print(f"Player White: {game_stats['player_white']['accumulated_reply_time']:.2f}")
+    print(f"Player Black: {game_stats['player_black']['accumulated_reply_time']:.2f}")
     if "pgn" in game_stats:
         print("\n\033[96mGame PGN:\033[0m")
         print(game_stats["pgn"])

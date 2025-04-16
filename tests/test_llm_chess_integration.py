@@ -15,6 +15,18 @@ from llm_chess import (
 )
 from tests.mock_openai_server import start_server
 
+# White player settings
+os.environ["MODEL_KIND_W"] = "azure"
+os.environ["AZURE_OPENAI_VERSION_W"] = "2024-02-15-preview"
+os.environ["AZURE_OPENAI_ENDPOINT_W"] = "https://your-endpoint.openai.azure.com"
+os.environ["AZURE_OPENAI_KEY_W"] = "your-azure-key"
+os.environ["AZURE_OPENAI_DEPLOYMENT_W"] = "gpt-4o"
+
+# Black player settings
+os.environ["MODEL_KIND_B"] = "local"
+os.environ["LOCAL_MODEL_NAME_B"] = "llama-3.1-70b"
+os.environ["LOCAL_BASE_URL_B"] = "http://localhost:8000/v1"
+os.environ["LOCAL_API_KEY_B"] = "your-local-key"
 
 class TestRandomVsRandomGame(unittest.TestCase):
     def setUp(self):
@@ -203,8 +215,6 @@ class TestLLMvsRandomGame(unittest.TestCase):
         self.assertIn("reason", game_stats)
         self.assertLessEqual(game_stats["number_of_moves"], 6)
 
-        # Verify the JSON log file is produced
-        import os, json
         log_filepath = os.path.join(self.temp_dir, f"{game_stats['time_started']}.json")
         self.assertTrue(os.path.exists(log_filepath), "Expected game result JSON not found.")
         with open(log_filepath, "r") as f:
@@ -224,6 +234,7 @@ class TestLLMvsRandomGame(unittest.TestCase):
                 "get_board_count": 0,
                 "get_legal_moves_count": 3,
                 "make_move_count": 3,
+                "accumulated_reply_time": 0.0,
                 "model": "N/A"
             },
             "material_count": {
@@ -239,6 +250,7 @@ class TestLLMvsRandomGame(unittest.TestCase):
                 "get_board_count": 3,
                 "get_legal_moves_count": 3,
                 "make_move_count": 3,
+                "accumulated_reply_time": 0.0,
                 "model": "gpt-3.5-turbo"
             },
             "usage_stats": {
