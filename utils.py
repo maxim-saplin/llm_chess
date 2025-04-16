@@ -63,8 +63,8 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
         tuple: A tuple containing two configuration dictionaries for the models.
     """
     model_kinds = [
-        os.environ.get("MODEL_KIND_W", "azure"),
-        os.environ.get("MODEL_KIND_B", "azure"),
+        os.environ.get("MODEL_KIND_W", "google"),
+        os.environ.get("MODEL_KIND_B", "google"),
     ]
 
     def azure_config(key):
@@ -94,6 +94,13 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
             "api_type": "google",
         }
 
+    def openai_config(key):
+        return {
+            "model": os.environ[f"OPENAI_MODEL_NAME_{key}"],
+            "api_key": os.environ[f"OPENAI_API_KEY_{key}"],
+            "api_type": "openai",
+        }
+
     def create_config(config_list):
         config = {
             "config_list": config_list,
@@ -119,8 +126,10 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
             configs.append(create_config([azure_config(key)]))
         elif kind == "local":
             configs.append(create_config([local_config(key)]))
-        elif kind == "gemini":
+        elif kind == "google":
             configs.append(create_config([gemini_config(key)]))
+        elif kind == "openai":
+            configs.append(create_config([openai_config(key)]))
 
     for config in configs:
         config["cache_seed"] = None
