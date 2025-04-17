@@ -53,7 +53,7 @@ temp_override = None
 
 reasoning_effort = None # Default is None, used with OpenAI models low, medium, or high
 
-thinking_budget = 1024 # Default is None, if set will enable extended thinking with Anthropic models, min 1024 for Claude 3.7
+thinking_budget = None # Default is None, if set will enable extended thinking with Anthropic models, min 1024 for Claude 3.7
 
 # Tell AutoReply agent to remove given pieces of text from BOTH agents history when processing replies
 # (using re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL))

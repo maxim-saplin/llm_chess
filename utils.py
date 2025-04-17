@@ -108,13 +108,12 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
             "model": os.environ[f"ANTHROPIC_MODEL_NAME_{key}"],
             "api_key": os.environ[f"ANTHROPIC_API_KEY_{key}"],
             "api_type": "anthropic",
+            "timeout": 600
         }
         
         # Add thinking configuration if thinking_budget is set
         if thinking_budget is not None and thinking_budget >= 1024:
             config["thinking"] = {"type": "enabled", "budget_tokens": thinking_budget}
-            config["max_tokens"] = 32768
-            config["timeout"] = 600
             
         return config
 
@@ -136,6 +135,11 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
         # Add reasoning_effort if it is not None
         if reasoning_effort is not None:
             config["reasoning_effort"] = reasoning_effort
+
+        # If thinking_budget is provided, remove top_p as it's not compatible with thinking mode in Anthropic
+        if thinking_budget is not None:
+            if "top_p" in config:
+                del config["top_p"]
 
         return config
 
