@@ -112,7 +112,7 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
         }
         
         # Add thinking configuration if thinking_budget is set
-        if thinking_budget is not None and thinking_budget >= 1024:
+        if thinking_budget is not None:
             config["thinking"] = {"type": "enabled", "budget_tokens": thinking_budget}
             
         return config
