@@ -40,6 +40,8 @@ LOGS_DIRS = [
     "_logs/new/llama-4-scout-17b-16e-instruct",
     "_logs/new/gpt-4.1-mini-2025-04-14",
     "_logs/new/gpt-4.1-nano-2025-04-14",
+    "_logs/new/gpt-4.5-preview-2025-02-27_openai",
+    "_logs/new/gpt-4.5-preview-2025-02-27"
     # "_logs/new"
 ]
 
