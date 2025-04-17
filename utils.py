@@ -101,6 +101,13 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
             "api_type": "openai",
         }
 
+    def anthropic_config(key):
+        return {
+            "model": os.environ[f"ANTHROPIC_MODEL_NAME_{key}"],
+            "api_key": os.environ[f"ANTHROPIC_API_KEY_{key}"],
+            "api_type": "anthropic",
+        }
+
     def create_config(config_list):
         config = {
             "config_list": config_list,
@@ -108,7 +115,8 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
             # penalties raise exceptions with AG2 0.8.6 doing more thorouhg config validation, OpenAI docs say defaults are 0 anyways
             # "frequency_penalty": 0.0,
             # "presence_penalty": 0.0,
-            "timeout": 600
+            "timeout": 600,
+            "max_tokens": 32768, # AG2 sets this value to some oddly small numbers for some providers (e.g.Anthropic)
         }
 
         # Add temperature only if it is not "remove"
@@ -131,6 +139,8 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
             configs.append(create_config([gemini_config(key)]))
         elif kind == "openai":
             configs.append(create_config([openai_config(key)]))
+        elif kind == "anthropic":
+            configs.append(create_config([anthropic_config(key)]))
 
     for config in configs:
         config["cache_seed"] = None
