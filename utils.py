@@ -43,9 +43,9 @@ def calculate_material_count(board):
 load_dotenv()
 
 
-def get_llms_autogen(temperature=None, reasoning_effort=None):
+def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=None):
     """
-    Retrieve the configuration for LLMs (Large Language Models) with optional temperature setting.
+    Retrieve the configuration for LLMs (Large Language Models) with optional temperature and thinking settings.
 
     Note:
     If the Azure type is used, Autogen removes dots from the model name.
@@ -58,6 +58,8 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
 
     Args:
         temperature (float, optional): The temperature setting for the model. Defaults to None.
+        reasoning_effort (str, optional): Reasoning effort level for OpenAI models. Defaults to None.
+        thinking_budget (int, optional): Token budget for thinking with Anthropic models. Defaults to None.
 
     Returns:
         tuple: A tuple containing two configuration dictionaries for the models.
@@ -102,11 +104,19 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
         }
 
     def anthropic_config(key):
-        return {
+        config = {
             "model": os.environ[f"ANTHROPIC_MODEL_NAME_{key}"],
             "api_key": os.environ[f"ANTHROPIC_API_KEY_{key}"],
             "api_type": "anthropic",
         }
+        
+        # Add thinking configuration if thinking_budget is set
+        if thinking_budget is not None and thinking_budget >= 1024:
+            config["thinking"] = {"type": "enabled", "budget_tokens": thinking_budget}
+            config["max_tokens"] = 32768
+            config["timeout"] = 600
+            
+        return config
 
     def create_config(config_list):
         config = {
