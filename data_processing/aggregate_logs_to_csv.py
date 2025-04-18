@@ -156,25 +156,46 @@ def load_game_log(file_path: str) -> GameLog:
         )
 
 
-def load_game_logs(logs_dirs: Union[str, List[str]], model_overrides) -> List[GameLog]:
+def load_game_logs(logs_dirs: Union[str, List[Union[str, Dict[str, str]]]], model_overrides: dict = None) -> List[GameLog]:
     """
     Load game logs from one or more directories.
 
     Args:
-        logs_dirs: Either a single directory path or a list of directory paths
+        logs_dirs: Either:
+                  - A single directory path (string)
+                  - A list of directory paths (strings)
+                  - A list with directory paths and/or dictionaries {directory_path: alias}
         model_overrides: Dictionary for model name overrides
 
     Returns:
         List of GameLog objects
     """
     logs = []
+    
+    # Directory aliases map to apply to logs from specific directories
+    directory_aliases = {}
 
     # Convert single directory to list for consistent handling
     if isinstance(logs_dirs, str):
         logs_dirs = [logs_dirs]
 
-    for logs_dir in logs_dirs:
+    # Process logs_dirs to extract any directory aliases
+    processed_logs_dirs = []
+    for entry in logs_dirs:
+        if isinstance(entry, dict):
+            # Extract directory path and alias
+            for dir_path, alias in entry.items():
+                processed_logs_dirs.append(dir_path)
+                directory_aliases[dir_path] = alias
+        else:
+            # Regular string path
+            processed_logs_dirs.append(entry)
+
+    for logs_dir in processed_logs_dirs:
         print(f"Loading logs from directory: {logs_dir}")
+        dir_alias = directory_aliases.get(logs_dir)
+        if dir_alias:
+            print(f"All models in this directory will be labeled as: {dir_alias}")
 
         for root, _, files in os.walk(logs_dir):
             for file in files:
@@ -184,23 +205,29 @@ def load_game_logs(logs_dirs: Union[str, List[str]], model_overrides) -> List[Ga
                     file_path = os.path.join(root, file)
                     try:
                         game_log = load_game_log(file_path)
-                        # Use model ID from log, override if specified
-                        model_name = game_log.player_black.model
-                        if model_overrides:
-                            key = next(
-                                (
-                                    k
-                                    for k in model_overrides
-                                    if os.path.dirname(file_path).endswith(k)
-                                ),
-                                None,
-                            )
-                            if key:
-                                original_model_name = model_name
-                                model_name = model_overrides[key]
-                                print(
-                                    f"Warning: Overriding model name from '{original_model_name}' to '{model_name}' for file '{file_path}'"
+                        
+                        # Apply directory alias if one exists
+                        if logs_dir in directory_aliases:
+                            model_name = directory_aliases[logs_dir]
+                        else:
+                            # Use model ID from log, override if specified
+                            model_name = game_log.player_black.model
+                            if model_overrides:
+                                key = next(
+                                    (
+                                        k
+                                        for k in model_overrides
+                                        if os.path.dirname(file_path).endswith(k)
+                                    ),
+                                    None,
                                 )
+                                if key:
+                                    original_model_name = model_name
+                                    model_name = model_overrides[key]
+                                    print(
+                                        f"Warning: Overriding model name from '{original_model_name}' to '{model_name}' for file '{file_path}'"
+                                    )
+                        
                         game_log.player_black.model = model_name
                         logs.append(game_log)
                     except Exception as e:
@@ -248,7 +275,7 @@ def load_model_prices(metadata_file_path):
 
 
 def aggregate_models_to_csv(
-    logs_dirs: Union[str, List[str]],
+    logs_dirs: Union[str, List[Union[str, Dict[str, str]]]],
     output_csv: str,
     model_overrides: dict = None,
     models_metadata_csv: str = MODELS_METADATA_CSV,
@@ -258,7 +285,11 @@ def aggregate_models_to_csv(
     Aggregates game logs from one or more directories and writes the results to a CSV file.
 
     Args:
-        logs_dirs: Either a single directory path or a list of directory paths containing game logs
+        logs_dirs: Either:
+                  - A single directory path (string)
+                  - A list of directory paths (strings)
+                  - A list with directory paths and/or dictionaries {directory_path: alias}
+                  Example: ["_logs/no_reflection", {"_logs/new/model1": "model1_alias"}]
         output_csv: The path to the output CSV file where aggregated results will be saved
         model_overrides: A dictionary mapping file path to model names for overriding
         models_metadata_csv: The path to the models metadata CSV file
