@@ -38,7 +38,7 @@ LOGS_DIRS = [
     "_logs/new/deepseek-v3-0324",
     "_logs/new/anthropic.claude-v3-5-haiku",
     "_logs/new/mercury-coder-small",
-    "_logs/new/llama-4-scout-17b-16e-instruct",
+    {"_logs/new/llama-4-scout-17b-16e-instruct" : "llama-4-scout-cerebras"},
     "_logs/new/gpt-4.1-mini-2025-04-14",
     "_logs/new/gpt-4.1-nano-2025-04-14",
     "_logs/new/gpt-4.5-preview-2025-02-27_openai",
@@ -46,6 +46,8 @@ LOGS_DIRS = [
     {"_logs/new/o4-mini-2025-04-16-low": "o4-mini-2025-04-16-low"},
     {"_logs/new/o4-mini-2025-04-16-medium": "o4-mini-2025-04-16-medium"},
     {"_logs/new/o4-mini-2025-04-16-high": "o4-mini-2025-04-16-high"},
+    {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_1024": "claude-v3-7-sonnet-thinking_1024"},
+    {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_2048": "claude-v3-7-sonnet-thinking_2048"},
     # "_logs/new"
 ]
 
@@ -87,7 +89,6 @@ ALIASES = {
     "google_gemma-3-12b-it@iq4_xs": "gemma-3-12b-it@iq4_xs",
     "google_gemma-3-12b-it@q8_0": "gemma-3-12b-it@q8_0",
     "google_gemma-3-27b-it@iq4_xs": "gemma-3-27b-it@iq4_xs",
-    "llama-4-scout-17b-16e-instruct": "llama-4-scout-cerebras",
 }
 
 
