@@ -57,6 +57,8 @@ temp_override = None
 
 reasoning_effort = None # Default is None, used with OpenAI models low, medium, or high
 
+thinking_budget = None # Default is None, if set will enable extended thinking with Anthropic models, min 1024 for Claude 3.7
+
 # Tell AutoReply agent to remove given pieces of text from BOTH agents history when processing replies
 # (using re.sub(self.ignore_text, '', action_choice, flags=re.DOTALL))
 # It is needed to remove isolating thinking tokens. E.g. Deepseek R1 32B uses <think> tags that can have actions mentioned breaking execution (r"<think>.*?</think>")
@@ -174,7 +176,7 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
     make_move_action = "make_move"
 
     # LLM
-    llm_config_white, llm_config_black = get_llms_autogen(temp_override, reasoning_effort)
+    llm_config_white, llm_config_black = get_llms_autogen(temp_override, reasoning_effort, thinking_budget)
     # llm_config_white = llm_config_black  # Quick hack to use same model
 
     # Init chess board and game state
@@ -418,6 +420,7 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                     recipient=player,
                     message=player.description,
                     max_turns=max_llm_turns,
+                    cache=None
                 )
                 current_move += 1
                 last_message = chat_result.summary

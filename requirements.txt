@@ -1,13 +1,9 @@
-ag2[openai,gemini]==0.8.1
-openai==1.64.0
+ag2[openai,gemini,anthropic]==0.8.1 # sticking to 0.8.1 due to caching bug up until 0.8.6 - https://github.com/ag2ai/ag2/pull/1641, 0.8.7 fixes cahching yet added some odd bug with model name not presetn in usage stats, 1 test failes
+#-e ../ag2[openai,gemini,anthropic] # for local fork of ag2 residing next to this repo, currently only 0.8.1 pass all LLM_Chess tests, backported into it Anthropic thinking. Clone https://github.com/maxim-saplin/ag2/tree/anthropic-thinking-v081
 chess==1.11.2
 matplotlib==3.10.0
 cairosvg==2.7.1
 moviepy==1.0.3
-google-generativeai==0.8.4
-vertexai==1.71.1
-pytest==8.3.4
 fastapi==0.115.11
 uvicorn==0.34.0
-pytest
 tabulate

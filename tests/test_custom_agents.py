@@ -2,6 +2,8 @@ import unittest
 import chess
 from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent
 from utils import generate_game_stats
+import time
+from unittest.mock import patch, MagicMock
 
 class TestCustomAgents(unittest.TestCase):
     def test_game_agent_initialization(self):
@@ -318,7 +320,7 @@ class TestAutoReplyAgent(unittest.TestCase):
 
     def test_invalid_action_format(self):
         """Test handling of incorrectly formatted actions."""
-        messages = [{"content": "invalid_action"}]
+        messages = [{"content": "message_with_invalid_action"}]
         reply = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
         expected_reply = "Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>"
         self.assertEqual(reply, expected_reply)
@@ -329,7 +331,7 @@ class TestAutoReplyAgent(unittest.TestCase):
     def test_max_failed_attempts(self):
         """Test that agent stops after reaching max failed attempts."""
         self.mock_sender.failed_action_attempts = self.agent.max_failed_attempts - 1
-        messages = [{"content": "invalid_action"}]
+        messages = [{"content": "message_with_invalid_action"}]
         reply = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
         self.assertEqual(reply, self.agent.too_many_failed_actions_message)
 
@@ -361,6 +363,110 @@ class TestAutoReplyAgent(unittest.TestCase):
         messages = [{"content": "make_move e2e4"}]
         _ = self.agent.generate_reply(messages=messages, sender=self.mock_sender)
         self.assertEqual(self.mock_sender.make_move_count, 1)
+
+
+class TestReplyTimeTracking(unittest.TestCase):
+    
+    def test_reply_time_tracking_initialization(self):
+        """Test that the accumulated_reply_time_seconds is initialized to 0."""
+        agent = GameAgent(name="TestAgent")
+        self.assertEqual(agent.accumulated_reply_time_seconds, 0.0)
+    
+    def test_reply_time_accumulation(self):
+        """Test that reply time is properly accumulated across multiple calls."""
+        # Create a game agent
+        agent = GameAgent(name="TestAgent")
+        
+        # Create a mock sender
+        mock_sender = MagicMock()
+        
+        # Create mock messages
+        mock_messages = [{"content": "Hello"}]
+        
+        # Mock the parent's generate_reply to avoid actual LLM calls
+        with patch('autogen.ConversableAgent.generate_reply', return_value="Mock reply"):
+            # Call generate_reply multiple times
+            for _ in range(3):
+                # Add a small delay to simulate processing time
+                time.sleep(0.01)
+                agent.generate_reply(messages=mock_messages, sender=mock_sender)
+            
+            # Check that accumulated_reply_time_seconds is greater than 0
+            self.assertGreater(agent.accumulated_reply_time_seconds, 0.0)
+            
+            # Get the current accumulated time for later comparison
+            current_time = agent.accumulated_reply_time_seconds
+            
+            # Call again and check that the time increases
+            agent.generate_reply(messages=mock_messages, sender=mock_sender)
+            self.assertGreater(agent.accumulated_reply_time_seconds, current_time)
+    
+    def test_game_stats_includes_reply_time(self):
+        """Test that reply time is included in game stats."""
+        # Create game agents
+        white_agent = GameAgent(name="WhitePlayer")
+        black_agent = GameAgent(name="BlackPlayer")
+        
+        # Set accumulated_reply_time_seconds for testing
+        white_agent.accumulated_reply_time_seconds = 1.5
+        black_agent.accumulated_reply_time_seconds = 2.5
+        
+        # Add required attributes for game_stats
+        white_agent.wrong_moves = 0
+        white_agent.wrong_actions = 0
+        white_agent.reflections_used = 0
+        white_agent.reflections_used_before_board = 0
+        white_agent.get_board_count = 0
+        white_agent.get_legal_moves_count = 0
+        white_agent.make_move_count = 0
+        white_agent.llm_config = None
+        
+        black_agent.wrong_moves = 0
+        black_agent.wrong_actions = 0
+        black_agent.reflections_used = 0
+        black_agent.reflections_used_before_board = 0
+        black_agent.get_board_count = 0
+        black_agent.get_legal_moves_count = 0
+        black_agent.make_move_count = 0
+        black_agent.llm_config = None
+        
+        # Generate game stats
+        stats = generate_game_stats(
+            time_started="2023-01-01_12-00-00",
+            winner="White",
+            reason="Checkmate",
+            current_move=10,
+            player_white=white_agent,
+            player_black=black_agent,
+            material_count={"white": 39, "black": 39}
+        )
+        
+        # Check that accumulated_reply_time_seconds is included in stats
+        self.assertEqual(stats["player_white"]["accumulated_reply_time_seconds"], 1.5)
+        self.assertEqual(stats["player_black"]["accumulated_reply_time_seconds"], 2.5)
+    
+    def test_dialog_turn_delay_not_included_in_time(self):
+        """Test that dialog_turn_delay is NOT included in the accumulated time."""
+        # Create a game agent with a delay (use integer to match implementation)
+        agent = GameAgent(name="DelayedAgent", dialog_turn_delay=1)
+        
+        # Create mock messages and sender
+        mock_messages = [{"content": "Hello"}]
+        mock_sender = MagicMock()
+        
+        # Mock both time.sleep (to avoid actual delay) and the parent's generate_reply
+        with patch('time.sleep') as mock_sleep, \
+             patch('autogen.ConversableAgent.generate_reply', return_value="Mock reply"):
+            
+            # Call generate_reply
+            agent.generate_reply(messages=mock_messages, sender=mock_sender)
+            
+            # Verify time.sleep was called with the delay value 
+            mock_sleep.assert_called_once_with(1)
+            
+            # The accumulated time should be very small since we're just measuring
+            # the execution time of the mocked generate_reply, not the delay
+            self.assertLess(agent.accumulated_reply_time_seconds, 0.01)  # Should be small without delay
 
 
 if __name__ == "__main__":

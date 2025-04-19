@@ -156,6 +156,7 @@ Game run results are stored under the `_logs` folder.
 - 08.03.2025 - thinking models with think tags, changing `ignore_text` to `remove_text` ensuring that thinking tags are not inluded in consequent messages shared with the model (i.e. removing think sections returned previously in next messages in multi-turn dialogs, less clutter, recomended by QwQ and I guess assumed by any thinking model they don't need seeing past thinking trails)
 - 12.03.2025 - adding PGN history to logs
 - 16.03.2025 - wrong actions and wrong moves stats has been wrongly collected (underreporting) in all prior logs, the mistakes metric for all prior logs in invalid
+- 16.04.2024 - removing "frequency_penalty": 0.0, "presence_penalty": 0.0 as non relevant and breaking LLM config validations with some models
 
 ## Model vs Random Player
 
@@ -256,6 +257,8 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
 ## Model Providers Used
 
 - Azure OpenAI:
+  - gpt-4.1-2025-04-14
+  - gpt-4.5-preview-2025-02-27
   - o3-mini-2025-01-31-medium
   - o3-mini-2025-01-31-low
   - o1-preview-2024-09-12
@@ -271,6 +274,11 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - gpt-4-turbo-2024-04-09
   - gpt-4-0613
   - gpt-4-32k-0613
+- OpenAI
+  - gpt-4.1-2025-04-14
+  - gpt-4.1-mini-2025-04-14
+  - gpt-4.1-nano-2025-04-14
+  - gpt-4.5-preview-2025-02-27
 - AWS:
   - anthropic.claude-v3-5-sonnet-v1
   - anthropic.claude-v3-5-sonnet-v2
@@ -301,6 +309,7 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - mixtral-8x7b-32768
   - gemma2-9b-it
 - Cerebras:
+  - llama-4-scout-17b-16e-instruct
   - llama-3.3-70b
   - llama3.1-8b
 - Deepseek:
@@ -313,6 +322,8 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - qwen2.5-72b-instruct
   - qwen2.5-14b-instruct-1m
   - qwen2.5-7b-instruct-1m
+- Mercury
+  - mercury-coder-small
 - Local (llama.cpp/LM Studio, default settings - 8k context, Flash Attention enabled, 100% GPU off-load when possible):
   - llama-2-7b-chat@q8_0
   - llama-3-70b-instruct-awq

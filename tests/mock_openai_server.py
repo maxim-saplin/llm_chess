@@ -1,3 +1,5 @@
+# import datetime
+# import json
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from typing import List, Optional
@@ -55,7 +57,7 @@ class MockChessBot:
             
         elif SCENARIO_TYPE == "invalid_action":
             if CALL_COUNT == 1:
-                return "invalid_action"
+                return "some_invalid_action"
             elif CALL_COUNT == 2:
                 return "make_move d4d5"
 
@@ -86,6 +88,20 @@ chess_bot = MockChessBot()
 @app.post("/v1/chat/completions")
 async def create_chat_completion(request: ChatCompletionRequest):
     try:
+        # Log request with timestamp
+        # timestamp = datetime.datetime.now().strftime("%H_%M_%S_%f")[:-3]
+        # log_filename = f"/Users/admin/src/llm_chess/_temp/{timestamp}_request.json"
+        
+        # # Create log content with request details
+        # log_content = {
+        #     "timestamp": timestamp,
+        #     "model": request.model,
+        #     "messages": request.messages,
+        #     "temperature": request.temperature,
+        # }
+        # with open(log_filename, "w") as f:
+        #     json.dump(log_content, f, indent=2)
+
         response = chess_bot.generate_reply(request.messages)
         
         return ChatCompletionResponse(
