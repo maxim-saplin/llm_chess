@@ -38,7 +38,7 @@ LOGS_DIRS = [
     "_logs/new/deepseek-v3-0324",
     "_logs/new/anthropic.claude-v3-5-haiku",
     "_logs/new/mercury-coder-small",
-    "_logs/new/moa_gpt-4o-mini-2024-07-18_t00_07_03",
+    "_logs/new/non_gpt-4o-mini-2024-07-18_t00_07_03",
     "_logs/new/gpt-4o-mini-2024-07-18_moa_baseline_2025-04-12",
     {"_logs/new/llama-4-scout-17b-16e-instruct" : "llama-4-scout-cerebras"},
     "_logs/new/gpt-4.1-mini-2025-04-14",

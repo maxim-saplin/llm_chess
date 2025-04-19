@@ -305,7 +305,7 @@ class ChessEngineStockfishAgent(GameAgent):
             return None
 
 
-class MoaGameAgent(GameAgent):
+class NonGameAgent(GameAgent):
 
     def __init__(
         self,
@@ -325,7 +325,7 @@ class MoaGameAgent(GameAgent):
         super().__init__(dialog_turn_delay=dialog_turn_delay, *args, **kwargs)
         self.llm_configs = llm_configs
         self.synthesizer = ConversableAgent(
-            name="Moa_Synthesizer",
+            name="NoN_Synthesizer",
             llm_config=self.llm_config,
             human_input_mode="NEVER",
             system_message = """\
@@ -360,7 +360,7 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
         # First collect all responses from the LLMs
         for i, config in enumerate(self.llm_configs):
             ag = ConversableAgent(
-                name=f"Moa_LLM_{i}",
+                name=f"NoN_LLM_{i}",
                 llm_config=config,
                 human_input_mode="NEVER",
                 **kwargs,

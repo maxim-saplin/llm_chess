@@ -4,7 +4,7 @@ import chess
 import chess.svg
 from typing import Any, Dict, Tuple
 from enum import Enum
-from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent, MoaGameAgent
+from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent, NonGameAgent
 from utils import calculate_material_count, generate_game_stats, get_llms_autogen, display_board, display_store_game_video_and_stats
 
 class BoardRepresentation(Enum):
@@ -31,11 +31,11 @@ class PlayerType(Enum):
     LLM_BLACK = 2  # Represents a black player controlled by an LLM and using *_B config keys from .env
     RANDOM_PLAYER = 3  # Represents a player making random moves
     CHESS_ENGINE_STOCKFISH = 5
-    LLM_MOA = 6  # Represents a mixture of agents player using multiple LLMs
+    LLM_NON = 6  # Represents a mixture of agents player using multiple LLMs
 
 # Hyper params such as temperature are defined in `utils.py`
 white_player_type = PlayerType.RANDOM_PLAYER
-black_player_type = PlayerType.LLM_MOA
+black_player_type = PlayerType.LLM_NON
 enable_reflection = False  # Whether to offer the LLM time to think and evaluate moves
 board_representation_mode = BoardRepresentation.UNICODE_ONLY  # What kind of board is printed in response to get_current_board
 rotate_board_for_white = False # Whether to rotate the Uicode board for the white player so it gets it's pieces at the bottom
@@ -313,8 +313,8 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
             level=stockfish_level,
             time_limit=stockfish_time_per_move,
         ),
-        PlayerType.LLM_MOA: MoaGameAgent(
-            name="Player_Moa_White",
+        PlayerType.LLM_NON: NonGameAgent(
+            name="Player_Non_White",
             system_message="",
             description="You are a professional chess player and you play as white. " + common_prompt,
             llm_config=llm_config_white,
@@ -345,8 +345,8 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
             level=stockfish_level,
             time_limit=stockfish_time_per_move,
         ),
-        PlayerType.LLM_MOA: MoaGameAgent(
-            name="Player_Moa_Black",
+        PlayerType.LLM_NON: NonGameAgent(
+            name="Player_Non_Black",
             system_message="",
             description="You are a professional chess player and you play as black. " + common_prompt,
             llm_config=llm_config_black,
@@ -438,9 +438,9 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                 material_count["white"] = white_material
                 material_count["black"] = black_material
 
-                # Get token usage stats - different for MoA agents
-                if isinstance(player, MoaGameAgent):
-                    # MoA agents store stats directly in the agent
+                # Get token usage stats - different for NoN agents
+                if isinstance(player, NonGameAgent):
+                    # NoN agents store stats directly in the agent
                     prompt_tokens = player.total_prompt_tokens
                     completion_tokens = player.total_completion_tokens
                 else:
@@ -483,7 +483,7 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                         reason = TerminationReason.FIVEFOLD_REPETITION.value
                 elif (
                     last_message.lower().strip() != move_was_made.lower().strip()
-                    # TODO: fix max llm turns for MoA, seems like missing chat history broke this check
+                    # TODO: fix max llm turns for NoN, seems like missing chat history broke this check
                     and len(chat_result.chat_history) >= max_llm_turns * 2
                 ):
                     winner = (
