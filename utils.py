@@ -173,8 +173,47 @@ def generate_game_stats(
     pgn_string: str = None,
 ) -> dict:
     """Generate game statistics."""
-    white_summary = gather_usage_summary([player_white])
-    black_summary = gather_usage_summary([player_black])
+    # Determine model name and usage stats for white player
+    if hasattr(player_white, 'total_prompt_tokens') and hasattr(player_white, 'total_completion_tokens'):
+        white_model = "moa"
+        white_usage = {
+            "total_cost": player_white.total_cost if hasattr(player_white, 'total_cost') else 0,
+            "moa": {
+                "cost": player_white.total_cost if hasattr(player_white, 'total_cost') else 0,
+                "prompt_tokens": player_white.total_prompt_tokens,
+                "completion_tokens": player_white.total_completion_tokens,
+                "total_tokens": player_white.total_tokens if hasattr(player_white, 'total_tokens') else 0
+            }
+        }
+    else:
+        white_summary = gather_usage_summary([player_white])
+        white_model = (
+            player_white.llm_config["config_list"][0]["model"]
+            if isinstance(player_white.llm_config, dict)
+            else "N/A"
+        )
+        white_usage = white_summary["usage_excluding_cached_inference"] if white_summary else {}
+
+    # Determine model name and usage stats for black player
+    if hasattr(player_black, 'total_prompt_tokens') and hasattr(player_black, 'total_completion_tokens'):
+        black_model = "moa"
+        black_usage = {
+            "total_cost": player_black.total_cost if hasattr(player_black, 'total_cost') else 0,
+            "moa": {
+                "cost": player_black.total_cost if hasattr(player_black, 'total_cost') else 0,
+                "prompt_tokens": player_black.total_prompt_tokens,
+                "completion_tokens": player_black.total_completion_tokens,
+                "total_tokens": player_black.total_tokens if hasattr(player_black, 'total_tokens') else 0
+            }
+        }
+    else:
+        black_summary = gather_usage_summary([player_black])
+        black_model = (
+            player_black.llm_config["config_list"][0]["model"]
+            if isinstance(player_black.llm_config, dict)
+            else "N/A"
+        )
+        black_usage = black_summary["usage_excluding_cached_inference"] if black_summary else {}
 
     stats = {
         "time_started": time_started,
@@ -191,11 +230,7 @@ def generate_game_stats(
             "get_legal_moves_count": player_white.get_legal_moves_count,
             "make_move_count": player_white.make_move_count,
             "accumulated_reply_time_seconds": player_white.accumulated_reply_time_seconds,
-            "model": (
-                player_white.llm_config["config_list"][0]["model"]
-                if isinstance(player_white.llm_config, dict)
-                else "N/A"
-            ),
+            "model": white_model,
         },
         "material_count": material_count,
         "player_black": {
@@ -208,23 +243,11 @@ def generate_game_stats(
             "get_legal_moves_count": player_black.get_legal_moves_count,
             "make_move_count": player_black.make_move_count,
             "accumulated_reply_time_seconds": player_black.accumulated_reply_time_seconds,
-            "model": (
-                player_black.llm_config["config_list"][0]["model"]
-                if isinstance(player_black.llm_config, dict)
-                else "N/A"
-            ),
+            "model": black_model,
         },
         "usage_stats": {
-            "white": (
-                white_summary["usage_excluding_cached_inference"]
-                if white_summary
-                else {}
-            ),
-            "black": (
-                black_summary["usage_excluding_cached_inference"]
-                if black_summary
-                else {}
-            ),
+            "white": white_usage,
+            "black": black_usage,
         },
     }
     
