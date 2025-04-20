@@ -315,7 +315,7 @@ class NonGameAgent(GameAgent):
         **kwargs,
     ):
         """
-        Initialize a MixtureOfAgents Agent that run the question through multiple LLMs and then synthesizes the responses.
+        Initialize a Network-of-Networks Agent that run the question through multiple LLMs and then synthesizes the responses.
 
         Parameters:
             dialog_turn_delay (int): The delay (in seconds) before the agent responds during a dialog turn.
@@ -324,18 +324,27 @@ class NonGameAgent(GameAgent):
         """
         super().__init__(dialog_turn_delay=dialog_turn_delay, *args, **kwargs)
         self.llm_configs = llm_configs
-        self.synthesizer = ConversableAgent(
-            name="NoN_Synthesizer",
-            llm_config=self.llm_config,
-            human_input_mode="NEVER",
-            system_message = """\
+#         self.synthesizer = ConversableAgent(
+#             name="NoN_Synthesizer",
+#             llm_config=self.llm_config,
+#             human_input_mode="NEVER",
+#             system_message = """\
+# You will be provided with a set of responses from various open-source models to the latest user query.
+# Your task is to synthesize these responses into a single, high-quality response in British English spelling.
+# It is crucial to critically evaluate the information provided in these responses, recognizing that some of it may be biased or incorrect.
+# Your response should not simply replicate the given answers but should offer a refined, accurate, and comprehensive reply to the instruction.
+# Ensure your response is well-structured, coherent and adheres to the highest standards of accuracy and reliability.
+# """
+#         )
+        self._name = "NoN_Synthesizer"
+        self._human_input_mode="NEVER",
+        self._system_message = """\
 You will be provided with a set of responses from various open-source models to the latest user query.
 Your task is to synthesize these responses into a single, high-quality response in British English spelling.
 It is crucial to critically evaluate the information provided in these responses, recognizing that some of it may be biased or incorrect.
 Your response should not simply replicate the given answers but should offer a refined, accurate, and comprehensive reply to the instruction.
 Ensure your response is well-structured, coherent and adheres to the highest standards of accuracy and reliability.
 """
-        )
         # Initialize usage statistics tracking
         self.total_usage_stats = []
         self.total_prompt_tokens = 0
@@ -365,6 +374,7 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
                 human_input_mode="NEVER",
                 **kwargs,
             )
+            ag.reset() # clear associated usage stats in the client
             
             # Add retry logic for generate_reply
             max_retries = 4
@@ -387,7 +397,6 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
             
             responses.append(response)
             
-            # Collect usage statistics from the agent
             ag_usage = ag.get_total_usage()
             if ag_usage:
                 usage_stats.append(ag_usage)
@@ -401,43 +410,22 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
         new_messages = messages[:-1] if messages else []
         new_messages.append({"content": merged_query, "role": "user"})
         
-        # Add retry logic for synthesizer
-        max_retries = 3
-        retry_count = 0
-        response = None
-        
-        while retry_count < max_retries:
-            try:
-                response = self.synthesizer.generate_reply(messages=new_messages)
-                break  # Success, exit the retry loop
-            except Exception as e:
-                retry_count += 1
-                print(f"API error on synthesizer (attempt {retry_count}/{max_retries}): {str(e)}")
-                if retry_count < max_retries:
-                    print("Retrying in 3 seconds...")
-                    time.sleep(3)  # 3 second pause between retries
-                else:
-                    print(f"Failed after {max_retries} attempts.")
-                    response = "[Error: Failed to get synthesized response after multiple attempts]"
-        
-        # Add synthesizer usage stats
-        ag_usage = self.synthesizer.get_total_usage()
-        if ag_usage:
-            usage_stats.append(ag_usage)
+        response = super().generate_reply(new_messages, sender, **kwargs)
+
+        # Ensure we have enough slots in total_usage_stats
+        if len(self.total_usage_stats) < len(self.llm_configs) + 1:
+            for _ in range(len(self.total_usage_stats), len(self.llm_configs) + 1):
+                self.total_usage_stats.append({})
         
         # Update total usage statistics once before returning
         for i, stats in enumerate(usage_stats):
-            # Ensure we have enough slots in total_usage_stats
-            while i >= len(self.total_usage_stats):
-                self.total_usage_stats.append({})
-                
             # Update or initialize the stats for this agent
             if not self.total_usage_stats[i]:
                 self.total_usage_stats[i] = stats.copy()
             else:
                 # Update existing stats
-                self.total_usage_stats[i]["total_cost"] = self.total_usage_stats[i].get("total_cost", 0) + stats.get("total_cost", 0)
-                
+                self.total_usage_stats[i]["total_cost"] = 0 # no point in cost tracking, JIC for log structure
+            
                 for model, data in stats.items():
                     if model != "total_cost" and isinstance(data, dict):
                         if model not in self.total_usage_stats[i]:
@@ -456,5 +444,29 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
                     self.total_completion_tokens += model_data.get("completion_tokens", 0)
                     self.total_tokens += model_data.get("total_tokens", 0)
                     self.total_cost += model_data.get("cost", 0)
+
+
+        ## Add synthesizer usage separately
+        synthesizer_usage = self.get_total_usage()
+        if not self.total_usage_stats[-1]:
+            self.total_usage_stats[-1] = synthesizer_usage
+            for model, data in self.total_usage_stats[-1].items():
+                if model != "total_cost" and isinstance(data, dict):
+                    if model not in self.total_usage_stats[i]:
+                        self.total_usage_stats[i][model] = data.copy()
+                    else:
+                        model_stats = self.total_usage_stats[i][model]
+                        model_stats["cost"] = model_stats.get("cost", 0) + data.get("cost", 0)
+                        model_stats["prompt_tokens"] = model_stats.get("prompt_tokens", 0) + data.get("prompt_tokens", 0)
+                        model_stats["completion_tokens"] = model_stats.get("completion_tokens", 0) + data.get("completion_tokens", 0)
+                        model_stats["total_tokens"] = model_stats.get("total_tokens", 0) + data.get("total_tokens", 0)
+
+        prev_synthesizer_usage = self.total_usage_stats[-1]
+        self.total_usage_stats[-1] = synthesizer_usage
+
+        self.total_prompt_tokens += synthesizer_usage.get("prompt_tokens", 0) - prev_synthesizer_usage.get("prompt_tokens", 0)
+        self.total_completion_tokens += synthesizer_usage.get("completion_tokens", 0) - prev_synthesizer_usage.get("completion_tokens", 0)
+        self.total_tokens += synthesizer_usage.get("total_tokens", 0) - prev_synthesizer_usage.get("total_tokens", 0)
+        self.total_cost += synthesizer_usage.get("cost", 0) - prev_synthesizer_usage.get("cost", 0)
 
         return response

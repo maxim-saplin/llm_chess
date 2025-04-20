@@ -11,19 +11,20 @@ _, black_config = get_llms_autogen()
 model_name = black_config["config_list"][0]["model"]
 
 # Parameters
-NUM_REPETITIONS = 19  # Set the number of games to run
-LOG_FOLDER = f"_logs/new/{model_name}-low/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+NUM_REPETITIONS = 30  # Set the number of games to run
+# LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 # LOG_FOLDER = f"_logs/llm_vs_llm/haiku_35_vs_4o_mini/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+LOG_FOLDER = f"_logs/_logs/ensenble-ai/{model_name}_t00_t07_t03/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 STORE_INDIVIDUAL_LOGS = True
 
 # ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`
 # Hyper params such as temperature are defined in `utils.py`
 
 llm_chess.throttle_delay = 0
-llm_chess.dialog_turn_delay = 1
+llm_chess.dialog_turn_delay = 0
 
-llm_chess.temp_override = "remove"
-reasoning_effort = "low" # Default is None, used with OpenAI models low, medium, or high
+# llm_chess.temp_override = "remove"
+# reasoning_effort = "low" # Default is None, used with OpenAI models low, medium, or high
 
 # r"<think>.*?</think>" - Deepseek R1 Distil
 # r"◁think▷.*?◁/think▷ - Kimi 1.5
@@ -31,7 +32,7 @@ reasoning_effort = "low" # Default is None, used with OpenAI models low, medium,
 #remove_text = None
 
 # llm_chess.white_player_type = llm_chess.PlayerType.LLM_WHITE
-# llm_chess.black_player_type = llm_chess.PlayerType.LLM_BLACK
+llm_chess.black_player_type = llm_chess.PlayerType.LLM_NON
 # llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
 # llm_chess.rotate_board_for_white = True
 
