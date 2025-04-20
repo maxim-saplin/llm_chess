@@ -11,8 +11,8 @@ _, black_config = get_llms_autogen()
 model_name = black_config["config_list"][0]["model"]
 
 # Parameters
-NUM_REPETITIONS = 30  # Set the number of games to run
-LOG_FOLDER = f"_logs/new/moa_{model_name}_t00_07_03/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+NUM_REPETITIONS = 19  # Set the number of games to run
+LOG_FOLDER = f"_logs/new/{model_name}-low/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 # LOG_FOLDER = f"_logs/llm_vs_llm/haiku_35_vs_4o_mini/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 STORE_INDIVIDUAL_LOGS = True
 
@@ -22,10 +22,8 @@ STORE_INDIVIDUAL_LOGS = True
 llm_chess.throttle_delay = 0
 llm_chess.dialog_turn_delay = 1
 
-
-# llm_chess.temp_override = "remove"
-# reasoning_effort = None # Default is None, used with OpenAI models low, medium, or high
-# llm_chess.thinking_budget = 1024 # Default is None, if set will enable extended thinking with Anthropic models, min 1024 for Claude 3.7
+llm_chess.temp_override = "remove"
+reasoning_effort = "low" # Default is None, used with OpenAI models low, medium, or high
 
 # r"<think>.*?</think>" - Deepseek R1 Distil
 # r"◁think▷.*?◁/think▷ - Kimi 1.5
