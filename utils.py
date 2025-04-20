@@ -108,6 +108,7 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
             "model": os.environ[f"ANTHROPIC_MODEL_NAME_{key}"],
             "api_key": os.environ[f"ANTHROPIC_API_KEY_{key}"],
             "api_type": "anthropic",
+            "max_tokens": 32768, # AG2 sets this value to some oddly small numbers for some providers (e.g.Anthropic)
             "timeout": 600
         }
         
@@ -125,7 +126,6 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
             # "frequency_penalty": 0.0,
             # "presence_penalty": 0.0,
             "timeout": 600,
-            "max_tokens": 32768, # AG2 sets this value to some oddly small numbers for some providers (e.g.Anthropic)
         }
 
         # Add temperature only if it is not "remove"
