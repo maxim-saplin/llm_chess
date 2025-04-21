@@ -51,6 +51,7 @@ LOGS_DIRS = [
     {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_5000": "claude-v3-7-sonnet-thinking_5000"},
     {"_logs/new/o1-2024-12-17-medium": "o1-2024-12-17-medium"},
     {"_logs/new/o1-2024-12-17-medium_openai": "o1-2024-12-17-medium"},
+    {"_logs/new/o3-2025-04-16-low-timeout1200": "o3-2025-04-16-low"},
     # "_logs/new"
 ]
 
