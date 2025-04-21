@@ -1,3 +1,4 @@
+import copy
 import random
 import time  # Add this import
 import re
@@ -383,7 +384,10 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
             
             while retry_count < max_retries:
                 try:
+                    start_time = time.time()
                     response = ag.generate_reply(messages)
+                    end_time = time.time()
+                    self.accumulated_reply_time_seconds += (end_time - start_time)
                     break  # Success, exit the retry loop
                 except Exception as e:
                     retry_count += 1
@@ -421,16 +425,11 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
         for i, stats in enumerate(usage_stats):
             # Update or initialize the stats for this agent
             if not self.total_usage_stats[i]:
-                self.total_usage_stats[i] = stats.copy()
+                self.total_usage_stats[i] = copy.deepcopy(stats)
             else:
-                # Update existing stats
-                self.total_usage_stats[i]["total_cost"] = 0 # no point in cost tracking, JIC for log structure
-            
                 for model, data in stats.items():
                     if model != "total_cost" and isinstance(data, dict):
                         if model not in self.total_usage_stats[i]:
-                            self.total_usage_stats[i][model] = data.copy()
-                        else:
                             model_stats = self.total_usage_stats[i][model]
                             model_stats["cost"] = model_stats.get("cost", 0) + data.get("cost", 0)
                             model_stats["prompt_tokens"] = model_stats.get("prompt_tokens", 0) + data.get("prompt_tokens", 0)
@@ -447,26 +446,26 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
 
 
         ## Add synthesizer usage separately
-        synthesizer_usage = self.get_total_usage()
+        synthesizer_usage = copy.deepcopy(self.get_total_usage())
+
         if not self.total_usage_stats[-1]:
-            self.total_usage_stats[-1] = synthesizer_usage
+            self.total_usage_stats[-1] = copy.deepcopy(synthesizer_usage)
             for model, data in self.total_usage_stats[-1].items():
                 if model != "total_cost" and isinstance(data, dict):
-                    if model not in self.total_usage_stats[i]:
-                        self.total_usage_stats[i][model] = data.copy()
-                    else:
-                        model_stats = self.total_usage_stats[i][model]
-                        model_stats["cost"] = model_stats.get("cost", 0) + data.get("cost", 0)
-                        model_stats["prompt_tokens"] = model_stats.get("prompt_tokens", 0) + data.get("prompt_tokens", 0)
-                        model_stats["completion_tokens"] = model_stats.get("completion_tokens", 0) + data.get("completion_tokens", 0)
-                        model_stats["total_tokens"] = model_stats.get("total_tokens", 0) + data.get("total_tokens", 0)
+                        model_stats = self.total_usage_stats[-1][model]
+                        model_stats["cost"] = 0
+                        model_stats["prompt_tokens"] = 0
+                        model_stats["completion_tokens"] = 0
+                        model_stats["total_tokens"] = 0
 
         prev_synthesizer_usage = self.total_usage_stats[-1]
         self.total_usage_stats[-1] = synthesizer_usage
 
-        self.total_prompt_tokens += synthesizer_usage.get("prompt_tokens", 0) - prev_synthesizer_usage.get("prompt_tokens", 0)
-        self.total_completion_tokens += synthesizer_usage.get("completion_tokens", 0) - prev_synthesizer_usage.get("completion_tokens", 0)
-        self.total_tokens += synthesizer_usage.get("total_tokens", 0) - prev_synthesizer_usage.get("total_tokens", 0)
-        self.total_cost += synthesizer_usage.get("cost", 0) - prev_synthesizer_usage.get("cost", 0)
+        for model, data in self.total_usage_stats[-1].items():
+            if model != "total_cost" and isinstance(data, dict):
+                self.total_prompt_tokens += synthesizer_usage[model].get("prompt_tokens", 0) - prev_synthesizer_usage[model].get("prompt_tokens", 0)
+                self.total_completion_tokens += synthesizer_usage[model].get("completion_tokens", 0) - prev_synthesizer_usage[model].get("completion_tokens", 0)
+                self.total_tokens += synthesizer_usage[model].get("total_tokens", 0) - prev_synthesizer_usage[model].get("total_tokens", 0)
+                self.total_cost += synthesizer_usage[model].get("cost", 0) - prev_synthesizer_usage[model].get("cost", 0)
 
         return response
