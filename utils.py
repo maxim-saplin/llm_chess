@@ -175,10 +175,10 @@ def generate_game_stats(
     """Generate game statistics."""
     # Determine model name and usage stats for white player
     if hasattr(player_white, 'total_prompt_tokens') and hasattr(player_white, 'total_completion_tokens'):
-        white_model = "moa"
+        white_model = "non"
         white_usage = {
             "total_cost": player_white.total_cost if hasattr(player_white, 'total_cost') else 0,
-            "moa": {
+            "non": {
                 "cost": player_white.total_cost if hasattr(player_white, 'total_cost') else 0,
                 "prompt_tokens": player_white.total_prompt_tokens,
                 "completion_tokens": player_white.total_completion_tokens,
@@ -196,10 +196,10 @@ def generate_game_stats(
 
     # Determine model name and usage stats for black player
     if hasattr(player_black, 'total_prompt_tokens') and hasattr(player_black, 'total_completion_tokens'):
-        black_model = "moa"
+        black_model = "non"
         black_usage = {
             "total_cost": player_black.total_cost if hasattr(player_black, 'total_cost') else 0,
-            "moa": {
+            "non": {
                 "cost": player_black.total_cost if hasattr(player_black, 'total_cost') else 0,
                 "prompt_tokens": player_black.total_prompt_tokens,
                 "completion_tokens": player_black.total_completion_tokens,
