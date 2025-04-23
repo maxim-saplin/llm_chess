@@ -251,6 +251,34 @@ def generate_game_stats(
         },
     }
     
+    # Add usage_stats_per_non_agent for white player if it's a NoN agent
+    if hasattr(player_white, 'usage_stats_per_agent'):
+        stats["usage_stats_per_non_agent_white"] = []
+        for agent_stats in player_white.usage_stats_per_agent:
+            # Extract simplified stats from each agent
+            for model_name, model_data in agent_stats.items():
+                if model_name != "total_cost" and isinstance(model_data, dict):
+                    stats["usage_stats_per_non_agent_white"].append({
+                        "prompt_tokens": model_data.get("prompt_tokens", 0),
+                        "completion_tokens": model_data.get("completion_tokens", 0),
+                        "total_tokens": model_data.get("total_tokens", 0)
+                    })
+                    break  # Only take the first model data
+    
+    # Add usage_stats_per_non_agent for black player if it's a NoN agent
+    if hasattr(player_black, 'usage_stats_per_agent'):
+        stats["usage_stats_per_non_agent_black"] = []
+        for agent_stats in player_black.usage_stats_per_agent:
+            # Extract simplified stats from each agent
+            for model_name, model_data in agent_stats.items():
+                if model_name != "total_cost" and isinstance(model_data, dict):
+                    stats["usage_stats_per_non_agent_black"].append({
+                        "prompt_tokens": model_data.get("prompt_tokens", 0),
+                        "completion_tokens": model_data.get("completion_tokens", 0),
+                        "total_tokens": model_data.get("total_tokens", 0)
+                    })
+                    break  # Only take the first model data
+    
     # Add PGN string if available
     if pgn_string:
         stats["pgn"] = pgn_string

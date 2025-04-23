@@ -307,6 +307,22 @@ class ChessEngineStockfishAgent(GameAgent):
 
 
 class NonGameAgent(GameAgent):
+    """
+    A Network-of-Networks (NoN) GameAgent that routes queries through multiple LLMs and synthesizes their responses.
+
+    This agent is designed to collect answers from a set of large language models (LLMs), critically evaluate their outputs,
+    and produce a single, high-quality synthesized response. It tracks usage statistics for each underlying agent and
+    is intended for scenarios where ensemble reasoning or model comparison is desired.
+
+    Attributes:
+        llm_config: the syntehesizer model
+        llm_configs (List[Dict]): List of configuration dictionaries for the LLMs used by this agent.
+        usage_stats_per_agent (List[Dict]): Tracks usage statistics for each LLM agent. The last element in the list is the synthesizer. First and seconnd correspond to models in llm_configs.
+        total_prompt_tokens (int): Total prompt tokens used across all agents.
+        total_completion_tokens (int): Total completion tokens used across all agents.
+        total_tokens (int): Total tokens used across all agents.
+        total_cost (float): Total cost incurred across all agents.
+    """
 
     def __init__(
         self,
@@ -347,7 +363,7 @@ Your response should not simply replicate the given answers but should offer a r
 Ensure your response is well-structured, coherent and adheres to the highest standards of accuracy and reliability.
 """
         # Initialize usage statistics tracking
-        self.total_usage_stats = []
+        self.usage_stats_per_agent = []
         self.total_prompt_tokens = 0
         self.total_completion_tokens = 0
         self.total_tokens = 0
@@ -417,20 +433,20 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
         response = super().generate_reply(new_messages, sender, **kwargs)
 
         # Ensure we have enough slots in total_usage_stats
-        if len(self.total_usage_stats) < len(self.llm_configs) + 1:
-            for _ in range(len(self.total_usage_stats), len(self.llm_configs) + 1):
-                self.total_usage_stats.append({})
+        if len(self.usage_stats_per_agent) < len(self.llm_configs) + 1:
+            for _ in range(len(self.usage_stats_per_agent), len(self.llm_configs) + 1):
+                self.usage_stats_per_agent.append({})
         
         # Update total usage statistics once before returning
         for i, stats in enumerate(usage_stats):
             # Update or initialize the stats for this agent
-            if not self.total_usage_stats[i]:
-                self.total_usage_stats[i] = copy.deepcopy(stats)
+            if not self.usage_stats_per_agent[i]:
+                self.usage_stats_per_agent[i] = copy.deepcopy(stats)
             else:
                 for model, data in stats.items():
                     if model != "total_cost" and isinstance(data, dict):
-                        if model not in self.total_usage_stats[i]:
-                            model_stats = self.total_usage_stats[i][model]
+                        if model not in self.usage_stats_per_agent[i]:
+                            model_stats = self.usage_stats_per_agent[i][model]
                             model_stats["cost"] = model_stats.get("cost", 0) + data.get("cost", 0)
                             model_stats["prompt_tokens"] = model_stats.get("prompt_tokens", 0) + data.get("prompt_tokens", 0)
                             model_stats["completion_tokens"] = model_stats.get("completion_tokens", 0) + data.get("completion_tokens", 0)
@@ -448,20 +464,20 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
         ## Add synthesizer usage separately
         synthesizer_usage = copy.deepcopy(self.get_total_usage())
 
-        if not self.total_usage_stats[-1]:
-            self.total_usage_stats[-1] = copy.deepcopy(synthesizer_usage)
-            for model, data in self.total_usage_stats[-1].items():
+        if not self.usage_stats_per_agent[-1]:
+            self.usage_stats_per_agent[-1] = copy.deepcopy(synthesizer_usage)
+            for model, data in self.usage_stats_per_agent[-1].items():
                 if model != "total_cost" and isinstance(data, dict):
-                        model_stats = self.total_usage_stats[-1][model]
+                        model_stats = self.usage_stats_per_agent[-1][model]
                         model_stats["cost"] = 0
                         model_stats["prompt_tokens"] = 0
                         model_stats["completion_tokens"] = 0
                         model_stats["total_tokens"] = 0
 
-        prev_synthesizer_usage = self.total_usage_stats[-1]
-        self.total_usage_stats[-1] = synthesizer_usage
+        prev_synthesizer_usage = self.usage_stats_per_agent[-1]
+        self.usage_stats_per_agent[-1] = synthesizer_usage
 
-        for model, data in self.total_usage_stats[-1].items():
+        for model, data in self.usage_stats_per_agent[-1].items():
             if model != "total_cost" and isinstance(data, dict):
                 self.total_prompt_tokens += synthesizer_usage[model].get("prompt_tokens", 0) - prev_synthesizer_usage[model].get("prompt_tokens", 0)
                 self.total_completion_tokens += synthesizer_usage[model].get("completion_tokens", 0) - prev_synthesizer_usage[model].get("completion_tokens", 0)

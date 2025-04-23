@@ -589,6 +589,65 @@ class TestRandomVsNonGame(_MockServerTestCaseBase):
         self.assertGreater(game_stats["usage_stats"]["black"]["non"]["completion_tokens"], 0)
         self.assertGreater(game_stats["usage_stats"]["black"]["non"]["total_tokens"], 0)
 
+    def test_non_per_agent_usage_stats(self):
+        """
+        Test that per-agent usage stats are correctly recorded in the JSON log
+        for the NoN agent and absent for the non-NoN agent.
+        """
+        # Ensure the 'non' scenario is active (done in setUp)
+        llm_chess.max_game_moves = 2 # Short game
+
+        # Run the game and ensure logging happens to the temp directory
+        game_stats_runtime, player_white, player_black = run(log_dir=self.temp_dir)
+        self.assertIsNotNone(game_stats_runtime, "Game did not run successfully.")
+        self.assertIsNotNone(self.temp_dir, "Temp directory not set.")
+
+        # Construct the expected log file path
+        log_filepath = os.path.join(self.temp_dir, f"{game_stats_runtime['time_started']}.json")
+        self.assertTrue(os.path.exists(log_filepath), f"Expected game log JSON not found at {log_filepath}")
+
+        # Read the logged JSON data
+        with open(log_filepath, "r") as f:
+            logged_stats = json.load(f)
+
+        # --- Verify JSON Structure ---
+
+        # Verify white player (Random) does NOT have per-agent stats in the LOG FILE
+        self.assertNotIn("usage_stats_per_non_agent_white", logged_stats, 
+                         "Logged JSON: White player (Random) should not have per-agent stats.")
+        self.assertFalse(hasattr(player_white, 'usage_stats_per_agent')) # Check runtime object too
+
+        # Verify black player (NoN) DOES have per-agent stats in the LOG FILE
+        self.assertIn("usage_stats_per_non_agent_black", logged_stats,
+                      "Logged JSON: Black player (NoN) should have per-agent stats.")
+        self.assertTrue(hasattr(player_black, 'usage_stats_per_agent')) # Check runtime object too
+        
+        per_agent_stats_black_logged = logged_stats["usage_stats_per_non_agent_black"]
+        self.assertIsInstance(per_agent_stats_black_logged, list, "Logged JSON: 'usage_stats_per_non_agent_black' should be a list.")
+        
+        # Check the length matches number of LLMs + Synthesizer based on the runtime player object
+        self.assertTrue(hasattr(player_black, 'llm_configs'), "Runtime player_black missing 'llm_configs'.")
+        expected_num_agents = len(player_black.llm_configs) + 1
+        self.assertEqual(len(per_agent_stats_black_logged), expected_num_agents, 
+                         f"Logged JSON: Expected stats for {len(player_black.llm_configs)} LLMs + 1 Synthesizer, found {len(per_agent_stats_black_logged)}.") 
+
+        # Verify structure of each agent's stats within the LOG FILE
+        for i, agent_stat_logged in enumerate(per_agent_stats_black_logged):
+            self.assertIsInstance(agent_stat_logged, dict, f"Logged JSON: Agent stat at index {i} is not a dict.")
+            self.assertIn("prompt_tokens", agent_stat_logged, f"Logged JSON: Missing 'prompt_tokens' in agent stat at index {i}.")
+            self.assertIn("completion_tokens", agent_stat_logged, f"Logged JSON: Missing 'completion_tokens' in agent stat at index {i}.")
+            self.assertIn("total_tokens", agent_stat_logged, f"Logged JSON: Missing 'total_tokens' in agent stat at index {i}.")
+            
+            # Check if tokens are non-negative in the LOG FILE
+            self.assertIsInstance(agent_stat_logged["prompt_tokens"], int, f"Logged JSON: 'prompt_tokens' not an int at index {i}.")
+            self.assertIsInstance(agent_stat_logged["completion_tokens"], int, f"Logged JSON: 'completion_tokens' not an int at index {i}.")
+            self.assertIsInstance(agent_stat_logged["total_tokens"], int, f"Logged JSON: 'total_tokens' not an int at index {i}.")
+            self.assertGreaterEqual(agent_stat_logged["prompt_tokens"], 0, f"Logged JSON: 'prompt_tokens' negative at index {i}.")
+            self.assertGreaterEqual(agent_stat_logged["completion_tokens"], 0, f"Logged JSON: 'completion_tokens' negative at index {i}.")
+            self.assertGreaterEqual(agent_stat_logged["total_tokens"], 0, f"Logged JSON: 'total_tokens' negative at index {i}.")
+            self.assertEqual(agent_stat_logged["total_tokens"], agent_stat_logged["prompt_tokens"] + agent_stat_logged["completion_tokens"],
+                             f"Logged JSON: Total tokens mismatch at index {i}.")
+
 
 if __name__ == "__main__":
     unittest.main()
