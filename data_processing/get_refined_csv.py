@@ -53,6 +53,8 @@ LOGS_DIRS = [
     {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_5000": "claude-v3-7-sonnet-thinking_5000"},
     {"_logs/new/o1-2024-12-17-medium": "o1-2024-12-17-medium"},
     {"_logs/new/o1-2024-12-17-medium_openai": "o1-2024-12-17-medium"},
+    {"_logs/ensemble-ai/gpt-4.1-mini-2025-04-14_t00_t07_t03": "non_gpt-4.1-mini-2025-04-14_t00_t07_t03"},
+    {"_logs/ensemble-ai/gpt-4.1-nano-2025-04-14_t00_t07_t03": "non-gpt-4.1-nano-2025-04-14_t00_t07_t03"},
     # "_logs/new"
 ]
 
