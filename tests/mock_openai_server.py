@@ -11,7 +11,7 @@ app = FastAPI()
 
 USE_THINKING = True
 CALL_COUNT = 0
-SCENARIO_TYPE = "default"  # Can be: "default", "wrong_actions", "max_turns", "max_moves", "invalid_action", "non"
+SCENARIO_TYPE = "default"  # Can be: "default", "wrong_actions", "max_turns", "max_moves", "invalid_action", "non", "non_max_turns", "non_max_moves"
 
 class ChatCompletionRequest(BaseModel):
     model: str
@@ -38,6 +38,8 @@ class MockChessBot:
             "max_moves":      self._handle_max_moves,
             "invalid_action": self._handle_invalid_action,
             "non":            self._handle_non,
+            "non_max_turns":  self._handle_non_max_turns,
+            "non_max_moves":  self._handle_non_max_moves,
             "default":        self._handle_default,
         }
         handler = handlers.get(SCENARIO_TYPE, self._handle_default)
@@ -49,6 +51,41 @@ class MockChessBot:
 
     def _handle_max_turns(self, messages: List[dict]) -> str:
         return "get_current_board"
+
+    def _handle_non_max_turns(self, messages: List[dict]) -> str:
+        # For NoN testing: first two calls are intermediate steps, every third is relevant
+        if CALL_COUNT % 3 != 0:
+            return "non"  # Intermediate step
+        return "get_current_board"  # Actual response that will trigger max turns
+
+    def _handle_non_max_moves(self, messages: List[dict]) -> str:
+        """Handle the NoN max moves scenario by making valid moves to reach MAX_MOVES termination."""
+        # The first two calls of every three should return "non" (intermediate steps)
+        if CALL_COUNT % 3 != 0:
+            return "non"  # Return "non" for the first two calls of every three
+            
+        # Keep a static counter to track actual chess move flow (every 3rd call)
+        if not hasattr(self, '_move_counter'):
+            self._move_counter = 0
+        
+        # Increment the counter for every 3rd call (actual chess logic)
+        self._move_counter += 1
+        
+        # On even counts (2, 4, 6...), make a move. On odd counts (1, 3, 5...), get legal moves
+        if self._move_counter % 2 == 0:  # Even counts: make a move
+            # Extract legal moves from the last message
+            last_message = messages[-1]["content"]
+            moves = []
+            for part in last_message.split(","):
+                move = part.strip()
+                if self._is_valid_move(move):
+                    moves.append(move)
+            
+            if moves:
+                return f"make_move {random.choice(moves)}"
+        
+        # On odd counts (or if no valid moves found above): get legal moves
+        return "get_legal_moves"
 
     def _handle_max_moves(self, messages: List[dict]) -> str:
         last = messages[-1]["content"].strip()
@@ -146,6 +183,10 @@ async def reset_server_state(request: Request):
         CALL_COUNT = 0
         USE_THINKING = data.get("useThinking", False)
         SCENARIO_TYPE = data.get("scenarioType", "default")
+        
+        # Reset the chess bot's move counter if it exists
+        if hasattr(chess_bot, '_move_counter'):
+            chess_bot._move_counter = 0
         
         return {"status": "success", "message": "Server state has been reset."}
     except Exception as e:

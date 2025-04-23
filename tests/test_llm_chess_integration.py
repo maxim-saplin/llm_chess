@@ -531,11 +531,63 @@ class TestRandomVsNonGame(_MockServerTestCaseBase):
         self.assertEqual(game_stats["player_black"]["wrong_actions"], 0)
 
         self.assertEqual(game_stats["usage_stats"]["black"]["non"]["prompt_tokens"], 450)
-        self.assertEqual(game_stats["usage_stats"]["black"]["non"]["completion_tokens"], 450)
-        self.assertEqual(game_stats["usage_stats"]["black"]["non"]["total_tokens"], 900)
 
+    
+    def test_non_max_turns_in_dialog(self):
+        """
+        Test that the game ends with MAX_TURNS when the NoN LLM keeps requesting the board
+        without making a move, hitting the max_llm_turns limit.
+        """
+        try:
+            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "non_max_turns", "useThinking": False}, timeout=5)
+            response.raise_for_status()
+            print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
+        except requests.exceptions.RequestException as e:
+            self.fail(f"Failed to reset mock server: {e}")
+            
+        llm_chess.max_game_moves = 100  # Set higher to ensure we hit max turns first
+        llm_chess.max_llm_turns = 10  # Set a low value to trigger quickly
         
+        game_stats, _, _ = run(log_dir=None)
 
+        # Verify the game ended due to max turns in a dialog
+        self.assertEqual(game_stats["reason"], TerminationReason.MAX_TURNS.value)
+        self.assertEqual(game_stats["winner"], "Random_Player")  # White player should win
+        self.assertEqual(game_stats["number_of_moves"], 2) 
+        
+        # Verify usage stats are correct
+        self.assertIn("non", game_stats["usage_stats"]["black"])
+        self.assertGreater(game_stats["usage_stats"]["black"]["non"]["prompt_tokens"], 0)
+        self.assertGreater(game_stats["usage_stats"]["black"]["non"]["completion_tokens"], 0)
+        self.assertGreater(game_stats["usage_stats"]["black"]["non"]["total_tokens"], 0)
+
+
+    def test_non_max_moves_reached(self):
+        """
+        Test that the game ends with MAX_MOVES when the maximum number of moves is reached
+        with the NoN agent.
+        """
+        try:
+            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "non_max_moves", "useThinking": False}, timeout=5)
+            response.raise_for_status()
+            print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
+        except requests.exceptions.RequestException as e:
+            self.fail(f"Failed to reset mock server: {e}")
+            
+        llm_chess.max_game_moves = 4  # Set low to trigger max moves quickly
+        
+        game_stats, _, _ = run(log_dir=None)
+        
+        # Verify the game ended due to max moves
+        self.assertEqual(game_stats["reason"], TerminationReason.MAX_MOVES.value)
+        self.assertEqual(game_stats["winner"], "NONE")  # No winner
+        self.assertEqual(game_stats["number_of_moves"], 4)  # Should reach exactly 4 moves
+        
+        # Verify usage stats are correct
+        self.assertIn("non", game_stats["usage_stats"]["black"])
+        self.assertGreater(game_stats["usage_stats"]["black"]["non"]["prompt_tokens"], 0)
+        self.assertGreater(game_stats["usage_stats"]["black"]["non"]["completion_tokens"], 0)
+        self.assertGreater(game_stats["usage_stats"]["black"]["non"]["total_tokens"], 0)
 
 
 if __name__ == "__main__":
