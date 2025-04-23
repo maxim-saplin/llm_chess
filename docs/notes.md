@@ -1,3 +1,32 @@
+# April 21, 2025: A pack of models, new reasoning models' records
+
+Over the past weeks I've added plenty of models. The most exciting results have been brought by OpenAI `o3` and `o4-mini` reasoning models:
+
+- `o4-mini` demonstrated solid performance at a reasonable cost. Curiously higher effort levels showed worse performance while showing little variation in tokens consumed. Is this unresponsiveness to reasoning effort a bug or a feature? In any way `o4-mini-low` is the best value for money at the moment: 86.9% Win/Loss score at an average cost of a game of $1 vs `o1-2024-12-17-low` scoring 78.7% and one game costing $13.5. And the models demonstrated perfect prompt stability showcasing 100% game duration.
+- `o3-low` was on its way to saturate the leaderboard and score 100% wins. It showed very solid chess performance with an average game duration of 36 moves - coming close to Stockfish v17 at max skill level of 20 (on average it took 28 moves for the Stockfish to win over random player). Yet the games were occasionally interrupted by timeout errors. I tried increasing the default 10 minute timeout to 20 minutes to mitigate the breakdowns and still out of 53 games 5 games were halted due to a timeout giving the model 90.6% Win/Loss and just 90% Game Duration. Treating timeouts as errors as the model went into a failure mode mid game refusing to return an answer within a reasonable timeframe. Will the models struggle with certain board positions and fail to saturate the bench (100% Win/Loss) due to occasional breakdowns? Let's see.
+- `o1-2024-12-17-medium` - the model takes #3 in the leaderboard. It had one loss due to rejecting to reply to one of the positions "Invalid prompt: your prompt was flagged as potentially violating our usage policy. Please try again with a different prompt" and had a few Draws. While it seems very close to `o3` it actually demonstrated way worse chess performance with an average game duration of 95 moves (it took it longer to win).
+
+Rest of OpenAI didn't show any meaningful chess performance, typical non-reasoning transformer models:
+
+- `gpt-4.5-preview-2025-02-27` while being extremely expensive didn't excel in chess, it just moved pieces on the board without any progress towards a win. 100% game duration is not a surprise (same durability as with GPT-4 from 2023)
+- `GPT 4.1` didn't qualify, plenty of model errors, chess prompts triggered multiple failure modes
+- `GPT 4.1 Mini` is a good progress bumping the Game duration over its predecessor `GPT-4o Mini` and coming close to `Claude 3.5 Haiku`
+- `GPT 4.1 Nano` didn't impress, poor instruction following and low game duration
+
+Anthropic `Claude 3.7 Extended Thinking` - this one was interesting.
+
+- Tested 1024, 2048 and 5000 thinking budgets
+- Overall the results didn't impress. If you look at the matrix view the models took places right below `Deepseek R1` in terms of chess performance while demonstrating way better game duration/instruction following. 
+- As in the [Aider Leaderboard](https://aider.chat/docs/leaderboards/) where `Claude 3.7` didn't see much use from enabling extended thinking (scored 60% non-thinking vs 65% with 32k thinking budget), extended thinking bumped the Win/Loss score by a mere 17% (from 40.5% to 57.3%)
+- There's an interesting lack of progression with more thinking budget. The Matrix view even demonstrated slight degradation in chess performance with more thinking tokens (kind of similar to `o4-mini`).
+
+More models:
+
+- `LLama 4 Scout` through Cerebras was bad in instruction following getting just 53.6% in game duration - currently `Gemma 2 27B` is above in LLama. Though I have my suspicions that Cerebras/Groq models served via custom hardware demonstrate worse performance compared to other inference options (when I tested `LLama 3` through Groq and Cerebras their results were worse compared to local runs via llama.cpp)
+- `Gemma 3` didn't impress, poor instruction following/game duration metric
+- A new kid on the block `dLLM` (Diffusion LLM) `Mercury Coder Small` - that was an exciting experiment, testing a non-transformer LLM. Poor instruction following yet it is ahead of the original `GPT 3.5` which I think is the great result for a new model architecture.
+- `deepseek-chat-v3-0324` is marginally better than previous version, still bad with communication protocol
+
 # April 7, 2025: Matrix View
 
 In addition to a Leaderboard offering simple ranking along the Win/Rate axis (capturing both instruction following/prompt stability and chess proficiency), the 2D view offers a look at models through:

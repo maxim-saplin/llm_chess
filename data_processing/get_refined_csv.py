@@ -55,6 +55,7 @@ LOGS_DIRS = [
     {"_logs/new/o1-2024-12-17-medium_openai": "o1-2024-12-17-medium"},
     {"_logs/ensemble-ai/gpt-4.1-mini-2025-04-14_t00_t07_t03": "non_gpt-4.1-mini-2025-04-14_t00_t07_t03"},
     {"_logs/ensemble-ai/gpt-4.1-nano-2025-04-14_t00_t07_t03": "non-gpt-4.1-nano-2025-04-14_t00_t07_t03"},
+    {"_logs/new/o3-2025-04-16-low-timeout1200": "o3-2025-04-16-low"},
     # "_logs/new"
 ]
 
