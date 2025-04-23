@@ -26,18 +26,68 @@ class MockChessBot:
     def __init__(self):
         self.flip_flag = True
         
-    def _generate_default_reply(self, messages: List[dict]) -> str:
-        """Generates a reply based on the default logic."""
+    def generate_reply(self, messages: List[dict]) -> str:
+        global CALL_COUNT, SCENARIO_TYPE
+        # increment the incoming-call counter
+        CALL_COUNT += 1
+
+        # dispatch based on the active scenario
+        handlers = {
+            "wrong_actions": self._handle_wrong_actions,
+            "max_turns":      self._handle_max_turns,
+            "max_moves":      self._handle_max_moves,
+            "invalid_action": self._handle_invalid_action,
+            "non":            self._handle_non,
+            "default":        self._handle_default,
+        }
+        handler = handlers.get(SCENARIO_TYPE, self._handle_default)
+        return handler(messages)
+
+    # ---- scenario-specific methods ----
+    def _handle_wrong_actions(self, messages: List[dict]) -> str:
+        return "I'm thinking about my next move..."
+
+    def _handle_max_turns(self, messages: List[dict]) -> str:
+        return "get_current_board"
+
+    def _handle_max_moves(self, messages: List[dict]) -> str:
+        last = messages[-1]["content"].strip()
+        if self.flip_flag:
+            self.flip_flag = False
+            return "get_current_board"
+        moves = last.split(",")
+        if moves and all(self._is_valid_move(m) for m in moves):
+            choice = random.choice(moves)
+            self.flip_flag = True
+            return f"make_move {choice}"
+        return "get_legal_moves"
+
+    def _handle_invalid_action(self, messages: List[dict]) -> str:
+        # call #1 → totally invalid
+        if CALL_COUNT == 1:
+            return "some_invalid_action"
+        # call #2 → malformed move
+        if CALL_COUNT == 2:
+            return "make_move d4d5"
+        # afterwards fallback to default logic
+        return self._handle_default(messages)
+
+    def _handle_non(self, messages: List[dict]) -> str:
+        # first two of every three calls: "non"
+        if CALL_COUNT % 3 in (1, 2):
+            return "non"
+        return self._handle_default(messages)
+
+    def _handle_default(self, messages: List[dict]) -> str:
+        """Default behavior for normal chess moves."""
         last_message = messages[-1]["content"].strip()
         try:
             if self.flip_flag:
                 self.flip_flag = False
                 return "get_current_board" if not USE_THINKING else "<think>Thinking about my move...</think>get_current_board"
             
-            # NoN, remove 'User query\\>\n\n ' and everything after '\n\nModel 1' if present
-            # This will extract only the legal moves string
+            # NoN, extract just the legal moves from the message
             if last_message.startswith("User query\\>"):
-                # Find the start of the moves (after 'User query\\>\n\n ')
                 user_query_marker = "User query\\>\n\n "
                 model1_marker = "\n\nModel 1"
                 start_idx = last_message.find(user_query_marker)
@@ -48,8 +98,8 @@ class MockChessBot:
                         last_message = last_message[start_idx:end_idx].strip()
                     else:
                         last_message = last_message[start_idx:].strip()
-            legal_moves = last_message.split(",")
             
+            legal_moves = last_message.split(",")
             if legal_moves and all(self._is_valid_move(move) for move in legal_moves):
                 random_move = random.choice(legal_moves)
                 self.flip_flag = True
@@ -59,55 +109,6 @@ class MockChessBot:
         
         return "get_legal_moves" if not USE_THINKING else "<think>Thinking about my move...</think>get_legal_moves"
 
-    def generate_reply(self, messages: List[dict]) -> str:
-        global CALL_COUNT, SCENARIO_TYPE
-        last_message = messages[-1]["content"].strip()
-        CALL_COUNT += 1
-
-        # Handle different scenarios
-        if SCENARIO_TYPE == "wrong_actions":
-            # Always return invalid responses to trigger too many wrong actions
-            # Return something that's not a valid action format
-            return "I'm thinking about my next move..."
-                
-        elif SCENARIO_TYPE == "max_turns":
-            # Keep requesting the board without making a move to hit max_turns
-            return "get_current_board"
-            
-        elif SCENARIO_TYPE == "max_moves":
-            # Normal behavior but we'll let the test run until max_moves is reached
-            if self.flip_flag:
-                self.flip_flag = False
-                return "get_current_board"
-            
-            legal_moves = last_message.split(",")
-            if legal_moves and all(self._is_valid_move(move) for move in legal_moves):
-                random_move = random.choice(legal_moves)
-                self.flip_flag = True
-                return f"make_move {random_move}" 
-            
-            return "get_legal_moves"
-            
-        elif SCENARIO_TYPE == "invalid_action":
-            if CALL_COUNT == 1:
-                return "some_invalid_action"
-            elif CALL_COUNT == 2:
-                # Make an invalid move format on the second call
-                return "make_move d4d5" # Assuming this format is invalid based on context
-        
-        elif SCENARIO_TYPE == "non":
-            if CALL_COUNT % 3 == 1 or CALL_COUNT % 3 == 2:
-                return "non"
-            else: # Every 3rd call
-                # Reset flip_flag state for the default logic if needed, 
-                # assuming the 3rd call should behave like the *first* default call.
-                # If it should continue the default sequence state, remove this line.
-                # self.flip_flag = True # Or manage state more carefully if needed
-                return self._generate_default_reply(messages)
-
-        # Default behavior uses the helper method
-        return self._generate_default_reply(messages)
-    
     def _is_valid_move(self, move: str) -> bool:
         try:
             return bool(re.match(r'^[a-h][1-8][a-h][1-8][qrbn]?$', move.strip()))
