@@ -18,15 +18,38 @@ from tests.mock_openai_server import start_server
 # White player settings
 os.environ["MODEL_KIND_W"] = "azure"
 os.environ["AZURE_OPENAI_VERSION_W"] = "2024-02-15-preview"
-os.environ["AZURE_OPENAI_ENDPOINT_W"] = "https://your-endpoint.openai.azure.com"
+os.environ["AZURE_OPENAI_ENDPOINT_W"] = "http://localhost:8000/v1"
 os.environ["AZURE_OPENAI_KEY_W"] = "your-azure-key"
 os.environ["AZURE_OPENAI_DEPLOYMENT_W"] = "gpt-4o"
 
 # Black player settings
 os.environ["MODEL_KIND_B"] = "local"
-os.environ["LOCAL_MODEL_NAME_B"] = "llama-3.1-70b"
-os.environ["LOCAL_BASE_URL_B"] = "http://localhost:8000/v1"
-os.environ["LOCAL_API_KEY_B"] = "your-local-key"
+os.environ["LOCAL_MODEL_NAME_B"] = "gpt-3.5-turbo"
+os.environ["LOCAL_BASE_URL_B"] = "http://localhost:8080/v1"
+os.environ["LOCAL_API_KEY_B"] = "mock-key"
+
+class _MockServerTestCaseBase(unittest.TestCase):
+    """Base class for tests requiring a mock OpenAI server."""
+    server_process: multiprocessing.Process | None = None
+    temp_dir: str | None = None
+
+    @classmethod
+    def setUpClass(cls):
+        # Start mock OpenAI server in a separate process
+        cls.server_process = multiprocessing.Process(target=start_server, args=(8080,))
+        cls.server_process.start()
+        time.sleep(2)  # Wait for server to start
+        cls.temp_dir = tempfile.mkdtemp(prefix="test_llm_chess_integration_")
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls.server_process and cls.server_process.is_alive(): # Keep basic check if process exists
+            cls.server_process.terminate()
+            cls.server_process.join()
+            
+        if cls.temp_dir and os.path.exists(cls.temp_dir): # Keep basic check if dir exists
+            shutil.rmtree(cls.temp_dir, ignore_errors=True)
+        cls.temp_dir = None # Ensure temp_dir is reset
 
 class TestRandomVsRandomGame(unittest.TestCase):
     def setUp(self):
@@ -70,35 +93,16 @@ class TestRandomVsRandomGame(unittest.TestCase):
         self.assertEqual(game_stats["reason"], TerminationReason.MAX_MOVES.value)
 
 
-class TestLLMvsRandomGame(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # Start mock OpenAI server in a separate process
-        cls.server_process = multiprocessing.Process(target=start_server, args=(8080,))
-        cls.server_process.start()
-        time.sleep(2)  # Wait for server to start
-        
-        # Configure environment for local OpenAI-compatible endpoint
-        os.environ["MODEL_KIND_B"] = "local"
-        os.environ["LOCAL_MODEL_NAME_B"] = "gpt-3.5-turbo"
-        os.environ["LOCAL_BASE_URL_B"] = "http://localhost:8080/v1"
-        os.environ["LOCAL_API_KEY_B"] = "mock-key"
-        cls.temp_dir = tempfile.mkdtemp(prefix="test_llm_chess_integration_")
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.server_process.terminate()
-        cls.server_process.join()
-        shutil.rmtree(cls.temp_dir, ignore_errors=True)
-
+class TestLLMvsRandomGame(_MockServerTestCaseBase):
     def setUp(self):
         # Reset the mock OpenAI server state before each test
         try:
-            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "default", "useThinking": False}, timeout=5) # Add timeout
-            response.raise_for_status() # Raise exception for bad status codes (4xx or 5xx)
+            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "default", "useThinking": False}, timeout=10) 
+            response.raise_for_status() 
             print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:
-            print(f"DEBUG: Failed to reset mock server: {e}")
+            self.fail(f"Failed to reset mock server: {e}") 
+            
         # Configure game settings for testing
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
         llm_chess.black_player_type = PlayerType.LLM_BLACK
@@ -486,6 +490,47 @@ class TestRandomVsStockfishGame(unittest.TestCase):
         self.assertGreater(game_stats["material_count"]["black"], game_stats["material_count"]["white"])
 
         self.assertEqual(game_stats["reason"] , TerminationReason.CHECKMATE.value)
+
+
+class TestRandomVsNonGame(_MockServerTestCaseBase):
+    """
+    TestRandomVsNonGame tests the integration of a random player against the Non agent.
+    """
+    def setUp(self):
+        try:
+            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "non", "useThinking": False}, timeout=5)
+            response.raise_for_status()
+            print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
+        except requests.exceptions.RequestException as e:
+            self.fail(f"Failed to reset mock server: {e}")
+
+        llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
+        llm_chess.black_player_type = PlayerType.LLM_NON
+        llm_chess.max_game_moves = 10 
+        llm_chess.visualize_board = False
+        llm_chess.throttle_delay = 0
+        llm_chess.dialog_turn_delay = 0
+        llm_chess.random_print_board = False
+
+    def test_game(self):
+        game_stats, player_white, player_black = run(log_dir=None)
+        
+        # Basic game completion checks
+        self.assertIsNotNone(game_stats)
+        self.assertIsNotNone(game_stats["winner"])
+        self.assertEqual(game_stats["reason"], "Max moves reached")
+        
+        self.assertLessEqual(game_stats["number_of_moves"], 10)
+        
+        self.assertEqual(player_white.name, "Random_Player")
+        self.assertEqual(player_black.name, "NoN_Synthesizer")
+        
+        self.assertEqual(game_stats["player_white"]["wrong_moves"], 0)
+        self.assertEqual(game_stats["player_white"]["wrong_actions"], 0)
+        self.assertEqual(game_stats["player_black"]["wrong_moves"], 0)
+        self.assertEqual(game_stats["player_black"]["wrong_actions"], 0)
+
+
 
 if __name__ == "__main__":
     unittest.main()
