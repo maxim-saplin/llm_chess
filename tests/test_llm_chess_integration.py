@@ -530,6 +530,12 @@ class TestRandomVsNonGame(_MockServerTestCaseBase):
         self.assertEqual(game_stats["player_black"]["wrong_moves"], 0)
         self.assertEqual(game_stats["player_black"]["wrong_actions"], 0)
 
+        self.assertEqual(game_stats["usage_stats"]["black"]["non"]["prompt_tokens"], 450)
+        self.assertEqual(game_stats["usage_stats"]["black"]["non"]["completion_tokens"], 450)
+        self.assertEqual(game_stats["usage_stats"]["black"]["non"]["total_tokens"], 900)
+
+        
+
 
 
 if __name__ == "__main__":
