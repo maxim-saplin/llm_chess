@@ -43,9 +43,9 @@ def calculate_material_count(board):
 load_dotenv()
 
 
-def get_llms_autogen(temperature=None, reasoning_effort=None):
+def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=None):
     """
-    Retrieve the configuration for LLMs (Large Language Models) with optional temperature setting.
+    Retrieve the configuration for LLMs (Large Language Models) with optional temperature and thinking settings.
 
     Note:
     If the Azure type is used, Autogen removes dots from the model name.
@@ -58,6 +58,8 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
 
     Args:
         temperature (float, optional): The temperature setting for the model. Defaults to None.
+        reasoning_effort (str, optional): Reasoning effort level for OpenAI models. Defaults to None.
+        thinking_budget (int, optional): Token budget for thinking with Anthropic models. Defaults to None.
 
     Returns:
         tuple: A tuple containing two configuration dictionaries for the models.
@@ -101,13 +103,29 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
             "api_type": "openai",
         }
 
+    def anthropic_config(key):
+        config = {
+            "model": os.environ[f"ANTHROPIC_MODEL_NAME_{key}"],
+            "api_key": os.environ[f"ANTHROPIC_API_KEY_{key}"],
+            "api_type": "anthropic",
+            "max_tokens": 32768, # AG2 sets this value to some oddly small numbers for some providers (e.g.Anthropic)
+            "timeout": 600
+        }
+        
+        # Add thinking configuration if thinking_budget is set
+        if thinking_budget is not None:
+            config["thinking"] = {"type": "enabled", "budget_tokens": thinking_budget}
+            
+        return config
+
     def create_config(config_list):
         config = {
             "config_list": config_list,
             "top_p": 1.0,
-            "frequency_penalty": 0.0,
-            "presence_penalty": 0.0,
-            "timeout": 600
+            # penalties raise exceptions with AG2 0.8.6 doing more thorouhg config validation, OpenAI docs say defaults are 0 anyways
+            # "frequency_penalty": 0.0,
+            # "presence_penalty": 0.0,
+            "timeout": 600,
         }
 
         # Add temperature only if it is not "remove"
@@ -117,6 +135,11 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
         # Add reasoning_effort if it is not None
         if reasoning_effort is not None:
             config["reasoning_effort"] = reasoning_effort
+
+        # If thinking_budget is provided, remove top_p as it's not compatible with thinking mode in Anthropic
+        if thinking_budget is not None:
+            if "top_p" in config:
+                del config["top_p"]
 
         return config
 
@@ -130,6 +153,8 @@ def get_llms_autogen(temperature=None, reasoning_effort=None):
             configs.append(create_config([gemini_config(key)]))
         elif kind == "openai":
             configs.append(create_config([openai_config(key)]))
+        elif kind == "anthropic":
+            configs.append(create_config([anthropic_config(key)]))
 
     for config in configs:
         config["cache_seed"] = None
@@ -148,8 +173,47 @@ def generate_game_stats(
     pgn_string: str = None,
 ) -> dict:
     """Generate game statistics."""
-    white_summary = gather_usage_summary([player_white])
-    black_summary = gather_usage_summary([player_black])
+    # Determine model name and usage stats for white player
+    if hasattr(player_white, 'total_prompt_tokens') and hasattr(player_white, 'total_completion_tokens'):
+        white_model = "moa"
+        white_usage = {
+            "total_cost": player_white.total_cost if hasattr(player_white, 'total_cost') else 0,
+            "moa": {
+                "cost": player_white.total_cost if hasattr(player_white, 'total_cost') else 0,
+                "prompt_tokens": player_white.total_prompt_tokens,
+                "completion_tokens": player_white.total_completion_tokens,
+                "total_tokens": player_white.total_tokens if hasattr(player_white, 'total_tokens') else 0
+            }
+        }
+    else:
+        white_summary = gather_usage_summary([player_white])
+        white_model = (
+            player_white.llm_config["config_list"][0]["model"]
+            if isinstance(player_white.llm_config, dict)
+            else "N/A"
+        )
+        white_usage = white_summary["usage_excluding_cached_inference"] if white_summary else {}
+
+    # Determine model name and usage stats for black player
+    if hasattr(player_black, 'total_prompt_tokens') and hasattr(player_black, 'total_completion_tokens'):
+        black_model = "moa"
+        black_usage = {
+            "total_cost": player_black.total_cost if hasattr(player_black, 'total_cost') else 0,
+            "moa": {
+                "cost": player_black.total_cost if hasattr(player_black, 'total_cost') else 0,
+                "prompt_tokens": player_black.total_prompt_tokens,
+                "completion_tokens": player_black.total_completion_tokens,
+                "total_tokens": player_black.total_tokens if hasattr(player_black, 'total_tokens') else 0
+            }
+        }
+    else:
+        black_summary = gather_usage_summary([player_black])
+        black_model = (
+            player_black.llm_config["config_list"][0]["model"]
+            if isinstance(player_black.llm_config, dict)
+            else "N/A"
+        )
+        black_usage = black_summary["usage_excluding_cached_inference"] if black_summary else {}
 
     stats = {
         "time_started": time_started,
@@ -165,11 +229,8 @@ def generate_game_stats(
             "get_board_count": player_white.get_board_count,
             "get_legal_moves_count": player_white.get_legal_moves_count,
             "make_move_count": player_white.make_move_count,
-            "model": (
-                player_white.llm_config["config_list"][0]["model"]
-                if isinstance(player_white.llm_config, dict)
-                else "N/A"
-            ),
+            "accumulated_reply_time_seconds": player_white.accumulated_reply_time_seconds,
+            "model": white_model,
         },
         "material_count": material_count,
         "player_black": {
@@ -181,23 +242,12 @@ def generate_game_stats(
             "get_board_count": player_black.get_board_count,
             "get_legal_moves_count": player_black.get_legal_moves_count,
             "make_move_count": player_black.make_move_count,
-            "model": (
-                player_black.llm_config["config_list"][0]["model"]
-                if isinstance(player_black.llm_config, dict)
-                else "N/A"
-            ),
+            "accumulated_reply_time_seconds": player_black.accumulated_reply_time_seconds,
+            "model": black_model,
         },
         "usage_stats": {
-            "white": (
-                white_summary["usage_excluding_cached_inference"]
-                if white_summary
-                else {}
-            ),
-            "black": (
-                black_summary["usage_excluding_cached_inference"]
-                if black_summary
-                else {}
-            ),
+            "white": white_usage,
+            "black": black_usage,
         },
     }
     
@@ -271,22 +321,36 @@ def display_store_game_video_and_stats(game_stats, log_dir="_logs"):
     _print_game_outcome(game_stats, white_summary, black_summary)
 
 
-
-
 def _save_game_to_file_and_video(game_stats, log_dir):
     if log_dir is None:
         return
-    video_dir = f"{log_dir}/videos"
-    os.makedirs(video_dir, exist_ok=True)
+        
+    # Save game stats to JSON file
     log_filename = f"{log_dir}/{game_stats['time_started']}.json"
     if os.path.exists(log_filename):
         base, ext = os.path.splitext(log_filename)
         import time
         timestamp = int(time.time() * 1000)
         log_filename = f"{base}_{timestamp}{ext}"
+    
+    # Create a deep copy of game_stats to avoid modifying the original
+    import copy
+    game_stats_copy = copy.deepcopy(game_stats)
+    
+    # Round accumulated reply times to 3 decimal places
+    game_stats_copy['player_white']['accumulated_reply_time_seconds'] = round(
+        game_stats_copy['player_white']['accumulated_reply_time_seconds'], 3)
+    game_stats_copy['player_black']['accumulated_reply_time_seconds'] = round(
+        game_stats_copy['player_black']['accumulated_reply_time_seconds'], 3)
+    
     with open(log_filename, "w") as log_file:
-        json.dump(game_stats, log_file, indent=4)
-    save_video(f"{video_dir}/{game_stats['time_started']}.mp4")
+        json.dump(game_stats_copy, log_file, indent=4)
+    
+    # Only create video directory if there are frames to save
+    if _frames:
+        video_dir = f"{log_dir}/videos"
+        os.makedirs(video_dir, exist_ok=True)
+        save_video(f"{video_dir}/{game_stats['time_started']}.mp4")
 
 
 def _print_game_outcome(game_stats, white_summary, black_summary):
@@ -302,6 +366,9 @@ def _print_game_outcome(game_stats, white_summary, black_summary):
     print("\nMaterial Count:")
     print(f"Player White: {game_stats['material_count']['white']}")
     print(f"Player Black: {game_stats['material_count']['black']}")
+    print("\nAccumulated Reply Time (seconds):")
+    print(f"Player White: {game_stats['player_white']['accumulated_reply_time_seconds']:.3f}")
+    print(f"Player Black: {game_stats['player_black']['accumulated_reply_time_seconds']:.3f}")
     if "pgn" in game_stats:
         print("\n\033[96mGame PGN:\033[0m")
         print(game_stats["pgn"])

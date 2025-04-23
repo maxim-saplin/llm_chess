@@ -34,6 +34,8 @@ class GameAgent(ConversableAgent):
         # Counter to track the number of failed action attempts by the agent.
         self.failed_action_attempts = 0
         self.dialog_turn_delay = dialog_turn_delay  # Store it locally
+        # Track execution time of generate_reply
+        self.accumulated_reply_time_seconds = 0.0
 
     def prep_to_move(self):
         """
@@ -48,9 +50,19 @@ class GameAgent(ConversableAgent):
         sender: Optional[ConversableAgent] = None,
         **kwargs: Any,
     ) -> Union[str, Dict, None]:
+        # Apply the delay before starting timing
         if isinstance(self.dialog_turn_delay, int) and self.dialog_turn_delay > 0:
             time.sleep(self.dialog_turn_delay)
-        return super().generate_reply(messages, sender, **kwargs)
+        
+        # Start timing only after the delay
+        start_time = time.time()
+        reply = super().generate_reply(messages, sender, **kwargs)
+        end_time = time.time()
+        
+        # Accumulate only the actual execution time, not the delay
+        self.accumulated_reply_time_seconds += (end_time - start_time)
+        
+        return reply
 
 
 class RandomPlayerAgent(GameAgent):

@@ -8,7 +8,8 @@ from data_processing.aggregate_logs_to_csv import (
     aggregate_models_to_csv,
     GameLog,
     PlayerStats,
-    UsageStats
+    UsageStats,
+    load_game_log
 )
 from llm_chess import TerminationReason
 from statistics import stdev
@@ -653,27 +654,19 @@ def create_mock_json_logs():
                 "reason": "Max moves reached",
                 "number_of_moves": 200,
                 "player_white": {
-                    "name": "Random_Player",
-                    "wrong_moves": 0,
-                    "wrong_actions": 0,
-                    "reflections_used": 0,
-                    "reflections_used_before_board": 0,
-                    "get_board_count": 0,
-                    "get_legal_moves_count": 0,
-                    "make_move_count": 0,
-                    "model": "N/A",
+                    "name": "Random_Player", "wrong_moves": 0, "wrong_actions": 0,
+                    "reflections_used": 0, "reflections_used_before_board": 0,
+                    "get_board_count": 0, "get_legal_moves_count": 0,
+                    "make_move_count": 0, "model": "N/A",
+                    "accumulated_reply_time_seconds": 0.1,
                 },
                 "material_count": {"white": 11, "black": 12},
                 "player_black": {
-                    "name": "Player_Black",
-                    "wrong_moves": 0,
-                    "wrong_actions": 0,
-                    "reflections_used": 0,
-                    "reflections_used_before_board": 0,
-                    "get_board_count": 0,
-                    "get_legal_moves_count": 0,
-                    "make_move_count": 0,
-                    "model": "model_1",
+                    "name": "Player_Black", "wrong_moves": 0, "wrong_actions": 0,
+                    "reflections_used": 0, "reflections_used_before_board": 0,
+                    "get_board_count": 0, "get_legal_moves_count": 0,
+                    "make_move_count": 0, "model": "model_1",
+                    "accumulated_reply_time_seconds": 131.6,
                 },
                 "usage_stats": {
                     "white": {"total_cost": 0},
@@ -696,27 +689,19 @@ def create_mock_json_logs():
                 "reason": "Too many wrong actions",
                 "number_of_moves": 132,
                 "player_white": {
-                    "name": "Random_Player",
-                    "wrong_moves": 0,
-                    "wrong_actions": 0,
-                    "reflections_used": 0,
-                    "reflections_used_before_board": 0,
-                    "get_board_count": 0,
-                    "get_legal_moves_count": 0,
-                    "make_move_count": 0,
-                    "model": "N/A",
+                    "name": "Random_Player", "wrong_moves": 0, "wrong_actions": 0,
+                    "reflections_used": 0, "reflections_used_before_board": 0,
+                    "get_board_count": 0, "get_legal_moves_count": 0,
+                    "make_move_count": 0, "model": "N/A",
+                    "accumulated_reply_time_seconds": 0.05,
                 },
                 "material_count": {"white": 21, "black": 4},
                 "player_black": {
-                    "name": "Player_Black",
-                    "wrong_moves": 3,
-                    "wrong_actions": 0,
-                    "reflections_used": 0,
-                    "reflections_used_before_board": 0,
-                    "get_board_count": 0,
-                    "get_legal_moves_count": 0,
-                    "make_move_count": 0,
-                    "model": "model_1",
+                    "name": "Player_Black", "wrong_moves": 3, "wrong_actions": 0,
+                    "reflections_used": 0, "reflections_used_before_board": 0,
+                    "get_board_count": 0, "get_legal_moves_count": 0,
+                    "make_move_count": 0, "model": "model_1",
+                    "accumulated_reply_time_seconds": 85.6,
                 },
                 "usage_stats": {
                     "white": {"total_cost": 0},
@@ -739,27 +724,19 @@ def create_mock_json_logs():
                 "reason": "Max moves reached",
                 "number_of_moves": 200,
                 "player_white": {
-                    "name": "Random_Player",
-                    "wrong_moves": 0,
-                    "wrong_actions": 0,
-                    "reflections_used": 0,
-                    "reflections_used_before_board": 0,
-                    "get_board_count": 0,
-                    "get_legal_moves_count": 0,
-                    "make_move_count": 0,
-                    "model": "N/A",
+                    "name": "Random_Player", "wrong_moves": 0, "wrong_actions": 0,
+                    "reflections_used": 0, "reflections_used_before_board": 0,
+                    "get_board_count": 0, "get_legal_moves_count": 0,
+                    "make_move_count": 0, "model": "N/A",
+                    "accumulated_reply_time_seconds": 0.15,
                 },
                 "material_count": {"white": 12, "black": 11},
                 "player_black": {
-                    "name": "Player_Black",
-                    "wrong_moves": 0,
-                    "wrong_actions": 0,
-                    "reflections_used": 0,
-                    "reflections_used_before_board": 0,
-                    "get_board_count": 0,
-                    "get_legal_moves_count": 0,
-                    "make_move_count": 0,
-                    "model": "model_2",
+                    "name": "Player_Black", "wrong_moves": 0, "wrong_actions": 0,
+                    "reflections_used": 0, "reflections_used_before_board": 0,
+                    "get_board_count": 0, "get_legal_moves_count": 0,
+                    "make_move_count": 0, "model": "model_2",
+                    "accumulated_reply_time_seconds": 126.8,
                 },
                 "usage_stats": {
                     "white": {"total_cost": 0},
@@ -782,27 +759,19 @@ def create_mock_json_logs():
                 "reason": "Too many wrong actions",
                 "number_of_moves": 164,
                 "player_white": {
-                    "name": "Random_Player",
-                    "wrong_moves": 0,
-                    "wrong_actions": 0,
-                    "reflections_used": 0,
-                    "reflections_used_before_board": 0,
-                    "get_board_count": 0,
-                    "get_legal_moves_count": 0,
-                    "make_move_count": 0,
-                    "model": "N/A",
+                    "name": "Random_Player", "wrong_moves": 0, "wrong_actions": 0,
+                    "reflections_used": 0, "reflections_used_before_board": 0,
+                    "get_board_count": 0, "get_legal_moves_count": 0,
+                    "make_move_count": 0, "model": "N/A",
+                    "accumulated_reply_time_seconds": 0.08,
                 },
                 "material_count": {"white": 12, "black": 16},
                 "player_black": {
-                    "name": "Player_Black",
-                    "wrong_moves": 3,
-                    "wrong_actions": 0,
-                    "reflections_used": 0,
-                    "reflections_used_before_board": 0,
-                    "get_board_count": 0,
-                    "get_legal_moves_count": 0,
-                    "make_move_count": 0,
-                    "model": "model_2",
+                    "name": "Player_Black", "wrong_moves": 3, "wrong_actions": 0,
+                    "reflections_used": 0, "reflections_used_before_board": 0,
+                    "get_board_count": 0, "get_legal_moves_count": 0,
+                    "make_move_count": 0, "model": "model_2",
+                    "accumulated_reply_time_seconds": 102.5,
                 },
                 "usage_stats": {
                     "white": {"total_cost": 0},
@@ -990,6 +959,181 @@ class TestGameLog(unittest.TestCase):
         )
         self.assertFalse(game_log.is_interrupted)
         self.assertEqual(game_log.game_duration, 1.0)
+
+
+class TestLoadGameLog(unittest.TestCase):
+    def setUp(self):
+        """Set up a temporary directory for test files."""
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.valid_log_data = {
+            "time_started": "2025.02.09_09:31",
+            "winner": "NONE",
+            "reason": "Max moves reached",
+            "number_of_moves": 200,
+            "player_white": {
+                "name": "Random_Player", "wrong_moves": 0, "wrong_actions": 0,
+                "reflections_used": 0, "reflections_used_before_board": 0,
+                "get_board_count": 0, "get_legal_moves_count": 0,
+                "make_move_count": 0, "model": "N/A",
+                "accumulated_reply_time_seconds": 0.0,
+            },
+            "material_count": {"white": 11, "black": 12},
+            "player_black": {
+                "name": "Player_Black", "wrong_moves": 0, "wrong_actions": 0,
+                "reflections_used": 0, "reflections_used_before_board": 0,
+                "get_board_count": 0, "get_legal_moves_count": 0,
+                "make_move_count": 0, "model": "model_1",
+                "accumulated_reply_time_seconds": 15.5,
+            },
+            "usage_stats": {
+                "white": {"total_cost": 0},
+                "black": {
+                    "total_cost": 0.08589,
+                    "model_1": {
+                        "cost": 0.08589, "prompt_tokens": 111510,
+                        "completion_tokens": 20090, "total_tokens": 131600,
+                    },
+                },
+            },
+        }
+
+    def tearDown(self):
+        """Clean up the temporary directory."""
+        self.temp_dir.cleanup()
+
+    def create_temp_json_file(self, data, filename="test_log.json"):
+        """Helper method to create a temporary JSON file."""
+        file_path = os.path.join(self.temp_dir.name, filename)
+        with open(file_path, "w") as f:
+            if isinstance(data, str):
+                f.write(data)
+            else:
+                json.dump(data, f)
+        return file_path
+
+    def test_load_valid_log(self):
+        """Test loading a correctly formatted JSON log file."""
+        file_path = self.create_temp_json_file(self.valid_log_data)
+        game_log = load_game_log(file_path)
+
+        self.assertIsInstance(game_log, GameLog)
+        self.assertEqual(game_log.time_started, "2025.02.09_09:31")
+        self.assertEqual(game_log.winner, "NONE")
+        self.assertEqual(game_log.reason, "Max moves reached")
+        self.assertEqual(game_log.number_of_moves, 200)
+        self.assertIsInstance(game_log.player_white, PlayerStats)
+        self.assertEqual(game_log.player_white.name, "Random_Player")
+        self.assertEqual(game_log.player_white.model, "N/A")
+        self.assertIsInstance(game_log.player_black, PlayerStats)
+        self.assertEqual(game_log.player_black.name, "Player_Black")
+        self.assertEqual(game_log.player_black.model, "model_1")
+        self.assertEqual(game_log.material_count, {"white": 11, "black": 12})
+        self.assertIsInstance(game_log.usage_stats_white, UsageStats)
+        self.assertEqual(game_log.usage_stats_white.total_cost, 0)
+        self.assertIsInstance(game_log.usage_stats_black, UsageStats)
+        self.assertAlmostEqual(game_log.usage_stats_black.total_cost, 0.08589)
+        self.assertIsNotNone(game_log.usage_stats_black.details)
+        self.assertEqual(game_log.usage_stats_black.details['prompt_tokens'], 111510)
+        self.assertEqual(game_log.player_white.accumulated_reply_time_seconds, 0.0)
+        self.assertEqual(game_log.player_black.accumulated_reply_time_seconds, 15.5)
+
+    def test_load_missing_required_field(self):
+        """Test loading a JSON log file with a missing required field (e.g., 'winner')."""
+        invalid_data = self.valid_log_data.copy()
+        del invalid_data["winner"]
+        file_path = self.create_temp_json_file(invalid_data)
+
+        with self.assertRaises(KeyError):
+            load_game_log(file_path)
+
+    def test_load_missing_player_field(self):
+        """Test loading a JSON log file with a missing field within a player dict."""
+        invalid_data = self.valid_log_data.copy()
+        del invalid_data["player_black"]["wrong_moves"]
+        file_path = self.create_temp_json_file(invalid_data)
+
+        with self.assertRaises(TypeError) as cm: # PlayerStats(**data) raises TypeError for missing args
+            load_game_log(file_path)
+        self.assertIn("required positional argument: 'wrong_moves'", str(cm.exception))
+
+    def test_load_missing_new_player_field(self):
+        """Test loading a JSON log file missing the new accumulated_reply_time_seconds field."""
+        # This tests backward compatibility - older logs might not have the field
+        missing_data = self.valid_log_data.copy()
+        del missing_data["player_black"]["accumulated_reply_time_seconds"]
+        del missing_data["player_white"]["accumulated_reply_time_seconds"]
+        file_path = self.create_temp_json_file(missing_data)
+
+        # Since we added a default value in the dataclass, this should not raise an error
+        try:
+            game_log = load_game_log(file_path)
+            self.assertIsInstance(game_log, GameLog)
+            # Check that the default value (0.0) is assigned
+            self.assertEqual(game_log.player_black.accumulated_reply_time_seconds, 0.0)
+            self.assertEqual(game_log.player_white.accumulated_reply_time_seconds, 0.0)
+        except Exception as e:
+            self.fail(f"load_game_log raised unexpected exception {type(e).__name__}: {e} when missing optional field 'accumulated_reply_time_seconds'")
+
+    def test_load_extra_field(self):
+        """Test loading a JSON log file with an extra unexpected field."""
+        extra_data = self.valid_log_data.copy()
+        extra_data["unexpected_field"] = "some_value"
+        file_path = self.create_temp_json_file(extra_data)
+
+        # Dataclasses generally ignore extra fields when using **kwargs
+        # unless __init__ is overridden. Here PlayerStats uses **data["player_white"],
+        # which might raise TypeError if extra keys are passed, but GameLog creation doesn't.
+        # Let's test the current behavior. It seems extra top-level fields are ignored.
+        try:
+            game_log = load_game_log(file_path)
+            self.assertIsInstance(game_log, GameLog) # Check if loading succeeded
+            # Check a few core fields to ensure parsing wasn't completely broken
+            self.assertEqual(game_log.winner, "NONE")
+            self.assertEqual(game_log.player_black.model, "model_1")
+        except Exception as e:
+            self.fail(f"load_game_log raised unexpected exception {type(e).__name__}: {e}")
+
+
+    def test_load_extra_player_field(self):
+        """Test loading a JSON log with an extra field within a player dict."""
+        extra_data = self.valid_log_data.copy()
+        extra_data["player_black"]["extra_player_key"] = "value"
+        file_path = self.create_temp_json_file(extra_data)
+
+        # PlayerStats(**data["player_black"]) will raise TypeError if extra keys are present
+        with self.assertRaises(TypeError) as cm:
+            load_game_log(file_path)
+        self.assertIn("got an unexpected keyword argument 'extra_player_key'", str(cm.exception))
+
+    def test_load_malformed_json(self):
+        """Test loading a file that is not valid JSON."""
+        malformed_json = '{"time_started": "2025.02.09_09:31", "winner": "NONE", ...' # Incomplete JSON
+        file_path = self.create_temp_json_file(malformed_json)
+
+        with self.assertRaises(json.JSONDecodeError):
+            load_game_log(file_path)
+
+    def test_load_log_with_single_usage_key(self):
+        """Test loading a log where usage_stats only has the total_cost key."""
+        single_usage_data = self.valid_log_data.copy()
+        # Simulate older log format or case with no details
+        single_usage_data["usage_stats"]["black"] = {"total_cost": 0.075}
+        file_path = self.create_temp_json_file(single_usage_data)
+        
+        game_log = load_game_log(file_path)
+        self.assertIsInstance(game_log, GameLog)
+        self.assertAlmostEqual(game_log.usage_stats_black.total_cost, 0.075)
+        self.assertIsNone(game_log.usage_stats_black.details) # Expect details to be None
+
+    def test_load_empty_usage_stats(self):
+        """Test loading a log with empty usage_stats for a player."""
+        empty_usage_data = self.valid_log_data.copy()
+        empty_usage_data["usage_stats"]["black"] = {}
+        file_path = self.create_temp_json_file(empty_usage_data)
+
+        # The current implementation expects at least one key (total_cost)
+        with self.assertRaises(IndexError): # Tries to access key [0]
+            load_game_log(file_path)
 
 
 if __name__ == "__main__":

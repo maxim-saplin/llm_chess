@@ -15,6 +15,18 @@ from llm_chess import (
 )
 from tests.mock_openai_server import start_server
 
+# White player settings
+os.environ["MODEL_KIND_W"] = "azure"
+os.environ["AZURE_OPENAI_VERSION_W"] = "2024-02-15-preview"
+os.environ["AZURE_OPENAI_ENDPOINT_W"] = "https://your-endpoint.openai.azure.com"
+os.environ["AZURE_OPENAI_KEY_W"] = "your-azure-key"
+os.environ["AZURE_OPENAI_DEPLOYMENT_W"] = "gpt-4o"
+
+# Black player settings
+os.environ["MODEL_KIND_B"] = "local"
+os.environ["LOCAL_MODEL_NAME_B"] = "llama-3.1-70b"
+os.environ["LOCAL_BASE_URL_B"] = "http://localhost:8000/v1"
+os.environ["LOCAL_API_KEY_B"] = "your-local-key"
 
 class TestRandomVsRandomGame(unittest.TestCase):
     def setUp(self):
@@ -81,7 +93,12 @@ class TestLLMvsRandomGame(unittest.TestCase):
 
     def setUp(self):
         # Reset the mock OpenAI server state before each test
-        requests.post("http://localhost:8080/v1/reset", json={"useNegative": False, "useThinking": False})
+        try:
+            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "default", "useThinking": False}, timeout=5) # Add timeout
+            response.raise_for_status() # Raise exception for bad status codes (4xx or 5xx)
+            print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
+        except requests.exceptions.RequestException as e:
+            print(f"DEBUG: Failed to reset mock server: {e}")
         # Configure game settings for testing
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
         llm_chess.black_player_type = PlayerType.LLM_BLACK
@@ -198,13 +215,11 @@ class TestLLMvsRandomGame(unittest.TestCase):
         checks that game_stats and the saved JSON log match.
         """
         llm_chess.max_game_moves = 6  # override for a short test
-        game_stats, _, _ = run(log_dir=self.temp_dir)
+        game_stats, player_white, player_black = run(log_dir=self.temp_dir)
         self.assertIn("winner", game_stats)
         self.assertIn("reason", game_stats)
         self.assertLessEqual(game_stats["number_of_moves"], 6)
 
-        # Verify the JSON log file is produced
-        import os, json
         log_filepath = os.path.join(self.temp_dir, f"{game_stats['time_started']}.json")
         self.assertTrue(os.path.exists(log_filepath), "Expected game result JSON not found.")
         with open(log_filepath, "r") as f:
@@ -224,6 +239,7 @@ class TestLLMvsRandomGame(unittest.TestCase):
                 "get_board_count": 0,
                 "get_legal_moves_count": 3,
                 "make_move_count": 3,
+                "accumulated_reply_time_seconds": round(player_white.accumulated_reply_time_seconds, 3),
                 "model": "N/A"
             },
             "material_count": {
@@ -239,6 +255,7 @@ class TestLLMvsRandomGame(unittest.TestCase):
                 "get_board_count": 3,
                 "get_legal_moves_count": 3,
                 "make_move_count": 3,
+                "accumulated_reply_time_seconds": round(player_black.accumulated_reply_time_seconds, 3),
                 "model": "gpt-3.5-turbo"
             },
             "usage_stats": {

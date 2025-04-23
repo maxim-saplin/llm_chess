@@ -22,9 +22,8 @@ STORE_INDIVIDUAL_LOGS = True
 llm_chess.throttle_delay = 1
 llm_chess.dialog_turn_delay = 1
 
-
-llm_chess.temp_override = "remove"
-# reasoning_effort = None # Default is None, used with OpenAI models low, medium, or high
+# llm_chess.temp_override = "remove"
+# reasoning_effort = "low" # Default is None, used with OpenAI models low, medium, or high
 
 # r"<think>.*?</think>" - Deepseek R1 Distil
 # r"◁think▷.*?◁/think▷ - Kimi 1.5
