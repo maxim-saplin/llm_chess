@@ -20,7 +20,7 @@ STORE_INDIVIDUAL_LOGS = True
 # ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`
 # Hyper params such as temperature are defined in `utils.py`
 
-llm_chess.throttle_delay = 0
+llm_chess.throttle_delay = 1
 llm_chess.dialog_turn_delay = 0
 
 # llm_chess.temp_override = "remove"
@@ -32,7 +32,7 @@ llm_chess.dialog_turn_delay = 0
 #remove_text = None
 
 # llm_chess.white_player_type = llm_chess.PlayerType.LLM_WHITE
-llm_chess.black_player_type = llm_chess.PlayerType.LLM_NON
+# llm_chess.black_player_type = llm_chess.PlayerType.LLM_NON
 # llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
 # llm_chess.rotate_board_for_white = True
 
