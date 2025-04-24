@@ -35,7 +35,7 @@ class PlayerType(Enum):
 
 # Hyper params such as temperature are defined in `utils.py`
 white_player_type = PlayerType.RANDOM_PLAYER
-black_player_type = PlayerType.LLM_NON
+black_player_type = PlayerType.LLM_BLACK
 enable_reflection = False  # Whether to offer the LLM time to think and evaluate moves
 board_representation_mode = BoardRepresentation.UNICODE_ONLY  # What kind of board is printed in response to get_current_board
 rotate_board_for_white = False # Whether to rotate the Uicode board for the white player so it gets it's pieces at the bottom
