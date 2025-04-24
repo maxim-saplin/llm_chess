@@ -289,9 +289,9 @@ p, pre {
 }
 
 .table-container {
-    overflow-x: auto;
     padding: 0;
     padding-right: 8px;
+    position: relative;
 }
 
 table {
@@ -382,8 +382,10 @@ tr.fixed td:nth-child(5) {
 }
 
 .extended-table {
-    margin-left: -75px;
-    margin-right: -75px;
+    /* Remove fixed margins - will be set dynamically in JavaScript */
+    /* margin-left: -75px;
+    margin-right: -75px; */
+    transition: margin 0.3s ease;
 }
 
 .pane strong {
@@ -497,4 +499,90 @@ tr.fixed td:nth-child(5) {
     #player-matrix {
         min-width: 680px;
     }
+}
+
+/* Column selector styles */
+.column-selector-container {
+    position: absolute;
+    top: 0px;
+    right: -40px;
+    z-index: 100;
+    display: none;
+}
+
+.column-selector-btn {
+    width: 40px;
+    height: 40px;
+    background-color: #C0C0C0;
+    color: #000000;
+    font-size: 24px;
+    cursor: pointer;
+    position: relative;
+    font-family: "Web IBM VGA 8x16";
+}
+
+.column-selector-btn::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    z-index: -1;
+}
+
+.column-selector-btn:hover {
+    background-color: #808080;
+    color: #FFFFFF;
+    top: 2px;
+    left: 2px;
+}
+
+.column-selector-dropdown {
+    display: none;
+    position: absolute;
+    top: 45px;
+    right: 0;
+    background-color: #C0C0C0;
+    min-width: 250px;
+    box-shadow: 8px 8px #000000;
+    z-index: 2000;
+    border: 1px solid #808080;
+    padding: 10px;
+}
+
+.column-selector-dropdown.show {
+    display: block;
+}
+
+.column-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    color: #000000;
+    font-family: "Web IBM VGA 8x16";
+    font-size: 16px;
+}
+
+.column-option input {
+    margin-right: 10px;
+    width: 16px;
+    height: 16px;
+}
+
+.column-option input:disabled + label {
+    color: #808080;
+}
+
+.column-selector-title {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: #000000;
+    font-family: "Web IBM VGA 8x16";
+}
+
+.extended-table .column-selector-container {
+    display: block;
 }
