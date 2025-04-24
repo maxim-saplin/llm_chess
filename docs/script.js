@@ -334,9 +334,24 @@ const tableConfigs = {
                     const bVal = parseFloat(b.cols[csvIndices.average_game_cost]) || 0;
                     return aVal - bVal;
                 }
+            },
+            // Add Avg Moves column
+            {
+                title: 'Avg Moves',
+                tooltip: 'Average number of moves per game. Shows how many moves were played on average before the game ended.',
+                getValue: (cols) => {
+                    const value = parseFloat(cols[csvIndices.average_moves]) || 0;
+                    return value.toFixed(2);
+                },
+                isNumeric: true,
+                compareFn: (a, b) => {
+                    const aVal = parseFloat(a.cols[csvIndices.average_moves]) || 0;
+                    const bVal = parseFloat(b.cols[csvIndices.average_moves]) || 0;
+                    return aVal - bVal;
+                }
             }
         ],
-        // Same default sort as LEADERBOARD_NEW
+        // Same default sort as LEADERBOARD_NEW with added avgMoves
         defaultSortCompare: (colsA, colsB) => {
             const wlA = parseFloat(colsA[csvIndices.win_loss]) || 0;
             const wlB = parseFloat(colsB[csvIndices.win_loss]) || 0;
@@ -346,6 +361,8 @@ const tableConfigs = {
             const tokB = parseFloat(colsB[csvIndices.completion_tokens_black_per_move]) || 0;
             const costA = parseFloat(colsA[csvIndices.average_game_cost]) || 0;
             const costB = parseFloat(colsB[csvIndices.average_game_cost]) || 0;
+            const avgMovesA = parseFloat(colsA[csvIndices.average_moves]) || 0;
+            const avgMovesB = parseFloat(colsB[csvIndices.average_moves]) || 0;
             // Sort by Win/Loss DESC, then Game Duration DESC, then Tokens ASC, then Cost ASC
             return (wlB - wlA) || (gdB - gdA) || (tokA - tokB) || (costA - costB);
         }
