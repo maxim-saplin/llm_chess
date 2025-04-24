@@ -8,6 +8,25 @@ const navConfig = {
             isDefault: true,
             onShow: function() {
                 buildFreshTable(tableConfigs[this.id]);
+                // Ensure default styling for standard leaderboard
+                const container = document.getElementById('leaderboard').querySelector('.table-container');
+                if (container) {
+                    container.classList.remove('extended-table');
+                }
+            }
+        },
+        // Add new screen for extended leaderboard
+        LEADERBOARD_EXT: {
+            id: 'leaderboard_ext',
+            title: 'LB (extended)',
+            elementId: 'leaderboard', // Reuse the same element
+            onShow: function() {
+                buildFreshTable(tableConfigs[this.id]);
+                // Add class for extended styling
+                const container = document.getElementById('leaderboard').querySelector('.table-container');
+                if (container) {
+                    container.classList.add('extended-table');
+                }
             }
         },
         MATRIX: {
@@ -39,6 +58,7 @@ const navConfig = {
             defaultScreen: 'leaderboard_new',
             items: [
                 { title: 'Leaderboard', screen: 'leaderboard_new' },
+                { title: 'LB (extended)', screen: 'leaderboard_ext' }, // Add new dropdown item
                 { title: 'Matrix', screen: 'matrix' }
             ]
         }
@@ -55,6 +75,7 @@ let parsedCsvData = {
 
 const Screen = {
     LEADERBOARD_NEW: 'leaderboard_new',
+    LEADERBOARD_EXT: 'leaderboard_ext', // Add new screen constant
     MATRIX: 'matrix',
     HOW_IT_WORKS: 'how_it_works',
     NOTES: 'notes'
@@ -67,7 +88,8 @@ const SPECIAL_ROWS = {
 };
 
 let sortOrderState = {
-    [Screen.LEADERBOARD_NEW]: {}
+    [Screen.LEADERBOARD_NEW]: {},
+    [Screen.LEADERBOARD_EXT]: {}, // Add state for new screen
 };
 
 let currentScreen = null;
@@ -165,7 +187,7 @@ function parseCSVData() {
     console.log('CSV data parsed successfully');
 }
 
-// Define table configs for NEW and OLD leaderboards
+// Define table configs for NEW, OLD, and EXT leaderboards
 const tableConfigs = {
     [Screen.LEADERBOARD_NEW]: {
       columns: [
@@ -238,6 +260,113 @@ const tableConfigs = {
         return (wlB - wlA) || (gdB - gdA) || (tokA - tokB);
       }
     },
+    // Define config for the extended leaderboard
+    [Screen.LEADERBOARD_EXT]: {
+        columns: [
+             {
+                title: '#',
+                tooltip: 'Rank of the model',
+                isNumeric: true,
+                removeFromSpecialRows: true,
+                getValue: (cols, idx) => '',
+                compareFn: (a, b) => a.rank - b.rank
+            },
+            {
+                title: 'Player',
+                tooltip: 'Model playing as black against a Random Player',
+                getValue: (cols) => cols[csvIndices.player],
+                isNumeric: false,
+                compareFn: (a, b) => a.cols[csvIndices.player].localeCompare(b.cols[csvIndices.player])
+            },
+            {
+                title: 'Win/Loss',
+                tooltip: 'Difference between wins and losses as a percentage of total games (0-100%). This is the primary ranking metric that measures BOTH chess skill AND instruction following ability. A model needs to understand chess strategy AND follow game instructions correctly to score well. 50% represents equal wins/losses, higher scores mean more wins than losses.',
+                isNumeric: true,
+                getValue: (cols) => {
+                    const val = parseFloat(cols[csvIndices.win_loss]) || 0;
+                    return (val * 100).toFixed(2) + '%';
+                },
+                compareFn: (a, b) => {
+                    const aVal = parseFloat(a.cols[csvIndices.win_loss]) || 0;
+                    const bVal = parseFloat(b.cols[csvIndices.win_loss]) || 0;
+                    return aVal - bVal;
+                }
+            },
+            {
+                title: 'Game Duration',
+                tooltip: 'Percentage of maximum possible game length completed before termination (0-100%). This specifically measures instruction following reliability across many moves. 100% indicates the model either reached a natural conclusion (checkmate, stalemate) or the maximum 200 moves without protocol violations. Lower scores show the model struggled to maintain correct communication as the game progressed.',
+                isNumeric: true,
+                getValue: (cols) => {
+                    const val = parseFloat(cols[csvIndices.game_duration]) || 0;
+                    return (val * 100).toFixed(2) + '%';
+                },
+                compareFn: (a, b) => {
+                    const aVal = parseFloat(a.cols[csvIndices.game_duration]) || 0;
+                    const bVal = parseFloat(b.cols[csvIndices.game_duration]) || 0;
+                    return aVal - bVal;
+                }
+            },
+            {
+                title: 'Tokens',
+                tooltip: 'Number of tokens generated per move. Demonstrates the model\'s verbosity. Lower token counts may indicate efficiency, while higher counts may show more detailed reasoning OR more garbage generation (depending on the overall rank, reasoning models generate more tokens and score better, weak models can also be verbose yet show poor performance).',
+                getValue: (cols) => {
+                    const value = parseFloat(cols[csvIndices.completion_tokens_black_per_move]) || 0;
+                    return value > 1000 ? value.toFixed(1) : value.toFixed(2);
+                },
+                isNumeric: true,
+                compareFn: (a, b) => {
+                    const aVal = parseFloat(a.cols[csvIndices.completion_tokens_black_per_move]) || 0;
+                    const bVal = parseFloat(b.cols[csvIndices.completion_tokens_black_per_move]) || 0;
+                    return aVal - bVal;
+                }
+            },
+            // Add Cost per Game column
+            {
+                title: 'Cost/Game',
+                tooltip: 'Estimated cost per game based on token usage and model pricing.',
+                getValue: (cols) => {
+                    const value = parseFloat(cols[csvIndices.average_game_cost]) || 0;
+                    return `$${value.toFixed(3)}`;
+                },
+                isNumeric: true,
+                compareFn: (a, b) => {
+                    const aVal = parseFloat(a.cols[csvIndices.average_game_cost]) || 0;
+                    const bVal = parseFloat(b.cols[csvIndices.average_game_cost]) || 0;
+                    return aVal - bVal;
+                }
+            },
+            // Add Avg Moves column
+            {
+                title: 'Avg Moves',
+                tooltip: 'Average number of moves per game. Shows how many moves were played on average before the game ended.',
+                getValue: (cols) => {
+                    const value = parseFloat(cols[csvIndices.average_moves]) || 0;
+                    return value.toFixed(2);
+                },
+                isNumeric: true,
+                compareFn: (a, b) => {
+                    const aVal = parseFloat(a.cols[csvIndices.average_moves]) || 0;
+                    const bVal = parseFloat(b.cols[csvIndices.average_moves]) || 0;
+                    return aVal - bVal;
+                }
+            }
+        ],
+        // Same default sort as LEADERBOARD_NEW with added avgMoves
+        defaultSortCompare: (colsA, colsB) => {
+            const wlA = parseFloat(colsA[csvIndices.win_loss]) || 0;
+            const wlB = parseFloat(colsB[csvIndices.win_loss]) || 0;
+            const gdA = parseFloat(colsA[csvIndices.game_duration]) || 0;
+            const gdB = parseFloat(colsB[csvIndices.game_duration]) || 0;
+            const tokA = parseFloat(colsA[csvIndices.completion_tokens_black_per_move]) || 0;
+            const tokB = parseFloat(colsB[csvIndices.completion_tokens_black_per_move]) || 0;
+            const costA = parseFloat(colsA[csvIndices.average_game_cost]) || 0;
+            const costB = parseFloat(colsB[csvIndices.average_game_cost]) || 0;
+            const avgMovesA = parseFloat(colsA[csvIndices.average_moves]) || 0;
+            const avgMovesB = parseFloat(colsB[csvIndices.average_moves]) || 0;
+            // Sort by Win/Loss DESC, then Game Duration DESC, then Tokens ASC, then Cost ASC
+            return (wlB - wlA) || (gdB - gdA) || (tokA - tokB) || (costA - costB);
+        }
+    },
 };
 
 function showPane(screenId) {
@@ -256,10 +385,17 @@ function showPane(screenId) {
     
     currentScreen = screenId;
     
-    // Hide all panes
+    // Hide all panes first to reset state if elementId is reused
     Object.values(navConfig.screens).forEach(screen => {
         const element = document.getElementById(screen.elementId);
-        if (element) element.style.display = 'none';
+        if (element) {
+            element.style.display = 'none';
+            // Remove extended class if present
+            const container = element.querySelector('.table-container');
+            if (container) {
+                container.classList.remove('extended-table');
+            }
+        }
     });
     
     // Show the selected pane
@@ -271,7 +407,7 @@ function showPane(screenId) {
         if (button) button.classList.remove('selected');
     });
     
-    // Find and select the appropriate button - add null checks
+    // Find the button/dropdown corresponding to the screenId
     const parentDropdown = navConfig.dropdowns.find(dropdown => 
         dropdown.defaultScreen === screenId || 
         (dropdown.items && dropdown.items.some(item => item.screen === screenId))
@@ -1165,12 +1301,12 @@ function renderTable(config) {
     allRows.forEach((row, idx) => {
         const tr = document.createElement('tr');
         const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
-        
+
         // Add 'fixed' class to rows with primarySort < 9999
         if (row.primarySort !== undefined && row.primarySort < 9999) {
             tr.classList.add('fixed');
         }
-        
+
         config.columns.forEach((col) => {
             let cellValue;
             if (col.removeFromSpecialRows && isBottomRow) {
@@ -1185,7 +1321,7 @@ function renderTable(config) {
             td.textContent = cellValue;
             tr.appendChild(td);
         });
-        
+
         // Add event listeners
         tr.addEventListener('mouseenter', () => showPlayerDetailsPopup(tr, row.cols));
         tr.addEventListener('mouseleave', hidePopup);
@@ -1196,7 +1332,7 @@ function renderTable(config) {
         tr.addEventListener('click', () => {
             showPlayerDetailsPopup(tr, row.cols);
         });
-        
+
         tbody.appendChild(tr);
     });
 }

@@ -1,7 +1,10 @@
-import time, traceback, chess, chess.svg
+import time
+import traceback
+import chess
+import chess.svg
 from typing import Any, Dict, Tuple
 from enum import Enum
-from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent
+from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent, NonGameAgent
 from utils import calculate_material_count, generate_game_stats, get_llms_autogen, display_board, display_store_game_video_and_stats
 
 class BoardRepresentation(Enum):
@@ -28,10 +31,11 @@ class PlayerType(Enum):
     LLM_BLACK = 2  # Represents a black player controlled by an LLM and using *_B config keys from .env
     RANDOM_PLAYER = 3  # Represents a player making random moves
     CHESS_ENGINE_STOCKFISH = 5
+    LLM_NON = 6  # Represents a mixture of agents player using multiple LLMs
 
 # Hyper params such as temperature are defined in `utils.py`
 white_player_type = PlayerType.RANDOM_PLAYER
-black_player_type = PlayerType.LLM_BLACK
+black_player_type = PlayerType.LLM_NON
 enable_reflection = False  # Whether to offer the LLM time to think and evaluate moves
 board_representation_mode = BoardRepresentation.UNICODE_ONLY  # What kind of board is printed in response to get_current_board
 rotate_board_for_white = False # Whether to rotate the Uicode board for the white player so it gets it's pieces at the bottom
@@ -40,7 +44,7 @@ rotate_board_for_white = False # Whether to rotate the Uicode board for the whit
 max_game_moves = 200  # maximum number of game moves before terminating, dafault 200
 max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a move, e.g. repeating valid actions many times, default 10
 max_failed_attempts = 3  # number of wrong replies within a dialog (e.g. non existing action) before stopping/giving a loss, default 3
-throttle_delay = 1 # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
+throttle_delay = 0 # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
 dialog_turn_delay = 1  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
@@ -183,7 +187,6 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
     winner = None
     reason = None
 
-    # termination_messages = ["You won!", "I won!", "It's a tie!"]
     move_was_made = "Move made, switching player"
     termination_conditions = [
         move_was_made.lower(),
@@ -308,7 +311,23 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
             remove_history=reset_stockfish_history,
             is_termination_msg=is_termination_message,
             level=stockfish_level,
-            time_limit=stockfish_time_per_move,  # Pass the stockfish_level parameter
+            time_limit=stockfish_time_per_move,
+        ),
+        PlayerType.LLM_NON: NonGameAgent(
+            name="Player_Non_White",
+            system_message="",
+            description="You are a professional chess player and you play as white. " + common_prompt,
+            llm_config=llm_config_white,
+            llm_configs=[{
+                **llm_config_white,
+                "temperature": 0.0
+            }, {
+                **llm_config_white,
+                "temperature": 1.0
+            }],
+            is_termination_msg=is_termination_message,
+            human_input_mode="NEVER",
+            dialog_turn_delay=dialog_turn_delay,
         ),
     }.get(white_player_type)
 
@@ -325,6 +344,22 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
             is_termination_msg=is_termination_message,
             level=stockfish_level,
             time_limit=stockfish_time_per_move,
+        ),
+        PlayerType.LLM_NON: NonGameAgent(
+            name="Player_Non_Black",
+            system_message="",
+            description="You are a professional chess player and you play as black. " + common_prompt,
+            llm_config=llm_config_black,
+            llm_configs=[{
+                **llm_config_black,
+                "temperature": 0.0
+            }, {
+                **llm_config_black,
+                "temperature": 1.0
+            }],
+            is_termination_msg=is_termination_message,
+            human_input_mode="NEVER",
+            dialog_turn_delay=dialog_turn_delay,
         ),
     }.get(black_player_type)
 
@@ -403,14 +438,21 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                 material_count["white"] = white_material
                 material_count["black"] = black_material
 
-                prompt_tokens = (
-                    last_usage["prompt_tokens"] if isinstance(last_usage, dict) else 0
-                )
-                completion_tokens = (
-                    last_usage["completion_tokens"]
-                    if isinstance(last_usage, dict)
-                    else 0
-                )
+                # Get token usage stats - different for NoN agents
+                if isinstance(player, NonGameAgent):
+                    # NoN agents store stats directly in the agent
+                    prompt_tokens = player.total_prompt_tokens
+                    completion_tokens = player.total_completion_tokens
+                else:
+                    # Standard agents get stats from chat result
+                    prompt_tokens = (
+                        last_usage["prompt_tokens"] if isinstance(last_usage, dict) else 0
+                    )
+                    completion_tokens = (
+                        last_usage["completion_tokens"]
+                        if isinstance(last_usage, dict)
+                        else 0
+                    )
                 print(f"\033[94mPrompt Tokens: {prompt_tokens}\033[0m")
                 print(f"\033[94mCompletion Tokens: {completion_tokens}\033[0m")
                 if (
@@ -441,6 +483,7 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                         reason = TerminationReason.FIVEFOLD_REPETITION.value
                 elif (
                     last_message.lower().strip() != move_was_made.lower().strip()
+                    # TODO: fix max llm turns for NoN, seems like missing chat history broke this check
                     and len(chat_result.chat_history) >= max_llm_turns * 2
                 ):
                     winner = (

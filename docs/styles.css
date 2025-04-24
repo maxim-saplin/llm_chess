@@ -25,6 +25,7 @@ body {
     margin: 0;
     font-size: 20px;
     overflow-y: scroll;
+    line-height: 1.2;
 }
 
 code {
@@ -333,22 +334,17 @@ td {
     color: lightgray;
 }
 
-th:nth-child(3), td:nth-child(3), th:nth-child(5), td:nth-child(5) {
+th:nth-child(2n+3), 
+td:nth-child(2n+3) {
     background-color: lightgray;
     color: black;
     box-shadow: 8px 8px black;
 }
 
 /* Setting column widths */
-th:nth-child(6),
-td:nth-child(6),
-th:nth-child(5),
-td:nth-child(5),
-th:nth-child(4),
-td:nth-child(4),
-th:nth-child(3),
-td:nth-child(3) {
-    width: 86px;
+th:nth-child(n+3),
+td:nth-child(n+3) {
+    width: 85px;
     overflow: hidden;
 }
 
@@ -383,6 +379,11 @@ tr.fixed td:nth-child(3),
 tr.fixed td:nth-child(5) {
     background-color: #005588;
     color: yellow;
+}
+
+.extended-table {
+    margin-left: -75px;
+    margin-right: -75px;
 }
 
 .pane strong {
