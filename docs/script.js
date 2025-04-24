@@ -1121,7 +1121,7 @@ function renderPlayerMatrix() {
             }
         },
         // Simple hardcoded list of models to label
-        labeledModels: ["o3-2025-04-16-low", "o1-2024-12-17-medium", "claude-v3-7-sonnet-thinking_1024", "o4-mini-2025-04-16-low", "o1-2024-12-17-low", "o1-preview-2024-09-12", "o3-mini-2025-01-31-medium", "o1-mini-2024-09-12", "deepseek-reasoner-r1", "claude-v3-5-sonnet-v1", "grok-2-1212", "gemini-2.0-flash-lite-001" ]
+        labeledModels: ["gemini-2.5-pro-preview-03-25","o3-2025-04-16-low", "o1-2024-12-17-medium", "claude-v3-7-sonnet-thinking_1024", "o4-mini-2025-04-16-low", "o1-2024-12-17-low", "o1-preview-2024-09-12", "o3-mini-2025-01-31-medium", "o1-mini-2024-09-12", "deepseek-reasoner-r1", "claude-v3-5-sonnet-v1", "grok-2-1212", "gemini-2.0-flash-lite-001" ]
     };
 
     const canvas = document.getElementById('player-matrix');
@@ -1151,10 +1151,9 @@ function renderPlayerMatrix() {
     // Use pre-parsed data instead of parsing again
     const normalRows = parsedCsvData.normalRows;
     
-    // Use the default sort function from tableConfigs to sort rows the same way as the leaderboard
-    const tableConfig = tableConfigs[Screen.LEADERBOARD_NEW];
+    // Use the default sort function from defaultSortFunctions to sort rows the same way as the leaderboard
     const sortedRows = [...normalRows].sort((a, b) => 
-        tableConfig.defaultSortCompare(a.cols, b.cols));
+        defaultSortFunctions[Screen.LEADERBOARD_NEW](a.cols, b.cols));
     
     // Get all player names (no top 10 limit)
     const allPlayers = sortedRows.map(row => row.cols[csvIndices.player]);
