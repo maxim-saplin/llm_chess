@@ -445,12 +445,10 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
             else:
                 for model, data in stats.items():
                     if model != "total_cost" and isinstance(data, dict):
-                        if model not in self.usage_stats_per_agent[i]:
-                            model_stats = self.usage_stats_per_agent[i][model]
-                            model_stats["cost"] = model_stats.get("cost", 0) + data.get("cost", 0)
-                            model_stats["prompt_tokens"] = model_stats.get("prompt_tokens", 0) + data.get("prompt_tokens", 0)
-                            model_stats["completion_tokens"] = model_stats.get("completion_tokens", 0) + data.get("completion_tokens", 0)
-                            model_stats["total_tokens"] = model_stats.get("total_tokens", 0) + data.get("total_tokens", 0)
+                        model_stats = self.usage_stats_per_agent[i][model]
+                        model_stats["prompt_tokens"] += data.get("prompt_tokens", 0)
+                        model_stats["completion_tokens"] += data.get("completion_tokens", 0)
+                        model_stats["total_tokens"] += data.get("total_tokens", 0)
             
             # Update the global token counters
             for model_name, model_data in stats.items():
@@ -458,7 +456,6 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
                     self.total_prompt_tokens += model_data.get("prompt_tokens", 0)
                     self.total_completion_tokens += model_data.get("completion_tokens", 0)
                     self.total_tokens += model_data.get("total_tokens", 0)
-                    self.total_cost += model_data.get("cost", 0)
 
 
         ## Add synthesizer usage separately
@@ -469,7 +466,6 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
             for model, data in self.usage_stats_per_agent[-1].items():
                 if model != "total_cost" and isinstance(data, dict):
                         model_stats = self.usage_stats_per_agent[-1][model]
-                        model_stats["cost"] = 0
                         model_stats["prompt_tokens"] = 0
                         model_stats["completion_tokens"] = 0
                         model_stats["total_tokens"] = 0
@@ -482,6 +478,5 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
                 self.total_prompt_tokens += synthesizer_usage[model].get("prompt_tokens", 0) - prev_synthesizer_usage[model].get("prompt_tokens", 0)
                 self.total_completion_tokens += synthesizer_usage[model].get("completion_tokens", 0) - prev_synthesizer_usage[model].get("completion_tokens", 0)
                 self.total_tokens += synthesizer_usage[model].get("total_tokens", 0) - prev_synthesizer_usage[model].get("total_tokens", 0)
-                self.total_cost += synthesizer_usage[model].get("cost", 0) - prev_synthesizer_usage[model].get("cost", 0)
 
         return response

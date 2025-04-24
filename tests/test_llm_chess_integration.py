@@ -604,6 +604,33 @@ class TestRandomVsNonGame(_MockServerTestCaseBase):
         self.assertIsNotNone(game_stats_runtime, "Game did not run successfully.")
         self.assertIsNotNone(self.temp_dir, "Temp directory not set.")
 
+        # --- Verify Runtime Stats ---
+        
+        # Verify that the total tokens in player_black match the sum of per-agent tokens
+        self.assertTrue(hasattr(player_black, 'total_prompt_tokens'), "Runtime player_black missing 'total_prompt_tokens'.")
+        self.assertTrue(hasattr(player_black, 'total_completion_tokens'), "Runtime player_black missing 'total_completion_tokens'.")
+        self.assertTrue(hasattr(player_black, 'total_tokens'), "Runtime player_black missing 'total_tokens'.")
+        
+        # Calculate sums from per-agent stats
+        sum_prompt_tokens = 0
+        sum_completion_tokens = 0
+        sum_total_tokens = 0
+        
+        for agent_stats in player_black.usage_stats_per_agent:
+            for model, data in agent_stats.items():
+                if model != "total_cost" and isinstance(data, dict):
+                    sum_prompt_tokens += data.get("prompt_tokens", 0)
+                    sum_completion_tokens += data.get("completion_tokens", 0)
+                    sum_total_tokens += data.get("total_tokens", 0)
+        
+        # Verify the totals match the sums
+        self.assertEqual(player_black.total_prompt_tokens, sum_prompt_tokens, 
+                         "Total prompt tokens doesn't match sum of per-agent prompt tokens")
+        self.assertEqual(player_black.total_completion_tokens, sum_completion_tokens, 
+                         "Total completion tokens doesn't match sum of per-agent completion tokens")
+        self.assertEqual(player_black.total_tokens, sum_total_tokens, 
+                         "Total tokens doesn't match sum of per-agent total tokens")
+
         # Construct the expected log file path
         log_filepath = os.path.join(self.temp_dir, f"{game_stats_runtime['time_started']}.json")
         self.assertTrue(os.path.exists(log_filepath), f"Expected game log JSON not found at {log_filepath}")

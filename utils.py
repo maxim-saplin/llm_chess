@@ -40,7 +40,7 @@ def calculate_material_count(board):
     return white_material, black_material
 
 
-load_dotenv(override=False) # Don not override vals if already present, e.g. in test_llm_chess_integration.py
+load_dotenv()
 
 
 def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=None):
@@ -179,7 +179,6 @@ def generate_game_stats(
         white_usage = {
             "total_cost": player_white.total_cost if hasattr(player_white, 'total_cost') else 0,
             "non": {
-                "cost": player_white.total_cost if hasattr(player_white, 'total_cost') else 0,
                 "prompt_tokens": player_white.total_prompt_tokens,
                 "completion_tokens": player_white.total_completion_tokens,
                 "total_tokens": player_white.total_tokens if hasattr(player_white, 'total_tokens') else 0
@@ -200,7 +199,6 @@ def generate_game_stats(
         black_usage = {
             "total_cost": player_black.total_cost if hasattr(player_black, 'total_cost') else 0,
             "non": {
-                "cost": player_black.total_cost if hasattr(player_black, 'total_cost') else 0,
                 "prompt_tokens": player_black.total_prompt_tokens,
                 "completion_tokens": player_black.total_completion_tokens,
                 "total_tokens": player_black.total_tokens if hasattr(player_black, 'total_tokens') else 0
@@ -259,6 +257,7 @@ def generate_game_stats(
             for model_name, model_data in agent_stats.items():
                 if model_name != "total_cost" and isinstance(model_data, dict):
                     stats["usage_stats_per_non_agent_white"].append({
+                        "model": model_name,
                         "prompt_tokens": model_data.get("prompt_tokens", 0),
                         "completion_tokens": model_data.get("completion_tokens", 0),
                         "total_tokens": model_data.get("total_tokens", 0)
@@ -273,6 +272,7 @@ def generate_game_stats(
             for model_name, model_data in agent_stats.items():
                 if model_name != "total_cost" and isinstance(model_data, dict):
                     stats["usage_stats_per_non_agent_black"].append({
+                        "model": model_name,
                         "prompt_tokens": model_data.get("prompt_tokens", 0),
                         "completion_tokens": model_data.get("completion_tokens", 0),
                         "total_tokens": model_data.get("total_tokens", 0)
