@@ -68,6 +68,26 @@ thinking_budget = None # Default is None, if set will enable extended thinking w
 # Default None
 remove_text = None
 
+# LLM
+llm_config_white, llm_config_black = get_llms_autogen(temp_override, reasoning_effort, thinking_budget)
+# llm_config_white = llm_config_black  # Quick hack to use same model
+
+non_llm_configs_white = [{
+                **llm_config_white,
+                "temperature": 0.0
+            }, {
+                **llm_config_white,
+                "temperature": 1.0
+            }]
+non_llm_configs_black = [{
+                **llm_config_black,
+                "temperature": 0.0
+            }, {
+                **llm_config_black,
+                "temperature": 1.0
+            }]
+
+
 # Add warnings for both temp_override and reasoning_effort
 if temp_override is not None:
     print(
@@ -156,7 +176,6 @@ def make_move(move: str):
     if visualize_board:
         display_board(board, move_obj)
 
-
 def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
     """
     Runs the chess game simulation.
@@ -174,10 +193,6 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
     get_current_board_action = "get_current_board"
     get_legal_moves_action = "get_legal_moves"
     make_move_action = "make_move"
-
-    # LLM
-    llm_config_white, llm_config_black = get_llms_autogen(temp_override, reasoning_effort, thinking_budget)
-    # llm_config_white = llm_config_black  # Quick hack to use same model
 
     # Init chess board and game state
     material_count = {"white": 0, "black": 0}
@@ -318,13 +333,7 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
             system_message="",
             description="You are a professional chess player and you play as white. " + common_prompt,
             llm_config=llm_config_white,
-            llm_configs=[{
-                **llm_config_white,
-                "temperature": 0.0
-            }, {
-                **llm_config_white,
-                "temperature": 1.0
-            }],
+            llm_configs=non_llm_configs_white,
             is_termination_msg=is_termination_message,
             human_input_mode="NEVER",
             dialog_turn_delay=dialog_turn_delay,
@@ -350,13 +359,7 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
             system_message="",
             description="You are a professional chess player and you play as black. " + common_prompt,
             llm_config=llm_config_black,
-            llm_configs=[{
-                **llm_config_black,
-                "temperature": 0.0
-            }, {
-                **llm_config_black,
-                "temperature": 1.0
-            }],
+            llm_configs=non_llm_configs_black,
             is_termination_msg=is_termination_message,
             human_input_mode="NEVER",
             dialog_turn_delay=dialog_turn_delay,

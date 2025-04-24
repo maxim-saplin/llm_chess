@@ -5,14 +5,8 @@ import json
 import time
 import os
 import requests
-import llm_chess 
 import shutil
 import tempfile
-from llm_chess import (
-    PlayerType,
-    run,
-    TerminationReason
-)
 from tests.mock_openai_server import start_server
 
 # White player settings
@@ -27,6 +21,14 @@ os.environ["MODEL_KIND_B"] = "local"
 os.environ["LOCAL_MODEL_NAME_B"] = "gpt-3.5-turbo"
 os.environ["LOCAL_BASE_URL_B"] = "http://localhost:8080/v1"
 os.environ["LOCAL_API_KEY_B"] = "mock-key"
+
+# Importing after env vars are set
+import llm_chess
+from llm_chess import (
+    PlayerType,
+    run,
+    TerminationReason
+)
 
 class _MockServerTestCaseBase(unittest.TestCase):
     """Base class for tests requiring a mock OpenAI server."""
