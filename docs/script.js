@@ -7,7 +7,44 @@ const navConfig = {
             elementId: 'leaderboard',
             isDefault: true,
             onShow: function() {
-                buildFreshTable(tableConfigs[this.id]);
+                buildFreshTable();
+                // Ensure default styling for standard leaderboard
+                const container = document.getElementById('leaderboard').querySelector('.table-container');
+                if (container) {
+                    container.classList.remove('extended-table');
+                }
+            }
+        },
+        // Add new screen for extended leaderboard
+        LEADERBOARD_EXT: {
+            id: 'leaderboard_ext',
+            title: 'LB (extended)',
+            elementId: 'leaderboard', // Reuse the same element
+            onShow: function() {
+                // If loading for the first time, ensure defaults
+                if (this.firstLoad !== true) {
+                    this.firstLoad = true;
+                    
+                    // Reset to defaults if no localStorage data
+                    const saved = localStorage.getItem('columnSelection');
+                    if (!saved) {
+                        // Reset to default columns from tableColumnSets
+                        extendedColumnPreferences.selected = tableColumnSets[Screen.LEADERBOARD_EXT]
+                            .filter(id => id !== 'rank' && id !== 'player');
+                    } else {
+                        // Load saved columns
+                        tryLoadColumnSelectionFromStorage();
+                    }
+                }
+                
+                buildFreshTable();
+                
+                const container = document.getElementById('leaderboard').querySelector('.table-container');
+                if (container) {
+                    container.classList.add('extended-table');
+                    // Apply dynamic width
+                    updateExtendedTableWidth();
+                }
             }
         },
         MATRIX: {
@@ -39,6 +76,7 @@ const navConfig = {
             defaultScreen: 'leaderboard_new',
             items: [
                 { title: 'Leaderboard', screen: 'leaderboard_new' },
+                { title: 'LB (extended)', screen: 'leaderboard_ext' },
                 { title: 'Matrix', screen: 'matrix' }
             ]
         }
@@ -55,6 +93,7 @@ let parsedCsvData = {
 
 const Screen = {
     LEADERBOARD_NEW: 'leaderboard_new',
+    LEADERBOARD_EXT: 'leaderboard_ext',
     MATRIX: 'matrix',
     HOW_IT_WORKS: 'how_it_works',
     NOTES: 'notes'
@@ -67,7 +106,8 @@ const SPECIAL_ROWS = {
 };
 
 let sortOrderState = {
-    [Screen.LEADERBOARD_NEW]: {}
+    [Screen.LEADERBOARD_NEW]: {},
+    [Screen.LEADERBOARD_EXT]: {},
 };
 
 let currentScreen = null;
@@ -115,26 +155,20 @@ const csvIndices = {
     moe_average_game_cost: 38
 };
 
-// Add this after other global variables
 let nextPrimarySortValue = 0; // Track the next available primarySort value
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Parse CSV data from the global data variable (loaded from data.js)
     parseCSVData();
-    
-    // Create navigation elements first
     createNavigation();
-    
-    // Initialize board animation
     fetchAndAnimateBoard();
-
-    // Show default screen after navigation is created
     showDefaultScreen();
     
     // Initialize markdown rendering
     setTimeout(() => {
         MinimalMD.render('considerations');
     }, 100);
+
+    setTimeout(setupColumnSelector, 500);
 });
 
 // Function to parse CSV data
@@ -165,69 +199,211 @@ function parseCSVData() {
     console.log('CSV data parsed successfully');
 }
 
-// Define table configs for NEW and OLD leaderboards
-const tableConfigs = {
-    [Screen.LEADERBOARD_NEW]: {
-      columns: [
-        {
-          title: '#',
-          tooltip: 'Rank of the model',
-          isNumeric: true,
-          removeFromSpecialRows: true,
-          getValue: (cols, idx) => '',
-          compareFn: (a, b) => a.rank - b.rank
-        },
-        {
-          title: 'Player',
-          tooltip: 'Model playing as black against a Random Player',
-          getValue: (cols) => cols[csvIndices.player],
-          isNumeric: false,
-          compareFn: (a, b) => a.cols[csvIndices.player].localeCompare(b.cols[csvIndices.player])
-        },
-        {
-          title: 'Win/Loss',
-          tooltip: 'Difference between wins and losses as a percentage of total games (0-100%). This is the primary ranking metric that measures BOTH chess skill AND instruction following ability. A model needs to understand chess strategy AND follow game instructions correctly to score well. 50% represents equal wins/losses, higher scores mean more wins than losses.',
-          isNumeric: true,
-          getValue: (cols) => {
+// Define all possible columns with metadata
+const columnDefinitions = {
+    rank: {
+        id: 'rank',
+        title: '#',
+        tooltip: 'Rank of the model',
+        isNumeric: true,
+        removeFromSpecialRows: true,
+        getValue: (cols, idx) => '',
+        compareFn: (a, b) => a.rank - b.rank
+    },
+    player: {
+        id: 'player',
+        title: 'Player',
+        tooltip: 'Model playing as black against a Random Player',
+        getValue: (cols) => cols[csvIndices.player],
+        isNumeric: false,
+        compareFn: (a, b) => a.cols[csvIndices.player].localeCompare(b.cols[csvIndices.player])
+    },
+    winLoss: {
+        id: 'winLoss',
+        title: 'Win/Loss',
+        tooltip: 'Difference between wins and losses as a percentage of total games (0-100%). This is the primary ranking metric that measures BOTH chess skill AND instruction following ability. A model needs to understand chess strategy AND follow game instructions correctly to score well. 50% represents equal wins/losses, higher scores mean more wins than losses.',
+        isNumeric: true,
+        getValue: (cols) => {
             const val = parseFloat(cols[csvIndices.win_loss]) || 0;
             return (val * 100).toFixed(2) + '%';
-          },
-          compareFn: (a, b) => {
+        },
+        compareFn: (a, b) => {
             const aVal = parseFloat(a.cols[csvIndices.win_loss]) || 0;
             const bVal = parseFloat(b.cols[csvIndices.win_loss]) || 0;
             return aVal - bVal;
-          }
-        },
-        {
-          title: 'Game Duration',
-          tooltip: 'Percentage of maximum possible game length completed before termination (0-100%). This specifically measures instruction following reliability across many moves. 100% indicates the model either reached a natural conclusion (checkmate, stalemate) or the maximum 200 moves without protocol violations. Lower scores show the model struggled to maintain correct communication as the game progressed.',
-          isNumeric: true,
-          getValue: (cols) => {
+        }
+    },
+    gameDuration: {
+        id: 'gameDuration',
+        title: 'Game Duration',
+        tooltip: 'Percentage of maximum possible game length completed before termination (0-100%). This specifically measures instruction following reliability across many moves. 100% indicates the model either reached a natural conclusion (checkmate, stalemate) or the maximum 200 moves without protocol violations. Lower scores show the model struggled to maintain correct communication as the game progressed.',
+        isNumeric: true,
+        getValue: (cols) => {
             const val = parseFloat(cols[csvIndices.game_duration]) || 0;
             return (val * 100).toFixed(2) + '%';
-          },
-          compareFn: (a, b) => {
+        },
+        compareFn: (a, b) => {
             const aVal = parseFloat(a.cols[csvIndices.game_duration]) || 0;
             const bVal = parseFloat(b.cols[csvIndices.game_duration]) || 0;
             return aVal - bVal;
-          }
-        },
-        {
-          title: 'Tokens',
-          tooltip: 'Number of tokens generated per move. Demonstrates the model\'s verbosity. Lower token counts may indicate efficiency, while higher counts may show more detailed reasoning OR more garbage generation (depending on the overall rank, reasoning models generate more tokens and score better, weak models can also be verbose yet show poor performance).',
-          getValue: (cols) => {
+        }
+    },
+    tokens: {
+        id: 'tokens',
+        title: 'Tokens',
+        tooltip: 'Number of completion tokens generated per move. Demonstrates the model\'s verbosity. Lower token counts may indicate efficiency, while higher counts may show more detailed reasoning OR more garbage generation (depending on the overall rank, reasoning models generate more tokens and score better, weak models can also be verbose yet show poor performance).',
+        getValue: (cols) => {
             const value = parseFloat(cols[csvIndices.completion_tokens_black_per_move]) || 0;
             return value > 1000 ? value.toFixed(1) : value.toFixed(2);
-          },
-          isNumeric: true,
-          compareFn: (a, b) => {
+        },
+        isNumeric: true,
+        compareFn: (a, b) => {
             const aVal = parseFloat(a.cols[csvIndices.completion_tokens_black_per_move]) || 0;
             const bVal = parseFloat(b.cols[csvIndices.completion_tokens_black_per_move]) || 0;
             return aVal - bVal;
-          }
         }
-      ],
-      defaultSortCompare: (colsA, colsB) => {
+    },
+    costPerGame: {
+        id: 'costPerGame',
+        title: 'Cost/Game',
+        tooltip: 'Estimated cost per game based on token usage and model pricing.',
+        getValue: (cols) => {
+            const value = parseFloat(cols[csvIndices.average_game_cost]) || 0;
+            return `$${value.toFixed(3)}`;
+        },
+        isNumeric: true,
+        compareFn: (a, b) => {
+            const aVal = parseFloat(a.cols[csvIndices.average_game_cost]) || 0;
+            const bVal = parseFloat(b.cols[csvIndices.average_game_cost]) || 0;
+            return aVal - bVal;
+        }
+    },
+    avgMoves: {
+        id: 'avgMoves',
+        title: 'Avg Moves',
+        tooltip: 'Average number of moves per game. Shows how many moves were played on average before the game ended.',
+        getValue: (cols) => {
+            const value = parseFloat(cols[csvIndices.average_moves]) || 0;
+            return value.toFixed(2);
+        },
+        isNumeric: true,
+        compareFn: (a, b) => {
+            const aVal = parseFloat(a.cols[csvIndices.average_moves]) || 0;
+            const bVal = parseFloat(b.cols[csvIndices.average_moves]) || 0;
+            return aVal - bVal;
+        }
+    },
+    totalGames: {
+        id: 'totalGames',
+        title: 'Totla Games',
+        tooltip: 'Total number of games played by this model.',
+        getValue: (cols) => cols[csvIndices.total_games],
+        isNumeric: true,
+        compareFn: (a, b) => {
+            const aVal = parseInt(a.cols[csvIndices.total_games]) || 0;
+            const bVal = parseInt(b.cols[csvIndices.total_games]) || 0;
+            return aVal - bVal;
+        }
+    },
+    wins: {
+        id: 'wins',
+        title: 'Wins',
+        tooltip: 'Number of games won by the model.',
+        getValue: (cols) => cols[csvIndices.player_wins],
+        isNumeric: true,
+        compareFn: (a, b) => {
+            const aVal = parseInt(a.cols[csvIndices.player_wins]) || 0;
+            const bVal = parseInt(b.cols[csvIndices.player_wins]) || 0;
+            return aVal - bVal;
+        }
+    },
+    losses: {
+        id: 'losses',
+        title: 'Losses',
+        tooltip: 'Number of games lost by the model.',
+        getValue: (cols) => cols[csvIndices.opponent_wins],
+        isNumeric: true,
+        compareFn: (a, b) => {
+            const aVal = parseInt(a.cols[csvIndices.opponent_wins]) || 0;
+            const bVal = parseInt(b.cols[csvIndices.opponent_wins]) || 0;
+            return aVal - bVal;
+        }
+    },
+    draws: {
+        id: 'draws',
+        title: 'Draws',
+        tooltip: 'Number of games that ended in a draw.',
+        getValue: (cols) => cols[csvIndices.draws],
+        isNumeric: true,
+        compareFn: (a, b) => {
+            const aVal = parseInt(a.cols[csvIndices.draws]) || 0;
+            const bVal = parseInt(b.cols[csvIndices.draws]) || 0;
+            return aVal - bVal;
+        }
+    },
+    mistakesPerMove: {
+        id: 'mistakesPerMove',
+        title: 'Mistakes/1K',
+        tooltip: 'Number of mistakes per 1000 moves (e.g. haluscinating a move ort replying with uncrecognized action). Lower is better.',
+        getValue: (cols) => {
+            const value = parseFloat(cols[csvIndices.mistakes_per_1000moves]) || 0;
+            return value.toFixed(2);
+        },
+        isNumeric: true,
+        compareFn: (a, b) => {
+            const aVal = parseFloat(a.cols[csvIndices.mistakes_per_1000moves]) || 0;
+            const bVal = parseFloat(b.cols[csvIndices.mistakes_per_1000moves]) || 0;
+            return aVal - bVal;
+        }
+    },
+    materialDiff: {
+        id: 'materialDiff',
+        title: 'Material Diff',
+        tooltip: 'Average material difference (LLM minus opponent). Higher values indicate the model kept more pieces on the board.',
+        getValue: (cols) => {
+            const value = parseFloat(cols[csvIndices.material_diff_player_llm_minus_opponent]) || 0;
+            return value.toFixed(2);
+        },
+        isNumeric: true,
+        compareFn: (a, b) => {
+            const aVal = parseFloat(a.cols[csvIndices.material_diff_player_llm_minus_opponent]) || 0;
+            const bVal = parseFloat(b.cols[csvIndices.material_diff_player_llm_minus_opponent]) || 0;
+            return aVal - bVal;
+        }
+    },
+    gamesInterrupted: {
+        id: 'gamesInterrupted',
+        title: 'Games Interrupted',
+        tooltip: 'Percentage of games that were interrupted before completion due to LLM failing to make a move or abide by the instructions.',
+        getValue: (cols) => {
+            const value = parseFloat(cols[csvIndices.games_interrupted_percent]) || 0;
+            return (value).toFixed(2) + '%';
+        },
+        isNumeric: true,
+        compareFn: (a, b) => {
+            const aVal = parseFloat(a.cols[csvIndices.games_interrupted_percent]) || 0;
+            const bVal = parseFloat(b.cols[csvIndices.games_interrupted_percent]) || 0;
+            return aVal - bVal;
+        }
+    }
+};
+
+// Define default columns for each table
+const tableColumnSets = {
+    [Screen.LEADERBOARD_NEW]: ['rank', 'player', 'winLoss', 'gameDuration', 'tokens'],
+    [Screen.LEADERBOARD_EXT]: ['rank', 'player', 'winLoss', 'gameDuration', 'tokens', 'costPerGame', 'avgMoves']
+};
+
+// Define column preferences for extended table (will be loaded from localStorage)
+let extendedColumnPreferences = {
+    available: Object.keys(columnDefinitions).filter(id => id !== 'rank' && id !== 'player'),
+    selected: tableColumnSets[Screen.LEADERBOARD_EXT].filter(id => id !== 'rank' && id !== 'player'),
+    maxColumns: 7
+};
+
+// Default sort functions
+const defaultSortFunctions = {
+    [Screen.LEADERBOARD_NEW]: (colsA, colsB) => {
         const wlA = parseFloat(colsA[csvIndices.win_loss]) || 0;
         const wlB = parseFloat(colsB[csvIndices.win_loss]) || 0;
         const gdA = parseFloat(colsA[csvIndices.game_duration]) || 0;
@@ -236,9 +412,32 @@ const tableConfigs = {
         const tokB = parseFloat(colsB[csvIndices.completion_tokens_black_per_move]) || 0;
         // Sort by Win/Loss DESC, then Game Duration DESC, then Tokens ASC
         return (wlB - wlA) || (gdB - gdA) || (tokA - tokB);
-      }
     },
+    [Screen.LEADERBOARD_EXT]: (colsA, colsB) => {
+        const wlA = parseFloat(colsA[csvIndices.win_loss]) || 0;
+        const wlB = parseFloat(colsB[csvIndices.win_loss]) || 0;
+        const gdA = parseFloat(colsA[csvIndices.game_duration]) || 0;
+        const gdB = parseFloat(colsB[csvIndices.game_duration]) || 0;
+        const tokA = parseFloat(colsA[csvIndices.completion_tokens_black_per_move]) || 0;
+        const tokB = parseFloat(colsB[csvIndices.completion_tokens_black_per_move]) || 0;
+        const costA = parseFloat(colsA[csvIndices.average_game_cost]) || 0;
+        const costB = parseFloat(colsB[csvIndices.average_game_cost]) || 0;
+        // Sort by Win/Loss DESC, then Game Duration DESC, then Tokens ASC, then Cost ASC
+        return (wlB - wlA) || (gdB - gdA) || (tokA - tokB) || (costA - costB);
+    }
 };
+
+// Helper to get active columns for the current screen
+function getActiveColumns() {
+    if (currentScreen === Screen.LEADERBOARD_EXT) {
+        // For extended view, use the selected columns from preferences
+        const selectedIds = ['rank', 'player', ...extendedColumnPreferences.selected];
+        return selectedIds.map(id => columnDefinitions[id]);
+    } else {
+        // For other views, use the predefined column sets
+        return (tableColumnSets[currentScreen] || []).map(id => columnDefinitions[id]);
+    }
+}
 
 function showPane(screenId) {
     const scrollPos = window.scrollY;
@@ -256,10 +455,17 @@ function showPane(screenId) {
     
     currentScreen = screenId;
     
-    // Hide all panes
+    // Hide all panes first to reset state if elementId is reused
     Object.values(navConfig.screens).forEach(screen => {
         const element = document.getElementById(screen.elementId);
-        if (element) element.style.display = 'none';
+        if (element) {
+            element.style.display = 'none';
+            // Remove extended class if present
+            const container = element.querySelector('.table-container');
+            if (container) {
+                container.classList.remove('extended-table');
+            }
+        }
     });
     
     // Show the selected pane
@@ -271,7 +477,7 @@ function showPane(screenId) {
         if (button) button.classList.remove('selected');
     });
     
-    // Find and select the appropriate button - add null checks
+    // Find the button/dropdown corresponding to the screenId
     const parentDropdown = navConfig.dropdowns.find(dropdown => 
         dropdown.defaultScreen === screenId || 
         (dropdown.items && dropdown.items.some(item => item.screen === screenId))
@@ -301,6 +507,9 @@ function showPane(screenId) {
     if (screenConfig.onShow && typeof screenConfig.onShow === 'function') {
         screenConfig.onShow.call(screenConfig);
     }
+    
+    // Setup column selector after pane is shown
+    setupColumnSelector();
     
     // Restore scroll position
     window.scrollTo(0, scrollPos);
@@ -550,8 +759,8 @@ function toggleSnippet(button) {
 }
 
 function sortTable(columnIndex = null, newOrder = null) {
-    const config = tableConfigs[currentScreen];
     const sortOrderObj = sortOrderState[currentScreen];
+    const activeColumns = getActiveColumns();
     
     // If columnIndex is provided, handle sort order toggling
     if (columnIndex !== null) {
@@ -577,9 +786,9 @@ function sortTable(columnIndex = null, newOrder = null) {
     // Sort unfixed rows according to current criteria
     unfixedRows.sort((a, b) => {
         if (columnIndex === null) {
-            return config.defaultSortCompare(a.cols, b.cols);
+            return defaultSortFunctions[currentScreen](a.cols, b.cols);
         } else {
-            const col = config.columns[columnIndex];
+            const col = activeColumns[columnIndex];
             if (col.compareFn) {
                 const res = col.compareFn(a, b);
                 if (col.title === '#') {
@@ -604,7 +813,7 @@ function sortTable(columnIndex = null, newOrder = null) {
     allRows = [...fixedRows, ...unfixedRows, ...bottomRows];
     
     // Render the table
-    renderTable(config);
+    renderTable();
     
     // Update sort indicators
     if (columnIndex !== null) {
@@ -620,52 +829,248 @@ function sortTable(columnIndex = null, newOrder = null) {
     }
 }
 
-function buildFreshTable(config) {
-    const rowObjects = parsedCsvData.rows;
-    
-    // Separate regular and special rows
-    const normalRows = rowObjects.filter(row => {
-        const playerName = row.cols[csvIndices.player];
-        return !Object.values(SPECIAL_ROWS).includes(playerName);
-    });
-    
-    const specialRows = rowObjects.filter(row => {
-        const playerName = row.cols[csvIndices.player];
-        return Object.values(SPECIAL_ROWS).includes(playerName);
-    });
-    
-    // Sort normal rows by default criteria first
-    normalRows.sort((a, b) => config.defaultSortCompare(a.cols, b.cols));
-    
-    // Assign ranks that will never change
-    normalRows.forEach((row, i) => {
-        row.rank = i + 1;
-    });
-    
-    // Initialize all rows with default primarySort value
-    normalRows.forEach(row => {
-        row.primarySort = 9999;
-    });
-    
-    // Combine rows and set as allRows
-    allRows = [...normalRows, ...specialRows];
-    
-    // Sort with our new function to handle pinned rows
-    sortTable();
-    
-    // Clear thead and recreate th elements
-    const thead = document.querySelector('#leaderboard thead');
-    thead.innerHTML = '';
+function renderTable() {
+    const tbody = document.querySelector('#leaderboard tbody');
+    tbody.innerHTML = '';
+    const activeColumns = getActiveColumns();
 
-    const headerRow = document.createElement('tr');
-    config.columns.forEach((col, i) => {
-        const th = document.createElement('th');
-        th.textContent = col.title;
-        th.setAttribute('title', col.tooltip || col.title);
-        th.addEventListener('click', () => sortTable(i));
-        headerRow.appendChild(th);
+    allRows.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
+
+        // Add 'fixed' class to rows with primarySort < 9999
+        if (row.primarySort !== undefined && row.primarySort < 9999) {
+            tr.classList.add('fixed');
+        }
+
+        activeColumns.forEach((col) => {
+            let cellValue;
+            if (col.removeFromSpecialRows && isBottomRow) {
+                cellValue = '';
+            } else if (col.id === 'rank') {
+                // Always use the original rank (assigned once during buildFreshTable)
+                cellValue = row.rank || '';
+            } else {
+                cellValue = col.getValue(row.cols, idx);
+            }
+            const td = document.createElement('td');
+            td.textContent = cellValue;
+            tr.appendChild(td);
+        });
+
+        // Add event listeners
+        tr.addEventListener('mouseenter', () => showPlayerDetailsPopup(tr, row.cols));
+        tr.addEventListener('mouseleave', hidePopup);
+        tr.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            toggleRowFixed(row);
+        });
+        tr.addEventListener('click', () => {
+            showPlayerDetailsPopup(tr, row.cols);
+        });
+
+        tbody.appendChild(tr);
     });
-    thead.appendChild(headerRow);
+}
+
+function toggleRowFixed(row) {
+    const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
+    
+    // Skip special rows
+    if (isBottomRow) return;
+    
+    // Function to recalculate primarySort values to ensure they're sequential
+    function recalculatePrimarySortValues() {
+        // Get all fixed rows
+        const fixedRows = allRows.filter(row => 
+            row.primarySort !== undefined && row.primarySort < 9999
+        ).sort((a, b) => a.primarySort - b.primarySort);
+        
+        // Reassign primarySort values sequentially
+        fixedRows.forEach((row, index) => {
+            row.primarySort = index;
+        });
+        
+        // Update nextPrimarySortValue
+        nextPrimarySortValue = fixedRows.length;
+    }
+    
+    // If row is already fixed, unfix it
+    if (row.primarySort !== undefined && row.primarySort < 9999) {
+        row.primarySort = 9999;
+        
+        // Recalculate all primarySort values to ensure they're sequential
+        recalculatePrimarySortValues();
+    } else {
+        // Fix the row at the top with the next available primarySort value
+        row.primarySort = nextPrimarySortValue++;
+        
+        // Store original rank if not already set
+        if (row.originalRank === undefined) {
+            row.originalRank = row.rank;
+        }
+    }
+    
+    // Use sortTable to re-sort the rows
+    sortTable();
+}
+
+// Update setupColumnSelector to use the new column definitions
+function setupColumnSelector() {
+    const btn = document.getElementById('column-selector-btn');
+    const dropdown = document.getElementById('column-selector-dropdown');
+    const optionsContainer = document.getElementById('column-options');
+    
+    if (!btn || !dropdown || !optionsContainer) return;
+    
+    // Column selector is shown/hidden via CSS based on .extended-table class now
+    if (currentScreen !== Screen.LEADERBOARD_EXT) {
+        dropdown.classList.remove('show');
+        return;
+    }
+    
+    // Toggle dropdown visibility
+    btn.onclick = function(event) {
+        event.stopPropagation();
+        dropdown.classList.toggle('show');
+        
+        // If opening the dropdown, initialize options
+        if (dropdown.classList.contains('show')) {
+            populateColumnOptions();
+        }
+    };
+    
+    // Close dropdown when clicking outside
+    window.addEventListener('click', function(event) {
+        if (!dropdown.contains(event.target) && event.target !== btn) {
+            dropdown.classList.remove('show');
+        }
+    });
+    
+    // Close dropdown with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+        }
+    });
+}
+
+function populateColumnOptions() {
+    const optionsContainer = document.getElementById('column-options');
+    if (!optionsContainer) return;
+    
+    // Clear existing options
+    optionsContainer.innerHTML = '';
+    
+    // Create checkbox for each available column
+    extendedColumnPreferences.available.forEach(columnId => {
+        const column = columnDefinitions[columnId];
+        if (!column) return;
+        
+        const option = document.createElement('div');
+        option.className = 'column-option';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = 'col-' + columnId;
+        checkbox.checked = extendedColumnPreferences.selected.includes(columnId);
+        checkbox.disabled = !checkbox.checked && 
+                         extendedColumnPreferences.selected.length >= extendedColumnPreferences.maxColumns;
+        
+        const label = document.createElement('label');
+        label.htmlFor = 'col-' + columnId;
+        label.textContent = column.title;
+        
+        // Handle checkbox change
+        checkbox.onchange = function() {
+            if (this.checked) {
+                // Add column if not already selected and under max limit
+                if (!extendedColumnPreferences.selected.includes(columnId) && 
+                    extendedColumnPreferences.selected.length < extendedColumnPreferences.maxColumns) {
+                    extendedColumnPreferences.selected.push(columnId);
+                }
+            } else {
+                // Remove column if selected
+                const index = extendedColumnPreferences.selected.indexOf(columnId);
+                if (index !== -1) {
+                    extendedColumnPreferences.selected.splice(index, 1);
+                }
+            }
+            
+            // Update checkbox states based on selection
+            updateCheckboxStates();
+            
+            // Save to localStorage
+            saveColumnSelectionToStorage();
+            
+            // Rebuild table with new column selection
+            buildFreshTable();
+            
+            // Update table width based on selected columns
+            updateExtendedTableWidth();
+        };
+        
+        option.appendChild(checkbox);
+        option.appendChild(label);
+        optionsContainer.appendChild(option);
+    });
+}
+
+function updateCheckboxStates() {
+    const maxReached = extendedColumnPreferences.selected.length >= extendedColumnPreferences.maxColumns;
+    
+    // Update all checkboxes
+    extendedColumnPreferences.available.forEach(columnId => {
+        const checkbox = document.getElementById('col-' + columnId);
+        if (checkbox) {
+            // Disable unchecked boxes if max is reached
+            checkbox.disabled = !checkbox.checked && maxReached;
+        }
+    });
+}
+
+function saveColumnSelectionToStorage() {
+    try {
+        localStorage.setItem('columnSelection', JSON.stringify(extendedColumnPreferences.selected));
+    } catch (e) {
+        console.error('Failed to save column selection to localStorage:', e);
+    }
+}
+
+function tryLoadColumnSelectionFromStorage() {
+    try {
+        const saved = localStorage.getItem('columnSelection');
+        if (saved) {
+            const savedSelection = JSON.parse(saved);
+            
+            // Validate saved selection
+            const validSelection = savedSelection.filter(id => 
+                extendedColumnPreferences.available.includes(id)
+            );
+            
+            // Only use valid selection if not empty and within limits
+            if (validSelection.length > 0 && validSelection.length <= extendedColumnPreferences.maxColumns) {
+                extendedColumnPreferences.selected = validSelection;
+            } else {
+                // If saved selection is invalid, reset to defaults
+                extendedColumnPreferences.selected = tableColumnSets[Screen.LEADERBOARD_EXT]
+                    .filter(id => id !== 'rank' && id !== 'player');
+                
+                // Save correct defaults back to localStorage
+                saveColumnSelectionToStorage();
+            }
+            
+            // Update table width if we're in extended view
+            if (currentScreen === Screen.LEADERBOARD_EXT) {
+                updateExtendedTableWidth();
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load column selection from localStorage:', e);
+        // Reset to defaults on error
+        extendedColumnPreferences.selected = tableColumnSets[Screen.LEADERBOARD_EXT]
+            .filter(id => id !== 'rank' && id !== 'player');
+    }
 }
 
 function initializeMatrixView() {
@@ -716,7 +1121,7 @@ function renderPlayerMatrix() {
             }
         },
         // Simple hardcoded list of models to label
-        labeledModels: ["o1-2024-12-17-low", "o1-preview-2024-09-12", "o3-mini-2025-01-31-medium", "o1-mini-2024-09-12", "deepseek-reasoner-r1", "claude-v3-5-sonnet-v1", "grok-2-1212", "gemini-2.0-flash-lite-001" ]
+        labeledModels: ["gemini-2.5-pro-preview-03-25","o3-2025-04-16-low", "o1-2024-12-17-medium", "claude-v3-7-sonnet-thinking_1024", "o4-mini-2025-04-16-low", "o1-2024-12-17-low", "o1-preview-2024-09-12", "o3-mini-2025-01-31-medium", "o1-mini-2024-09-12", "deepseek-reasoner-r1", "claude-v3-5-sonnet-v1", "grok-2-1212", "gemini-2.0-flash-lite-001" ]
     };
 
     const canvas = document.getElementById('player-matrix');
@@ -746,10 +1151,9 @@ function renderPlayerMatrix() {
     // Use pre-parsed data instead of parsing again
     const normalRows = parsedCsvData.normalRows;
     
-    // Use the default sort function from tableConfigs to sort rows the same way as the leaderboard
-    const tableConfig = tableConfigs[Screen.LEADERBOARD_NEW];
+    // Use the default sort function from defaultSortFunctions to sort rows the same way as the leaderboard
     const sortedRows = [...normalRows].sort((a, b) => 
-        tableConfig.defaultSortCompare(a.cols, b.cols));
+        defaultSortFunctions[Screen.LEADERBOARD_NEW](a.cols, b.cols));
     
     // Get all player names (no top 10 limit)
     const allPlayers = sortedRows.map(row => row.cols[csvIndices.player]);
@@ -1158,87 +1562,81 @@ window.addEventListener('resize', function() {
     }
 });
 
-function renderTable(config) {
-    const tbody = document.querySelector('#leaderboard tbody');
-    tbody.innerHTML = '';
-
-    allRows.forEach((row, idx) => {
-        const tr = document.createElement('tr');
-        const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
-        
-        // Add 'fixed' class to rows with primarySort < 9999
-        if (row.primarySort !== undefined && row.primarySort < 9999) {
-            tr.classList.add('fixed');
-        }
-        
-        config.columns.forEach((col) => {
-            let cellValue;
-            if (col.removeFromSpecialRows && isBottomRow) {
-                cellValue = '';
-            } else if (col.title === '#') {
-                // Always use the original rank (assigned once during buildFreshTable)
-                cellValue = row.rank || '';
-            } else {
-                cellValue = col.getValue(row.cols, idx);
-            }
-            const td = document.createElement('td');
-            td.textContent = cellValue;
-            tr.appendChild(td);
-        });
-        
-        // Add event listeners
-        tr.addEventListener('mouseenter', () => showPlayerDetailsPopup(tr, row.cols));
-        tr.addEventListener('mouseleave', hidePopup);
-        tr.addEventListener('dblclick', (e) => {
-            e.preventDefault();
-            toggleRowFixed(row, config);
-        });
-        tr.addEventListener('click', () => {
-            showPlayerDetailsPopup(tr, row.cols);
-        });
-        
-        tbody.appendChild(tr);
+// Replace buildFreshTable with the updated implementation
+function buildFreshTable() {
+    const rowObjects = parsedCsvData.rows;
+    
+    // Separate regular and special rows
+    const normalRows = rowObjects.filter(row => {
+        const playerName = row.cols[csvIndices.player];
+        return !Object.values(SPECIAL_ROWS).includes(playerName);
     });
+    
+    const specialRows = rowObjects.filter(row => {
+        const playerName = row.cols[csvIndices.player];
+        return Object.values(SPECIAL_ROWS).includes(playerName);
+    });
+    
+    // Sort normal rows by default criteria first
+    normalRows.sort((a, b) => defaultSortFunctions[currentScreen](a.cols, b.cols));
+    
+    // Assign ranks that will never change
+    normalRows.forEach((row, i) => {
+        row.rank = i + 1;
+    });
+    
+    // Initialize all rows with default primarySort value
+    normalRows.forEach(row => {
+        row.primarySort = 9999;
+    });
+    
+    // Combine rows and set as allRows
+    allRows = [...normalRows, ...specialRows];
+    
+    // Sort with our new function to handle pinned rows
+    sortTable();
+    
+    // Clear thead and recreate th elements
+    const thead = document.querySelector('#leaderboard thead');
+    thead.innerHTML = '';
+
+    const headerRow = document.createElement('tr');
+    const activeColumns = getActiveColumns();
+    
+    activeColumns.forEach((col, i) => {
+        const th = document.createElement('th');
+        th.textContent = col.title;
+        th.setAttribute('title', col.tooltip || col.title);
+        th.addEventListener('click', () => sortTable(i));
+        headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
 }
 
-function toggleRowFixed(row, config) {
-    const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
+// Add function to update table width based on column count
+function updateExtendedTableWidth() {
+    if (currentScreen !== Screen.LEADERBOARD_EXT) return;
     
-    // Skip special rows
-    if (isBottomRow) return;
+    const container = document.getElementById('leaderboard').querySelector('.table-container');
+    if (!container) return;
     
-    // Function to recalculate primarySort values to ensure they're sequential
-    function recalculatePrimarySortValues() {
-        // Get all fixed rows
-        const fixedRows = allRows.filter(row => 
-            row.primarySort !== undefined && row.primarySort < 9999
-        ).sort((a, b) => a.primarySort - b.primarySort);
-        
-        // Reassign primarySort values sequentially
-        fixedRows.forEach((row, index) => {
-            row.primarySort = index;
-        });
-        
-        // Update nextPrimarySortValue
-        nextPrimarySortValue = fixedRows.length;
-    }
+    // Base number of data columns in standard view (excluding rank and player)
+    const baseDataColumns = 3;
     
-    // If row is already fixed, unfix it
-    if (row.primarySort !== undefined && row.primarySort < 9999) {
-        row.primarySort = 9999;
-        
-        // Recalculate all primarySort values to ensure they're sequential
-        recalculatePrimarySortValues();
-    } else {
-        // Fix the row at the top with the next available primarySort value
-        row.primarySort = nextPrimarySortValue++;
-        
-        // Store original rank if not already set
-        if (row.originalRank === undefined) {
-            row.originalRank = row.rank;
-        }
-    }
+    // Get current number of selected data columns
+    const currentDataColumns = extendedColumnPreferences.selected.length;
     
-    // Use sortTable to re-sort the rows
-    sortTable();
+    // Calculate additional margin needed (85px per extra column)
+    const extraColumns = Math.max(0, currentDataColumns - baseDataColumns);
+    const extraWidth = extraColumns * 85;
+    
+    // Base margin is 75px on each side (150px total)
+    const baseMargin = 40;
+    
+    // Calculate new margins (divide extra width equally)
+    const newMargin = baseMargin + Math.floor(extraWidth / 2);
+    
+    // Update the container style
+    container.style.marginLeft = `-${newMargin}px`;
+    container.style.marginRight = `-${newMargin}px`;
 }

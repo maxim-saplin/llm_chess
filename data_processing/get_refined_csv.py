@@ -32,11 +32,33 @@ except ImportError:
     from data_processing.aggregate_logs_to_csv import aggregate_models_to_csv, MODEL_OVERRIDES
 
 # Define a list of log directories to process
+# if key/value is provided, the key is the directory path and the value is the alias for all models in that directory
 LOGS_DIRS = [
     "_logs/no_reflection",
     "_logs/new/deepseek-v3-0324",
     "_logs/new/anthropic.claude-v3-5-haiku",
     "_logs/new/mercury-coder-small",
+    "_logs/new/non_gpt-4o-mini-2024-07-18_t00_07_03",
+    "_logs/new/gpt-4o-mini-2024-07-18_moa_baseline_2025-04-12",
+    {"_logs/new/llama-4-scout-17b-16e-instruct" : "llama-4-scout-cerebras"},
+    "_logs/new/gpt-4.1-mini-2025-04-14",
+    "_logs/new/gpt-4.1-nano-2025-04-14",
+    "_logs/new/gpt-4.5-preview-2025-02-27_openai",
+    "_logs/new/gpt-4.5-preview-2025-02-27",
+    {"_logs/new/o4-mini-2025-04-16-low": "o4-mini-2025-04-16-low"},
+    {"_logs/new/o4-mini-2025-04-16-medium": "o4-mini-2025-04-16-medium"},
+    {"_logs/new/o4-mini-2025-04-16-high": "o4-mini-2025-04-16-high"},
+    {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_1024": "claude-v3-7-sonnet-thinking_1024"},
+    {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_2048": "claude-v3-7-sonnet-thinking_2048"},
+    {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_5000": "claude-v3-7-sonnet-thinking_5000"},
+    {"_logs/new/o1-2024-12-17-medium": "o1-2024-12-17-medium"},
+    {"_logs/new/o1-2024-12-17-medium_openai": "o1-2024-12-17-medium"},
+    {"_logs/ensemble-ai/gpt-4.1-mini-2025-04-14_t00_t07_t03": "non_gpt-4.1-mini-2025-04-14_t00_t07_t03"},
+    {"_logs/ensemble-ai/gpt-4.1-nano-2025-04-14_t00_t07_t03": "non-gpt-4.1-nano-2025-04-14_t00_t07_t03"},
+    {"_logs/new/o3-2025-04-16-low-timeout1200": "o3-2025-04-16-low"},
+    {"_logs/new/o3-mini-2025-01-31-high_openai-timeout1200": "o3-mini-2025-01-31-high"},
+    {"_logs/new/o3-mini-2025-01-31-high": "o3-mini-2025-01-31-high"},
+    "_logs/new/gemini-2.5-pro-preview-03-25"
     # "_logs/new"
 ]
 
@@ -306,6 +328,22 @@ def print_leaderboard(csv_file, top_n=None):
         total_cost_str = f"${total_cost:.2f}"
         total_cost_all_models += total_cost
         
+        # Calculate estimated time per game - simplified approach
+        avg_moves = float(row['average_moves'])
+        tokens_per_game = tokens * avg_moves
+        # Multiply by 1.05 to account for input processing time
+        adjusted_tokens = tokens_per_game * 1.05
+        # Assume 100 tokens/second processing speed
+        total_time = adjusted_tokens / 100  # seconds
+        
+        # Format time based on duration
+        if total_time < 60:
+            time_str = f"{total_time:.1f}s"
+        elif total_time < 3600:
+            time_str = f"{total_time/60:.1f}m"
+        else:
+            time_str = f"{total_time/3600:.2f}h"
+        
         rows.append([
             rank,
             player_name,
@@ -313,12 +351,13 @@ def print_leaderboard(csv_file, top_n=None):
             game_duration,
             tokens_str,
             cost_str,
+            time_str,
             total_games,
             total_cost_str
         ])
     
     # Print the table with headers
-    headers = ['#', 'Player', 'Win/Loss', 'Game Duration', 'Tokens', 'Cost/Game', 'Games', 'Total Cost']
+    headers = ['#', 'Player', 'Win/Loss', 'Game Duration', 'Tokens', 'Cost/Game', 'Time/Game', 'Games', 'Total Cost']
     print(tabulate(rows, headers=headers, tablefmt='grid'))
     print(f"\nTotal cost across all models: ${total_cost_all_models:.2f}")
 
@@ -348,6 +387,7 @@ def main():
     print("- Game Duration: Percentage of maximum possible game length completed (0-100%). Higher indicates better instruction following.")
     print("- Tokens: Number of tokens generated per move. Shows model verbosity/efficiency.")
     print("- Cost/Game: Average cost per game with margin of error. Lower is more economical.")
+    print("- Time/Game: Estimated time per game (output at 100 tok/s + 5% input processing time).")
     print("- Total Cost: Total cost across all games for this model.")
 
 

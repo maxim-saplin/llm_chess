@@ -5,16 +5,53 @@ import json
 import time
 import os
 import requests
-import llm_chess 
 import shutil
 import tempfile
+from tests.mock_openai_server import start_server
+
+# White player settings
+os.environ["MODEL_KIND_W"] = "azure"
+os.environ["AZURE_OPENAI_VERSION_W"] = "2024-02-15-preview"
+os.environ["AZURE_OPENAI_ENDPOINT_W"] = "http://localhost:8000/v1"
+os.environ["AZURE_OPENAI_KEY_W"] = "your-azure-key"
+os.environ["AZURE_OPENAI_DEPLOYMENT_W"] = "gpt-4o"
+
+# Black player settings
+os.environ["MODEL_KIND_B"] = "local"
+os.environ["LOCAL_MODEL_NAME_B"] = "gpt-3.5-turbo"
+os.environ["LOCAL_BASE_URL_B"] = "http://localhost:8080/v1"
+os.environ["LOCAL_API_KEY_B"] = "mock-key"
+
+# Importing after env vars are set
+import llm_chess
 from llm_chess import (
     PlayerType,
     run,
     TerminationReason
 )
-from tests.mock_openai_server import start_server
 
+class _MockServerTestCaseBase(unittest.TestCase):
+    """Base class for tests requiring a mock OpenAI server."""
+    server_process: multiprocessing.Process | None = None
+    temp_dir: str | None = None
+
+    @classmethod
+    def setUpClass(cls):
+        # Start mock OpenAI server in a separate process
+        cls.server_process = multiprocessing.Process(target=start_server, args=(8080,))
+        cls.server_process.start()
+        time.sleep(2)  # Wait for server to start
+        cls.temp_dir = tempfile.mkdtemp(prefix="test_llm_chess_integration_")
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls.server_process and cls.server_process.is_alive(): # Keep basic check if process exists
+            cls.server_process.terminate()
+            cls.server_process.join()
+            
+        if cls.temp_dir and os.path.exists(cls.temp_dir): # Keep basic check if dir exists
+            shutil.rmtree(cls.temp_dir, ignore_errors=True)
+        cls.temp_dir = None # Ensure temp_dir is reset
 
 class TestRandomVsRandomGame(unittest.TestCase):
     def setUp(self):
@@ -58,30 +95,16 @@ class TestRandomVsRandomGame(unittest.TestCase):
         self.assertEqual(game_stats["reason"], TerminationReason.MAX_MOVES.value)
 
 
-class TestLLMvsRandomGame(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # Start mock OpenAI server in a separate process
-        cls.server_process = multiprocessing.Process(target=start_server, args=(8080,))
-        cls.server_process.start()
-        time.sleep(2)  # Wait for server to start
-        
-        # Configure environment for local OpenAI-compatible endpoint
-        os.environ["MODEL_KIND_B"] = "local"
-        os.environ["LOCAL_MODEL_NAME_B"] = "gpt-3.5-turbo"
-        os.environ["LOCAL_BASE_URL_B"] = "http://localhost:8080/v1"
-        os.environ["LOCAL_API_KEY_B"] = "mock-key"
-        cls.temp_dir = tempfile.mkdtemp(prefix="test_llm_chess_integration_")
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.server_process.terminate()
-        cls.server_process.join()
-        shutil.rmtree(cls.temp_dir, ignore_errors=True)
-
+class TestLLMvsRandomGame(_MockServerTestCaseBase):
     def setUp(self):
         # Reset the mock OpenAI server state before each test
-        requests.post("http://localhost:8080/v1/reset", json={"useNegative": False, "useThinking": False})
+        try:
+            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "default", "useThinking": False}, timeout=10) 
+            response.raise_for_status() 
+            print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
+        except requests.exceptions.RequestException as e:
+            self.fail(f"Failed to reset mock server: {e}") 
+            
         # Configure game settings for testing
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
         llm_chess.black_player_type = PlayerType.LLM_BLACK
@@ -198,13 +221,11 @@ class TestLLMvsRandomGame(unittest.TestCase):
         checks that game_stats and the saved JSON log match.
         """
         llm_chess.max_game_moves = 6  # override for a short test
-        game_stats, _, _ = run(log_dir=self.temp_dir)
+        game_stats, player_white, player_black = run(log_dir=self.temp_dir)
         self.assertIn("winner", game_stats)
         self.assertIn("reason", game_stats)
         self.assertLessEqual(game_stats["number_of_moves"], 6)
 
-        # Verify the JSON log file is produced
-        import os, json
         log_filepath = os.path.join(self.temp_dir, f"{game_stats['time_started']}.json")
         self.assertTrue(os.path.exists(log_filepath), "Expected game result JSON not found.")
         with open(log_filepath, "r") as f:
@@ -224,6 +245,7 @@ class TestLLMvsRandomGame(unittest.TestCase):
                 "get_board_count": 0,
                 "get_legal_moves_count": 3,
                 "make_move_count": 3,
+                "accumulated_reply_time_seconds": round(player_white.accumulated_reply_time_seconds, 3),
                 "model": "N/A"
             },
             "material_count": {
@@ -239,6 +261,7 @@ class TestLLMvsRandomGame(unittest.TestCase):
                 "get_board_count": 3,
                 "get_legal_moves_count": 3,
                 "make_move_count": 3,
+                "accumulated_reply_time_seconds": round(player_black.accumulated_reply_time_seconds, 3),
                 "model": "gpt-3.5-turbo"
             },
             "usage_stats": {
@@ -469,6 +492,191 @@ class TestRandomVsStockfishGame(unittest.TestCase):
         self.assertGreater(game_stats["material_count"]["black"], game_stats["material_count"]["white"])
 
         self.assertEqual(game_stats["reason"] , TerminationReason.CHECKMATE.value)
+
+
+class TestRandomVsNonGame(_MockServerTestCaseBase):
+    """
+    TestRandomVsNonGame tests the integration of a random player against the Non agent.
+    """
+    def setUp(self):
+        try:
+            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "non", "useThinking": False}, timeout=5)
+            response.raise_for_status()
+            print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
+        except requests.exceptions.RequestException as e:
+            self.fail(f"Failed to reset mock server: {e}")
+
+        llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
+        llm_chess.black_player_type = PlayerType.LLM_NON
+        llm_chess.max_game_moves = 10 
+        llm_chess.visualize_board = False
+        llm_chess.throttle_delay = 0
+        llm_chess.dialog_turn_delay = 0
+        llm_chess.random_print_board = False
+
+    def test_game(self):
+        game_stats, player_white, player_black = run(log_dir=None)
+        
+        # Basic game completion checks
+        self.assertIsNotNone(game_stats)
+        self.assertIsNotNone(game_stats["winner"])
+        self.assertEqual(game_stats["reason"], "Max moves reached")
+        
+        self.assertLessEqual(game_stats["number_of_moves"], 10)
+        
+        self.assertEqual(player_white.name, "Random_Player")
+        self.assertEqual(player_black.name, "NoN_Synthesizer")
+        
+        self.assertEqual(game_stats["player_white"]["wrong_moves"], 0)
+        self.assertEqual(game_stats["player_white"]["wrong_actions"], 0)
+        self.assertEqual(game_stats["player_black"]["wrong_moves"], 0)
+        self.assertEqual(game_stats["player_black"]["wrong_actions"], 0)
+
+        self.assertEqual(game_stats["usage_stats"]["black"]["non"]["prompt_tokens"], 450)
+
+    
+    def test_non_max_turns_in_dialog(self):
+        """
+        Test that the game ends with MAX_TURNS when the NoN LLM keeps requesting the board
+        without making a move, hitting the max_llm_turns limit.
+        """
+        try:
+            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "non_max_turns", "useThinking": False}, timeout=5)
+            response.raise_for_status()
+            print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
+        except requests.exceptions.RequestException as e:
+            self.fail(f"Failed to reset mock server: {e}")
+            
+        llm_chess.max_game_moves = 100  # Set higher to ensure we hit max turns first
+        llm_chess.max_llm_turns = 10  # Set a low value to trigger quickly
+        
+        game_stats, _, _ = run(log_dir=None)
+
+        # Verify the game ended due to max turns in a dialog
+        self.assertEqual(game_stats["reason"], TerminationReason.MAX_TURNS.value)
+        self.assertEqual(game_stats["winner"], "Random_Player")  # White player should win
+        self.assertEqual(game_stats["number_of_moves"], 2) 
+        
+        # Verify usage stats are correct
+        self.assertIn("non", game_stats["usage_stats"]["black"])
+        self.assertGreater(game_stats["usage_stats"]["black"]["non"]["prompt_tokens"], 0)
+        self.assertGreater(game_stats["usage_stats"]["black"]["non"]["completion_tokens"], 0)
+        self.assertGreater(game_stats["usage_stats"]["black"]["non"]["total_tokens"], 0)
+
+
+    def test_non_max_moves_reached(self):
+        """
+        Test that the game ends with MAX_MOVES when the maximum number of moves is reached
+        with the NoN agent.
+        """
+        try:
+            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "non_max_moves", "useThinking": False}, timeout=5)
+            response.raise_for_status()
+            print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
+        except requests.exceptions.RequestException as e:
+            self.fail(f"Failed to reset mock server: {e}")
+            
+        llm_chess.max_game_moves = 4  # Set low to trigger max moves quickly
+        
+        game_stats, _, _ = run(log_dir=None)
+        
+        # Verify the game ended due to max moves
+        self.assertEqual(game_stats["reason"], TerminationReason.MAX_MOVES.value)
+        self.assertEqual(game_stats["winner"], "NONE")  # No winner
+        self.assertEqual(game_stats["number_of_moves"], 4)  # Should reach exactly 4 moves
+        
+        # Verify usage stats are correct
+        self.assertIn("non", game_stats["usage_stats"]["black"])
+        self.assertGreater(game_stats["usage_stats"]["black"]["non"]["prompt_tokens"], 0)
+        self.assertGreater(game_stats["usage_stats"]["black"]["non"]["completion_tokens"], 0)
+        self.assertGreater(game_stats["usage_stats"]["black"]["non"]["total_tokens"], 0)
+
+    def test_non_per_agent_usage_stats(self):
+        """
+        Test that per-agent usage stats are correctly recorded in the JSON log
+        for the NoN agent and absent for the non-NoN agent.
+        """
+        # Ensure the 'non' scenario is active (done in setUp)
+        llm_chess.max_game_moves = 2 # Short game
+
+        # Run the game and ensure logging happens to the temp directory
+        game_stats_runtime, player_white, player_black = run(log_dir=self.temp_dir)
+        self.assertIsNotNone(game_stats_runtime, "Game did not run successfully.")
+        self.assertIsNotNone(self.temp_dir, "Temp directory not set.")
+
+        # --- Verify Runtime Stats ---
+        
+        # Verify that the total tokens in player_black match the sum of per-agent tokens
+        self.assertTrue(hasattr(player_black, 'total_prompt_tokens'), "Runtime player_black missing 'total_prompt_tokens'.")
+        self.assertTrue(hasattr(player_black, 'total_completion_tokens'), "Runtime player_black missing 'total_completion_tokens'.")
+        self.assertTrue(hasattr(player_black, 'total_tokens'), "Runtime player_black missing 'total_tokens'.")
+        
+        # Calculate sums from per-agent stats
+        sum_prompt_tokens = 0
+        sum_completion_tokens = 0
+        sum_total_tokens = 0
+        
+        for agent_stats in player_black.usage_stats_per_agent:
+            for model, data in agent_stats.items():
+                if model != "total_cost" and isinstance(data, dict):
+                    sum_prompt_tokens += data.get("prompt_tokens", 0)
+                    sum_completion_tokens += data.get("completion_tokens", 0)
+                    sum_total_tokens += data.get("total_tokens", 0)
+        
+        # Verify the totals match the sums
+        self.assertEqual(player_black.total_prompt_tokens, sum_prompt_tokens, 
+                         "Total prompt tokens doesn't match sum of per-agent prompt tokens")
+        self.assertEqual(player_black.total_completion_tokens, sum_completion_tokens, 
+                         "Total completion tokens doesn't match sum of per-agent completion tokens")
+        self.assertEqual(player_black.total_tokens, sum_total_tokens, 
+                         "Total tokens doesn't match sum of per-agent total tokens")
+
+        # Construct the expected log file path
+        log_filepath = os.path.join(self.temp_dir, f"{game_stats_runtime['time_started']}.json")
+        self.assertTrue(os.path.exists(log_filepath), f"Expected game log JSON not found at {log_filepath}")
+
+        # Read the logged JSON data
+        with open(log_filepath, "r") as f:
+            logged_stats = json.load(f)
+
+        # --- Verify JSON Structure ---
+
+        # Verify white player (Random) does NOT have per-agent stats in the LOG FILE
+        self.assertNotIn("usage_stats_per_non_agent_white", logged_stats, 
+                         "Logged JSON: White player (Random) should not have per-agent stats.")
+        self.assertFalse(hasattr(player_white, 'usage_stats_per_agent')) # Check runtime object too
+
+        # Verify black player (NoN) DOES have per-agent stats in the LOG FILE
+        self.assertIn("usage_stats_per_non_agent_black", logged_stats,
+                      "Logged JSON: Black player (NoN) should have per-agent stats.")
+        self.assertTrue(hasattr(player_black, 'usage_stats_per_agent')) # Check runtime object too
+        
+        per_agent_stats_black_logged = logged_stats["usage_stats_per_non_agent_black"]
+        self.assertIsInstance(per_agent_stats_black_logged, list, "Logged JSON: 'usage_stats_per_non_agent_black' should be a list.")
+        
+        # Check the length matches number of LLMs + Synthesizer based on the runtime player object
+        self.assertTrue(hasattr(player_black, 'llm_configs'), "Runtime player_black missing 'llm_configs'.")
+        expected_num_agents = len(player_black.llm_configs) + 1
+        self.assertEqual(len(per_agent_stats_black_logged), expected_num_agents, 
+                         f"Logged JSON: Expected stats for {len(player_black.llm_configs)} LLMs + 1 Synthesizer, found {len(per_agent_stats_black_logged)}.") 
+
+        # Verify structure of each agent's stats within the LOG FILE
+        for i, agent_stat_logged in enumerate(per_agent_stats_black_logged):
+            self.assertIsInstance(agent_stat_logged, dict, f"Logged JSON: Agent stat at index {i} is not a dict.")
+            self.assertIn("prompt_tokens", agent_stat_logged, f"Logged JSON: Missing 'prompt_tokens' in agent stat at index {i}.")
+            self.assertIn("completion_tokens", agent_stat_logged, f"Logged JSON: Missing 'completion_tokens' in agent stat at index {i}.")
+            self.assertIn("total_tokens", agent_stat_logged, f"Logged JSON: Missing 'total_tokens' in agent stat at index {i}.")
+            
+            # Check if tokens are non-negative in the LOG FILE
+            self.assertIsInstance(agent_stat_logged["prompt_tokens"], int, f"Logged JSON: 'prompt_tokens' not an int at index {i}.")
+            self.assertIsInstance(agent_stat_logged["completion_tokens"], int, f"Logged JSON: 'completion_tokens' not an int at index {i}.")
+            self.assertIsInstance(agent_stat_logged["total_tokens"], int, f"Logged JSON: 'total_tokens' not an int at index {i}.")
+            self.assertGreaterEqual(agent_stat_logged["prompt_tokens"], 0, f"Logged JSON: 'prompt_tokens' negative at index {i}.")
+            self.assertGreaterEqual(agent_stat_logged["completion_tokens"], 0, f"Logged JSON: 'completion_tokens' negative at index {i}.")
+            self.assertGreaterEqual(agent_stat_logged["total_tokens"], 0, f"Logged JSON: 'total_tokens' negative at index {i}.")
+            self.assertEqual(agent_stat_logged["total_tokens"], agent_stat_logged["prompt_tokens"] + agent_stat_logged["completion_tokens"],
+                             f"Logged JSON: Total tokens mismatch at index {i}.")
+
 
 if __name__ == "__main__":
     unittest.main()
