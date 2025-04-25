@@ -40,7 +40,7 @@ def calculate_material_count(board):
     return white_material, black_material
 
 
-load_dotenv()
+load_dotenv(override=False) # Don not override vals if already present, e.g. in test_llm_chess_integration.py
 
 
 def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=None):
