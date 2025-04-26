@@ -45,9 +45,9 @@ LOGS_DIRS = [
     "_logs/new/gpt-4.1-nano-2025-04-14",
     "_logs/new/gpt-4.5-preview-2025-02-27_openai",
     "_logs/new/gpt-4.5-preview-2025-02-27",
-    {"_logs/new/o4-mini-2025-04-16-low": "o4-mini-2025-04-16-low"},
+    # {"_logs/new/o4-mini-2025-04-16-low": "o4-mini-2025-04-16-low"},
     {"_logs/new/o4-mini-2025-04-16-medium": "o4-mini-2025-04-16-medium"},
-    {"_logs/new/o4-mini-2025-04-16-high": "o4-mini-2025-04-16-high"},
+    # {"_logs/new/o4-mini-2025-04-16-high": "o4-mini-2025-04-16-high"},
     {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_1024": "claude-v3-7-sonnet-thinking_1024"},
     {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_2048": "claude-v3-7-sonnet-thinking_2048"},
     {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_5000": "claude-v3-7-sonnet-thinking_5000"},
@@ -55,9 +55,8 @@ LOGS_DIRS = [
     {"_logs/new/o1-2024-12-17-medium_openai": "o1-2024-12-17-medium"},
     {"_logs/ensemble-ai/gpt-4.1-mini-2025-04-14_t00_t07_t03": "non_gpt-4.1-mini-2025-04-14_t00_t07_t03"},
     {"_logs/ensemble-ai/gpt-4.1-nano-2025-04-14_t00_t07_t03": "non-gpt-4.1-nano-2025-04-14_t00_t07_t03"},
-    {"_logs/new/o3-2025-04-16-low-timeout1200": "o3-2025-04-16-low"},
-    {"_logs/new/o3-mini-2025-01-31-high_openai-timeout1200": "o3-mini-2025-01-31-high"},
-    {"_logs/new/o3-mini-2025-01-31-high": "o3-mini-2025-01-31-high"},
+    {"_logs/new/o3-2025-04-16-medium-timeout1200": "o3-2025-04-16-medium"},
+    # {"_logs/new/o3-mini-2025-01-31-high": "o3-mini-2025-01-31-high"},
     "_logs/new/gemini-2.5-pro-preview-03-25"
     # "_logs/new"
 ]
