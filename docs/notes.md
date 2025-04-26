@@ -1,9 +1,11 @@
 # April 21, 2025: A pack of models, new reasoning models' records
 
+`Updated on April 26, fixed rinconsistencies due to misreporting reasoning efforts for o3 and o4 mini.`
+
 Over the past weeks I've added plenty of models. The most exciting results have been brought by OpenAI `o3` and `o4-mini` reasoning models:
 
-- `o4-mini` demonstrated solid performance at a reasonable cost. Curiously higher effort levels showed worse performance while showing little variation in tokens consumed. Is this unresponsiveness to reasoning effort a bug or a feature? In any way `o4-mini-low` is the best value for money at the moment: 86.9% Win/Loss score at an average cost of a game of $1 vs `o1-2024-12-17-low` scoring 78.7% and one game costing $13.5. And the models demonstrated perfect prompt stability showcasing 100% game duration.
-- `o3-low` was on its way to saturate the leaderboard and score 100% wins. It showed very solid chess performance with an average game duration of 36 moves - coming close to Stockfish v17 at max skill level of 20 (on average it took 28 moves for the Stockfish to win over random player). Yet the games were occasionally interrupted by timeout errors. I tried increasing the default 10 minute timeout to 20 minutes to mitigate the breakdowns and still out of 53 games 5 games were halted due to a timeout giving the model 90.6% Win/Loss and just 90% Game Duration. Treating timeouts as errors as the model went into a failure mode mid game refusing to return an answer within a reasonable timeframe. Will the models struggle with certain board positions and fail to saturate the bench (100% Win/Loss) due to occasional breakdowns? Let's see.
+- `o4-mini` demonstrated solid performance at a reasonable cost. `o4-mini-medium` is the best value for money at the moment: 83.3% Win/Loss score at an average cost of a game of $1 vs `o1-2024-12-17-low` scoring 78.7% and one game costing $13.5. And the models demonstrated perfect prompt stability showcasing 100% game duration.
+- `o3-medium` was on its way to saturate the leaderboard and score 100% wins. It showed very solid chess performance with an average game duration of 36 moves - coming close to Stockfish v17 at max skill level of 20 (on average it took 28 moves for the Stockfish to win over random player). Yet the games were occasionally interrupted by timeout errors. I tried increasing the default 10 minute timeout to 20 minutes to mitigate the breakdowns and still out of 53 games 5 games were halted due to a timeout giving the model 90.6% Win/Loss and just 90% Game Duration. Treating timeouts as errors as the model went into a failure mode mid game refusing to return an answer within a reasonable timeframe. Will the models struggle with certain board positions and fail to saturate the bench (100% Win/Loss) due to occasional breakdowns? Let's see.
 - `o1-2024-12-17-medium` - the model takes #3 in the leaderboard. It had one loss due to rejecting to reply to one of the positions "Invalid prompt: your prompt was flagged as potentially violating our usage policy. Please try again with a different prompt" and had a few Draws. While it seems very close to `o3` it actually demonstrated way worse chess performance with an average game duration of 95 moves (it took it longer to win).
 
 Rest of OpenAI didn't show any meaningful chess performance, typical non-reasoning transformer models:
@@ -88,7 +90,7 @@ o1 model (unlike o3) doesn't disdain to request both the board and list of legal
 - o1-2024-12-17-low: 1.013
 - o3-mini-low: 1.375
 - o3-mini-medium: 2.613
-- o3-mini-hard: 45.1
+- o3-mini-high: 45.1
 - o1-mini: 1.465
 
 Besides the `o1` model, I also tested a few other models:
