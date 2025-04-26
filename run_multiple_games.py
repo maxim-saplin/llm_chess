@@ -6,35 +6,49 @@ from llm_chess import run
 from utils import setup_console_logging, get_llms_autogen
 import llm_chess
 
-# Get model configurations
-_, black_config = get_llms_autogen()
-model_name = black_config["config_list"][0]["model"]
+model_name = llm_chess.llm_config_black["config_list"][0]["model"]
 
-# Parameters
 NUM_REPETITIONS = 30  # Set the number of games to run
 LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 # LOG_FOLDER = f"_logs/llm_vs_llm/haiku_35_vs_4o_mini/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
-# LOG_FOLDER = f"_logs/_logs/ensenble-ai/{model_name}_t00_t07_t03/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+# LOG_FOLDER = f"_logs/ensemble-ai/o4mini-low_mini41-t10_o4mini-low/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 STORE_INDIVIDUAL_LOGS = True
 
-# ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`
-# Hyper params such as temperature are defined in `utils.py`
+## ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`, hyper params defaults are defined in `utils.py`
 
 llm_chess.throttle_delay = 1
 llm_chess.dialog_turn_delay = 0
 
 # llm_chess.temp_override = "remove"
-# reasoning_effort = "low" # Default is None, used with OpenAI models low, medium, or high
+# llm_chess.reasoning_effort = "high" # Default is None, used with OpenAI models low, medium, or high
 
-# r"<think>.*?</think>" - Deepseek R1 Distil
-# r"◁think▷.*?◁/think▷ - Kimi 1.5
-# r"<reasoning>.*?</reasoning>" - Reka Flash
-#remove_text = None
+## r"<think>.*?</think>" - Deepseek R1 Distil
+## r"◁think▷.*?◁/think▷ - Kimi 1.5
+## r"<reasoning>.*?</reasoning>" - Reka Flash
+# llm_chess.remove_text = None
 
 # llm_chess.white_player_type = llm_chess.PlayerType.LLM_WHITE
 # llm_chess.black_player_type = llm_chess.PlayerType.LLM_NON
 # llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
 # llm_chess.rotate_board_for_white = True
+
+## NoN Agents LLM configs for black player, used if PlayerType.LLM_NON is chosen
+# llm_chess.non_llm_configs_black = [
+#             {
+#                 **llm_chess.llm_config_white,
+#                 "temperature": 1.0
+#             },
+#             {
+#                 **llm_chess.llm_config_black,
+#                 "temperature": 1.0
+#             },
+#         ]
+
+# Workaround, reinitializing llm config after llm_chess import was done at the top of the file
+llm_chess.llm_config_white, llm_chess.llm_config_black = get_llms_autogen(
+    llm_chess.temp_override,
+    llm_chess.reasoning_effort,
+    llm_chess.thinking_budget)
 
 def run_games(num_repetitions, log_folder=LOG_FOLDER):
     setup_console_logging(log_folder) # save raw console output to output.txt
