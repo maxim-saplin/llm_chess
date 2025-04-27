@@ -8,10 +8,10 @@ import llm_chess
 
 model_name = llm_chess.llm_config_black["config_list"][0]["model"]
 
-NUM_REPETITIONS = 30  # Set the number of games to run
+NUM_REPETITIONS = 42  # Set the number of games to run
 LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 # LOG_FOLDER = f"_logs/llm_vs_llm/haiku_35_vs_4o_mini/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
-# LOG_FOLDER = f"_logs/ensemble-ai/o4mini-low_mini41-t10_o4mini-low/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+# LOG_FOLDER = f"_logs/ensemble-ai/o4mini-low_mini41-t10_mini41-t03/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 STORE_INDIVIDUAL_LOGS = True
 
 ## ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`, hyper params defaults are defined in `utils.py`
@@ -19,8 +19,9 @@ STORE_INDIVIDUAL_LOGS = True
 llm_chess.throttle_delay = 1
 llm_chess.dialog_turn_delay = 0
 
-# llm_chess.temp_override = "remove"
+llm_chess.temp_override = "remove" # For OpenAI and Anthropic thinking modes
 # llm_chess.reasoning_effort = "high" # Default is None, used with OpenAI models low, medium, or high
+llm_chess.thinking_budget = 10000
 
 ## r"<think>.*?</think>" - Deepseek R1 Distil
 ## r"◁think▷.*?◁/think▷ - Kimi 1.5
@@ -43,6 +44,8 @@ llm_chess.dialog_turn_delay = 0
 #                 "temperature": 1.0
 #             },
 #         ]
+
+# llm_chess.non_llm_configs_black[0]["config_list"][0]["reasoning_effort"] = "low" # overriding reasoning_effort inside nested config_list
 
 # Workaround, reinitializing llm config after llm_chess import was done at the top of the file
 llm_chess.llm_config_white, llm_chess.llm_config_black = get_llms_autogen(

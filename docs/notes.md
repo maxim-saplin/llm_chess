@@ -1,6 +1,6 @@
 # April 21, 2025: A pack of models, new reasoning models' records
 
-`Updated on April 26, fixed rinconsistencies due to misreporting reasoning efforts for o3 and o4 mini.`
+`Updated on April 26, fixed inconsistencies due to misreporting reasoning efforts for o3 and o4 mini.`
 
 Over the past weeks I've added plenty of models. The most exciting results have been brought by OpenAI `o3` and `o4-mini` reasoning models:
 
@@ -20,7 +20,7 @@ Anthropic `Claude 3.7 Extended Thinking` - this one was interesting.
 - Tested 1024, 2048 and 5000 thinking budgets
 - Overall the results didn't impress. If you look at the matrix view the models took places right below `Deepseek R1` in terms of chess performance while demonstrating way better game duration/instruction following. 
 - As in the [Aider Leaderboard](https://aider.chat/docs/leaderboards/) where `Claude 3.7` didn't see much use from enabling extended thinking (scored 60% non-thinking vs 65% with 32k thinking budget), extended thinking bumped the Win/Loss score by a mere 17% (from 40.5% to 57.3%)
-- There's an interesting lack of progression with more thinking budget. The Matrix view even demonstrated slight degradation in chess performance with more thinking tokens (kind of similar to `o4-mini`).
+- There's an interesting lack of progression with more thinking budget. The Matrix view even demonstrated slight degradation in chess performance with more thinking tokens
 
 More models:
 
