@@ -16,12 +16,12 @@ STORE_INDIVIDUAL_LOGS = True
 
 ## ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`, hyper params defaults are defined in `utils.py`
 
-llm_chess.throttle_delay = 1
+llm_chess.throttle_delay = 0
 llm_chess.dialog_turn_delay = 0
 
-llm_chess.temp_override = "remove" # For OpenAI and Anthropic thinking modes
+# llm_chess.temp_override = "remove" # For OpenAI and Anthropic thinking modes
 # llm_chess.reasoning_effort = "high" # Default is None, used with OpenAI models low, medium, or high
-llm_chess.thinking_budget = 10000
+# llm_chess.thinking_budget = 10000
 
 ## r"<think>.*?</think>" - Deepseek R1 Distil
 ## r"◁think▷.*?◁/think▷ - Kimi 1.5
