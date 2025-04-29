@@ -402,7 +402,7 @@ def aggregate_models_to_csv(
 
     for model_name, model_logs in model_groups.items():
         total_games = len(model_logs)
-        black_llm_wins = sum(1 for log in model_logs if log.winner == "Player_Black")
+        black_llm_wins = sum(1 for log in model_logs if log.winner == "Player_Black" or log.winner == "NoN_Synthesizer")
         white_rand_wins = sum(1 for log in model_logs if log.winner == "Random_Player")
         draws = total_games - black_llm_wins - white_rand_wins
 
@@ -500,7 +500,7 @@ def aggregate_models_to_csv(
         non_interrupted_logs = [log for log in model_logs if not log.is_interrupted]
         non_interrupted_games = len(non_interrupted_logs)
         black_llm_wins_non_interrupted = sum(
-            1 for log in non_interrupted_logs if log.winner == "Player_Black"
+            1 for log in non_interrupted_logs if log.winner == "Player_Black" or log.winner == "NoN_Synthesizer"
         )
         white_rand_wins_non_interrupted = sum(
             1 for log in non_interrupted_logs if log.winner == "Random_Player"
@@ -515,7 +515,7 @@ def aggregate_models_to_csv(
             # Calculate standard deviation and margin of error for win_loss_non_interrupted
             per_game_win_loss_non_interrupted = [
                 (1 / 2 + 0.5)
-                if log.winner == "Player_Black"
+                if log.winner == "Player_Black" or log.winner == "NoN_Synthesizer"
                 else (-1 / 2 + 0.5)
                 if log.winner == "Random_Player"
                 else 0.5
