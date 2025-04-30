@@ -51,10 +51,12 @@ LOGS_DIRS = [
     {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_1024": "claude-v3-7-sonnet-thinking_1024"},
     {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_2048": "claude-v3-7-sonnet-thinking_2048"},
     {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_5000": "claude-v3-7-sonnet-thinking_5000"},
+    {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_10000": "claude-v3-7-sonnet-thinking_10000"},
     {"_logs/new/o1-2024-12-17-medium": "o1-2024-12-17-medium"},
     {"_logs/new/o1-2024-12-17-medium_openai": "o1-2024-12-17-medium"},
     {"_logs/ensemble-ai/gpt-4.1-mini-2025-04-14_t00_t07_t03": "non_gpt-4.1-mini-2025-04-14_t00_t07_t03"},
     {"_logs/ensemble-ai/gpt-4.1-nano-2025-04-14_t00_t07_t03": "non-gpt-4.1-nano-2025-04-14_t00_t07_t03"},
+    {"_logs/ensemble-ai/haiku35-t07_haiku35-t10_haiku35-t03": "non-haiku35-t07_haiku35-t10_haiku35-t03"},
     # {"_logs/ensemble-ai/nano41-t00_nano41-t03_nano41-t05_nano41-t07_nano-t10_nano41-t03": "non-nano41-t00_nano41-t03_nano41-t05_nano41-t07_nano-t10_nano41-t03"},
     # {"_logs/ensemble-ai/nano41-t03_nano41-t05_nano41-t07_nano-t10_nano41-t03": "non-nano41-t03_nano41-t05_nano41-t07_nano-t10_nano41-t03"},
     # {"_logs/ensemble-ai/nano41-t05_nano41-t07_nano-t10_nano41-t03": "non-nano41-t05_nano41-t07_nano-t10_nano41-t03"},
@@ -63,11 +65,13 @@ LOGS_DIRS = [
     # {"_logs/new/o3-mini-2025-01-31-high": "o3-mini-2025-01-31-high"},
     "_logs/new/gemini-2.5-pro-preview-03-25",
     {"_logs/ensemble-ai/gemini-25pro-t03_mini41-t00_mini41-t03": "non-gemini-25pro-t03_mini41-t00_mini41-t03"},
+    {"_logs/ensemble-ai/r1-t03-with<think>_mini41-t10_mini41-t03": "non-r1-t03_mini41-t10_mini41-t03"},
     # {"_logs/ensemble-ai/haiku35-t07_haiku35-t10_haiku35-t03": "non-haiku35-t07_haiku35-t10_haiku35-t03"},
     # {"_logs/ensemble-ai/r1-14b-t03_haiku35-t10_haiku35-t03": "non-r1-14b-t03_haiku35-t10_haiku35-t03"},
     # {"_logs/ensemble-ai/r1-14b-t03_mini41-t10_mini41-t03": "non-r1-14b-t03_mini41-t10_mini41-t03"},
     # {"_logs/ensemble-ai/r1-t03_mini41-t10_mini41-t03": "non-r1-t03_mini41-t10_mini41-t03"},
     # "_logs/new"
+    "_logs/new/gpt-4.1-2025-04-14"
 ]
 
 FILTER_OUT_BELOW_N = 30 # 0
