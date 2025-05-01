@@ -678,5 +678,82 @@ class TestRandomVsNonGame(_MockServerTestCaseBase):
                              f"Logged JSON: Total tokens mismatch at index {i}.")
 
 
+class TestRandomVsDragonGame(unittest.TestCase):
+    """
+    TestRandomVsDragonGame tests the integration of a random player against the Komodo Dragon chess engine.
+    This test requires Dragon to be installed and accessible at the specified path.
+
+    To use, ensure you have the Komodo Dragon engine installed at ./dragon/dragon-osx or modify the path.
+    """
+    def setUp(self):
+        # Override global variables for testing
+        llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
+        llm_chess.black_player_type = PlayerType.CHESS_ENGINE_DRAGON  # Need to add this to PlayerType enum
+        llm_chess.visualize_board = False
+        llm_chess.throttle_delay = 0
+        llm_chess.dialog_turn_delay = 0
+        llm_chess.random_print_board = False
+        llm_chess.dragon_path = "./dragon/dragon-osx"  # Set path to the Dragon executable
+
+    def test_max_level(self):
+        llm_chess.max_game_moves = 50 
+        llm_chess.dragon_level = 25  # Set a max skill level
+        game_stats, player_white, player_black = run(log_dir=None)
+        
+        # Basic game completion checks
+        self.assertIsNotNone(game_stats)
+        self.assertIsNotNone(game_stats["winner"])
+        self.assertIsNotNone(game_stats["reason"])
+        
+        # Verify number of moves is within expected range
+        self.assertLessEqual(game_stats["number_of_moves"], 50)
+        
+        # Verify players were correctly initialized
+        self.assertEqual(player_white.name, "Random_Player")
+        self.assertEqual(player_black.name, "Chess_Engine_Dragon_Black")
+        
+        # Verify no wrong moves or actions
+        self.assertEqual(game_stats["player_white"]["wrong_moves"], 0)
+        self.assertEqual(game_stats["player_white"]["wrong_actions"], 0)
+        self.assertEqual(game_stats["player_black"]["wrong_moves"], 0)
+        self.assertEqual(game_stats["player_black"]["wrong_actions"], 0)
+
+        # With a strong engine against random player, dragon should have more material
+        self.assertGreater(game_stats["material_count"]["black"], game_stats["material_count"]["white"])
+
+        # The game should likely end in checkmate given the skill difference
+        self.assertEqual(game_stats["reason"], TerminationReason.CHECKMATE.value)
+
+    def test_min_level(self):
+        llm_chess.max_game_moves = 20 
+        llm_chess.dragon_level = 1
+        game_stats, player_white, player_black = run(log_dir=None)
+        
+        # Basic game completion checks
+        self.assertIsNotNone(game_stats)
+        self.assertIsNotNone(game_stats["winner"])
+        self.assertIsNotNone(game_stats["reason"])
+        
+        # Verify number of moves is within expected range
+        self.assertLessEqual(game_stats["number_of_moves"], 20)
+        
+        # Verify players were correctly initialized
+        self.assertEqual(player_white.name, "Random_Player")
+        self.assertEqual(player_black.name, "Chess_Engine_Dragon_Black")
+        
+        # Verify no wrong moves or actions
+        self.assertEqual(game_stats["player_white"]["wrong_moves"], 0)
+        self.assertEqual(game_stats["player_white"]["wrong_actions"], 0)
+        self.assertEqual(game_stats["player_black"]["wrong_moves"], 0)
+        self.assertEqual(game_stats["player_black"]["wrong_actions"], 0)
+
+        # With a strong engine against random player, dragon should have more material
+        self.assertGreater(game_stats["material_count"]["black"], game_stats["material_count"]["white"])
+
+        # The game should likely end in checkmate given the skill difference
+        self.assertEqual(game_stats["reason"], TerminationReason.MAX_MOVES.value)
+
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -306,6 +306,65 @@ class ChessEngineStockfishAgent(GameAgent):
             return None
 
 
+class ChessEngineDragonAgent(GameAgent):
+    """
+    A chess agent that uses the Komodo Dragon engine to determine moves.
+
+    Parameters:
+        board (chess.Board): The current state of the chess board.
+        make_move_action (str): The action string used to indicate a move should be made.
+        time_limit (float, optional): The maximum time (in seconds) the Dragon engine is allowed to think for a move. Default is 0.01s.
+        level (Optional[int], optional): The skill level for the Dragon engine. Values typically range from 1-25. Default is 1.
+        dragon_path (str, optional): The file path to the Dragon executable. Default is "./dragon/dragon-osx".
+        remove_history (bool, optional): If True, the agent will reset the board's move history before making a decision. Default is False.
+    """
+
+    def __init__(
+        self,
+        board,
+        make_move_action: str,
+        time_limit=0.01,
+        level: int = 1,
+        dragon_path="./dragon/dragon-osx",
+        remove_history: bool = False,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.board = board
+        self.make_move_action = make_move_action
+        self.dragon_path = dragon_path
+        self.time_limit = time_limit
+        self.remove_history = remove_history
+        self.level = level  # Store skill level
+
+    def generate_reply(
+        self,
+        messages: Optional[List[Dict[str, Any]]] = None,
+        sender: Optional[ConversableAgent] = None,
+        **kwargs: Any,
+    ) -> Union[str, Dict, None]:
+        if self._is_termination_msg(messages[-1]):
+            return None
+
+        try:
+            with chess.engine.SimpleEngine.popen_uci(self.dragon_path) as engine:
+
+                # Set Dragon skill level if specified
+                if self.level is not None:
+                    engine.configure({"Skill": self.level})
+
+                b = self.board
+                if self.remove_history:
+                    b = chess.Board(b.fen())
+                result = engine.play(b, chess.engine.Limit(time=self.time_limit))
+                move = result.move
+                return f"{self.make_move_action} {move.uci()}"
+        except Exception as e:
+            print(f"Error using Dragon engine: {e}")
+            return None
+
+
 class NonGameAgent(GameAgent):
     """
     A Network-of-Networks (NoN) GameAgent that routes queries through multiple LLMs and synthesizes their responses.

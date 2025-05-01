@@ -4,7 +4,7 @@ import chess
 import chess.svg
 from typing import Any, Dict, Tuple
 from enum import Enum
-from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent, NonGameAgent
+from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent, ChessEngineDragonAgent, NonGameAgent
 from utils import calculate_material_count, generate_game_stats, get_llms_autogen, display_board, display_store_game_video_and_stats
 
 class BoardRepresentation(Enum):
@@ -31,7 +31,8 @@ class PlayerType(Enum):
     LLM_BLACK = 2  # Represents a black player controlled by an LLM and using *_B config keys from .env
     RANDOM_PLAYER = 3  # Represents a player making random moves
     CHESS_ENGINE_STOCKFISH = 5
-    LLM_NON = 6  # Represents a mixture of agents player using multiple LLMs
+    CHESS_ENGINE_DRAGON = 6  # Add this new entry for Dragon engine
+    LLM_NON = 7  # Represents a mixture of agents player using multiple LLMs
 
 # Hyper params such as temperature are defined in `utils.py`
 white_player_type = PlayerType.RANDOM_PLAYER
@@ -101,13 +102,15 @@ if reasoning_effort is not None:
     )
 
 stockfish_path = "/opt/homebrew/bin/stockfish"
-reset_stockfish_history = (
-    True  # If True, Stockfish will get no history before making a move, default is True
-)
+reset_stockfish_history = True  # If True, Stockfish will get no history before making a move, default is True
 stockfish_level = 1  # Set to an integer (0-20) to override Stockfish skill level, or None to use default
-stockfish_time_per_move = (
-    0.1  # Time limit (in seconds) for Stockfish to think per move, default is 0.1
-)
+stockfish_time_per_move = 0.1  # Time limit (in seconds) for Stockfish to think per move, default is 0.1
+
+# Komodo Dragon chess engine configuration
+dragon_path = "./dragon/dragon-osx"  # Path to Komodo Dragon executable
+reset_dragon_history = True  # If True, Dragon will get no history before making a move
+dragon_level = 1  # Skill level (1-25) for Komodo Dragon
+dragon_time_per_move = 0.1  # Time limit (in seconds) for Dragon to think per move
 
 ## Actions
 
@@ -326,6 +329,16 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
             level=stockfish_level,
             time_limit=stockfish_time_per_move,
         ),
+        PlayerType.CHESS_ENGINE_DRAGON: ChessEngineDragonAgent(
+            name="Chess_Engine_Dragon_White",
+            board=board,
+            make_move_action=make_move_action,
+            dragon_path=dragon_path,
+            remove_history=reset_dragon_history,
+            is_termination_msg=is_termination_message,
+            level=dragon_level,
+            time_limit=dragon_time_per_move,
+        ),
         PlayerType.LLM_NON: NonGameAgent(
             name="Player_Non_White",
             system_message="",
@@ -351,6 +364,16 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
             is_termination_msg=is_termination_message,
             level=stockfish_level,
             time_limit=stockfish_time_per_move,
+        ),
+        PlayerType.CHESS_ENGINE_DRAGON: ChessEngineDragonAgent(
+            name="Chess_Engine_Dragon_Black",
+            board=board,
+            make_move_action=make_move_action,
+            dragon_path=dragon_path,
+            remove_history=reset_dragon_history,
+            is_termination_msg=is_termination_message,
+            level=dragon_level,
+            time_limit=dragon_time_per_move,
         ),
         PlayerType.LLM_NON: NonGameAgent(
             name="Player_Non_Black",
