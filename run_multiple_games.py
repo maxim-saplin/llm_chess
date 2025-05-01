@@ -24,7 +24,7 @@ llm_chess.dialog_turn_delay = 0
 # llm_chess.reasoning_effort = "low" # Default is None, used with OpenAI models low, medium, or high
 # llm_chess.thinking_budget = 10000
 
-## r"<think>.*?</think>" - Deepseek R1 Distil
+## r"<think>.*?</think>" - Deepseek R1 Distil, Phi-4
 ## r"◁think▷.*?◁/think▷ - Kimi 1.5
 ## r"<reasoning>.*?</reasoning>" - Reka Flash
 # llm_chess.remove_text = None
