@@ -249,9 +249,7 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
         f", {make_move_action} <UCI formatted move>"
     )
 
-    # This fu..ing Autogen drives me crazy, some spagetti code with broken logic and common sense...
     # Spend hours debuging circular loops in termination message and prompt and figuring out None is not good for system message
-    # Termination approach is hoooooorible
     def is_termination_message(msg: Dict[str, Any]) -> bool:
         return any(
             term_msg == msg["content"].lower().strip()
