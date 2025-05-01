@@ -15,7 +15,7 @@ g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
 
-make_move h2h4
+make_move e2e3
 
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
@@ -46,9 +46,9 @@ Proxy (to NoN_Synthesizer):
 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
 ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
 ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙
 ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-♙ ♙ ♙ ♙ ♙ ♙ ♙ ⭘
+⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘
+♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙
 ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
 
 --------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ g8h6,g8f6,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,d7d6,c7c6,b7b6,a7a6,h7h5,g7g5,f7f5,e7e5,
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
 
-make_move g7g6
+make_move d7d5
 
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
@@ -74,8 +74,8 @@ Move made, switching player
 --------------------------------------------------------------------------------
 MADE MOVE 2
 Material Count - White: 39, Black: 39
-Prompt Tokens: 11047
-Completion Tokens: 8766
+Prompt Tokens: 7005
+Completion Tokens: 4638
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -88,12 +88,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-h1h3,h1h2,g1h3,g1f3,b1c3,b1a3,h4h5,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+g1h3,g1f3,g1e2,f1a6,f1b5,f1c4,f1d3,f1e2,e1e2,d1h5,d1g4,d1f3,d1e2,b1c3,b1a3,e3e4,h2h3,g2g3,f2f3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,d2d4,c2c4,b2b4,a2a4
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
 
-make_move e2e3
+make_move h2h3
 
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
@@ -121,13 +121,23 @@ get_current_board
 Proxy (to NoN_Synthesizer):
 
 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
-♟ ♟ ♟ ♟ ♟ ♟ ⭘ ♟
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+♟ ♟ ♟ ⭘ ♟ ♟ ♟ ♟
 ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙
-⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ♙
 ♙ ♙ ♙ ♙ ⭘ ♙ ♙ ⭘
 ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h6,g8f6,e8d7,d8d7,d8d6,c8d7,c8e6,c8f5,c8g4,c8h3,b8d7,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,c7c6,b7b6,a7a6,d5d4,h7h5,g7g5,f7f5,e7e5,c7c5,b7b5,a7a5
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
@@ -142,8 +152,8 @@ Move made, switching player
 --------------------------------------------------------------------------------
 MADE MOVE 4
 Material Count - White: 39, Black: 39
-Prompt Tokens: 17306
-Completion Tokens: 13856
+Prompt Tokens: 17233
+Completion Tokens: 12456
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -156,12 +166,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-h1h3,h1h2,g1h3,g1f3,g1e2,f1a6,f1b5,f1c4,f1d3,f1e2,e1e2,d1h5,d1g4,d1f3,d1e2,b1c3,b1a3,h4h5,e3e4,g2g3,f2f3,d2d3,c2c3,b2b3,a2a3,g2g4,f2f4,d2d4,c2c4,b2b4,a2a4
+h1h2,g1f3,g1e2,f1a6,f1b5,f1c4,f1d3,f1e2,e1e2,d1h5,d1g4,d1f3,d1e2,b1c3,b1a3,h3h4,e3e4,g2g3,f2f3,d2d3,c2c3,b2b3,a2a3,g2g4,f2f4,d2d4,c2c4,b2b4,a2a4
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
 
-make_move g2g4
+make_move b2b3
 
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
@@ -189,12 +199,12 @@ get_current_board
 Proxy (to NoN_Synthesizer):
 
 ♜ ♞ ♝ ♛ ♚ ♝ ⭘ ♜
-♟ ♟ ♟ ♟ ♟ ♟ ⭘ ♟
-⭘ ⭘ ⭘ ⭘ ⭘ ♞ ♟ ⭘
+♟ ♟ ♟ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ♞ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
 ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ♙
-⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘
-♙ ♙ ♙ ♙ ⭘ ♙ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ♙ ⭘ ⭘ ♙
+♙ ⭘ ♙ ♙ ⭘ ♙ ♙ ⭘
 ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
 
 --------------------------------------------------------------------------------
@@ -205,12 +215,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-h8g8,f8g7,f8h6,b8c6,b8a6,f6g8,f6h5,f6d5,f6g4,f6e4,h7h6,e7e6,d7d6,c7c6,b7b6,a7a6,g6g5,h7h5,e7e5,d7d5,c7c5,b7b5,a7a5
+h8g8,e8d7,d8d7,d8d6,c8d7,c8e6,c8f5,c8g4,c8h3,b8d7,b8c6,b8a6,f6g8,f6d7,f6h5,f6g4,f6e4,h7h6,g7g6,e7e6,c7c6,b7b6,a7a6,d5d4,h7h5,g7g5,e7e5,c7c5,b7b5,a7a5
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
 
-make_move f6d5
+make_move b8c6
 
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
@@ -220,8 +230,8 @@ Move made, switching player
 --------------------------------------------------------------------------------
 MADE MOVE 6
 Material Count - White: 39, Black: 39
-Prompt Tokens: 33219
-Completion Tokens: 27478
+Prompt Tokens: 25993
+Completion Tokens: 18740
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -234,12 +244,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-h1h3,h1h2,g1h3,g1f3,g1e2,f1a6,f1b5,f1c4,f1h3,f1d3,f1g2,f1e2,e1e2,d1f3,d1e2,b1c3,b1a3,h4h5,g4g5,e3e4,f2f3,d2d3,c2c3,b2b3,a2a3,f2f4,d2d4,c2c4,b2b4,a2a4
+h1h2,g1f3,g1e2,f1a6,f1b5,f1c4,f1d3,f1e2,e1e2,d1h5,d1g4,d1f3,d1e2,c1a3,c1b2,b1c3,b1a3,h3h4,e3e4,b3b4,g2g3,f2f3,d2d3,c2c3,a2a3,g2g4,f2f4,d2d4,c2c4,a2a4
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
 
-make_move b2b4
+make_move d1g4
 
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
@@ -266,19 +276,29 @@ get_current_board
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-♜ ♞ ♝ ♛ ♚ ♝ ⭘ ♜
-♟ ♟ ♟ ♟ ♟ ♟ ⭘ ♟
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
-⭘ ⭘ ⭘ ♞ ⭘ ⭘ ⭘ ⭘
-⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ♙
-⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘
-♙ ⭘ ♙ ♙ ⭘ ♙ ⭘ ⭘
-♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+♜ ⭘ ♝ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ♟ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ♞ ⭘ ⭘ ♞ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♕ ⭘
+⭘ ♙ ⭘ ⭘ ♙ ⭘ ⭘ ♙
+♙ ⭘ ♙ ♙ ⭘ ♙ ♙ ⭘
+♖ ♘ ♗ ⭘ ♔ ♗ ♘ ♖
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
 
-make_move d5f4
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+h8g8,d8d7,d8d6,c8d7,c8e6,c8f5,c8g4,a8b8,f6g8,f6d7,f6h5,f6g4,f6e4,c6b8,c6e5,c6a5,c6d4,c6b4,h7h6,g7g6,e7e6,b7b6,a7a6,d5d4,h7h5,g7g5,e7e5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move f6g4
 
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
@@ -287,9 +307,9 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 8
-Material Count - White: 39, Black: 39
-Prompt Tokens: 45846
-Completion Tokens: 39016
+Material Count - White: 30, Black: 39
+Prompt Tokens: 39648
+Completion Tokens: 30032
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -302,12 +322,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-h1h3,h1h2,g1h3,g1f3,g1e2,f1a6,f1b5,f1c4,f1h3,f1d3,f1g2,f1e2,d1f3,d1e2,c1a3,c1b2,b1c3,b1a3,e3f4,h4h5,g4g5,b4b5,e3e4,f2f3,d2d3,c2c3,a2a3,d2d4,c2c4,a2a4
+h1h2,g1f3,g1e2,f1a6,f1b5,f1c4,f1d3,f1e2,e1e2,e1d1,c1a3,c1b2,b1c3,b1a3,h3g4,h3h4,e3e4,b3b4,g2g3,f2f3,d2d3,c2c3,a2a3,f2f4,d2d4,c2c4,a2a4
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
 
-make_move f1g2
+make_move d2d3
 
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
@@ -316,163 +336,7 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 9
-Material Count - White: 39, Black: 39
-Prompt Tokens: 0
-Completion Tokens: 0
-Proxy (to NoN_Synthesizer):
-
-You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
-- 'get_current_board' to get the schema and current status of the board
-- 'get_legal_moves' to get a UCI formatted list of available moves
-- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_current_board
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-♜ ♞ ♝ ♛ ♚ ♝ ⭘ ♜
-♟ ♟ ♟ ♟ ♟ ♟ ⭘ ♟
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-⭘ ♙ ⭘ ⭘ ⭘ ♞ ♙ ♙
-⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘
-♙ ⭘ ♙ ♙ ⭘ ♙ ♗ ⭘
-♖ ♘ ♗ ♕ ♔ ⭘ ♘ ♖
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-h8g8,f8g7,f8h6,b8c6,b8a6,f4e6,f4h5,f4d5,f4h3,f4d3,f4g2,f4e2,h7h6,f7f6,e7e6,d7d6,c7c6,b7b6,a7a6,g6g5,h7h5,f7f5,e7e5,d7d5,c7c5,b7b5,a7a5
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move f4e2
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 10
-Material Count - White: 39, Black: 39
-Prompt Tokens: 58432
-Completion Tokens: 49232
-Proxy (to Random_Player):
-
-You are a random chess player.
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-g2b7,g2c6,g2d5,g2e4,g2h3,g2f3,g2f1,h1h3,h1h2,g1h3,g1f3,g1e2,e1e2,e1f1,d1e2,c1a3,c1b2,b1c3,b1a3,h4h5,g4g5,b4b5,e3e4,f2f3,d2d3,c2c3,a2a3,f2f4,d2d4,c2c4,a2a4
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-make_move f2f3
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 11
-Material Count - White: 39, Black: 39
-Prompt Tokens: 0
-Completion Tokens: 0
-Proxy (to NoN_Synthesizer):
-
-You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
-- 'get_current_board' to get the schema and current status of the board
-- 'get_legal_moves' to get a UCI formatted list of available moves
-- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_current_board
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-♜ ♞ ♝ ♛ ♚ ♝ ⭘ ♜
-♟ ♟ ♟ ♟ ♟ ♟ ⭘ ♟
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ♙
-⭘ ⭘ ⭘ ⭘ ♙ ♙ ⭘ ⭘
-♙ ⭘ ♙ ♙ ♞ ⭘ ♗ ⭘
-♖ ♘ ♗ ♕ ♔ ⭘ ♘ ♖
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-h8g8,f8g7,f8h6,b8c6,b8a6,e2f4,e2d4,e2g3,e2c3,e2g1,e2c1,h7h6,f7f6,e7e6,d7d6,c7c6,b7b6,a7a6,g6g5,h7h5,f7f5,e7e5,d7d5,c7c5,b7b5,a7a5
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move b8c6
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 12
-Material Count - White: 39, Black: 39
-Prompt Tokens: 70019
-Completion Tokens: 58424
-Proxy (to Random_Player):
-
-You are a random chess player.
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-g2h3,g2f1,h1h3,h1h2,g1h3,g1e2,e1f2,e1e2,e1f1,d1e2,c1a3,c1b2,b1c3,b1a3,h4h5,g4g5,b4b5,f3f4,e3e4,d2d3,c2c3,a2a3,d2d4,c2c4,a2a4
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-make_move d1e2
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 13
-Material Count - White: 39, Black: 36
+Material Count - White: 30, Black: 39
 Prompt Tokens: 0
 Completion Tokens: 0
 Proxy (to NoN_Synthesizer):
@@ -491,13 +355,91 @@ get_current_board
 Proxy (to NoN_Synthesizer):
 
 ♜ ⭘ ♝ ♛ ♚ ♝ ⭘ ♜
-♟ ♟ ♟ ♟ ♟ ♟ ⭘ ♟
-⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟ ⭘
+♟ ♟ ♟ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ♞ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♞ ⭘
+⭘ ♙ ⭘ ♙ ♙ ⭘ ⭘ ♙
+♙ ⭘ ♙ ⭘ ⭘ ♙ ♙ ⭘
+♖ ♘ ♗ ⭘ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+h8g8,e8d7,d8d7,d8d6,c8d7,c8e6,c8f5,a8b8,c6b8,c6e5,c6a5,c6d4,c6b4,g4h6,g4f6,g4e5,g4e3,g4h2,g4f2,h7h6,g7g6,f7f6,e7e6,b7b6,a7a6,d5d4,h7h5,g7g5,f7f5,e7e5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move c6e5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 10
+Material Count - White: 30, Black: 39
+Prompt Tokens: 51359
+Completion Tokens: 39274
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+h1h2,g1f3,g1e2,f1e2,e1e2,e1d2,e1d1,c1a3,c1d2,c1b2,b1c3,b1a3,b1d2,h3g4,h3h4,e3e4,d3d4,b3b4,g2g3,f2f3,c2c3,a2a3,f2f4,c2c4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move f2f4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 11
+Material Count - White: 30, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♝ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ♟ ⭘ ♟ ♟ ♟ ♟
 ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ♙
-⭘ ⭘ ⭘ ⭘ ♙ ♙ ⭘ ⭘
-♙ ⭘ ♙ ♙ ♕ ⭘ ♗ ⭘
-♖ ♘ ♗ ⭘ ♔ ⭘ ♘ ♖
+⭘ ⭘ ⭘ ♟ ♞ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♙ ♞ ⭘
+⭘ ♙ ⭘ ♙ ♙ ⭘ ⭘ ♙
+♙ ⭘ ♙ ⭘ ⭘ ⭘ ♙ ⭘
+♖ ♘ ♗ ⭘ ♔ ♗ ♘ ♖
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
@@ -507,12 +449,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-h8g8,f8g7,f8h6,a8b8,c6b8,c6e5,c6a5,c6d4,c6b4,h7h6,f7f6,e7e6,d7d6,b7b6,a7a6,g6g5,h7h5,f7f5,e7e5,d7d5,b7b5,a7a5
+h8g8,e8d7,d8d7,d8d6,c8d7,c8e6,c8f5,a8b8,e5d7,e5g6,e5c6,e5c4,e5f3,e5d3,g4h6,g4f6,g4e3,g4h2,g4f2,h7h6,g7g6,f7f6,e7e6,c7c6,b7b6,a7a6,d5d4,h7h5,g7g5,f7f5,c7c5,b7b5,a7a5
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
 
-make_move f8g7
+make_move c8e6
 
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
@@ -520,10 +462,10 @@ Proxy (to NoN_Synthesizer):
 Move made, switching player
 
 --------------------------------------------------------------------------------
-MADE MOVE 14
-Material Count - White: 39, Black: 36
-Prompt Tokens: 81935
-Completion Tokens: 68084
+MADE MOVE 12
+Material Count - White: 30, Black: 39
+Prompt Tokens: 67541
+Completion Tokens: 53088
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -536,669 +478,7 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-g2h3,g2f1,e2a6,e2b5,e2c4,e2d3,e2f2,e2f1,e2d1,h1h3,h1h2,g1h3,e1f2,e1f1,e1d1,c1a3,c1b2,b1c3,b1a3,h4h5,g4g5,b4b5,f3f4,e3e4,d2d3,c2c3,a2a3,d2d4,c2c4,a2a4
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-make_move c2c3
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 15
-Material Count - White: 39, Black: 36
-Prompt Tokens: 0
-Completion Tokens: 0
-Proxy (to NoN_Synthesizer):
-
-You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
-- 'get_current_board' to get the schema and current status of the board
-- 'get_legal_moves' to get a UCI formatted list of available moves
-- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_current_board
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-♜ ⭘ ♝ ♛ ♚ ⭘ ⭘ ♜
-♟ ♟ ♟ ♟ ♟ ♟ ♝ ♟
-⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ♙
-⭘ ⭘ ♙ ⭘ ♙ ♙ ⭘ ⭘
-♙ ⭘ ⭘ ♙ ♕ ⭘ ♗ ⭘
-♖ ♘ ♗ ⭘ ♔ ⭘ ♘ ♖
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-h8g8,h8f8,e8f8,a8b8,g7f8,g7h6,g7f6,g7e5,g7d4,g7c3,c6b8,c6e5,c6a5,c6d4,c6b4,e8g8,h7h6,f7f6,e7e6,d7d6,b7b6,a7a6,g6g5,h7h5,f7f5,e7e5,d7d5,b7b5,a7a5
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move e8g8
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 16
-Material Count - White: 39, Black: 36
-Prompt Tokens: 89619
-Completion Tokens: 73288
-Proxy (to Random_Player):
-
-You are a random chess player.
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-g2h3,g2f1,e2a6,e2b5,e2c4,e2d3,e2f2,e2f1,e2d1,h1h3,h1h2,g1h3,e1f2,e1f1,e1d1,c1a3,c1b2,b1a3,h4h5,g4g5,b4b5,f3f4,e3e4,c3c4,d2d3,a2a3,d2d4,a2a4
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-make_move e2d1
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 17
-Material Count - White: 39, Black: 36
-Prompt Tokens: 0
-Completion Tokens: 0
-Proxy (to NoN_Synthesizer):
-
-You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
-- 'get_current_board' to get the schema and current status of the board
-- 'get_legal_moves' to get a UCI formatted list of available moves
-- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_current_board
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-♜ ⭘ ♝ ♛ ⭘ ♜ ♚ ⭘
-♟ ♟ ♟ ♟ ♟ ♟ ♝ ♟
-⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ♙
-⭘ ⭘ ♙ ⭘ ♙ ♙ ⭘ ⭘
-♙ ⭘ ⭘ ♙ ⭘ ⭘ ♗ ⭘
-♖ ♘ ♗ ♕ ♔ ⭘ ♘ ♖
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move e7e5
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 18
-Material Count - White: 39, Black: 36
-Prompt Tokens: 100431
-Completion Tokens: 82975
-Proxy (to Random_Player):
-
-You are a random chess player.
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-g2h3,g2f1,h1h3,h1h2,g1h3,g1e2,e1f2,e1e2,e1f1,d1a4,d1b3,d1e2,d1c2,c1a3,c1b2,b1a3,h4h5,g4g5,b4b5,f3f4,e3e4,c3c4,d2d3,a2a3,d2d4,a2a4
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-make_move e1f1
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 19
-Material Count - White: 39, Black: 36
-Prompt Tokens: 0
-Completion Tokens: 0
-Proxy (to NoN_Synthesizer):
-
-You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
-- 'get_current_board' to get the schema and current status of the board
-- 'get_legal_moves' to get a UCI formatted list of available moves
-- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_current_board
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-♜ ⭘ ♝ ♛ ⭘ ♜ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ♝ ♟
-⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟ ⭘
-⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
-⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ♙
-⭘ ⭘ ♙ ⭘ ♙ ♙ ⭘ ⭘
-♙ ⭘ ⭘ ♙ ⭘ ⭘ ♗ ⭘
-♖ ♘ ♗ ♕ ⭘ ♔ ♘ ♖
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-g8h8,f8e8,d8e8,d8e7,d8f6,d8g5,d8h4,a8b8,g7h8,g7h6,g7f6,c6b8,c6e7,c6a5,c6d4,c6b4,h7h6,f7f6,d7d6,b7b6,a7a6,g6g5,e5e4,h7h5,f7f5,d7d5,b7b5,a7a5
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move d8h4
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 20
-Material Count - White: 38, Black: 36
-Prompt Tokens: 111358
-Completion Tokens: 91503
-Proxy (to Random_Player):
-
-You are a random chess player.
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-g2h3,h1h4,h1h3,h1h2,g1h3,g1e2,f1e2,d1a4,d1b3,d1e2,d1c2,d1e1,c1a3,c1b2,b1a3,g4g5,b4b5,f3f4,e3e4,c3c4,d2d3,a2a3,d2d4,a2a4
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-make_move e3e4
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 21
-Material Count - White: 38, Black: 36
-Prompt Tokens: 0
-Completion Tokens: 0
-Proxy (to NoN_Synthesizer):
-
-You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
-- 'get_current_board' to get the schema and current status of the board
-- 'get_legal_moves' to get a UCI formatted list of available moves
-- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_current_board
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-♜ ⭘ ♝ ⭘ ⭘ ♜ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ♝ ♟
-⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟ ⭘
-⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
-⭘ ♙ ⭘ ⭘ ♙ ⭘ ♙ ♛
-⭘ ⭘ ♙ ⭘ ⭘ ♙ ⭘ ⭘
-♙ ⭘ ⭘ ♙ ⭘ ⭘ ♗ ⭘
-♖ ♘ ♗ ♕ ⭘ ♔ ♘ ♖
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move h7h6
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 22
-Material Count - White: 38, Black: 36
-Prompt Tokens: 123839
-Completion Tokens: 102932
-Proxy (to Random_Player):
-
-You are a random chess player.
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-g2h3,h1h4,h1h3,h1h2,g1h3,g1e2,f1e2,d1a4,d1b3,d1e2,d1c2,d1e1,c1a3,c1b2,b1a3,g4g5,b4b5,f3f4,c3c4,d2d3,a2a3,d2d4,a2a4
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-make_move d2d4
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 23
-Material Count - White: 38, Black: 36
-Prompt Tokens: 0
-Completion Tokens: 0
-Proxy (to NoN_Synthesizer):
-
-You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
-- 'get_current_board' to get the schema and current status of the board
-- 'get_legal_moves' to get a UCI formatted list of available moves
-- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_current_board
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-♜ ⭘ ♝ ⭘ ⭘ ♜ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ♝ ⭘
-⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟ ♟
-⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
-⭘ ♙ ⭘ ♙ ♙ ⭘ ♙ ♛
-⭘ ⭘ ♙ ⭘ ⭘ ♙ ⭘ ⭘
-♙ ⭘ ⭘ ⭘ ⭘ ⭘ ♗ ⭘
-♖ ♘ ♗ ♕ ⭘ ♔ ♘ ♖
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-g8h8,g8h7,f8e8,f8d8,a8b8,g7h8,g7f6,c6d8,c6b8,c6e7,c6a5,c6d4,c6b4,h4d8,h4e7,h4f6,h4h5,h4g5,h4g4,h4h3,h4g3,h4h2,h4f2,h4h1,h4e1,e5d4,f7f6,d7d6,b7b6,a7a6,h6h5,g6g5,f7f5,d7d5,b7b5,a7a5
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move h4e1
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 24
-Material Count - White: 38, Black: 36
-Prompt Tokens: 138644
-Completion Tokens: 115283
-Proxy (to Random_Player):
-
-You are a random chess player.
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-f1e1,d1e1
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-make_move d1e1
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 25
-Material Count - White: 38, Black: 27
-Prompt Tokens: 0
-Completion Tokens: 0
-Proxy (to NoN_Synthesizer):
-
-You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
-- 'get_current_board' to get the schema and current status of the board
-- 'get_legal_moves' to get a UCI formatted list of available moves
-- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_current_board
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-♜ ⭘ ♝ ⭘ ⭘ ♜ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ♝ ⭘
-⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟ ♟
-⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
-⭘ ♙ ⭘ ♙ ♙ ⭘ ♙ ⭘
-⭘ ⭘ ♙ ⭘ ⭘ ♙ ⭘ ⭘
-♙ ⭘ ⭘ ⭘ ⭘ ⭘ ♗ ⭘
-♖ ♘ ♗ ⭘ ♕ ♔ ♘ ♖
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-g8h8,g8h7,f8e8,f8d8,a8b8,g7h8,g7f6,c6d8,c6b8,c6e7,c6a5,c6d4,c6b4,e5d4,f7f6,d7d6,b7b6,a7a6,h6h5,g6g5,f7f5,d7d5,b7b5,a7a5
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move g7f6
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 26
-Material Count - White: 38, Black: 27
-Prompt Tokens: 149549
-Completion Tokens: 123795
-Proxy (to Random_Player):
-
-You are a random chess player.
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-g2h3,h1h6,h1h5,h1h4,h1h3,h1h2,g1h3,g1e2,f1f2,f1e2,e1h4,e1g3,e1e3,e1f2,e1e2,e1d2,e1d1,c1h6,c1g5,c1f4,c1e3,c1a3,c1d2,c1b2,b1a3,b1d2,d4e5,g4g5,d4d5,b4b5,f3f4,c3c4,a2a3,a2a4
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-make_move g1h3
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 27
-Material Count - White: 38, Black: 27
-Prompt Tokens: 0
-Completion Tokens: 0
-Proxy (to NoN_Synthesizer):
-
-You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
-- 'get_current_board' to get the schema and current status of the board
-- 'get_legal_moves' to get a UCI formatted list of available moves
-- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_current_board
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-♜ ⭘ ♝ ⭘ ⭘ ♜ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ⭘ ⭘
-⭘ ⭘ ♞ ⭘ ⭘ ♝ ♟ ♟
-⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
-⭘ ♙ ⭘ ♙ ♙ ⭘ ♙ ⭘
-⭘ ⭘ ♙ ⭘ ⭘ ♙ ⭘ ♘
-♙ ⭘ ⭘ ⭘ ⭘ ⭘ ♗ ⭘
-♖ ♘ ♗ ⭘ ♕ ♔ ⭘ ♖
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move c6b4
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 28
-Material Count - White: 37, Black: 27
-Prompt Tokens: 157808
-Completion Tokens: 130912
-Proxy (to Random_Player):
-
-You are a random chess player.
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-h3g5,h3f4,h3f2,h3g1,h1h2,h1g1,f1f2,f1e2,f1g1,e1h4,e1g3,e1e3,e1f2,e1e2,e1d2,e1d1,c1h6,c1g5,c1f4,c1e3,c1a3,c1d2,c1b2,b1a3,b1d2,d4e5,c3b4,g4g5,d4d5,f3f4,c3c4,a2a3,a2a4
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-make_move e1d2
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 29
-Material Count - White: 37, Black: 27
-Prompt Tokens: 0
-Completion Tokens: 0
-Proxy (to NoN_Synthesizer):
-
-You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
-- 'get_current_board' to get the schema and current status of the board
-- 'get_legal_moves' to get a UCI formatted list of available moves
-- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_current_board
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-♜ ⭘ ♝ ⭘ ⭘ ♜ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ♝ ♟ ♟
-⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
-⭘ ♞ ⭘ ♙ ♙ ⭘ ♙ ⭘
-⭘ ⭘ ♙ ⭘ ⭘ ♙ ⭘ ♘
-♙ ⭘ ⭘ ♕ ⭘ ⭘ ♗ ⭘
-♖ ♘ ♗ ⭘ ⭘ ♔ ⭘ ♖
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move f8d8
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 30
-Material Count - White: 37, Black: 27
-Prompt Tokens: 165369
-Completion Tokens: 137338
-Proxy (to Random_Player):
-
-You are a random chess player.
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-h3g5,h3f4,h3f2,h3g1,d2h6,d2g5,d2f4,d2e3,d2d3,d2f2,d2e2,d2c2,d2b2,d2e1,d2d1,h1h2,h1g1,f1f2,f1e2,f1g1,f1e1,c1a3,c1b2,b1a3,d4e5,c3b4,g4g5,d4d5,f3f4,c3c4,a2a3,a2a4
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-make_move h3g5
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 31
-Material Count - White: 37, Black: 27
-Prompt Tokens: 0
-Completion Tokens: 0
-Proxy (to NoN_Synthesizer):
-
-You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
-- 'get_current_board' to get the schema and current status of the board
-- 'get_legal_moves' to get a UCI formatted list of available moves
-- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_current_board
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-♜ ⭘ ♝ ♜ ⭘ ⭘ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ♝ ♟ ♟
-⭘ ⭘ ⭘ ⭘ ♟ ⭘ ♘ ⭘
-⭘ ♞ ⭘ ♙ ♙ ⭘ ♙ ⭘
-⭘ ⭘ ♙ ⭘ ⭘ ♙ ⭘ ⭘
-♙ ⭘ ⭘ ♕ ⭘ ⭘ ♗ ⭘
-♖ ♘ ♗ ⭘ ⭘ ♔ ⭘ ♖
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-g8h8,g8f8,g8g7,d8f8,d8e8,a8b8,f6h8,f6g7,f6e7,f6g5,b4c6,b4a6,b4d5,b4d3,b4c2,b4a2,h6g5,e5d4,d7d6,c7c6,b7b6,a7a6,h6h5,d7d5,c7c5,b7b5,a7a5
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move h6g5
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-Move made, switching player
-
---------------------------------------------------------------------------------
-MADE MOVE 32
-Material Count - White: 34, Black: 27
-Prompt Tokens: 181956
-Completion Tokens: 151562
-Proxy (to Random_Player):
-
-You are a random chess player.
-
---------------------------------------------------------------------------------
-Random_Player (to Proxy):
-
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to Random_Player):
-
-g2h3,d2g5,d2f4,d2e3,d2d3,d2f2,d2e2,d2c2,d2b2,d2e1,d2d1,h1h8,h1h7,h1h6,h1h5,h1h4,h1h3,h1h2,h1g1,f1f2,f1e2,f1g1,f1e1,c1a3,c1b2,b1a3,d4e5,c3b4,d4d5,f3f4,c3c4,a2a3,a2a4
+h1h2,g1f3,g1e2,f1e2,e1e2,e1d2,e1d1,c1a3,c1d2,c1b2,b1c3,b1a3,b1d2,f4e5,h3g4,f4f5,h3h4,e3e4,d3d4,b3b4,g2g3,c2c3,a2a3,c2c4,a2a4
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
@@ -1211,8 +491,8 @@ Proxy (to Random_Player):
 Move made, switching player
 
 --------------------------------------------------------------------------------
-MADE MOVE 33
-Material Count - White: 34, Black: 27
+MADE MOVE 13
+Material Count - White: 30, Black: 39
 Prompt Tokens: 0
 Completion Tokens: 0
 Proxy (to NoN_Synthesizer):
@@ -1230,29 +510,19 @@ get_current_board
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-♜ ⭘ ♝ ♜ ⭘ ⭘ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ♝ ♟ ⭘
-⭘ ⭘ ⭘ ⭘ ♟ ⭘ ♟ ⭘
-♙ ♞ ⭘ ♙ ♙ ⭘ ♙ ⭘
-⭘ ⭘ ♙ ⭘ ⭘ ♙ ⭘ ⭘
-⭘ ⭘ ⭘ ♕ ⭘ ⭘ ♗ ⭘
-♖ ♘ ♗ ⭘ ⭘ ♔ ⭘ ♖
+♜ ⭘ ⭘ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ♟ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ♞ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ♙ ♞ ⭘
+⭘ ♙ ⭘ ♙ ♙ ⭘ ⭘ ♙
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♙ ⭘
+♖ ♘ ♗ ⭘ ♔ ♗ ♘ ♖
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
 
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-g8f8,g8g7,d8f8,d8e8,a8b8,f6h8,f6g7,f6e7,b4c6,b4a6,b4d5,b4d3,b4c2,b4a2,e5d4,d7d6,c7c6,b7b6,a7a6,d7d5,c7c5,b7b5,a7a5
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move b4d5
+make_move e5f3
 
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
@@ -1260,10 +530,10 @@ Proxy (to NoN_Synthesizer):
 Move made, switching player
 
 --------------------------------------------------------------------------------
-MADE MOVE 34
-Material Count - White: 34, Black: 27
-Prompt Tokens: 192362
-Completion Tokens: 159587
+MADE MOVE 14
+Material Count - White: 30, Black: 39
+Prompt Tokens: 79977
+Completion Tokens: 64507
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -1276,7 +546,367 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-g2h3,d2g5,d2f4,d2e3,d2d3,d2f2,d2e2,d2c2,d2b2,d2a2,d2e1,d2d1,h1h8,h1h7,h1h6,h1h5,h1h4,h1h3,h1h2,h1g1,f1f2,f1e2,f1g1,f1e1,c1a3,c1b2,b1a3,a1a3,a1a2,e4d5,d4e5,a4a5,f3f4,c3c4
+e1e2,e1d1,g1f3,g2f3
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move g2f3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 15
+Material Count - White: 30, Black: 36
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ♟ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ♙ ♞ ⭘
+⭘ ♙ ⭘ ♙ ♙ ♙ ⭘ ♙
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+♖ ♘ ♗ ⭘ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move c7c5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 16
+Material Count - White: 30, Black: 36
+Prompt Tokens: 88563
+Completion Tokens: 71930
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+h1h2,g1e2,f1g2,f1e2,e1e2,e1d2,e1d1,c1a3,c1d2,c1b2,b1c3,b1a3,b1d2,a1a3,a1a2,h3g4,f3g4,f4f5,a4a5,h3h4,e3e4,d3d4,b3b4,c2c3,c2c4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move e1e2
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 17
+Material Count - White: 30, Black: 36
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ♟ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ♙ ♞ ⭘
+⭘ ♙ ⭘ ♙ ♙ ♙ ⭘ ♙
+⭘ ⭘ ♙ ⭘ ♔ ⭘ ⭘ ⭘
+♖ ♘ ♗ ⭘ ⭘ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+h8g8,e8d7,d8c8,d8b8,d8d7,d8c7,d8d6,d8b6,d8a5,a8c8,a8b8,e6c8,e6d7,e6f5,g4h6,g4f6,g4e5,g4e3,g4h2,g4f2,h7h6,g7g6,f7f6,b7b6,a7a6,d5d4,c5c4,h7h5,g7g5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move g4e5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 18
+Material Count - White: 30, Black: 36
+Prompt Tokens: 106074
+Completion Tokens: 87066
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+e2f2,e2d2,e2e1,e2d1,h1h2,f1g2,c1a3,c1d2,c1b2,b1c3,b1a3,b1d2,a1a3,a1a2,f4e5,f4f5,a4a5,h3h4,e3e4,d3d4,b3b4,c2c3,c2c4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move c2c3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 19
+Material Count - White: 30, Black: 36
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ♟ ♞ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+⭘ ♙ ♙ ♙ ♙ ♙ ⭘ ♙
+⭘ ⭘ ⭘ ⭘ ♔ ⭘ ⭘ ⭘
+♖ ♘ ♗ ⭘ ⭘ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e5f3
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 20
+Material Count - White: 29, Black: 36
+Prompt Tokens: 115517
+Completion Tokens: 95389
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+e2f3,e2f2,e2d1,h1h2,g1f3,f1g2,c1a3,c1d2,c1b2,b1a3,b1d2,a1a3,a1a2,f4f5,a4a5,h3h4,e3e4,d3d4,c3c4,b3b4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move e2f2
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 21
+Material Count - White: 29, Black: 36
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ♟ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+⭘ ♙ ♙ ♙ ♙ ♞ ⭘ ♙
+⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘ ⭘
+♖ ♘ ♗ ⭘ ⭘ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move f3h4
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 22
+Material Count - White: 29, Black: 36
+Prompt Tokens: 125586
+Completion Tokens: 104346
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+f2g3,f2e2,f2e1,h1h2,g1f3,g1e2,f1g2,f1e2,c1a3,c1d2,c1b2,b1a3,b1d2,a1a3,a1a2,f4f5,a4a5,e3e4,d3d4,c3c4,b3b4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move c1d2
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 23
+Material Count - White: 29, Black: 36
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ♟ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ♞
+⭘ ♙ ♙ ♙ ♙ ⭘ ⭘ ♙
+⭘ ⭘ ⭘ ♗ ⭘ ♔ ⭘ ⭘
+♖ ♘ ⭘ ⭘ ⭘ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+h8g8,e8d7,d8c8,d8b8,d8d7,d8c7,d8d6,d8b6,d8a5,a8c8,a8b8,e6c8,e6d7,e6f5,e6g4,e6h3,h4g6,h4f5,h4f3,h4g2,h7h6,g7g6,f7f6,b7b6,a7a6,d5d4,c5c4,h7h5,g7g5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move h4f3
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 24
+Material Count - White: 29, Black: 36
+Prompt Tokens: 133705
+Completion Tokens: 109930
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+f2g3,f2f3,f2g2,f2e2,d2e1,d2c1,h1h2,g1f3,g1e2,f1g2,f1e2,b1a3,a1a3,a1a2,f4f5,a4a5,h3h4,e3e4,d3d4,c3c4,b3b4
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
@@ -1289,8 +919,8 @@ Proxy (to Random_Player):
 Move made, switching player
 
 --------------------------------------------------------------------------------
-MADE MOVE 35
-Material Count - White: 34, Black: 27
+MADE MOVE 25
+Material Count - White: 29, Black: 36
 Prompt Tokens: 0
 Completion Tokens: 0
 Proxy (to NoN_Synthesizer):
@@ -1308,14 +938,14 @@ get_current_board
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-♜ ⭘ ♝ ♜ ⭘ ⭘ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ♝ ♟ ⭘
-⭘ ⭘ ⭘ ♞ ♟ ⭘ ♟ ⭘
-♙ ⭘ ⭘ ♙ ♙ ⭘ ♙ ⭘
-⭘ ⭘ ♙ ⭘ ⭘ ♙ ⭘ ⭘
-⭘ ⭘ ⭘ ♕ ♔ ⭘ ♗ ⭘
-♖ ♘ ♗ ⭘ ⭘ ⭘ ⭘ ♖
+♜ ⭘ ⭘ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ♟ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+⭘ ♙ ♙ ♙ ♙ ♞ ⭘ ♙
+⭘ ⭘ ⭘ ♗ ♗ ♔ ⭘ ⭘
+♖ ♘ ⭘ ⭘ ⭘ ⭘ ♘ ♖
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
@@ -1325,12 +955,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-g8f8,g8g7,d8f8,d8e8,a8b8,f6h8,f6g7,f6e7,d5e7,d5b6,d5f4,d5b4,d5e3,d5c3,e5d4,d7d6,c7c6,b7b6,a7a6,c7c5,b7b5,a7a5
+h8g8,e8d7,d8c8,d8b8,d8d7,d8c7,d8d6,d8b6,d8a5,a8c8,a8b8,e6c8,e6d7,e6f5,e6g4,e6h3,f3g5,f3e5,f3h4,f3d4,f3h2,f3d2,f3g1,f3e1,h7h6,g7g6,f7f6,b7b6,a7a6,d5d4,c5c4,h7h5,g7g5,f7f5,b7b5,a7a5
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
 
-make_move e5d4
+make_move f3d2
 
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
@@ -1338,10 +968,10 @@ Proxy (to NoN_Synthesizer):
 Move made, switching player
 
 --------------------------------------------------------------------------------
-MADE MOVE 36
-Material Count - White: 33, Black: 27
-Prompt Tokens: 211128
-Completion Tokens: 176119
+MADE MOVE 26
+Material Count - White: 26, Black: 36
+Prompt Tokens: 151687
+Completion Tokens: 125503
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -1354,7 +984,301 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-g2h3,g2f1,e2d3,e2f2,e2f1,e2e1,e2d1,d2g5,d2f4,d2d4,d2e3,d2d3,d2c2,d2b2,d2a2,d2e1,d2d1,h1h8,h1h7,h1h6,h1h5,h1h4,h1h3,h1h2,h1g1,h1f1,h1e1,h1d1,c1a3,c1b2,b1a3,a1a3,a1a2,e4d5,c3d4,e4e5,a4a5,f3f4,c3c4
+f2g3,f2g2,f2e1,e2h5,e2g4,e2f3,e2f1,e2d1,h1h2,g1f3,b1a3,b1d2,a1a3,a1a2,f4f5,a4a5,h3h4,e3e4,d3d4,c3c4,b3b4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move h1h2
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 27
+Material Count - White: 26, Black: 36
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+h8g8,e8d7,d8c8,d8b8,d8d7,d8c7,d8d6,d8b6,d8a5,a8c8,a8b8,e6c8,e6d7,e6f5,e6g4,e6h3,d2e4,d2c4,d2f3,d2b3,d2f1,d2b1,h7h6,g7g6,f7f6,b7b6,a7a6,d5d4,c5c4,h7h5,g7g5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move d5d4
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 28
+Material Count - White: 26, Black: 36
+Prompt Tokens: 156912
+Completion Tokens: 129661
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+h2g2,h2h1,f2g3,f2g2,f2e1,e2h5,e2g4,e2f3,e2f1,e2d1,g1f3,b1a3,b1d2,a1a3,a1a2,e3d4,c3d4,f4f5,a4a5,h3h4,e3e4,c3c4,b3b4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move h3h4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 29
+Material Count - White: 26, Black: 36
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ♟ ⭘ ♙ ⭘ ♙
+⭘ ♙ ♙ ♙ ♙ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♞ ♗ ♔ ⭘ ♖
+♖ ♘ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move d2e4
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 30
+Material Count - White: 26, Black: 36
+Prompt Tokens: 166939
+Completion Tokens: 138570
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+f2f3,f2g2,f2f1,f2e1,d3e4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move f2f3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 31
+Material Count - White: 26, Black: 36
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ♟ ♞ ♙ ⭘ ♙
+⭘ ♙ ♙ ♙ ♙ ♔ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♗ ⭘ ⭘ ♖
+♖ ♘ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+h8g8,e8d7,d8c8,d8b8,d8d7,d8c7,d8d6,d8b6,d8d5,d8a5,a8c8,a8b8,e6c8,e6d7,e6f5,e6d5,e6g4,e6c4,e6h3,e6b3,e4f6,e4d6,e4g5,e4g3,e4c3,e4f2,e4d2,d4e3,d4c3,h7h6,g7g6,f7f6,b7b6,a7a6,c5c4,h7h5,g7g5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e6h3
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 32
+Material Count - White: 26, Black: 36
+Prompt Tokens: 184614
+Completion Tokens: 153777
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+f3e4,h2h3,h2g2,h2f2,h2h1,e2f1,e2d1,g1h3,b1a3,b1d2,a1a3,a1a2,e3d4,d3e4,c3d4,h4h5,f4f5,a4a5,c3c4,b3b4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move f3e4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 33
+Material Count - White: 26, Black: 33
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+<think>
+As Black, before making a move, I need to understand the current position on the board and what moves are available to me. Since I don't have the board state yet, the first step is to retrieve the current board setup to analyze piece placement, threats, and opportunities.
+
+After that, I will request the list of legal moves available to me in UCI format so I can evaluate my options.
+
+Once I have the board and legal moves, I will analyze the position considering principles like controlling the center, piece development, king safety, and tactical possibilities such as captures or checks.
+
+Finally, I will select the best move based on this analysis and execute it with the 'make_move' command.
+
+Therefore, the sequence of actions is:
+
+1. get_current_board  
+2. get_legal_moves  
+3. make_move <chosen move>
+
+Since I can only pick one action now, I will start by retrieving the current board.
+
+</think>
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ♟ ♔ ♙ ⭘ ♙
+⭘ ♙ ♙ ♙ ♙ ⭘ ⭘ ♝
+⭘ ⭘ ⭘ ⭘ ♗ ⭘ ⭘ ♖
+♖ ♘ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move h3f5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 34
+Material Count - White: 26, Black: 33
+Prompt Tokens: 198029
+Completion Tokens: 165941
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+e4f5,e4e5,e4f3
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
@@ -1367,8 +1291,8 @@ Proxy (to Random_Player):
 Move made, switching player
 
 --------------------------------------------------------------------------------
-MADE MOVE 37
-Material Count - White: 33, Black: 27
+MADE MOVE 35
+Material Count - White: 26, Black: 33
 Prompt Tokens: 0
 Completion Tokens: 0
 Proxy (to NoN_Synthesizer):
@@ -1386,19 +1310,87 @@ get_current_board
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-♜ ⭘ ♝ ♜ ⭘ ⭘ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ♝ ♟ ⭘
-⭘ ⭘ ⭘ ♞ ♙ ⭘ ♟ ⭘
-♙ ⭘ ⭘ ♟ ⭘ ⭘ ♙ ⭘
-⭘ ⭘ ♙ ⭘ ⭘ ♙ ⭘ ⭘
-⭘ ⭘ ⭘ ♕ ♔ ⭘ ♗ ⭘
-♖ ♘ ♗ ⭘ ⭘ ⭘ ⭘ ♖
+♜ ⭘ ⭘ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ♔ ♝ ⭘ ⭘
+♙ ⭘ ⭘ ♟ ⭘ ♙ ⭘ ♙
+⭘ ♙ ♙ ♙ ♙ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♗ ⭘ ⭘ ♖
+♖ ♘ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
 
-make_move d5c3
+make_move d8d5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 36
+Material Count - White: 26, Black: 33
+Prompt Tokens: 203719
+Completion Tokens: 170443
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+e5d5
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move e5d5
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 37
+Material Count - White: 26, Black: 24
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ⭘ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ♔ ⭘ ♝ ⭘ ⭘
+♙ ⭘ ⭘ ♟ ⭘ ♙ ⭘ ♙
+⭘ ♙ ♙ ♙ ♙ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♗ ⭘ ⭘ ♖
+♖ ♘ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move a8d8
 
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
@@ -1407,9 +1399,9 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 38
-Material Count - White: 32, Black: 27
-Prompt Tokens: 220996
-Completion Tokens: 184856
+Material Count - White: 26, Black: 24
+Prompt Tokens: 216515
+Completion Tokens: 182136
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -1422,12 +1414,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-e2d3,e2f2,e2f1,e2e1,d2c3,b1c3
+d5e5,d5c5,d5c4
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
 
-make_move e2f1
+make_move d5c4
 
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
@@ -1436,7 +1428,7 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 39
-Material Count - White: 32, Black: 27
+Material Count - White: 26, Black: 24
 Prompt Tokens: 0
 Completion Tokens: 0
 Proxy (to NoN_Synthesizer):
@@ -1454,14 +1446,14 @@ get_current_board
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-♜ ⭘ ♝ ♜ ⭘ ⭘ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ♝ ♟ ⭘
-⭘ ⭘ ⭘ ⭘ ♙ ⭘ ♟ ⭘
-♙ ⭘ ⭘ ♟ ⭘ ⭘ ♙ ⭘
-⭘ ⭘ ♞ ⭘ ⭘ ♙ ⭘ ⭘
-⭘ ⭘ ⭘ ♕ ⭘ ⭘ ♗ ⭘
-♖ ♘ ♗ ⭘ ⭘ ♔ ⭘ ♖
+⭘ ⭘ ⭘ ♜ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ♝ ⭘ ⭘
+♙ ⭘ ♔ ♟ ⭘ ♙ ⭘ ♙
+⭘ ♙ ♙ ♙ ♙ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♗ ⭘ ⭘ ♖
+♖ ♘ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
@@ -1471,12 +1463,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-g8f8,g8g7,d8f8,d8e8,a8b8,f6h8,f6g7,f6e7,f6e5,c3d5,c3b5,c3e4,c3a4,c3e2,c3a2,c3d1,c3b1,d7d6,c7c6,b7b6,a7a6,d4d3,d7d5,c7c5,b7b5,a7a5
+h8g8,e8d7,d8c8,d8b8,d8a8,d8d7,d8d6,d8d5,f5c8,f5d7,f5g6,f5e6,f5g4,f5e4,f5h3,f5d3,d4e3,d4c3,h7h6,g7g6,f7f6,e7e6,b7b6,a7a6,h7h5,g7g5,e7e5,b7b5,a7a5
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
 
-make_move f6e5
+make_move f5e4
 
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
@@ -1485,9 +1477,9 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 40
-Material Count - White: 31, Black: 27
-Prompt Tokens: 239322
-Completion Tokens: 200885
+Material Count - White: 26, Black: 24
+Prompt Tokens: 235619
+Completion Tokens: 198962
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -1500,12 +1492,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-g2h3,d2g5,d2f4,d2d4,d2e3,d2d3,d2c3,d2f2,d2e2,d2c2,d2b2,d2a2,d2e1,d2d1,h1h8,h1h7,h1h6,h1h5,h1h4,h1h3,h1h2,h1g1,f1f2,f1g1,f1e1,c1a3,c1b2,b1c3,b1a3,a1a3,a1a2,a4a5,f3f4
+c4c5,c4b5,h2h3,h2g2,h2f2,h2h1,e2h5,e2g4,e2f3,e2f1,e2d1,g1h3,g1f3,b1a3,b1d2,a1a3,a1a2,e3d4,d3e4,c3d4,h4h5,f4f5,a4a5,b3b4
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
 
-make_move c1a3
+make_move h4h5
 
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
@@ -1514,7 +1506,7 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 41
-Material Count - White: 31, Black: 27
+Material Count - White: 26, Black: 24
 Prompt Tokens: 0
 Completion Tokens: 0
 Proxy (to NoN_Synthesizer):
@@ -1532,29 +1524,19 @@ get_current_board
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-♜ ⭘ ♝ ♜ ⭘ ⭘ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
-⭘ ⭘ ⭘ ⭘ ♝ ⭘ ♟ ⭘
-♙ ⭘ ⭘ ♟ ⭘ ⭘ ♙ ⭘
-♗ ⭘ ♞ ⭘ ⭘ ♙ ⭘ ⭘
-⭘ ⭘ ⭘ ♕ ⭘ ⭘ ♗ ⭘
-♖ ♘ ⭘ ⭘ ⭘ ♔ ⭘ ♖
+⭘ ⭘ ⭘ ♜ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ♙
+♙ ⭘ ♔ ♟ ♝ ♙ ⭘ ⭘
+⭘ ♙ ♙ ♙ ♙ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♗ ⭘ ⭘ ♖
+♖ ♘ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
 
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-g8g7,d8f8,d8e8,a8b8,e5h8,e5g7,e5f6,e5d6,e5f4,e5g3,e5h2,c3d5,c3b5,c3e4,c3a4,c3e2,c3a2,c3d1,c3b1,f7f6,d7d6,c7c6,b7b6,a7a6,d4d3,f7f5,d7d5,c7c5,b7b5,a7a5
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move c3d5
+make_move d4c3
 
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
@@ -1563,9 +1545,9 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 42
-Material Count - White: 31, Black: 27
-Prompt Tokens: 253533
-Completion Tokens: 212660
+Material Count - White: 25, Black: 24
+Prompt Tokens: 246880
+Completion Tokens: 209094
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -1578,12 +1560,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-a3f8,a3e7,a3d6,a3c5,a3b4,a3b2,a3c1,g2h3,d2g5,d2a5,d2f4,d2d4,d2b4,d2e3,d2d3,d2c3,d2f2,d2e2,d2c2,d2b2,d2a2,d2e1,d2d1,d2c1,h1h8,h1h7,h1h6,h1h5,h1h4,h1h3,h1h2,h1g1,f1f2,f1e2,f1g1,f1e1,b1c3,a1a2,a4a5,f3f4
+c4c5,c4b5,c4c3,h2h4,h2h3,h2g2,h2f2,h2h1,e2g4,e2f3,e2f1,e2d1,g1h3,g1f3,b1c3,b1a3,b1d2,a1a3,a1a2,d3e4,h5h6,f4f5,a4a5,d3d4,b3b4
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
 
-make_move d2d1
+make_move h2g2
 
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
@@ -1592,7 +1574,7 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 43
-Material Count - White: 31, Black: 27
+Material Count - White: 25, Black: 24
 Prompt Tokens: 0
 Completion Tokens: 0
 Proxy (to NoN_Synthesizer):
@@ -1610,29 +1592,19 @@ get_current_board
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-♜ ⭘ ♝ ♜ ⭘ ⭘ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
-⭘ ⭘ ⭘ ♞ ♝ ⭘ ♟ ⭘
-♙ ⭘ ⭘ ♟ ⭘ ⭘ ♙ ⭘
-♗ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♗ ⭘
-♖ ♘ ⭘ ♕ ⭘ ♔ ⭘ ♖
+⭘ ⭘ ⭘ ♜ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ♙
+♙ ⭘ ♔ ⭘ ♝ ♙ ⭘ ⭘
+⭘ ♙ ♟ ♙ ♙ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♗ ⭘ ♖ ⭘
+♖ ♘ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
 
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-g8g7,d8f8,d8e8,a8b8,e5h8,e5g7,e5f6,e5d6,e5f4,e5g3,e5h2,d5e7,d5f6,d5b6,d5f4,d5b4,d5e3,d5c3,f7f6,d7d6,c7c6,b7b6,a7a6,d4d3,f7f5,c7c5,b7b5,a7a5
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move d5f6
+make_move e4g2
 
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
@@ -1641,9 +1613,9 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 44
-Material Count - White: 31, Black: 27
-Prompt Tokens: 268998
-Completion Tokens: 225712
+Material Count - White: 20, Black: 24
+Prompt Tokens: 257335
+Completion Tokens: 218399
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -1656,12 +1628,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-a3f8,a3e7,a3d6,a3c5,a3b4,a3b2,a3c1,g2h3,h1h8,h1h7,h1h6,h1h5,h1h4,h1h3,h1h2,h1g1,f1f2,f1e2,f1g1,f1e1,d1d4,d1d3,d1b3,d1e2,d1d2,d1c2,d1e1,d1c1,b1c3,b1d2,a1a2,a4a5,f3f4
+c4c5,c4b5,c4c3,e2g4,e2f3,e2f1,e2d1,g1h3,g1f3,b1c3,b1a3,b1d2,a1a3,a1a2,h5h6,f4f5,a4a5,e3e4,d3d4,b3b4
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
 
-make_move d1d2
+make_move c4c3
 
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
@@ -1670,7 +1642,7 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 45
-Material Count - White: 31, Black: 27
+Material Count - White: 20, Black: 23
 Prompt Tokens: 0
 Completion Tokens: 0
 Proxy (to NoN_Synthesizer):
@@ -1688,29 +1660,19 @@ get_current_board
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-♜ ⭘ ♝ ♜ ⭘ ⭘ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ♞ ♟ ⭘
-⭘ ⭘ ⭘ ⭘ ♝ ⭘ ♟ ⭘
-♙ ⭘ ⭘ ♟ ⭘ ⭘ ♙ ⭘
-♗ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
-⭘ ⭘ ⭘ ♕ ⭘ ⭘ ♗ ⭘
-♖ ♘ ⭘ ⭘ ⭘ ♔ ⭘ ♖
+⭘ ⭘ ⭘ ♜ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ♙
+♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+⭘ ♙ ♔ ♙ ♙ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♗ ⭘ ♝ ⭘
+♖ ♘ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
 
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-g8g7,d8f8,d8e8,a8b8,f6e8,f6h7,f6h5,f6d5,f6g4,f6e4,e5d6,e5f4,e5g3,e5h2,d7d6,c7c6,b7b6,a7a6,d4d3,d7d5,c7c5,b7b5,a7a5
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move e5h2
+make_move g2f3
 
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
@@ -1719,9 +1681,9 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 46
-Material Count - White: 31, Black: 27
-Prompt Tokens: 289147
-Completion Tokens: 243557
+Material Count - White: 20, Black: 23
+Prompt Tokens: 267122
+Completion Tokens: 227048
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -1734,12 +1696,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-a3f8,a3e7,a3d6,a3c5,a3b4,a3b2,a3c1,g2h3,d2g5,d2a5,d2f4,d2d4,d2b4,d2e3,d2d3,d2c3,d2f2,d2e2,d2c2,d2b2,d2a2,d2e1,d2d1,d2c1,h1h2,h1g1,f1f2,f1e2,f1e1,b1c3,a1a2,a4a5,f3f4
+c3c4,c3d2,c3c2,c3b2,e2f3,e2f1,e2d1,g1h3,g1f3,b1a3,b1d2,a1a3,a1a2,h5h6,f4f5,a4a5,e3e4,d3d4,b3b4
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
 
-make_move f1f2
+make_move c3d2
 
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
@@ -1748,7 +1710,7 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 47
-Material Count - White: 31, Black: 27
+Material Count - White: 20, Black: 23
 Prompt Tokens: 0
 Completion Tokens: 0
 Proxy (to NoN_Synthesizer):
@@ -1766,14 +1728,14 @@ get_current_board
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-♜ ⭘ ♝ ♜ ⭘ ⭘ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ♞ ♟ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
-♙ ⭘ ⭘ ♟ ⭘ ⭘ ♙ ⭘
-♗ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
-⭘ ⭘ ⭘ ♕ ⭘ ♔ ♗ ♝
-♖ ♘ ⭘ ⭘ ⭘ ⭘ ⭘ ♖
+⭘ ⭘ ⭘ ♜ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ♙
+♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+⭘ ♙ ⭘ ♙ ♙ ♝ ⭘ ⭘
+⭘ ⭘ ⭘ ♔ ♗ ⭘ ⭘ ⭘
+♖ ♘ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
@@ -1783,12 +1745,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-g8h8,g8h7,g8g7,d8f8,d8e8,a8b8,f6e8,f6h7,f6h5,f6d5,f6g4,f6e4,h2d6,h2e5,h2f4,h2g3,h2g1,d7d6,c7c6,b7b6,a7a6,d4d3,d7d5,c7c5,b7b5,a7a5
+h8g8,e8d7,d8c8,d8b8,d8a8,d8d7,d8d6,d8d5,d8d4,d8d3,f3c6,f3h5,f3d5,f3g4,f3e4,f3g2,f3e2,f3h1,h7h6,g7g6,f7f6,e7e6,b7b6,a7a6,c5c4,g7g5,f7f5,e7e5,b7b5,a7a5
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
 
-make_move f6e4
+make_move f3h5
 
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
@@ -1797,9 +1759,9 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 48
-Material Count - White: 31, Black: 27
-Prompt Tokens: 308476
-Completion Tokens: 260565
+Material Count - White: 19, Black: 23
+Prompt Tokens: 282132
+Completion Tokens: 239623
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -1812,12 +1774,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-f2e2,f2f1,f2e1,f3e4
+e2h5,e2g4,e2f3,e2f1,e2d1,d2c3,d2c2,d2e1,d2d1,d2c1,g1h3,g1f3,b1c3,b1a3,a1a3,a1a2,f4f5,a4a5,e3e4,d3d4,b3b4
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
 
-make_move f2e2
+make_move e2f3
 
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
@@ -1826,7 +1788,7 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 49
-Material Count - White: 31, Black: 27
+Material Count - White: 19, Black: 23
 Prompt Tokens: 0
 Completion Tokens: 0
 Proxy (to NoN_Synthesizer):
@@ -1844,29 +1806,19 @@ get_current_board
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-♜ ⭘ ♝ ♜ ⭘ ⭘ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
-♙ ⭘ ⭘ ♟ ♞ ⭘ ♙ ⭘
-♗ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
-⭘ ⭘ ⭘ ♕ ♔ ⭘ ♗ ♝
-♖ ♘ ⭘ ⭘ ⭘ ⭘ ⭘ ♖
+⭘ ⭘ ⭘ ♜ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ♝
+♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+⭘ ♙ ⭘ ♙ ♙ ♗ ⭘ ⭘
+⭘ ⭘ ⭘ ♔ ⭘ ⭘ ⭘ ⭘
+♖ ♘ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
 
 --------------------------------------------------------------------------------
 NoN_Synthesizer (to Proxy):
 
-get_legal_moves
-
---------------------------------------------------------------------------------
-Proxy (to NoN_Synthesizer):
-
-g8h8,g8h7,g8g7,d8f8,d8e8,a8b8,e4f6,e4d6,e4c5,e4g3,e4c3,e4f2,e4d2,h2d6,h2e5,h2f4,h2g3,h2g1,f7f6,d7d6,c7c6,b7b6,a7a6,d4d3,f7f5,d7d5,c7c5,b7b5,a7a5
-
---------------------------------------------------------------------------------
-NoN_Synthesizer (to Proxy):
-
-make_move e4d2
+make_move h5f3
 
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
@@ -1875,9 +1827,9 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 50
-Material Count - White: 22, Black: 27
-Prompt Tokens: 322166
-Completion Tokens: 271818
+Material Count - White: 16, Black: 23
+Prompt Tokens: 290647
+Completion Tokens: 246965
 Proxy (to Random_Player):
 
 You are a random chess player.
@@ -1890,12 +1842,12 @@ get_legal_moves
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
 
-a3f8,a3e7,a3d6,a3c5,a3b4,a3b2,a3c1,g2h3,g2f1,e2d3,e2f2,e2d2,e2e1,e2d1,h1h2,h1g1,h1f1,h1e1,h1d1,h1c1,b1c3,b1d2,a1a2,a4a5,f3f4
+d2c3,d2c2,d2e1,d2c1,g1h3,g1f3,g1e2,b1c3,b1a3,a1a3,a1a2,f4f5,a4a5,e3e4,d3d4,b3b4
 
 --------------------------------------------------------------------------------
 Random_Player (to Proxy):
 
-make_move g2h3
+make_move d2c2
 
 --------------------------------------------------------------------------------
 Proxy (to Random_Player):
@@ -1904,7 +1856,7 @@ Move made, switching player
 
 --------------------------------------------------------------------------------
 MADE MOVE 51
-Material Count - White: 22, Black: 27
+Material Count - White: 16, Black: 23
 Prompt Tokens: 0
 Completion Tokens: 0
 Proxy (to NoN_Synthesizer):
@@ -1922,13 +1874,519 @@ get_current_board
 --------------------------------------------------------------------------------
 Proxy (to NoN_Synthesizer):
 
-♜ ⭘ ♝ ♜ ⭘ ⭘ ♚ ⭘
-♟ ♟ ♟ ♟ ⭘ ♟ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
-♙ ⭘ ⭘ ♟ ⭘ ⭘ ♙ ⭘
-♗ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ♗
-⭘ ⭘ ⭘ ♞ ♔ ⭘ ⭘ ♝
-♖ ♘ ⭘ ⭘ ⭘ ⭘ ⭘ ♖
+⭘ ⭘ ⭘ ♜ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+⭘ ♙ ⭘ ♙ ♙ ♝ ⭘ ⭘
+⭘ ⭘ ♔ ⭘ ⭘ ⭘ ⭘ ⭘
+♖ ♘ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e7e5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 52
+Material Count - White: 16, Black: 23
+Prompt Tokens: 302608
+Completion Tokens: 257805
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+c2c3,c2d2,c2b2,c2c1,g1h3,g1f3,g1e2,b1c3,b1a3,b1d2,a1a3,a1a2,f4e5,f4f5,a4a5,e3e4,d3d4,b3b4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move b1a3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 53
+Material Count - White: 16, Black: 23
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ♜ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ♟ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+♘ ♙ ⭘ ♙ ♙ ♝ ⭘ ⭘
+⭘ ⭘ ♔ ⭘ ⭘ ⭘ ⭘ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+h8g8,f8e7,f8d6,e8e7,e8d7,d8c8,d8b8,d8a8,d8d7,d8d6,d8d5,d8d4,d8d3,f3c6,f3h5,f3d5,f3g4,f3e4,f3g2,f3e2,f3h1,f3d1,e5f4,h7h6,g7g6,f7f6,b7b6,a7a6,e5e4,c5c4,h7h5,g7g5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e5f4
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 54
+Material Count - White: 15, Black: 23
+Prompt Tokens: 318149
+Completion Tokens: 270840
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+a3b5,a3c4,a3b1,c2c3,c2d2,c2b2,c2c1,c2b1,g1h3,g1f3,g1e2,a1a2,a1f1,a1e1,a1d1,a1c1,a1b1,e3f4,a4a5,e3e4,d3d4,b3b4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move c2b1
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 55
+Material Count - White: 15, Black: 23
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ♜ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘
+♘ ♙ ⭘ ♙ ♙ ♝ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♖ ♔ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move f3d5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 56
+Material Count - White: 15, Black: 23
+Prompt Tokens: 330105
+Completion Tokens: 281674
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+a3b5,a3c4,a3c2,g1h3,g1f3,g1e2,b1c2,b1b2,b1a2,b1c1,a1a2,e3f4,a4a5,e3e4,d3d4,b3b4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move a4a5
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 57
+Material Count - White: 15, Black: 23
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ♜ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ♟ ♝ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘
+♘ ♙ ⭘ ♙ ♙ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♖ ♔ ⭘ ⭘ ⭘ ⭘ ♘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move d5b3
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 58
+Material Count - White: 14, Black: 23
+Prompt Tokens: 339295
+Completion Tokens: 289722
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+a3b5,a3c4,a3c2,g1h3,g1f3,g1e2,b1b2,b1c1,a1a2,e3f4,a5a6,e3e4,d3d4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move g1h3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 59
+Material Count - White: 14, Black: 23
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ♜ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘
+♘ ♝ ⭘ ♙ ♙ ⭘ ⭘ ♘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♖ ♔ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move b3d3
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Failed to make move: illegal uci: 'b3d3' in 3rkb1r/pp3ppp/8/P1p5/5p2/Nb1PP2N/8/RK6 b k - 1 30
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+h8g8,f8e7,f8d6,e8e7,e8d7,d8c8,d8b8,d8a8,d8d7,d8d6,d8d5,d8d4,d8d3,b3e6,b3d5,b3c4,b3a4,b3c2,b3a2,b3d1,f4e3,h7h6,g7g6,f7f6,b7b6,a7a6,c5c4,f4f3,h7h5,g7g5,f7f5,b7b5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move b3c2
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 60
+Material Count - White: 14, Black: 23
+Prompt Tokens: 359227
+Completion Tokens: 305887
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+b1c2,b1b2,b1a2,b1c1,a3c2
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move a3c2
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 61
+Material Count - White: 14, Black: 20
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ♜ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘
+⭘ ⭘ ⭘ ♙ ♙ ⭘ ⭘ ♘
+⭘ ⭘ ♘ ⭘ ⭘ ⭘ ⭘ ⭘
+♖ ♔ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move d8d3
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 62
+Material Count - White: 13, Black: 20
+Prompt Tokens: 369932
+Completion Tokens: 315476
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+h3g5,h3f4,h3f2,h3g1,c2d4,c2b4,c2a3,c2e1,b1b2,b1a2,b1c1,a1a4,a1a3,a1a2,e3f4,a5a6,e3e4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move b1a2
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 63
+Material Count - White: 13, Black: 20
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘
+⭘ ⭘ ⭘ ♜ ♙ ⭘ ⭘ ♘
+♔ ⭘ ♘ ⭘ ⭘ ⭘ ⭘ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move c5c4
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 64
+Material Count - White: 13, Black: 20
+Prompt Tokens: 383886
+Completion Tokens: 328323
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+h3g5,h3f4,h3f2,h3g1,c2d4,c2b4,c2a3,c2e1,a2b2,a2b1,a1h1,a1g1,a1f1,a1e1,a1d1,a1c1,a1b1,e3f4,a5a6,e3e4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move h3f2
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 65
+Material Count - White: 13, Black: 20
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ♟ ⭘ ⭘
+⭘ ⭘ ⭘ ♜ ♙ ⭘ ⭘ ⭘
+♔ ⭘ ♘ ⭘ ⭘ ♘ ⭘ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
 
 --------------------------------------------------------------------------------
