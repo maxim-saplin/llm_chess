@@ -70,13 +70,19 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
     ]
 
     def azure_config(key):
-        return {
+        config = {
             "api_type": "azure",
             "model": os.environ[f"AZURE_OPENAI_DEPLOYMENT_{key}"],
             "api_key": os.environ[f"AZURE_OPENAI_KEY_{key}"],
             "base_url": os.environ[f"AZURE_OPENAI_ENDPOINT_{key}"],
             "api_version": os.environ[f"AZURE_OPENAI_VERSION_{key}"],
         }
+    
+        # Add reasoning_effort if it is not None
+        if reasoning_effort is not None:
+            config["reasoning_effort"] = reasoning_effort
+
+        return config
 
     def local_config(key):
         return {
@@ -131,10 +137,6 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
         # Add temperature only if it is not "remove"
         if temperature != "remove":
             config["temperature"] = temperature if temperature is not None else 0.3
-
-        # Add reasoning_effort if it is not None
-        if reasoning_effort is not None:
-            config["reasoning_effort"] = reasoning_effort
 
         # If thinking_budget is provided, remove top_p as it's not compatible with thinking mode in Anthropic
         if thinking_budget is not None:

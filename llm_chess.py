@@ -113,6 +113,7 @@ stockfish_level = 1  # Set to an integer (0-20) to override Stockfish skill leve
 stockfish_time_per_move = 0.1  # Time limit (in seconds) for Stockfish to think per move, default is 0.1
 
 # Komodo Dragon chess engine configuration
+# Download Dragon 1 from https://komodochess.com
 dragon_path = "./dragon/dragon-osx"  # Path to Komodo Dragon executable
 reset_dragon_history = True  # If True, Dragon will get no history before making a move
 dragon_level = 1  # Skill level (1-25) for Komodo Dragon
@@ -121,7 +122,7 @@ dragon_time_per_move = 0.1  # Time limit (in seconds) for Dragon to think per mo
 ## Actions
 
 board = chess.Board()
-game_moves = []
+san_moves = []
 
 def get_current_board() -> str:
     """
@@ -146,7 +147,7 @@ def get_current_board() -> str:
         )
 
         pgn_moves = ""
-        for i, move in enumerate(game_moves):
+        for i, move in enumerate(san_moves):
             if i % 2 == 0:
                 pgn_moves += f"{(i // 2) + 1}. {move} "
             else:
@@ -214,9 +215,9 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
 
     # Init chess board and game state
     material_count = {"white": 0, "black": 0}
-    global board, game_moves
+    global board, san_moves
     board.reset()
-    game_moves.clear()
+    san_moves.clear()
     winner = None
     reason = None
 
@@ -447,7 +448,7 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
         
         # Format the moves list into PGN format
         pgn_moves = ""
-        for i, move in enumerate(game_moves):
+        for i, move in enumerate(san_moves):
             if i % 2 == 0:  # White's move - add move number
                 pgn_moves += f"{(i // 2) + 1}. {move} "
             else:  # Black's move
