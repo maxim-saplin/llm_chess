@@ -58,6 +58,9 @@ llm_chess.llm_config_white, llm_chess.llm_config_black = get_llms_autogen(
 
 def run_games(num_repetitions, log_folder=LOG_FOLDER):
     setup_console_logging(log_folder) # save raw console output to output.txt
+    # Initialize progress logging to avoid crowding stdout
+    progress_path = os.path.join(log_folder, "progress.txt")
+    progress_fp = open(progress_path, "w")
     aggregate_data = {
         "total_games": 0,
         "white_wins": 0,
@@ -89,7 +92,10 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
 
     moves_list = []  # List to track moves for each game
 
-    for _ in range(num_repetitions):
+    for i in range(num_repetitions):
+        # Log progress to progress file
+        progress_fp.write(f"Game {i+1}/{num_repetitions}\n")
+        progress_fp.flush()
         # Call the run function and get the game stats
         game_stats, player_white, player_black = run(
             log_dir=log_folder if STORE_INDIVIDUAL_LOGS else None
@@ -165,6 +171,8 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
             "wrong_actions"
         ]
 
+    # Close the progress log
+    progress_fp.close()
     # Calculate average moves
     aggregate_data["average_moves"] = (
         aggregate_data["total_moves"] / aggregate_data["total_games"]

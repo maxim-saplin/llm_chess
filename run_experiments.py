@@ -109,7 +109,8 @@ def main():
             tag = f"{w_pt.name}_vs_{b_pt.name}"
             if symmetric and len(assignments) > 1:
                 tag = f"{tag}_{idx}"
-            log_folder = os.path.join('_logs', 'ablations', name, tag, ts)
+            model_name = llm_chess.llm_config_black["config_list"][0]["model"]
+            log_folder = os.path.join('_logs', 'ablations', name, model_name, tag, ts)
             os.makedirs(log_folder, exist_ok=True)
 
             print(f"Running '{name}' [{idx}/{len(assignments)}]: {w_pt.name} vs {b_pt.name}, games={games}, log_folder={log_folder}")
