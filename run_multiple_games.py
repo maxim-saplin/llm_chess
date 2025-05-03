@@ -9,7 +9,7 @@ import llm_chess
 model_name = llm_chess.llm_config_black["config_list"][0]["model"]
 
 NUM_REPETITIONS = 33  # Set the number of games to run
-LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+LOG_FOLDER = f"_logs/ablations/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 # LOG_FOLDER = f"_logs/llm_vs_llm/haiku_35_vs_4o_mini/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 # LOG_FOLDER = f"_logs/dragon_vs_llm/lvl-1_vs_{model_name}-low/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 # LOG_FOLDER = f"_logs/ensemble-ai/41-mini_t00_t03_t05_t07_t10_t10_t03/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
