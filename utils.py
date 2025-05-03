@@ -103,11 +103,16 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
         }
 
     def openai_config(key):
-        return {
+        config = {
             "model": os.environ[f"OPENAI_MODEL_NAME_{key}"],
             "api_key": os.environ[f"OPENAI_API_KEY_{key}"],
             "api_type": "openai",
         }
+    
+        if reasoning_effort is not None:
+            config["reasoning_effort"] = reasoning_effort
+
+        return config
 
     def anthropic_config(key):
         config = {
