@@ -102,7 +102,13 @@ class RandomPlayerAgent(GameAgent):
         last_message = messages[-1]["content"].strip()
 
         try:
-            legal_moves = last_message.split(",")
+            # Sometimes we force the agent to get legal moves first. In this case, we need to parse it.
+            if "Legal moves:" in last_message:
+                legal_moves = last_message.split("Legal moves:\n")[-1].strip()
+                legal_moves = legal_moves.split("\n")[0]
+                legal_moves = legal_moves.split(",")
+            else:
+                legal_moves = last_message.split(",")
             if legal_moves:
                 if self.flip_flag and self.get_current_board_action:
                     self.flip_flag = False
@@ -205,11 +211,11 @@ class AutoReplyAgent(GameAgent):
         action_choice = messages[-1]["content"].lower().strip()
         reply = ""
 
-        if self.get_current_board_action in action_choice:
+        if self.get_current_board_action and self.get_current_board_action in action_choice:
             sender.get_board_count += 1
             reply = self.get_current_board()
             sender.has_requested_board = True
-        elif self.get_legal_moves_action in action_choice:
+        elif self.get_legal_moves_action and self.get_legal_moves_action in action_choice:
             sender.get_legal_moves_count += 1
             reply = self.get_legal_moves()
             sender.has_requested_board = True

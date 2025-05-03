@@ -2,7 +2,7 @@ import time
 import traceback
 import chess
 import chess.svg
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, List
 from enum import Enum
 from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent, ChessEngineDragonAgent, NonGameAgent
 from utils import calculate_material_count, generate_game_stats, get_llms_autogen, display_board, display_store_game_video_and_stats
@@ -11,6 +11,7 @@ class BoardRepresentation(Enum):
     FEN_ONLY = 1
     UNICODE_ONLY = 2
     UNICODE_WITH_PGN = 3
+    ASCII_ONLY = 4  # Plain ASCII with uppercase (White) and lowercase (Black) letters
 
 
 class TerminationReason(Enum):
@@ -38,8 +39,9 @@ class PlayerType(Enum):
 white_player_type = PlayerType.RANDOM_PLAYER
 black_player_type = PlayerType.LLM_BLACK
 enable_reflection = False  # Whether to offer the LLM time to think and evaluate moves
-board_representation_mode = BoardRepresentation.UNICODE_ONLY  # What kind of board is printed in response to get_current_board
+board_representation_mode = BoardRepresentation.FEN_ONLY  # BoardRepresentation.UNICODE_ONLY  # What kind of board is printed in response to get_current_board
 rotate_board_for_white = False # Whether to rotate the Uicode board for the white player so it gets it's pieces at the bottom
+llm_actions: List[str] = ["make_move", "get_legal_moves"]  # ["get_current_board", "get_legal_moves", "make_move"]  # List of actions the LLM agent should take; actions not included will be auto-provided
 
 # Game configuration
 max_game_moves = 200  # maximum number of game moves before terminating, dafault 200
@@ -51,6 +53,10 @@ random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
 visualize_board = False  # You can skip board visualization (animated board in popup window) to speed up execution
+# Move style for input moves: "UCI" (coordinate notation) or "SAN" (Standard Algebraic Notation)
+DEFAULT_MOVE_STYLE = "UCI"
+# If True, LLM prompts include all previous moves in SAN notation
+SEE_PREVIOUS_MOVES = True  # False
 
 # Set to None to use defaults, "remove" to not send it
 # o1-mini fails with any params other than 1.0 or not present, R1 distil recomends 0.5-0.7, kimi-k1.5-preview 0.3
@@ -125,6 +131,9 @@ def get_current_board() -> str:
     orientation = not (rotate_board_for_white and board.turn) # True is default orientation, False is rotated
     if board_representation_mode == BoardRepresentation.FEN_ONLY:
         return board.fen()
+    elif board_representation_mode == BoardRepresentation.ASCII_ONLY:
+        # ASCII board uses uppercase for White, lowercase for Black
+        return str(board)
     elif board_representation_mode == BoardRepresentation.UNICODE_ONLY:
         return board.unicode(orientation=orientation)
     elif board_representation_mode == BoardRepresentation.UNICODE_WITH_PGN:
@@ -162,19 +171,25 @@ def get_legal_moves() -> str:
 def make_move(move: str):
     """
     Args:
-        move (str): A move in UCI format.
+        move (str): A move in DEFAULT_MOVE_STYLE notation ("UCI" or "SAN").
 
     """
-    if (board_representation_mode == BoardRepresentation.UNICODE_WITH_PGN):
-        san_board = board.copy() # make a copy of the board in order not to spoil it with san() call
+    # Copy board to generate SAN notation after applying the move
+    san_board = board.copy()
+    # Parse and apply move based on DEFAULT_MOVE_STYLE
+    if DEFAULT_MOVE_STYLE.upper() == "SAN":
+        move_obj = board.parse_san(move)
+        board.push(move_obj)
+    else:
+        move_obj = chess.Move.from_uci(move)
+        board.push(move_obj)
+    # Record move notation based on DEFAULT_MOVE_STYLE
+    if DEFAULT_MOVE_STYLE.upper() == "SAN":
+        notation = san_board.san(move_obj)
+    else:
+        notation = move_obj.uci()
+    game_moves.append(notation)
 
-    move_obj = chess.Move.from_uci(move) # this conversation will fail if the move is invalid, proxy will bubble the error to counterpart agent
-    board.push_uci(str(move_obj))
-
-    if (board_representation_mode == BoardRepresentation.UNICODE_WITH_PGN):
-        san_move = san_board.san(move_obj)
-        game_moves.append(san_move)
-    
     # Visualize the board if enabled
     if visualize_board:
         display_board(board, move_obj)
@@ -217,18 +232,24 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
     reflect_action = "do_reflection"
     make_move_action = "make_move"
 
-    common_prompt = (
-        "Now is your turn to make a move. Before making a move you can pick one of the following actions:\n"
-        f"- '{get_current_board_action}' to get the schema and current status of the board\n"
-        f"- '{get_legal_moves_action}' to get a UCI formatted list of available moves\n"
-        + (
-            f"- '{reflect_action}' to take a moment to think about your strategy\n"
-            if enable_reflection
-            else ""
-        )
-        + f"- '{make_move_action} <UCI formatted move>' when you are ready to complete your turn (e.g., '{make_move_action} e2e4')"
-    )
+    # Determine which actions the LLM should handle vs auto-provided
+    handle_board = 'get_current_board' in llm_actions
+    handle_legal = 'get_legal_moves' in llm_actions
+    handle_move = 'make_move' in llm_actions
 
+    # Build common_prompt listing only allowed actions
+    prompt_options = []
+    if handle_board:
+        prompt_options.append(f"- '{get_current_board_action}' to get the schema and current status of the board")
+    if handle_legal:
+        prompt_options.append(f"- '{get_legal_moves_action}' to get a UCI formatted list of available moves")
+    if enable_reflection:
+        prompt_options.append(f"- '{reflect_action}' to take a moment to think about your strategy")
+    if handle_move:
+        prompt_options.append(f"- '{make_move_action} <UCI formatted move>' when you are ready to complete your turn (e.g., '{make_move_action} e2e4')")
+    common_prompt = "Now is your turn to make a move. Before making a move you can pick one of the following actions:\n" + "\n".join(prompt_options)
+
+    # Reflection prompt remains unchanged
     reflect_prompt = (
         "Before deciding on the next move you can reflect on your current situation, write down notes and evaluate.\n"
         "Here're a few recommendations that you can follow to make a better move decision:\n"
@@ -239,18 +260,29 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
         "- Rerank the shortlisted moves based on the previous steps\n"
     )
 
-    reflection_followup_prompt = (
-        "Now that you reflected please choose any of the valid actions: "
-        f"{get_current_board_action}, {get_legal_moves_action}, {reflect_action}, "
-        f"{make_move_action} <UCI formatted move>"
-    )
+    # Build reflection_followup_prompt listing only allowed actions
+    followup_options = []
+    if handle_board:
+        followup_options.append(get_current_board_action)
+    if handle_legal:
+        followup_options.append(get_legal_moves_action)
+    if enable_reflection:
+        followup_options.append(reflect_action)
+    if handle_move:
+        followup_options.append(f"{make_move_action} <UCI formatted move>")
+    reflection_followup_prompt = "Now that you reflected please choose any of the valid actions: " + ", ".join(followup_options)
 
-    invalid_action_message = (
-        f"Invalid action. Pick one, reply exactly with the name and space delimitted argument: "
-        f"{get_current_board_action}, {get_legal_moves_action}"
-        f"{', ' + reflect_action if enable_reflection else ''}"
-        f", {make_move_action} <UCI formatted move>"
-    )
+    # Build invalid_action_message listing only allowed actions
+    invalid_options = []
+    if handle_board:
+        invalid_options.append(get_current_board_action)
+    if handle_legal:
+        invalid_options.append(get_legal_moves_action)
+    if enable_reflection:
+        invalid_options.append(reflect_action)
+    if handle_move:
+        invalid_options.append(f"{make_move_action} <UCI formatted move>")
+    invalid_action_message = "Invalid action. Pick one, reply exactly with the name and space delimitted argument: " + ", ".join(invalid_options)
 
     # Spend hours debuging circular loops in termination message and prompt and figuring out None is not good for system message
     def is_termination_message(msg: Dict[str, Any]) -> bool:
@@ -306,12 +338,12 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
         move_was_made_message=move_was_made,
         invalid_action_message=invalid_action_message,
         too_many_failed_actions_message=TerminationReason.TOO_MANY_WRONG_ACTIONS.value,
-        get_current_board_action=get_current_board_action,
+        get_current_board_action=get_current_board_action if handle_board else None,
         reflect_action=reflect_action,
-        get_legal_moves_action=get_legal_moves_action,
+        get_legal_moves_action=get_legal_moves_action if handle_legal else None,
         reflect_prompt=reflect_prompt,
         reflection_followup_prompt=reflection_followup_prompt,
-        make_move_action=make_move_action,
+        make_move_action=make_move_action if handle_move else None,
         remove_text=remove_text,
     )
 
@@ -440,9 +472,29 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
             for player in [player_white, player_black]:
                 # Reset player state variables before each move: has_requested_board, failed_action_attempts
                 player.prep_to_move()
+                # Include formatted previous moves if enabled
+                if SEE_PREVIOUS_MOVES and game_moves:
+                    # Group moves into numbered pairs for clarity
+                    pairs = []
+                    for i in range(0, len(game_moves), 2):
+                        white_move = game_moves[i]
+                        black_move = game_moves[i+1] if i+1 < len(game_moves) else ''
+                        pair = f"{(i//2)+1}. {white_move}" + (f" {black_move}" if black_move else '')
+                        pairs.append(pair)
+                    auto_context = f"Previous moves ({DEFAULT_MOVE_STYLE}): " + ", ".join(pairs) + "\n\n"
+                else:
+                    auto_context = ""
+                # Auto-provide excluded action outputs
+                if not handle_board:
+                    auto_context += "Current board state:\n" + get_current_board() + "\n\n"
+                if not handle_legal:
+                    legal = get_legal_moves()
+                    auto_context += "Legal moves:\n" + (legal or "None") + "\n\n"   # + "Please reason before making a move.\n\n"  # NOTE: This reasoning prompt was necessary for gpt-4.1-mini else it would just give the answer.
+                # Build message for the LLM with auto-provided context
+                message = auto_context + player.description
                 chat_result = proxy_agent.initiate_chat(
                     recipient=player,
-                    message=player.description,
+                    message=message,
                     max_turns=max_llm_turns,
                     cache=None
                 )

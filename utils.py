@@ -65,8 +65,8 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
         tuple: A tuple containing two configuration dictionaries for the models.
     """
     model_kinds = [
-        os.environ.get("MODEL_KIND_W", "google"),
-        os.environ.get("MODEL_KIND_B", "google"),
+        os.environ.get("MODEL_KIND_W", "openai"),
+        os.environ.get("MODEL_KIND_B", "openai"),
     ]
 
     def azure_config(key):
