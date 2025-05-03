@@ -39,9 +39,9 @@ class PlayerType(Enum):
 white_player_type = PlayerType.RANDOM_PLAYER
 black_player_type = PlayerType.LLM_BLACK
 enable_reflection = False  # Whether to offer the LLM time to think and evaluate moves
-board_representation_mode = BoardRepresentation.FEN_ONLY  # BoardRepresentation.UNICODE_ONLY  # What kind of board is printed in response to get_current_board
+board_representation_mode = BoardRepresentation.UNICODE_ONLY  # What kind of board is printed in response to get_current_board
 rotate_board_for_white = False # Whether to rotate the Uicode board for the white player so it gets it's pieces at the bottom
-llm_actions: List[str] = ["make_move", "get_legal_moves"]  # ["get_current_board", "get_legal_moves", "make_move"]  # List of actions the LLM agent should take; actions not included will be auto-provided
+llm_actions: List[str] = ["get_current_board", "get_legal_moves", "make_move"]  # List of actions the LLM agent should take; actions not included will be auto-provided
 
 # Game configuration
 max_game_moves = 200  # maximum number of game moves before terminating, dafault 200
@@ -56,7 +56,7 @@ visualize_board = False  # You can skip board visualization (animated board in p
 # Move style for input moves: "UCI" (coordinate notation) or "SAN" (Standard Algebraic Notation)
 DEFAULT_MOVE_STYLE = "UCI"
 # If True, LLM prompts include all previous moves in SAN notation
-SEE_PREVIOUS_MOVES = True  # False
+SEE_PREVIOUS_MOVES = False  # True  # False
 
 # Set to None to use defaults, "remove" to not send it
 # o1-mini fails with any params other than 1.0 or not present, R1 distil recomends 0.5-0.7, kimi-k1.5-preview 0.3
@@ -189,7 +189,8 @@ def make_move(move: str):
         notation = san_board.san(move_obj)
     else:
         notation = move_obj.uci()
-    game_moves.append(notation)
+    # Record move notation in the shared moves list
+    san_moves.append(notation)
 
     # Visualize the board if enabled
     if visualize_board:
@@ -474,12 +475,12 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                 # Reset player state variables before each move: has_requested_board, failed_action_attempts
                 player.prep_to_move()
                 # Include formatted previous moves if enabled
-                if SEE_PREVIOUS_MOVES and game_moves:
+                if SEE_PREVIOUS_MOVES and san_moves:
                     # Group moves into numbered pairs for clarity
                     pairs = []
-                    for i in range(0, len(game_moves), 2):
-                        white_move = game_moves[i]
-                        black_move = game_moves[i+1] if i+1 < len(game_moves) else ''
+                    for i in range(0, len(san_moves), 2):
+                        white_move = san_moves[i]
+                        black_move = san_moves[i+1] if i+1 < len(san_moves) else ''
                         pair = f"{(i//2)+1}. {white_move}" + (f" {black_move}" if black_move else '')
                         pairs.append(pair)
                     auto_context = f"Previous moves ({DEFAULT_MOVE_STYLE}): " + ", ".join(pairs) + "\n\n"
