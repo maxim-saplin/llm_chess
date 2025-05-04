@@ -181,15 +181,12 @@ def make_move(move: str):
     # Parse and apply move based on DEFAULT_MOVE_STYLE
     if DEFAULT_MOVE_STYLE.upper() == "SAN":
         move_obj = board.parse_san(move)
-        board.push(move_obj)
+        board.push_san(move_obj)  # NOTE: Was previously just using `push` which doesn't raise errors.
+        notation = move_obj
     else:
         move_obj = chess.Move.from_uci(move)
-        board.push(move_obj)
-    # Record move notation based on DEFAULT_MOVE_STYLE
-    if DEFAULT_MOVE_STYLE.upper() == "SAN":
+        board.push_uci(str(move_obj))
         notation = san_board.san(move_obj)
-    else:
-        notation = move_obj.uci()
     # Record move notation in the shared moves list
     san_moves.append(notation)
 
