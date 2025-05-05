@@ -43,7 +43,7 @@ def calculate_material_count(board):
 load_dotenv()
 
 
-def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=None):
+def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=None, timeout=600):
     """
     Retrieve the configuration for LLMs (Large Language Models) with optional temperature and thinking settings.
 
@@ -120,7 +120,7 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
             "api_key": os.environ[f"ANTHROPIC_API_KEY_{key}"],
             "api_type": "anthropic",
             "max_tokens": 32768, # AG2 sets this value to some oddly small numbers for some providers (e.g.Anthropic)
-            "timeout": 600
+            "timeout": timeout
         }
         
         # Add thinking configuration if thinking_budget is set
@@ -136,7 +136,7 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
             # penalties raise exceptions with AG2 0.8.6 doing more thorouhg config validation, OpenAI docs say defaults are 0 anyways
             # "frequency_penalty": 0.0,
             # "presence_penalty": 0.0,
-            "timeout": 600,
+            "timeout": timeout,
         }
 
         # Add temperature only if it is not "remove"
