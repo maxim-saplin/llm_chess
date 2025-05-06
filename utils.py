@@ -65,8 +65,12 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
         tuple: A tuple containing two configuration dictionaries for the models.
     """
     model_kinds = [
-        os.environ.get("MODEL_KIND_W", "openai"),
-        os.environ.get("MODEL_KIND_B", "openai"),
+        # os.environ.get("MODEL_KIND_W", "openai"),
+        # os.environ.get("MODEL_KIND_B", "openai"),
+        # os.environ.get("MODEL_KIND_W", "google"),
+        # os.environ.get("MODEL_KIND_B", "google"),
+        os.environ.get("MODEL_KIND_W", "xai"),
+        os.environ.get("MODEL_KIND_B", "xai"),
     ]
 
     def azure_config(key):
@@ -123,6 +127,14 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
             config["thinking"] = {"type": "enabled", "budget_tokens": thinking_budget}
             
         return config
+    
+    def xai_config(key):
+        return {
+            "model": os.environ[f"XAI_MODEL_NAME_{key}"],
+            "api_key": os.environ[f"XAI_API_KEY_{key}"],
+            "api_type": "xai",
+            "base_url": "https://api.x.ai/v1",
+        }
 
     def create_config(config_list):
         config = {
@@ -157,6 +169,8 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
             configs.append(create_config([openai_config(key)]))
         elif kind == "anthropic":
             configs.append(create_config([anthropic_config(key)]))
+        elif kind == "xai":
+            configs.append(create_config([xai_config(key)]))
 
     for config in configs:
         config["cache_seed"] = None

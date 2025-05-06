@@ -1,19 +1,17 @@
 {
     "experiments": [
         {
-            "name": "llm_vs_random_previous_moves",
+            "name": "llm_vs_random_only_make_move",
             "num_games": 30,
             "white_player_type": "RANDOM_PLAYER",
             "black_player_type": "LLM_BLACK",
             "symmetric": false,
             "board_representation_mode": "UNICODE_ONLY",
             "llm_actions": [
-                "get_current_board",
-                "get_legal_moves",
                 "make_move"
             ],
             "default_move_style": "UCI",
-            "see_previous_moves": true
+            "see_previous_moves": false
         }
     ]
 }

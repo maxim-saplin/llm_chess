@@ -60,7 +60,7 @@ SEE_PREVIOUS_MOVES = False  # True  # False
 
 # Set to None to use defaults, "remove" to not send it
 # o1-mini fails with any params other than 1.0 or not present, R1 distil recomends 0.5-0.7, kimi-k1.5-preview 0.3
-temp_override = "remove"  # None
+temp_override = None  # "remove"  # None
 
 reasoning_effort = "low" # Default is None, used with OpenAI models low, medium, or high
 print(f"NOTE: Using reasoning_effort={reasoning_effort}, temperature={temp_override}. Make sure to change for non-OpenAI models if needed, e.g. Anthropic models use thinking_budget instead.")
