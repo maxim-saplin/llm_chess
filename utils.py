@@ -118,8 +118,8 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
         config = {
             "model": os.environ[f"XAI_MODEL_NAME_{key}"],
             "api_key": os.environ[f"XAI_API_KEY_{key}"],
-            "api_type": "openai",
-            "base_url": "https://api.xai.com/v1",
+            # "api_type": "xai",
+            "base_url": "https://api.x.ai/v1",
         }
         
         # Add reasoning_effort if it is not None (just like OpenAI)
