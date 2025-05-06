@@ -114,6 +114,20 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
 
         return config
 
+    def xai_config(key):
+        config = {
+            "model": os.environ[f"XAI_MODEL_NAME_{key}"],
+            "api_key": os.environ[f"XAI_API_KEY_{key}"],
+            "api_type": "openai",
+            "base_url": "https://api.xai.com/v1",
+        }
+        
+        # Add reasoning_effort if it is not None (just like OpenAI)
+        if reasoning_effort is not None:
+            config["reasoning_effort"] = reasoning_effort
+            
+        return config
+
     def anthropic_config(key):
         config = {
             "model": os.environ[f"ANTHROPIC_MODEL_NAME_{key}"],
@@ -160,6 +174,8 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
             configs.append(create_config([gemini_config(key)]))
         elif kind == "openai":
             configs.append(create_config([openai_config(key)]))
+        elif kind == "xai":
+            configs.append(create_config([xai_config(key)]))
         elif kind == "anthropic":
             configs.append(create_config([anthropic_config(key)]))
 
