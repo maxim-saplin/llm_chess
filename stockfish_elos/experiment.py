@@ -3,7 +3,6 @@ import chess.engine
 from collections import Counter
 import math
 
-# ——— Configuration ———
 engine_path  = "/opt/homebrew/bin/stockfish"  # path to your Stockfish binary
 N_GAMES      = 100                            # total number of games
 THINK_TIME_A = 0.01                          # seconds per move for Engine A

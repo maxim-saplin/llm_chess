@@ -1,0 +1,883 @@
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move e2e3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘
+♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘\n♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙\n♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h6,g8f6,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,d7d6,c7c6,b7b6,a7a6,h7h5,g7g5,f7f5,e7e5,d7d5,c7c5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘\n♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙\n♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}, {'content': 'get_legal_moves', 'role': 'assistant', 'name': 'Player_Black'}, {'content': 'g8h6,g8f6,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,d7d6,c7c6,b7b6,a7a6,h7h5,g7g5,f7f5,e7e5,d7d5,c7c5,b7b5,a7a5', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+make_move c7c5
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 2
+Material Count - White: 39, Black: 39
+Prompt Tokens: 799
+Completion Tokens: 814
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move d1f3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 3
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ⭘ ♟ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♙ ♕ ⭘ ⭘
+♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙
+♖ ♘ ♗ ⭘ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ⭘ ♟ ♟ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♙ ♕ ⭘ ⭘\n♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙\n♖ ♘ ♗ ⭘ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h6,g8f6,d8c7,d8b6,d8a5,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,d7d6,b7b6,a7a6,c5c4,h7h5,g7g5,f7f5,e7e5,d7d5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ⭘ ♟ ♟ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♙ ♕ ⭘ ⭘\n♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙\n♖ ♘ ♗ ⭘ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}, {'content': 'get_legal_moves', 'role': 'assistant', 'name': 'Player_Black'}, {'content': 'g8h6,g8f6,d8c7,d8b6,d8a5,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,d7d6,b7b6,a7a6,c5c4,h7h5,g7g5,f7f5,e7e5,d7d5,b7b5,a7a5', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+make_move b8c6
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 4
+Material Count - White: 39, Black: 39
+Prompt Tokens: 1606
+Completion Tokens: 3555
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move e3e4
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 5
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ⭘ ♟ ♟ ♟ ♟ ♟
+⭘ ⭘ ♞ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♕ ⭘ ⭘
+♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙
+♖ ♘ ♗ ⭘ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ⭘ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ⭘ ♟ ♟ ♟ ♟ ♟\n⭘ ⭘ ♞ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ♕ ⭘ ⭘\n♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙\n♖ ♘ ♗ ⭘ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h6,g8f6,d8c7,d8b6,d8a5,a8b8,c6b8,c6e5,c6a5,c6d4,c6b4,h7h6,g7g6,f7f6,e7e6,d7d6,b7b6,a7a6,c5c4,h7h5,g7g5,f7f5,e7e5,d7d5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ⭘ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ⭘ ♟ ♟ ♟ ♟ ♟\n⭘ ⭘ ♞ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ♕ ⭘ ⭘\n♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙\n♖ ♘ ♗ ⭘ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}, {'content': 'get_legal_moves', 'role': 'assistant', 'name': 'Player_Black'}, {'content': 'g8h6,g8f6,d8c7,d8b6,d8a5,a8b8,c6b8,c6e5,c6a5,c6d4,c6b4,h7h6,g7g6,f7f6,e7e6,d7d6,b7b6,a7a6,c5c4,h7h5,g7g5,f7f5,e7e5,d7d5,b7b5,a7a5', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+make_move g8f6
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 6
+Material Count - White: 39, Black: 39
+Prompt Tokens: 2429
+Completion Tokens: 7955
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move f1b5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 7
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ♝ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ♟ ♟ ♟ ♟ ♟
+⭘ ⭘ ♞ ⭘ ⭘ ♞ ⭘ ⭘
+⭘ ♗ ♟ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♕ ⭘ ⭘
+♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙
+♖ ♘ ♗ ⭘ ♔ ⭘ ♘ ♖
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ⭘ ♝ ♛ ♚ ♝ ⭘ ♜\n♟ ♟ ⭘ ♟ ♟ ♟ ♟ ♟\n⭘ ⭘ ♞ ⭘ ⭘ ♞ ⭘ ⭘\n⭘ ♗ ♟ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ♕ ⭘ ⭘\n♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙\n♖ ♘ ♗ ⭘ ♔ ⭘ ♘ ♖', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+h8g8,d8c7,d8b6,d8a5,a8b8,f6g8,f6h5,f6d5,f6g4,f6e4,c6b8,c6e5,c6a5,c6d4,c6b4,h7h6,g7g6,e7e6,d7d6,b7b6,a7a6,c5c4,h7h5,g7g5,e7e5,d7d5,a7a5
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ⭘ ♝ ♛ ♚ ♝ ⭘ ♜\n♟ ♟ ⭘ ♟ ♟ ♟ ♟ ♟\n⭘ ⭘ ♞ ⭘ ⭘ ♞ ⭘ ⭘\n⭘ ♗ ♟ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ♕ ⭘ ⭘\n♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙\n♖ ♘ ♗ ⭘ ♔ ⭘ ♘ ♖', 'role': 'user', 'name': 'Proxy'}, {'content': 'get_legal_moves', 'role': 'assistant', 'name': 'Player_Black'}, {'content': 'h8g8,d8c7,d8b6,d8a5,a8b8,f6g8,f6h5,f6d5,f6g4,f6e4,c6b8,c6e5,c6a5,c6d4,c6b4,h7h6,g7g6,e7e6,d7d6,b7b6,a7a6,c5c4,h7h5,g7g5,e7e5,d7d5,a7a5', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+make_move d7d5
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 8
+Material Count - White: 39, Black: 39
+Prompt Tokens: 3256
+Completion Tokens: 11073
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move d2d4
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 9
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ♝ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ♞ ⭘ ⭘ ♞ ⭘ ⭘
+⭘ ♗ ♟ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♙ ♙ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♕ ⭘ ⭘
+♙ ♙ ♙ ⭘ ⭘ ♙ ♙ ♙
+♖ ♘ ♗ ⭘ ♔ ⭘ ♘ ♖
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ⭘ ♝ ♛ ♚ ♝ ⭘ ♜\n♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟\n⭘ ⭘ ♞ ⭘ ⭘ ♞ ⭘ ⭘\n⭘ ♗ ♟ ♟ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ♙ ♙ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ♕ ⭘ ⭘\n♙ ♙ ♙ ⭘ ⭘ ♙ ♙ ♙\n♖ ♘ ♗ ⭘ ♔ ⭘ ♘ ♖', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Execution was halted due to error.
+Exception details: Error code: 400 - {'error': {'message': 'Could not finish the message because max_tokens or model output limit was reached. Please try again with higher max_tokens.', 'type': 'invalid_request_error', 'param': None, 'code': None}}
+Traceback (most recent call last):
+  File "/home/user/src/llm_chess_copy/llm_chess.py", line 442, in run
+    chat_result = proxy_agent.initiate_chat(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/agentchat/conversable_agent.py", line 1481, in initiate_chat
+    self.send(msg2send, recipient, request_reply=True, silent=silent)
+  File "/home/user/src/ag2/autogen/agentchat/conversable_agent.py", line 1177, in send
+    recipient.receive(message, self, request_reply, silent)
+  File "/home/user/src/ag2/autogen/agentchat/conversable_agent.py", line 1285, in receive
+    reply = self.generate_reply(messages=self.chat_messages[sender], sender=sender)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/llm_chess_copy/custom_agents.py", line 60, in generate_reply
+    reply = super().generate_reply(messages, sender, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/agentchat/conversable_agent.py", line 2431, in generate_reply
+    final, reply = reply_func(self, messages=messages, sender=sender, config=reply_func_tuple["config"])
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/agentchat/conversable_agent.py", line 1810, in generate_oai_reply
+    extracted_response = self._generate_oai_reply_from_client(
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/agentchat/conversable_agent.py", line 1829, in _generate_oai_reply_from_client
+    response = llm_client.create(
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/oai/client.py", line 1093, in create
+    response = client.create(params)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/oai/client.py", line 600, in create
+    response = create_or_parse(**params)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/oai/client.py", line 423, in wrapper
+    raise e
+  File "/home/user/src/ag2/autogen/oai/client.py", line 406, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/llm_chess_copy/.venv/lib/python3.12/site-packages/openai/_utils/_utils.py", line 287, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/llm_chess_copy/.venv/lib/python3.12/site-packages/openai/resources/chat/completions/completions.py", line 925, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/home/user/src/llm_chess_copy/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1239, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/llm_chess_copy/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1034, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Could not finish the message because max_tokens or model output limit was reached. Please try again with higher max_tokens.', 'type': 'invalid_request_error', 'param': None, 'code': None}}
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 9
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 174.788
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.05"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. e3 c5 2. Qf3 Nc6 3. e4 Nf6 4. Bb5 d5 5. d4  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move f2f4
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ♙ ♙ ♙ ♙ ⭘ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n♙ ♙ ♙ ♙ ♙ ⭘ ♙ ♙\n♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h6,g8f6,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,d7d6,c7c6,b7b6,a7a6,h7h5,g7g5,f7f5,e7e5,d7d5,c7c5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n♙ ♙ ♙ ♙ ♙ ⭘ ♙ ♙\n♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}, {'content': 'get_legal_moves', 'role': 'assistant', 'name': 'Player_Black'}, {'content': 'g8h6,g8f6,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,d7d6,c7c6,b7b6,a7a6,h7h5,g7g5,f7f5,e7e5,d7d5,c7c5,b7b5,a7a5', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+make_move d7d5
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 2
+Material Count - White: 39, Black: 39
+Prompt Tokens: 799
+Completion Tokens: 1389
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move g1h3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 3
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♘
+♙ ♙ ♙ ♙ ♙ ⭘ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ♟ ⭘ ♟ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♘\n♙ ♙ ♙ ♙ ♙ ⭘ ♙ ♙\n♖ ♘ ♗ ♕ ♔ ♗ ⭘ ♖', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h6,g8f6,e8d7,d8d7,d8d6,c8d7,c8e6,c8f5,c8g4,c8h3,b8d7,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,c7c6,b7b6,a7a6,d5d4,h7h5,g7g5,f7f5,e7e5,c7c5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ♟ ⭘ ♟ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♘\n♙ ♙ ♙ ♙ ♙ ⭘ ♙ ♙\n♖ ♘ ♗ ♕ ♔ ♗ ⭘ ♖', 'role': 'user', 'name': 'Proxy'}, {'content': 'get_legal_moves', 'role': 'assistant', 'name': 'Player_Black'}, {'content': 'g8h6,g8f6,e8d7,d8d7,d8d6,c8d7,c8e6,c8f5,c8g4,c8h3,b8d7,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,c7c6,b7b6,a7a6,d5d4,h7h5,g7g5,f7f5,e7e5,c7c5,b7b5,a7a5', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+make_move g8f6
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 4
+Material Count - White: 39, Black: 39
+Prompt Tokens: 1630
+Completion Tokens: 4443
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move h3g5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 5
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ♞ ♝ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ♟ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ♞ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ♘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ♙ ♙ ♙ ♙ ⭘ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ⭘ ♜\n♟ ♟ ♟ ⭘ ♟ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ♞ ⭘ ⭘\n⭘ ⭘ ⭘ ♟ ⭘ ⭘ ♘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n♙ ♙ ♙ ♙ ♙ ⭘ ♙ ♙\n♖ ♘ ♗ ♕ ♔ ♗ ⭘ ♖', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Execution was halted due to error.
+Exception details: Error code: 400 - {'error': {'message': 'Could not finish the message because max_tokens or model output limit was reached. Please try again with higher max_tokens.', 'type': 'invalid_request_error', 'param': None, 'code': None}}
+Traceback (most recent call last):
+  File "/home/user/src/llm_chess_copy/llm_chess.py", line 442, in run
+    chat_result = proxy_agent.initiate_chat(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/agentchat/conversable_agent.py", line 1481, in initiate_chat
+    self.send(msg2send, recipient, request_reply=True, silent=silent)
+  File "/home/user/src/ag2/autogen/agentchat/conversable_agent.py", line 1177, in send
+    recipient.receive(message, self, request_reply, silent)
+  File "/home/user/src/ag2/autogen/agentchat/conversable_agent.py", line 1285, in receive
+    reply = self.generate_reply(messages=self.chat_messages[sender], sender=sender)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/llm_chess_copy/custom_agents.py", line 60, in generate_reply
+    reply = super().generate_reply(messages, sender, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/agentchat/conversable_agent.py", line 2431, in generate_reply
+    final, reply = reply_func(self, messages=messages, sender=sender, config=reply_func_tuple["config"])
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/agentchat/conversable_agent.py", line 1810, in generate_oai_reply
+    extracted_response = self._generate_oai_reply_from_client(
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/agentchat/conversable_agent.py", line 1829, in _generate_oai_reply_from_client
+    response = llm_client.create(
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/oai/client.py", line 1093, in create
+    response = client.create(params)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/oai/client.py", line 600, in create
+    response = create_or_parse(**params)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/ag2/autogen/oai/client.py", line 423, in wrapper
+    raise e
+  File "/home/user/src/ag2/autogen/oai/client.py", line 406, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/llm_chess_copy/.venv/lib/python3.12/site-packages/openai/_utils/_utils.py", line 287, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/llm_chess_copy/.venv/lib/python3.12/site-packages/openai/resources/chat/completions/completions.py", line 925, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/home/user/src/llm_chess_copy/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1239, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/llm_chess_copy/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1034, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Could not finish the message because max_tokens or model output limit was reached. Please try again with higher max_tokens.', 'type': 'invalid_request_error', 'param': None, 'code': None}}
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 5
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 66.101
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.05"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. f4 d5 2. Nh3 Nf6 3. Ng5  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move e2e3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘
+♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘\n♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙\n♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h6,g8f6,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,d7d6,c7c6,b7b6,a7a6,h7h5,g7g5,f7f5,e7e5,d7d5,c7c5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘\n♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙\n♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}, {'content': 'get_legal_moves', 'role': 'assistant', 'name': 'Player_Black'}, {'content': 'g8h6,g8f6,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,d7d6,c7c6,b7b6,a7a6,h7h5,g7g5,f7f5,e7e5,d7d5,c7c5,b7b5,a7a5', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+make_move e7e5
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 2
+Material Count - White: 39, Black: 39
+Prompt Tokens: 799
+Completion Tokens: 1582
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move a2a3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 3
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ♟ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘
+⭘ ♙ ♙ ♙ ⭘ ♙ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ♟ ♟ ⭘ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n♙ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘\n⭘ ♙ ♙ ♙ ⭘ ♙ ♙ ♙\n♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8e7,g8h6,g8f6,f8e7,f8d6,f8c5,f8b4,f8a3,e8e7,d8e7,d8f6,d8g5,d8h4,b8c6,b8a6,h7h6,g7g6,f7f6,d7d6,c7c6,b7b6,a7a6,e5e4,h7h5,g7g5,f7f5,d7d5,c7c5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜\n♟ ♟ ♟ ♟ ⭘ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘\n♙ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘\n⭘ ♙ ♙ ♙ ⭘ ♙ ♙ ♙\n♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}, {'content': 'get_legal_moves', 'role': 'assistant', 'name': 'Player_Black'}, {'content': 'g8e7,g8h6,g8f6,f8e7,f8d6,f8c5,f8b4,f8a3,e8e7,d8e7,d8f6,d8g5,d8h4,b8c6,b8a6,h7h6,g7g6,f7f6,d7d6,c7c6,b7b6,a7a6,e5e4,h7h5,g7g5,f7f5,d7d5,c7c5,b7b5,a7a5', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+make_move g8f6
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 4
+Material Count - White: 39, Black: 39
+Prompt Tokens: 1638
+Completion Tokens: 3228
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move h2h4
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 5
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ♞ ♝ ♛ ♚ ♝ ⭘ ♜
+♟ ♟ ♟ ♟ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ♞ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙
+♙ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘
+⭘ ♙ ♙ ♙ ⭘ ♙ ♙ ⭘
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ⭘ ♜\n♟ ♟ ♟ ♟ ⭘ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ♞ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙\n♙ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘\n⭘ ♙ ♙ ♙ ⭘ ♙ ♙ ⭘\n♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+h8g8,f8e7,f8d6,f8c5,f8b4,f8a3,e8e7,d8e7,b8c6,b8a6,f6g8,f6h5,f6d5,f6g4,f6e4,h7h6,g7g6,d7d6,c7c6,b7b6,a7a6,e5e4,h7h5,g7g5,d7d5,c7c5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+params={'messages': [{'content': '', 'role': 'system'}, {'content': "You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:\n- 'get_current_board' to get the schema and current status of the board\n- 'get_legal_moves' to get a UCI formatted list of available moves\n- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')", 'role': 'user', 'name': 'Proxy'}, {'content': 'get_current_board', 'role': 'assistant', 'name': 'Player_Black'}, {'content': '♜ ♞ ♝ ♛ ♚ ♝ ⭘ ♜\n♟ ♟ ♟ ♟ ⭘ ♟ ♟ ♟\n⭘ ⭘ ⭘ ⭘ ⭘ ♞ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘\n⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙\n♙ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘\n⭘ ♙ ♙ ♙ ⭘ ♙ ♙ ⭘\n♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖', 'role': 'user', 'name': 'Proxy'}, {'content': 'get_legal_moves', 'role': 'assistant', 'name': 'Player_Black'}, {'content': 'h8g8,f8e7,f8d6,f8c5,f8b4,f8a3,e8e7,d8e7,b8c6,b8a6,f6g8,f6h5,f6d5,f6g4,f6e4,h7h6,g7g6,d7d6,c7c6,b7b6,a7a6,e5e4,h7h5,g7g5,d7d5,c7c5,b7b5,a7a5', 'role': 'user', 'name': 'Proxy'}], 'top_p': 1.0, 'model': 'o1-2024-12-17', 'reasoning_effort': 'low'}

@@ -43,7 +43,7 @@ def calculate_material_count(board):
 load_dotenv()
 
 
-def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=None):
+def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=None, timeout=600):
     """
     Retrieve the configuration for LLMs (Large Language Models) with optional temperature and thinking settings.
 
@@ -114,13 +114,27 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
 
         return config
 
+    def xai_config(key):
+        config = {
+            "model": os.environ[f"XAI_MODEL_NAME_{key}"],
+            "api_key": os.environ[f"XAI_API_KEY_{key}"],
+            # "api_type": "xai",
+            "base_url": "https://api.x.ai/v1",
+        }
+        
+        # Add reasoning_effort if it is not None (just like OpenAI)
+        if reasoning_effort is not None:
+            config["reasoning_effort"] = reasoning_effort
+            
+        return config
+
     def anthropic_config(key):
         config = {
             "model": os.environ[f"ANTHROPIC_MODEL_NAME_{key}"],
             "api_key": os.environ[f"ANTHROPIC_API_KEY_{key}"],
             "api_type": "anthropic",
             "max_tokens": 32768, # AG2 sets this value to some oddly small numbers for some providers (e.g.Anthropic)
-            "timeout": 600
+            "timeout": timeout
         }
         
         # Add thinking configuration if thinking_budget is set
@@ -136,7 +150,7 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
             # penalties raise exceptions with AG2 0.8.6 doing more thorouhg config validation, OpenAI docs say defaults are 0 anyways
             # "frequency_penalty": 0.0,
             # "presence_penalty": 0.0,
-            "timeout": 600,
+            "timeout": timeout,
         }
 
         # Add temperature only if it is not "remove"
@@ -160,6 +174,8 @@ def get_llms_autogen(temperature=None, reasoning_effort=None, thinking_budget=No
             configs.append(create_config([gemini_config(key)]))
         elif kind == "openai":
             configs.append(create_config([openai_config(key)]))
+        elif kind == "xai":
+            configs.append(create_config([xai_config(key)]))
         elif kind == "anthropic":
             configs.append(create_config([anthropic_config(key)]))
 
