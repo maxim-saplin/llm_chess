@@ -9,7 +9,7 @@
     - get_current_board: 785
     - get_legal_moves: 793
     - ratio (board/moves): 0.990
--  claude-3-7-sonnet-thinking_budget_5000 (_logs/new/claude-3-7-sonnet-20250219-thinking_budget_10000/2025-04-26-14-28)
+-  claude-3-7-sonnet-thinking_budget_10000 (_logs/new/claude-3-7-sonnet-20250219-thinking_budget_10000/2025-04-26-14-28)
     - get_current_board: 2481
     - get_legal_moves: 2477
     - ratio (board/moves): 1.002
@@ -102,7 +102,7 @@
 ### Ratios
 - NoN-gemini-2.5-pro-preview-03-25: 1.009
 - gemini-2.5-pro-preview-03-25: 0.990
-- claude-3-7-sonnet-thinking_budget_5000: 1.002
+- claude-3-7-sonnet-thinking_budget_10000: 1.002
 - claude-3-7-sonnet-thinking_budget_5000: 1.026
 - claude-3-7-sonnet-thinking_budget_1024: 0.997
 - grok-3-mini-beta-high: 1.107
