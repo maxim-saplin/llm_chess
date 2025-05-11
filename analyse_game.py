@@ -12,6 +12,7 @@ import math
 import collections
 import time
 from collections import defaultdict
+import sys
 
 # --- Configuration ---
 # (Defaults remain the same)
@@ -198,8 +199,17 @@ def analyze_game(game_data, engine, analysis_limit, llm_color_str, opening_book_
         # --- Parse Move ---
         move_obj = None
         try:
-            move_obj = board.parse_uci(uci_move_str)
-            move_analysis["san_played"] = board.san(move_obj)
+            # Parse move: try SAN first, then fallback to UCI
+            try:
+                move_obj = board.parse_san(uci_move_str)
+                san_str = uci_move_str
+                uci_str = move_obj.uci()
+            except Exception:
+                move_obj = board.parse_uci(uci_move_str)
+                san_str = board.san(move_obj)
+                uci_str = uci_move_str
+            move_analysis["uci_played"] = uci_str
+            move_analysis["san_played"] = san_str
             move_analysis["is_capture"] = board.is_capture(move_obj)
             move_analysis["is_castling"] = board.is_castling(move_obj)
             move_analysis["is_promotion"] = (move_obj.promotion is not None)
@@ -215,12 +225,21 @@ def analyze_game(game_data, engine, analysis_limit, llm_color_str, opening_book_
                  move_analysis["is_opening_book_move"] = None
 
         except (ValueError, AssertionError) as e:
-             logging.error(f"Game {game_id}, Ply {ply}: Illegal/unparseable move '{uci_move_str}' from FEN {fen_before}. Error: {e}. Stopping.")
-             game_data['analysis_error'] = f"Illegal move {uci_move_str} at ply {ply}"
-             break
+            logging.error(f"Game {game_id}, Ply {ply}: Illegal/unparseable move '{uci_move_str}' from FEN {fen_before}. Error: {e}.")
+            err_msg = f"Illegal move {uci_move_str} at ply {ply}"
+            game_data.setdefault('analysis_error', []).append(err_msg)
+            logging.info(f"Skipping illegal move at ply {ply}")
+            continue
         except Exception as e:
              logging.error(f"Game {game_id}, Ply {ply}: Error parsing move '{uci_move_str}': {e}. FEN: {fen_before}. Stopping.")
-             game_data['analysis_error'] = f"Move parsing error at ply {ply}"
+             err_msg = f"Move parsing error at ply {ply}"
+             if 'analysis_error' in game_data:
+                 if isinstance(game_data['analysis_error'], list):
+                     game_data['analysis_error'].append(err_msg)
+                 else:
+                     game_data['analysis_error'] = [game_data['analysis_error'], err_msg]
+             else:
+                 game_data['analysis_error'] = [err_msg]
              break
 
         # --- Engine Analysis (Before Move) ---
@@ -241,7 +260,14 @@ def analyze_game(game_data, engine, analysis_limit, llm_color_str, opening_book_
 
         except Exception as e:
             logging.error(f"Game {game_id}, Ply {ply}: Engine analysis failed before move {uci_move_str}: {e}", exc_info=False)
-            game_data['analysis_error'] = f"Engine analysis failed at ply {ply} (before move)"
+            err_msg = f"Engine analysis failed at ply {ply} (before move)"
+            if 'analysis_error' in game_data:
+                if isinstance(game_data['analysis_error'], list):
+                    game_data['analysis_error'].append(err_msg)
+                else:
+                    game_data['analysis_error'] = [game_data['analysis_error'], err_msg]
+            else:
+                game_data['analysis_error'] = [err_msg]
             break
 
         # --- Make the Move ---
@@ -404,10 +430,25 @@ def parse_output_txt(file_path):
 
     moves = []
     for line in lines:
+        box_string = r"\boxed{\text{make_move"
         if line.startswith("make_move"):
             move = line.split()[1].strip()
             moves.append(move)
-
+        elif line.startswith(box_string):
+            move = line.split()[-1][:4]
+            moves.append(move)
+        elif line.startswith("ACTION: make_move"):
+            move = line.split()[-1].strip()
+            moves.append(move)
+        elif line.startswith("'make_move"):
+            move = line.split()[1].split("'")[0]
+            moves.append(move)
+        elif line.startswith("**Action:** make_move"):
+            move = line.split()[-1].strip()
+            moves.append(move)
+        elif line.startswith("My action is: make_move"):
+            move = line.split()[-1].strip()
+            moves.append(move)
     return moves
 
 def prepare_game_data_with_uci(json_file_path):
@@ -438,6 +479,8 @@ if __name__ == "__main__":
                         help="Time limit for analysis per move in seconds.")
     parser.add_argument("--output_file", type=str, default=None,
                         help="Output file to save analyzed data.")
+    parser.add_argument("--game_id", type=str, default=None,
+                        help="Override Game ID for logging.")
     parser.add_argument("--engine_options", type=str, default='{}',
                         help="JSON string of engine options for Stockfish.")
     parser.add_argument("--opening_book", type=str, default=DEFAULT_OPENING_BOOK_PATH,
@@ -481,8 +524,8 @@ if __name__ == "__main__":
 
     # Analyze the moves
     if moves_uci:
-        # Assuming a function analyze_moves exists that takes moves_uci and performs the analysis
-        data = {"games": [{"moves_uci": moves_uci}]}
+        # Prepare games list with optional game ID
+        data = {"games": [{"moves_uci": moves_uci, "game_id": args.game_id}]}
         game_stats_aggregator = initialize_stats()
         experiment_llm_color = 'black'
         logging.info(f"LLM is always the black player.")
@@ -522,37 +565,88 @@ if __name__ == "__main__":
         data["analysis_summary_stats"] = json.loads(json.dumps(game_stats_aggregator)) # Convert defaultdict to dict
 
         # Save Analyzed Data...
-        if args.output_file:
-            output_json_path = args.output_file
+        # Determine model name, base filename, and per-game logs directory
+        if args.source == "json":
+            json_parent = os.path.basename(os.path.dirname(args.json_file))
+            model_name = json_parent.split('_', 1)[1] if '_' in json_parent else json_parent
+            base_name = os.path.splitext(os.path.basename(args.json_file))[0]
+            output_filename = f"{base_name}{DEFAULT_OUTPUT_SUFFIX}.json"
         else:
-            if args.source == "json":
-                output_json_path = f"{os.path.splitext(args.json_file)[0]}{DEFAULT_OUTPUT_SUFFIX}{os.path.splitext(args.json_file)[1]}"
-            else:
-                # Specify model name for output log when using output.txt
-                model_name = "default_model"  # Replace with actual model name if available
-                output_json_path = f"output_{model_name}_analyzed.json"
-
-        logging.info(f"Saving analyzed data to: {output_json_path}")
+            txt_parent = os.path.dirname(args.output_txt_file)
+            model_name = os.path.basename(os.path.dirname(txt_parent))
+            base_name = f"output_{model_name}_analyzed"
+            output_filename = f"{base_name}.json"
+        # Create per-game directory under model logs
+        game_id_str = args.game_id or (data.get('games', [{}])[0].get('game_id', 'N/A'))
+        if args.source == 'output_txt':
+            # derive project and timestamp from output_txt path
+            txt_parent = os.path.dirname(args.output_txt_file)
+            timestamp = os.path.basename(os.path.dirname(txt_parent))
+            project = os.path.basename(os.path.dirname(os.path.dirname(txt_parent)))
+            logs_dir = os.path.join(os.getcwd(), 'analysis_logs', project, timestamp, f"game_{game_id_str}")
+        elif args.source == 'json':
+            # derive project and timestamp from json file path
+            json_parent = os.path.dirname(args.json_file)
+            timestamp = os.path.basename(json_parent)
+            project = os.path.basename(os.path.dirname(json_parent))
+            logs_dir = os.path.join(os.getcwd(), 'analysis_logs', project, timestamp, f"game_{game_id_str}")
+        else:
+            # fallback for other sources
+            logs_dir = os.path.join(os.getcwd(), 'analysis_logs', model_name, f"game_{game_id_str}")
+        os.makedirs(logs_dir, exist_ok=True)
+        output_json_path = os.path.join(logs_dir, output_filename)
         try:
-            with open(output_json_path, 'w', encoding='utf-8') as f: json.dump(data, f, indent=2)
-        except Exception as e: logging.error(f"Failed to save analyzed JSON: {e}")
+            with open(output_json_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2)
+            logging.info(f"Saved analysis to: {output_json_path}")
+        except Exception as e:
+            logging.error(f"Failed to save analyzed JSON: {e}")
 
-        # Print Stats...
-        if not args.skip_stats:
+        # Build and save per-move metrics JSON
+        metrics = []
+        for game in analyzed_games_list:
+            gid = game.get("game_id")
+            for mv in game.get("analysis", []):
+                metrics.append({
+                    "game_id": gid,
+                    "ply": mv.get("ply"),
+                    "player": mv.get("player"),
+                    "uci_played": mv.get("uci_played"),
+                    "san_played": mv.get("san_played"),
+                    "eval_before": mv.get("eval_before_white_pov"),
+                    "eval_after": mv.get("eval_after_white_pov"),
+                    "eval_delta_cp": mv.get("eval_delta_cp"),
+                    "win_pct_before": mv.get("win_pct_before"),
+                    "win_pct_after": mv.get("win_pct_after"),
+                    "classification": mv.get("classification")
+                })
+        metrics_path = os.path.join(logs_dir, os.path.splitext(output_filename)[0] + "_metrics.json")
+        try:
+            with open(metrics_path, 'w', encoding='utf-8') as mf:
+                json.dump(metrics, mf, indent=2)
+            logging.info(f"Saved metrics to: {metrics_path}")
+        except Exception as e:
+            logging.error(f"Failed to save metrics JSON: {e}")
+
+        # Save printed stats to a TXT file
+        stats_path = os.path.join(logs_dir, os.path.splitext(output_filename)[0] + "_stats.txt")
+        orig = sys.stdout
+        with open(stats_path, 'w', encoding='utf-8') as sf:
+            sys.stdout = sf
             print_stats(game_stats_aggregator)
-            # Compute and display average centipawn loss per player
-            cp_loss_agg = {"llm": {"sum": 0, "count": 0}, "opponent": {"sum": 0, "count": 0}}
+            # compute and print average centipawn loss
+            cp_loss = {"llm": {"sum": 0, "count": 0}, "opponent": {"sum": 0, "count": 0}}
             for game in analyzed_games_list:
                 for mv in game.get("analysis", []):
-                    player = mv.get("player")
-                    delta = mv.get("eval_delta_cp")
-                    if delta is None: continue
-                    cp_loss_agg[player]["sum"] += abs(delta)
-                    cp_loss_agg[player]["count"] += 1
-            avg_llm = cp_loss_agg["llm"]["sum"] / cp_loss_agg["llm"]["count"] if cp_loss_agg["llm"]["count"] else 0
-            avg_opp = cp_loss_agg["opponent"]["sum"] / cp_loss_agg["opponent"]["count"] if cp_loss_agg["opponent"]["count"] else 0
+                    pl = mv.get("player"); d = mv.get("eval_delta_cp")
+                    if d is None: continue
+                    cp_loss[pl]["sum"] += abs(d); cp_loss[pl]["count"] += 1
+            avg_llm = cp_loss["llm"]["sum"] / cp_loss["llm"]["count"] if cp_loss["llm"]["count"] else 0
+            avg_opp = cp_loss["opponent"]["sum"] / cp_loss["opponent"]["count"] if cp_loss["opponent"]["count"] else 0
             print(f"Average Centipawn Loss - LLM: {avg_llm:.2f}, Opponent: {avg_opp:.2f}")
             print(f"Reason for Game End: {classification_override}")
+        sys.stdout = orig
+        logging.info(f"Saved stats to: {stats_path}")
 
     else:
         logging.error("No moves found to analyze.")
