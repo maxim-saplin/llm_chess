@@ -39,44 +39,14 @@ def estimate_elo(records, white_advantage=35):
     R_hat_true = R_hat_black + white_advantage
     se_true = se_black  # if white_advantage treated as fixed
     
-    return {
-        'R_hat_black': R_hat_black,
-        'se_black': se_black,
-        'R_hat_true': R_hat_true,
-        'se_true': se_true,
-        'ci_95_true': (float(R_hat_true - 1.96 * se_true), float(R_hat_true + 1.96 * se_true))
-    }
+    return f"{R_hat_true} +/- {1.96 * se_true}"
 
-LVL_TO_ELO = {
-    1: 250,
-    2: 400,
-    3: 550,
-    4: 700,
-    5: 850,
-    6: 1000,
-    7: 1100,
-    8: 1200,
-    9: 1300,
-    10: 1400,
-    11: 1500,
-    12: 1600,
-    13: 1700,
-    14: 1800,
-    15: 1900,
-    16: 2000,
-    17: 2100,
-    18: 2200,
-    19: 2300,
-    20: 2400,
-    21: 2500,
-    22: 2600,
-    23: 2700,
-    24: 2900,
-    25: 3200,
-}
+def lvl_to_elo(lvl):
+    return (lvl + 1) * 125
 
 WINNER_TO_SCORE = {
     "Player_Black": 1.0,
+    "NoN_Synthesizer": 1.0,
     "NONE": 0.5,
     "Chess_Engine_Dragon_White": 0.0,
 }
@@ -84,39 +54,76 @@ WINNER_TO_SCORE = {
 ALIASES = {
     "o3-2025-04-16-low": ["o3-2025-04-16-low"],
     "grok-3-mini-beta-high": ["grok-3-mini-beta-high", "grok-3-mini-fast-beta-high"],
+    "3x-gpt-4.1-mini-2025-04-14-low_41mini-t03": ["3x-gpt-4.1-mini-2025-04-14-low_41mini-t03"],
+    "claude-3-7-sonnet-20250219-thinking-budget-5000": ["claude-3-7-sonnet-20250219-thinking-budget-5000"],
+    "claude-3-7-sonnet-20250219-thinking-budget-10000": ["claude-3-7-sonnet-20250219-thinking-budget-10000"],
+    "gemini-25pro-t03_mini41-t00_mini41-t03": ["gemini-25pro-t03_mini41-t00_mini41-t03"],
+    # "o1-2024-12-17-low": ["o1-2024-12-17-low"],
+    # "o1-mini-2024-09-12": ["o1-mini-2024-09-12"],
+    "o3-mini-2025-01-31-low": ["o3-mini-2025-01-31-low"],
+    "o3-mini-2025-01-31-medium": ["o3-mini-2025-01-31-medium"],
+    "o3-mini-2025-01-31-high": ["o3-mini-2025-01-31-high"],
+    "o4-mini-2025-04-16-low": ["o4-mini-2025-04-16-low"],
+    "o4-mini-2025-04-16-medium": ["o4-mini-2025-04-16-medium"],
+    "o4-mini-2025-04-16-high": ["o4-mini-2025-04-16-high"],
 }
 
 # Example usage:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name", type=str, required=True)
-    args = parser.parse_args()
+    args = parser.parse_args()  
 
     records = []
-    pattern = re.compile(r'^lvl-(\d+)_vs_([A-Za-z0-9-]+)$')
-    for path in Path("_logs/dragon_vs_llm").rglob('*'):
-        if path.is_file() and path.suffix == '.json' and "_aggregate_results" not in path.name:
+
+    if args.model_name == "random":
+        for path in Path("_logs/misc/dragon").rglob('*'):
+            if path.is_file() and path.suffix == '.json' and path.name.startswith("random"):
+
+                match = match = re.search(r"lvl-(\d+)", path.name)
+                if match:
+                    lvl = match.group(1)
+                else:
+                    continue
+
+                output = json.load(open(path))
+                white_wins = output["white_wins"]
+                black_wins = output["black_wins"]
+                draws = output["draws"]
+
+                for _ in range(output["white_wins"]):
+                    records.append((lvl_to_elo(int(lvl)), 1.0))
+                for _ in range(output["draws"]):
+                    records.append((lvl_to_elo(int(lvl)), 0.5))
+                for _ in range(output["black_wins"]):
+                    records.append((lvl_to_elo(int(lvl)), 0.0))
+
+    else:
+        pattern = re.compile(r'^lvl-(\d+)_vs_(.+)$')
+        for path in Path("_logs/dragon_vs_llm").rglob('*'):
+            if path.is_file() and path.suffix == '.json' and "_aggregate_results" not in path.name:
             
-            config = path.parent.parent.name
-            match = pattern.match(config)
-            if match:
-                lvl, model_name = match.groups()
-            else:
-                continue
+                config = path.parent.parent.name
+                match = pattern.match(config)
+                if match:
+                    lvl, model_name = match.groups()
+                else:
+                    continue
 
-            if model_name not in ALIASES[args.model_name]:
-                continue
+                if model_name not in ALIASES[args.model_name]:
+                    continue
 
-            output = json.load(open(path))
+                output = json.load(open(path))
 
-            outcome = output["winner"]
-            records.append((LVL_TO_ELO[int(lvl)], WINNER_TO_SCORE[outcome]))
+                if output["reason"] == "ERROR OCCURED":
+                    continue
 
-    print("Found", len(records), "games")
-    print("Number of Wins:", sum(1 for _, score in records if score == 1.0))
-    print("Number of Draws:", sum(1 for _, score in records if score == 0.5))
-    print("Number of Losses:", sum(1 for _, score in records if score == 0.0))
-    result = estimate_elo(records)
-    # print("Estimated Elo (Black-only):", result['R_hat_black'])
-    print("Estimated Elo (color-neutral):", result['R_hat_true'])
-    print("95% CI (color-neutral):", result['ci_95_true'])
+                outcome = output["winner"]
+                records.append((lvl_to_elo(int(lvl)), WINNER_TO_SCORE[outcome]))
+
+    if len(records) == 0:
+        print(f"{args.model_name}: N/A")
+        exit()
+
+    result = estimate_elo(records, white_advantage = -35 if args.model_name == "random" else 35)
+    print(f"{args.model_name} ({len(records)} games) : {result}")
