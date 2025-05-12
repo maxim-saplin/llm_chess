@@ -2,24 +2,13 @@
 """
 calc_elos_pipeline.py
 
-Pipeline to compute Elo ratings for:
-  - Engine vs engine aggregates (random, stockfish) from `_logs/misc/dragon`
-  - Per-game LLM vs Dragon logs from `_logs/dragon_vs_llm`
+Compute Elo ratings in four stages:
+1) Engine vs Dragon (random & stockfish) from _logs/misc/dragon.
+2) LLM vs Dragon from _logs/dragon_vs_llm.
+3) Unified Leaderboard combining engines, LLMs, and Dragon-level baselines.
+4) Extended Elo vs Random using data_processing/refined.csv.
 
-Inputs:
-  - `_logs/misc/dragon`: JSON files `<player>_vs_dragon-lvl-N.json` with counts of white_wins, draws, black_wins.
-  - `_logs/dragon_vs_llm`: subdirectories `lvl-N_vs_MODEL[_timeout*]/*/*.json` containing per-game result JSONs.
-
-Pipeline:
-  1. Load aggregate engine-vs-Dragon logs; estimate Elo for random and stockfish baselines.
-  2. Load LLM vs Dragon per-game logs; normalize model names (strip suffixes), collect (opponent_elo, score) records.
-  3. Estimate Elo for each player via MLE with white_advantage correction (+35 for LLM-black).
-  4. Include Dragon levels 1–5 as known Elo baselines in the leaderboard.
-  5. Sort all entries by computed Elo descending and print a unified leaderboard.
-
-Output:
-  - Table: Player, Games, Elo, ±95% CI
-  - Mapping of Dragon levels 1–5 to theoretical Elo values.
+Outputs formatted tables for each stage and Dragon levels 1–5 Elo mapping.
 
 Usage:
   python calc_elos_pipeline.py
@@ -28,24 +17,27 @@ Usage:
 import json
 import re
 from pathlib import Path
-
+import csv
+import warnings
+warnings.filterwarnings('ignore', 'Cannot bracket root.*', UserWarning)
 import numpy as np
 from scipy.optimize import root_scalar
 
 # Constants for input log directories
 ENGINE_AGGR_FOLDER   = Path("_logs/misc/dragon")
 DRAGON_VS_LLM_FOLDER = Path("_logs/dragon_vs_llm")
+REFINED_CSV_PATH    = Path("data_processing/refined.csv")
 MIN_GAMES = 30
-
-# ANSI escape codes for green coloring
-GREEN = "\033[32m"
-RESET = "\033[0m"
 
 # Alias mapping: canonical model names -> list of folder variants
 DRAGON_VS_LLM_MODEL_ALIASES = {
     "grok-3-mini-beta-high": ["grok-3-mini-beta-high", "grok-3-mini-fast-beta-high"],
     "o4-mini-2025-04-16-high": ["o4-mini-2025-04-16-high", "o4-mini-2025-04-16-high_timeout-20m", "o4-mini-2025-04-16-high_timeout-60m"],
 }
+
+# ANSI escape codes for green coloring
+GREEN = "\033[32m"
+RESET = "\033[0m"
 
 def expected_score(R, opponent_ratings):
     """Compute expected score vs. an array of opponent ratings."""
@@ -88,18 +80,11 @@ def estimate_elo(records, white_advantage=35):
                 break
             width *= 2
     if fa * fb > 0:
-        # Degenerate case: all wins or all losses; no root in bracket
+        # Degenerate case: all wins or all losses; mark Elo as undefined
         import warnings
         warnings.warn(
-            f"Cannot bracket root (f(a)={fa:.3f}, f(b)={fb:.3f}): "
-            "using boundary as estimate.")
-        # If f(b) > 0, performance > expected even at high R => rating >= b
-        # If f(b) < 0, rating <= a
-        if fb > 0:
-            R_black = b
-        else:
-            R_black = a
-        se_black = float('nan')
+            f"Cannot bracket root (f(a)={fa:.3f}, f(b)={fb:.3f}): no valid root found; setting Elo to NaN.")
+        R_black = float('nan')
     else:
         # Found valid bracket
         result = root_scalar(f, bracket=(a, b), method="brentq")
@@ -207,6 +192,28 @@ def load_llm_vs_dragon_records(vslm_dir):
     return llm_records
 
 
+def print_elos_stage(title, results, keys, baseline_keys=set()):
+    """Print a formatted Elo table for a given subset of results."""
+    player_col = max(len("Player"), max(len(k) + (1 if k in baseline_keys else 0) for k in keys)) + 2
+    games_col  = max(len("Games"), max(len(str(results[k][0])) for k in keys)) + 2
+    elo_col    = max(len("Elo"), max(len(f"{results[k][1]:.1f}") for k in keys)) + 2
+    ci_col     = max(len("±95%CI"), max(len(f"{results[k][2]:.1f}") for k in keys)) + 2
+
+    print(f"\n{title}")
+    header = f"{'Player':<{player_col}} {'Games':>{games_col}} {'Elo':>{elo_col}} {'±95%CI':>{ci_col}}"
+    print(header)
+    print('-' * len(header))
+
+    for name in keys:
+        n, R, ci = results[name]
+        display_name = '*' + name if name in baseline_keys else name
+        row = f"{display_name:<{player_col}} {n:>{games_col}d} {R:>{elo_col}.1f} {ci:>{ci_col}.1f}"
+        if name in baseline_keys:
+            print(f"{GREEN}{row}{RESET}")
+        else:
+            print(row)
+
+
 def main():
     misc_dir = ENGINE_AGGR_FOLDER
     if not misc_dir.is_dir():
@@ -243,6 +250,8 @@ def main():
         ci95 = 1.96 * se
         results[player] = (len(records), R, ci95)
 
+    print_elos_stage("Engine Elo ratings:", results, players)
+
     # 2) Load LLM vs Dragon games and estimate each LLM's Elo
     llm_records = load_llm_vs_dragon_records(vslm_dir)
     for model_key in sorted(llm_records):
@@ -256,6 +265,9 @@ def main():
         # also register the dragon levels encountered here
         # but mapping is static 1-5 below
 
+    # Stage 2: LLM Elo ratings
+    print_elos_stage("Stage 2: LLM Elo Ratings", results, sorted(llm_records))
+
     # Always include dragon levels 1-5 as known baselines and insert them into results
     all_dragon_levels.update(range(1, 6))
     for lvl in sorted(all_dragon_levels):
@@ -263,47 +275,50 @@ def main():
         # Known Elo, zero games, zero CI
         results[key] = (0, lvl_to_elo(lvl), 0.0)
 
-    # Sort all entries by Elo descending
-    sorted_items = sorted(
-        results.items(), key=lambda it: it[1][1], reverse=True)
-
-    # Identify engine baselines and dragon levels to always include
+    # Stage 3: Unified Elo Ratings
     baseline_keys = set(players) | {f"dragon-lvl-{lvl}*" for lvl in all_dragon_levels}
+    # Capture existing models for Stage 4
+    pre_existing = set(results.keys())
+    combined_items = sorted(results.items(), key=lambda it: it[1][1], reverse=True)
+    combined_keys = [name for name, _ in combined_items if name in baseline_keys or results[name][0] >= MIN_GAMES]
+    print_elos_stage("Stage 3: Unified Elo Ratings", results, combined_keys, baseline_keys)
 
-    # Determine column widths with '*' prefix for baseline entries
-    player_col = max(
-        len("Player"),
-        max(len("*"+name) if name in baseline_keys else len(name) for name, _ in sorted_items)
-    ) + 2
-    games_col  = max(len("Games"), max(len(str(n)) for _, (n, _, _) in sorted_items)) + 2
-    elo_col    = max(len("Elo"), max(len(f"{R:.1f}") for _, (_, R, _) in sorted_items)) + 2
-    ci_col     = max(len("±95%CI"), max(len(f"{ci:.1f}") for _, (_, _, ci) in sorted_items)) + 2
-
-    # Print header (default color)
-    header = (
-        f"{'Player':<{player_col}}"
-        f"{'Games':>{games_col}}"
-        f"{'Elo':>{elo_col}}"
-        f"{'±95%CI':>{ci_col}}"
-    )
-    print(header)
-    print('-' * len(header))
-
-    for name, (n, R, ci) in sorted_items:
-        # Always include baseline engines; filter out small-N models otherwise
-        if name not in baseline_keys and n < MIN_GAMES:
-            continue
-        display_name = '*' + name if name in baseline_keys else name
-        row = (
-            f"{display_name:<{player_col}}"
-            f"{n:>{games_col}d}"
-            f"{R:>{elo_col}.1f}"
-            f"{ci:>{ci_col}.1f}"
-        )
-        if name in baseline_keys:
-            print(f"{GREEN}{row}{RESET}")
+    # Stage 4: Extended Elo Ratings vs Random
+    if REFINED_CSV_PATH.is_file():
+        random_elo = results.get("random", (None, None, None))[1]
+        if random_elo is None:
+            print("Skipping Stage 4: random Elo not found.")
         else:
-            print(row)
+            with REFINED_CSV_PATH.open() as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    name = row["Player"]
+                    if name in pre_existing:
+                        continue
+                    total = int(row.get("total_games", 0))
+                    wins = int(row.get("player_wins", 0))
+                    draws = int(row.get("draws", 0))
+                    losses = int(row.get("opponent_wins", 0))
+                    recs = [(random_elo, 1.0)] * wins + [(random_elo, 0.5)] * draws + [(random_elo, 0.0)] * losses
+                    if total < MIN_GAMES:
+                        continue
+                    R_ext, se_ext = estimate_elo(recs, white_advantage=35)
+                    ci95_ext = 1.96 * se_ext
+                    results[name] = (total, R_ext, ci95_ext)
+            # Build and print extended combined table including new models, with NaNs last
+            # Select candidates: baselines or sufficient games
+            candidates = [(name, data) for name, data in results.items() if name in baseline_keys or data[0] >= MIN_GAMES]
+            # Separate out non-NaN and NaN Elo entries
+            non_nan = sorted(
+                [(n, d) for n, d in candidates if not np.isnan(d[1])],
+                key=lambda it: it[1][1], reverse=True)
+            nan_entries = sorted(
+                [(n, d) for n, d in candidates if np.isnan(d[1])],
+                key=lambda it: it[0])
+            ext_keys = [n for n, _ in non_nan] + [n for n, _ in nan_entries]
+            print_elos_stage("Stage 4: Extended Elo Ratings vs Random", results, ext_keys, baseline_keys)
+            # Note about undefined Elo estimates
+            print("\nNote: Elo=NaN indicates no valid root was found (e.g., all wins or all losses), so Elo is undefined.")
 
     # Print Dragon level Elo mapping
     print("\nDragon levels (theoretical Elo):")
