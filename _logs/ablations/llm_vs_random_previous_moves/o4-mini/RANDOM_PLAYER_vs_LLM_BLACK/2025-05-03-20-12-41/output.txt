@@ -1,0 +1,1480 @@
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move b1a3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'Na3' in rnbqkbnr/pppppppp/8/8/8/N7/PPPPPPPP/R1BQKBNR b KQkq - 1 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'Na3' in rnbqkbnr/pppppppp/8/8/8/N7/PPPPPPPP/R1BQKBNR b KQkq - 1 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. Na3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move g1h3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'Nh3' in rnbqkbnr/pppppppp/8/8/8/7N/PPPPPPPP/RNBQKB1R b KQkq - 1 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'Nh3' in rnbqkbnr/pppppppp/8/8/8/7N/PPPPPPPP/RNBQKB1R b KQkq - 1 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. Nh3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move a2a4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'a4' in rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'a4' in rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. a4  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move g2g3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'g3' in rnbqkbnr/pppppppp/8/8/8/6P1/PPPPPP1P/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'g3' in rnbqkbnr/pppppppp/8/8/8/6P1/PPPPPP1P/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. g3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move h2h4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'h4' in rnbqkbnr/pppppppp/8/8/7P/8/PPPPPPP1/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'h4' in rnbqkbnr/pppppppp/8/8/7P/8/PPPPPPP1/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. h4  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move a2a4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'a4' in rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'a4' in rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. a4  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move d2d4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'd4' in rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'd4' in rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. d4  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move b1c3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'Nc3' in rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'Nc3' in rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. Nc3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move d2d4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'd4' in rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'd4' in rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. d4  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move b1c3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'Nc3' in rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'Nc3' in rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. Nc3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move h2h4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'h4' in rnbqkbnr/pppppppp/8/8/7P/8/PPPPPPP1/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'h4' in rnbqkbnr/pppppppp/8/8/7P/8/PPPPPPP1/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. h4  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move f2f3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'f3' in rnbqkbnr/pppppppp/8/8/8/5P2/PPPPP1PP/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'f3' in rnbqkbnr/pppppppp/8/8/8/5P2/PPPPP1PP/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. f3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move a2a4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'a4' in rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'a4' in rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. a4  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move c2c3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'c3' in rnbqkbnr/pppppppp/8/8/8/2P5/PP1PPPPP/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'c3' in rnbqkbnr/pppppppp/8/8/8/2P5/PP1PPPPP/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. c3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move d2d3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'd3' in rnbqkbnr/pppppppp/8/8/8/3P4/PPP1PPPP/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'd3' in rnbqkbnr/pppppppp/8/8/8/3P4/PPP1PPPP/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. d3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move g2g4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'g4' in rnbqkbnr/pppppppp/8/8/6P1/8/PPPPPP1P/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'g4' in rnbqkbnr/pppppppp/8/8/6P1/8/PPPPPP1P/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. g4  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move h2h3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'h3' in rnbqkbnr/pppppppp/8/8/8/7P/PPPPPPP1/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'h3' in rnbqkbnr/pppppppp/8/8/8/7P/PPPPPPP1/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. h3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move f2f4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'f4' in rnbqkbnr/pppppppp/8/8/5P2/8/PPPPP1PP/RNBQKBNR b KQkq - 0 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'f4' in rnbqkbnr/pppppppp/8/8/5P2/8/PPPPP1PP/RNBQKBNR b KQkq - 0 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. f4  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move b1c3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Execution was halted due to error.
+Exception details: illegal san: 'Nc3' in rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 1
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 484, in run
+    white_move = board.parse_san(white_move).uci()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/chess/__init__.py", line 3207, in parse_san
+    raise IllegalMoveError(f"illegal san: {san!r} in {self.fen()}")
+chess.IllegalMoveError: illegal san: 'Nc3' in rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 1
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.03"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. Nc3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/run_experiments.py", line 120, in <module>
+    main()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/run_experiments.py", line 117, in main
+    run_games(games, log_folder)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/run_multiple_games.py", line 100, in run_games
+    game_stats, player_white, player_black = run(
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/llm_chess.py", line 294, in run
+    llm_white = GameAgent(
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/custom_agents.py", line 25, in __init__
+    super().__init__(*args, **kwargs)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/autogen/agentchat/conversable_agent.py", line 270, in __init__
+    self.llm_config = self._validate_llm_config(llm_config)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/autogen/agentchat/conversable_agent.py", line 498, in _validate_llm_config
+    llm_config = LLMConfig(**llm_config)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/autogen/llm_config.py", line 57, in __init__
+    outside_properties = list((self._get_base_model_class()).model_json_schema()["properties"].keys())
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/main.py", line 555, in model_json_schema
+    return model_json_schema(
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 2413, in model_json_schema
+    return schema_generator_instance.generate(cls.__pydantic_core_schema__, mode=mode)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 399, in generate
+    json_schema: JsonSchemaValue = self.generate_inner(schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 563, in generate_inner
+    json_schema = current_handler(schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/_internal/_schema_generation_shared.py", line 37, in __call__
+    return self.handler(core_schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 541, in new_handler_func
+    json_schema = js_modify_function(schema_or_field, current_handler)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/main.py", line 827, in __get_pydantic_json_schema__
+    return handler(core_schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/_internal/_schema_generation_shared.py", line 37, in __call__
+    return self.handler(core_schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 495, in handler_func
+    json_schema = generate_for_schema_type(schema_or_field)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 1488, in model_schema
+    json_schema = self.generate_inner(schema['schema'])
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 563, in generate_inner
+    json_schema = current_handler(schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/_internal/_schema_generation_shared.py", line 37, in __call__
+    return self.handler(core_schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 495, in handler_func
+    json_schema = generate_for_schema_type(schema_or_field)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 1601, in model_fields_schema
+    json_schema = self._named_required_fields_schema(named_required_fields)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 1392, in _named_required_fields_schema
+    field_json_schema = self.generate_inner(field).copy()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 563, in generate_inner
+    json_schema = current_handler(schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/_internal/_schema_generation_shared.py", line 37, in __call__
+    return self.handler(core_schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 495, in handler_func
+    json_schema = generate_for_schema_type(schema_or_field)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 1460, in model_field_schema
+    return self.generate_inner(schema['schema'])
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 563, in generate_inner
+    json_schema = current_handler(schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/_internal/_schema_generation_shared.py", line 37, in __call__
+    return self.handler(core_schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 495, in handler_func
+    json_schema = generate_for_schema_type(schema_or_field)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 1109, in default_schema
+    json_schema = self.generate_inner(schema['schema'])
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 563, in generate_inner
+    json_schema = current_handler(schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/_internal/_schema_generation_shared.py", line 37, in __call__
+    return self.handler(core_schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 495, in handler_func
+    json_schema = generate_for_schema_type(schema_or_field)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 893, in list_schema
+    items_schema = {} if 'items_schema' not in schema else self.generate_inner(schema['items_schema'])
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 563, in generate_inner
+    json_schema = current_handler(schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/_internal/_schema_generation_shared.py", line 37, in __call__
+    return self.handler(core_schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 495, in handler_func
+    json_schema = generate_for_schema_type(schema_or_field)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 1231, in tagged_union_schema
+    generated[str(k)] = self.generate_inner(v).copy()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 563, in generate_inner
+    json_schema = current_handler(schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/_internal/_schema_generation_shared.py", line 37, in __call__
+    return self.handler(core_schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 541, in new_handler_func
+    json_schema = js_modify_function(schema_or_field, current_handler)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/main.py", line 827, in __get_pydantic_json_schema__
+    return handler(core_schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/_internal/_schema_generation_shared.py", line 37, in __call__
+    return self.handler(core_schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 495, in handler_func
+    json_schema = generate_for_schema_type(schema_or_field)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 1488, in model_schema
+    json_schema = self.generate_inner(schema['schema'])
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 563, in generate_inner
+    json_schema = current_handler(schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/_internal/_schema_generation_shared.py", line 37, in __call__
+    return self.handler(core_schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 495, in handler_func
+    json_schema = generate_for_schema_type(schema_or_field)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 1601, in model_fields_schema
+    json_schema = self._named_required_fields_schema(named_required_fields)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 1392, in _named_required_fields_schema
+    field_json_schema = self.generate_inner(field).copy()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 563, in generate_inner
+    json_schema = current_handler(schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/_internal/_schema_generation_shared.py", line 37, in __call__
+    return self.handler(core_schema)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 477, in handler_func
+    if self.mode == 'serialization' and 'serialization' in schema_or_field:
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/chess_env/lib/python3.10/site-packages/pydantic/json_schema.py", line 296, in mode
+    @property
+KeyboardInterrupt
