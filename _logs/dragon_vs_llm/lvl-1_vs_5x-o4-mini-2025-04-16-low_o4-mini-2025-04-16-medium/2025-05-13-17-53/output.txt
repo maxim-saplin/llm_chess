@@ -6376,3 +6376,4047 @@ Proxy (to NoN_Synthesizer):
 Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
 
 --------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move h8g8
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 6
+Material Count - White: 39, Black: 39
+Prompt Tokens: 22388
+Completion Tokens: 20772
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move h2h4
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 7
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_current_board"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ♞ ♝ ♛ ♚ ♝ ♜ ⭘
+♟ ♟ ♟ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ♞ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙
+⭘ ♙ ⭘ ⭘ ⭘ ♘ ⭘ ⭘
+⭘ ⭘ ♙ ♙ ♙ ♙ ♙ ⭘
+♖ ♘ ♗ ♕ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,e8d7,d8d7,d8d6,c8d7,c8e6,c8f5,c8g4,c8h3,b8d7,b8c6,b8a6,f6d7,f6h5,f6g4,f6e4,h7h6,g7g6,e7e6,c7c6,b7b6,a7a6,d5d4,h7h5,g7g5,e7e5,c7c5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"make_move","move":"c7c6"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move c7c6
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 8
+Material Count - White: 39, Black: 39
+Prompt Tokens: 31072
+Completion Tokens: 30251
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move h4h5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 9
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ♞ ♝ ♛ ♚ ♝ ♜ ⭘
+♟ ♟ ⭘ ⭘ ♟ ♟ ♟ ♟
+⭘ ⭘ ♟ ⭘ ⭘ ♞ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ♙
+♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ♘ ⭘ ⭘
+⭘ ⭘ ♙ ♙ ♙ ♙ ♙ ⭘
+♖ ♘ ♗ ♕ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,e8d7,d8d7,d8c7,d8d6,d8b6,d8a5,c8d7,c8e6,c8f5,c8g4,c8h3,b8d7,b8a6,f6d7,f6h5,f6g4,f6e4,h7h6,g7g6,e7e6,b7b6,a7a6,c6c5,d5d4,g7g5,e7e5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move d5d4
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 10
+Material Count - White: 39, Black: 39
+Prompt Tokens: 36461
+Completion Tokens: 41220
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move f3e5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 11
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,d8d7,d8c7,d8d6,d8b6,d8d5,d8a5,c8d7,c8e6,c8f5,c8g4,c8h3,b8d7,b8a6,f6d7,f6h5,f6d5,f6g4,f6e4,h7h6,g7g6,e7e6,b7b6,a7a6,c6c5,d4d3,g7g5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e7e6
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 12
+Material Count - White: 39, Black: 39
+Prompt Tokens: 38830
+Completion Tokens: 43286
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move a4a5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 13
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"score_model_1":7, "score_model_2":7, "score_model_3":7, "score_model_4":5, "score_model_5":7, "explanation":"Models 1, 2, 3, and 5 all request get_current_board, which is the most appropriate first action to understand the position before deciding on a move. Model 4 asks for legal moves without seeing the board; while not unreasonable, it skips vital context, making it a less optimal first step."}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ♞ ♝ ♛ ♚ ♝ ♜ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ♟ ⭘ ♟ ♞ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ♘ ⭘ ⭘ ♙
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ♙ ♙ ♙ ♙ ⭘
+♖ ♘ ♗ ♕ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,f8e7,f8d6,f8c5,f8b4,f8a3,e8e7,d8e7,d8d7,d8c7,d8d6,d8b6,d8d5,d8a5,c8d7,b8d7,b8a6,f6d7,f6h5,f6d5,f6g4,f6e4,h7h6,g7g6,b7b6,a7a6,c6c5,d4d3,g7g5,b7b5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"make_move f8d6"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 14
+Material Count - White: 39, Black: 39
+Prompt Tokens: 45574
+Completion Tokens: 55448
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move e5f3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 15
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action": "get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,g8f8,e8f8,e8e7,e8d7,d8e7,d8d7,d8c7,d8b6,d8a5,c8d7,b8d7,b8a6,f6d7,f6h5,f6d5,f6g4,f6e4,d6f8,d6e7,d6c7,d6e5,d6c5,d6f4,d6b4,d6g3,d6a3,d6h2,h7h6,g7g6,b7b6,a7a6,e6e5,c6c5,d4d3,g7g5,b7b5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"make_move","move":"g7g6"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ♞ ♝ ♛ ♚ ⭘ ♜ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ♟ ♝ ♟ ♞ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ♘ ⭘ ⭘
+⭘ ⭘ ♙ ♙ ♙ ♙ ♙ ⭘
+♖ ♘ ♗ ♕ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,g8f8,e8f8,e8e7,e8d7,d8e7,d8d7,d8c7,d8b6,d8a5,c8d7,b8d7,b8a6,f6d7,f6h5,f6d5,f6g4,f6e4,d6f8,d6e7,d6c7,d6e5,d6c5,d6f4,d6b4,d6g3,d6a3,d6h2,h7h6,g7g6,b7b6,a7a6,e6e5,c6c5,d4d3,g7g5,b7b5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move b7b6
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 16
+Material Count - White: 39, Black: 39
+Prompt Tokens: 58146
+Completion Tokens: 66833
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move f3g5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 17
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_current_board"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ♞ ♝ ♛ ♚ ⭘ ♜ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ♟ ♟ ♝ ♟ ♞ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ⭘ ♘ ♙
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ♙ ♙ ♙ ♙ ⭘
+♖ ♘ ♗ ♕ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"legal_moves":["a7a6","b6b5","c6c5","d4d3","e6e5","g7g6","h7h6","g8f8","g8h8","b8a6","b8d7","f6h5","f6g4","f6e4","f6d5","f6d7","c8b7","c8a6","c8d7","d6c7","d6e7","d6f8","d6c5","d6b4","d6a3","d6e5","d6f4","d6g3","d6h2","d8d7","d8c7","d8e7","e8d7","e8e7","e8f8"]}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move f6h5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 18
+Material Count - White: 38, Black: 39
+Prompt Tokens: 64164
+Completion Tokens: 82960
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move g5f7
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 19
+Material Count - White: 38, Black: 38
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ♞ ♝ ♛ ♚ ⭘ ♜ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ♘ ♟ ♟
+⭘ ♟ ♟ ♝ ♟ ⭘ ⭘ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♞
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ♙ ♙ ♙ ♙ ⭘
+♖ ♘ ♗ ♕ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,g8f8,e8f8,e8f7,e8e7,e8d7,d8e7,d8d7,d8c7,d8f6,d8g5,d8h4,c8d7,c8b7,c8a6,b8d7,b8a6,d6f8,d6e7,d6c7,d6e5,d6c5,d6f4,d6b4,d6g3,d6a3,d6h2,h5f6,h5f4,h5g3,b6a5,h7h6,g7g6,a7a6,e6e5,c6c5,b6b5,d4d3,g7g5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move g7g6
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 20
+Material Count - White: 38, Black: 38
+Prompt Tokens: 69812
+Completion Tokens: 93968
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move c1b2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 21
+Material Count - White: 38, Black: 38
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ♞ ♝ ♛ ♚ ⭘ ♜ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ♘ ⭘ ♟
+⭘ ♟ ♟ ♝ ♟ ⭘ ♟ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♞
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♗ ♙ ♙ ♙ ♙ ♙ ⭘
+♖ ♘ ⭘ ♕ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,g8f8,g8g7,e8f8,e8f7,e8e7,e8d7,d8e7,d8d7,d8c7,d8f6,d8g5,d8h4,c8d7,c8b7,c8a6,b8d7,b8a6,d6f8,d6e7,d6c7,d6e5,d6c5,d6f4,d6b4,d6g3,d6a3,d6h2,h5g7,h5f6,h5f4,h5g3,b6a5,h7h6,a7a6,g6g5,e6e5,c6c5,b6b5,d4d3
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move b8d7
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 22
+Material Count - White: 38, Black: 38
+Prompt Tokens: 75485
+Completion Tokens: 106231
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move f7d8
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 23
+Material Count - White: 38, Black: 29
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♝ ♘ ♚ ⭘ ♜ ⭘
+♟ ⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟
+⭘ ♟ ♟ ♝ ♟ ⭘ ♟ ⭘
+♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♞
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♗ ♙ ♙ ♙ ♙ ♙ ⭘
+♖ ♘ ⭘ ♕ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,g8f8,g8g7,e8f8,e8d8,e8e7,c8b7,c8a6,a8b8,d7f8,d7b8,d7f6,d7e5,d7c5,d6f8,d6b8,d6e7,d6c7,d6e5,d6c5,d6f4,d6b4,d6g3,d6a3,d6h2,h5g7,h5f6,h5f4,h5g3,b6a5,h7h6,a7a6,g6g5,e6e5,c6c5,b6b5,d4d3
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move d6e5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 24
+Material Count - White: 38, Black: 29
+Prompt Tokens: 81096
+Completion Tokens: 116639
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move d8c6
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 25
+Material Count - White: 38, Black: 28
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,g8f8,g8g7,e8f8,e8f7,c8b7,c8a6,a8b8,d7f8,d7b8,d7f6,d7c5,h5g7,h5f6,h5f4,h5g3,e5h8,e5b8,e5g7,e5c7,e5f6,e5d6,e5f4,e5g3,e5h2,b6a5,h7h6,a7a6,g6g5,b6b5,d4d3
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move d7c5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 26
+Material Count - White: 38, Black: 28
+Prompt Tokens: 83502
+Completion Tokens: 120543
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move g2g3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 27
+Material Count - White: 38, Black: 28
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♝ ⭘ ♚ ⭘ ♜ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ♟ ♘ ⭘ ♟ ⭘ ♟ ⭘
+♙ ⭘ ♞ ⭘ ♝ ⭘ ⭘ ♞
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ♗ ♙ ♙ ♙ ♙ ⭘ ⭘
+♖ ♘ ⭘ ♕ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,g8f8,g8g7,e8f8,e8f7,e8d7,c8d7,c8b7,c8a6,a8b8,h5g7,h5f6,h5f4,h5g3,e5h8,e5b8,e5g7,e5c7,e5f6,e5d6,e5f4,e5g3,c5d7,c5b7,c5a6,c5e4,c5a4,c5d3,c5b3,b6a5,h7h6,a7a6,g6g5,b6b5,d4d3
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move d4d3
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 28
+Material Count - White: 38, Black: 28
+Prompt Tokens: 89078
+Completion Tokens: 130835
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move d1c1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 29
+Material Count - White: 38, Black: 28
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♝ ⭘ ♚ ⭘ ♜ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ♟ ♘ ⭘ ♟ ⭘ ♟ ⭘
+♙ ⭘ ♞ ⭘ ♝ ⭘ ⭘ ♞
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ♟ ⭘ ⭘ ♙ ⭘
+⭘ ♗ ♙ ♙ ♙ ♙ ⭘ ⭘
+♖ ♘ ♕ ⭘ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,g8f8,g8g7,e8f8,e8f7,e8d7,c8d7,c8b7,c8a6,a8b8,h5g7,h5f6,h5f4,h5g3,e5h8,e5b8,e5g7,e5c7,e5f6,e5d6,e5f4,e5d4,e5g3,e5c3,e5b2,c5d7,c5b7,c5a6,c5e4,c5a4,c5b3,b6a5,d3e2,d3c2,h7h6,a7a6,g6g5,b6b5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move c5d7
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 30
+Material Count - White: 38, Black: 28
+Prompt Tokens: 94734
+Completion Tokens: 141621
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move c2c4
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 31
+Material Count - White: 38, Black: 28
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♝ ⭘ ♚ ⭘ ♜ ⭘
+♟ ⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟
+⭘ ♟ ♘ ⭘ ♟ ⭘ ♟ ⭘
+♙ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ♞
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ♟ ⭘ ⭘ ♙ ⭘
+⭘ ♗ ⭘ ♙ ♙ ♙ ⭘ ⭘
+♖ ♘ ♕ ⭘ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+a7a6 b6a5 b6b5 d3e2 g6g5 g6h5 h7h6 a8b8 g8f8 g8g7 g8h8 d7b8 d7c5 d7f6 d7f8 h5f4 h5f6 h5g3 h5g7 c8a6 c8b7 e5b2 e5b8 e5c3 e5c7 e5d4 e5d6 e5f4 e5f6 e5g3 e5g7 e5h8 e8f7 e8f8
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,g8f8,g8g7,e8f8,e8f7,c8b7,c8a6,a8b8,d7f8,d7b8,d7f6,d7c5,h5g7,h5f6,h5f4,h5g3,e5h8,e5b8,e5g7,e5c7,e5f6,e5d6,e5f4,e5d4,e5g3,e5c3,e5b2,b6a5,d3e2,h7h6,a7a6,g6g5,b6b5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move b6a5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 32
+Material Count - White: 37, Black: 28
+Prompt Tokens: 104451
+Completion Tokens: 158734
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move e2d3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 33
+Material Count - White: 37, Black: 27
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♝ ⭘ ♚ ⭘ ♜ ⭘
+♟ ⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♘ ⭘ ♟ ⭘ ♟ ⭘
+♟ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ♞
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ♙ ⭘ ⭘ ♙ ⭘
+⭘ ♗ ⭘ ♙ ⭘ ♙ ⭘ ⭘
+♖ ♘ ♕ ⭘ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,g8f8,g8g7,e8f8,e8f7,c8b7,c8a6,a8b8,d7f8,d7b8,d7f6,d7b6,d7c5,h5g7,h5f6,h5f4,h5g3,e5h8,e5b8,e5g7,e5c7,e5f6,e5d6,e5f4,e5d4,e5g3,e5c3,e5b2,h7h6,a7a6,g6g5,a5a4
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move g8f8
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 34
+Material Count - White: 37, Black: 27
+Prompt Tokens: 109981
+Completion Tokens: 173819
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move d3d4
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 35
+Material Count - White: 37, Black: 27
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+All five models are equally correct here—they all chose the appropriate first action, which is to call  
+get_current_board  
+so you can see the current position before deciding on a move.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♝ ⭘ ♚ ♜ ⭘ ⭘
+♟ ⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♘ ⭘ ♟ ⭘ ♟ ⭘
+♟ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ♞
+⭘ ⭘ ♙ ♙ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ♗ ⭘ ♙ ⭘ ♙ ⭘ ⭘
+♖ ♘ ♕ ⭘ ♔ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+All five models are equally correct here—they all chose the appropriate next action, which is to call  
+get_legal_moves  
+so you can see Black’s available moves before selecting one.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8f7,f8f6,f8f5,f8f4,f8f3,f8f2,e8f7,c8b7,c8a6,a8b8,d7b8,d7f6,d7b6,d7c5,h5g7,h5f6,h5f4,h5g3,e5h8,e5b8,e5g7,e5c7,e5f6,e5d6,e5f4,e5d4,e5g3,h7h6,a7a6,g6g5,a5a4
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+Models 1 and 5 are correct – both play  h5f6, which stops White’s looming  Ne7+ fork by covering e8 (and g8).  
+
+make_move h5f6
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 36
+Material Count - White: 37, Black: 27
+Prompt Tokens: 116138
+Completion Tokens: 183997
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move f1g2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 37
+Material Count - White: 37, Black: 27
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♝ ⭘ ♚ ♜ ⭘ ⭘
+♟ ⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♘ ⭘ ♟ ♞ ♟ ⭘
+♟ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ♙ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ♗ ⭘ ♙ ⭘ ♙ ♗ ⭘
+♖ ♘ ♕ ⭘ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8f7,e8f7,c8b7,c8a6,a8b8,d7b8,d7b6,d7c5,f6g8,f6h5,f6d5,f6g4,f6e4,e5b8,e5c7,e5d6,e5f4,e5d4,e5g3,h7h6,a7a6,g6g5,a5a4,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e5d6
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 38
+Material Count - White: 37, Black: 27
+Prompt Tokens: 121522
+Completion Tokens: 198998
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move c1d1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 39
+Material Count - White: 37, Black: 27
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action": "get_current_board"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♝ ⭘ ♚ ♜ ⭘ ⭘
+♟ ⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♘ ♝ ♟ ♞ ♟ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ♙ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ♗ ⭘ ♙ ⭘ ♙ ♗ ⭘
+♖ ♘ ⭘ ♕ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action": "get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8f7,e8f7,c8b7,c8a6,a8b8,d7b8,d7b6,d7e5,d7c5,f6g8,f6h5,f6d5,f6g4,f6e4,d6b8,d6e7,d6c7,d6e5,d6c5,d6f4,d6b4,d6g3,d6a3,h7h6,a7a6,g6g5,e6e5,a5a4,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"make_move","move":"e6e5"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e6e5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 40
+Material Count - White: 37, Black: 27
+Prompt Tokens: 130449
+Completion Tokens: 214544
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move a1a5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 41
+Material Count - White: 37, Black: 26
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♝ ⭘ ♚ ♜ ⭘ ⭘
+♟ ⭘ ⭘ ♞ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♘ ♝ ⭘ ♞ ♟ ⭘
+♖ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ♙ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ♗ ⭘ ♙ ⭘ ♙ ♗ ⭘
+⭘ ♘ ⭘ ♕ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8f7,e8f7,c8b7,c8a6,a8b8,d7b8,d7b6,d7c5,f6g8,f6h5,f6d5,f6g4,f6e4,d6b8,d6e7,d6c7,d6c5,d6b4,d6a3,e5d4,h7h6,a7a6,g6g5,e5e4,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+The most active, safe continuation is to reroute your knight from d7 into the centre. I would play:
+
+make_move d7c5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 42
+Material Count - White: 37, Black: 26
+Prompt Tokens: 135868
+Completion Tokens: 230123
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move d4c5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 43
+Material Count - White: 37, Black: 23
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+Here’s how I’d rank them:
+
+1. Model 1 (get_current_board)  
+2. Model 3 (get_current_board)  
+3. Model 4 (get_current_board)  
+4. Model 5 (get_current_board)  
+5. Model 2 (get_legal_moves)
+
+Rationale: Since we don’t yet know the board state, the first sensible call is get_current_board. Only once we’ve fetched the position would we request legal moves or actually make one. Model 2 jumps prematurely to get_legal_moves, so it’s the least appropriate at this stage.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♝ ⭘ ♚ ♜ ⭘ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♘ ♝ ⭘ ♞ ♟ ⭘
+♖ ⭘ ♙ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ♗ ⭘ ♙ ⭘ ♙ ♗ ⭘
+⭘ ♘ ⭘ ♕ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+All of them are fine here—since we already have the board position, the next logical step is to call
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8f7,e8f7,e8d7,c8d7,c8b7,c8e6,c8a6,c8f5,c8g4,c8h3,a8b8,f6g8,f6d7,f6h5,f6d5,f6g4,f6e4,d6b8,d6e7,d6c7,d6c5,h7h6,a7a6,g6g5,e5e4,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move c8e6
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 44
+Material Count - White: 37, Black: 23
+Prompt Tokens: 142902
+Completion Tokens: 242814
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move d1e2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 45
+Material Count - White: 37, Black: 23
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+3
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ⭘ ♚ ♜ ⭘ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♘ ♝ ♝ ♞ ♟ ⭘
+♖ ⭘ ♙ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ♗ ⭘ ♙ ♕ ♙ ♗ ⭘
+⭘ ♘ ⭘ ⭘ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8f7,e8f7,e8d7,a8d8,a8c8,a8b8,f6g8,f6d7,f6h5,f6d5,f6g4,f6e4,e6g8,e6c8,e6f7,e6d7,e6f5,e6d5,e6g4,e6c4,e6h3,d6b8,d6e7,d6c7,d6c5,h7h6,a7a6,g6g5,e5e4,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e6g4
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 46
+Material Count - White: 37, Black: 23
+Prompt Tokens: 150180
+Completion Tokens: 252704
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move e2e3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 47
+Material Count - White: 37, Black: 23
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ⭘ ♚ ♜ ⭘ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♘ ♝ ⭘ ♞ ♟ ⭘
+♖ ⭘ ♙ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♝ ⭘
+⭘ ♙ ⭘ ⭘ ♕ ⭘ ♙ ⭘
+⭘ ♗ ⭘ ♙ ⭘ ♙ ♗ ⭘
+⭘ ♘ ⭘ ⭘ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8f7,e8f7,e8d7,a8d8,a8c8,a8b8,f6g8,f6d7,f6h5,f6d5,f6e4,d6b8,d6e7,d6c7,d6c5,g4c8,g4d7,g4e6,g4h5,g4f5,g4h3,g4f3,g4e2,g4d1,h7h6,a7a6,g6g5,e5e4,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move f6d5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 48
+Material Count - White: 37, Black: 23
+Prompt Tokens: 155707
+Completion Tokens: 262039
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move e3e4
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 49
+Material Count - White: 37, Black: 23
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+The only correctly formatted response is Model 1:
+
+{"action": "get_current_board"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ⭘ ♚ ♜ ⭘ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♘ ♝ ⭘ ⭘ ♟ ⭘
+♖ ⭘ ♙ ♞ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ♕ ⭘ ♝ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ♗ ⭘ ♙ ⭘ ♙ ♗ ⭘
+⭘ ♘ ⭘ ⭘ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action": "get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8f7,f8f6,f8f5,f8f4,f8f3,f8f2,e8f7,e8d7,a8d8,a8c8,a8b8,d6b8,d6e7,d6c7,d6c5,d5e7,d5c7,d5f6,d5b6,d5f4,d5b4,d5e3,d5c3,g4c8,g4d7,g4e6,g4h5,g4f5,g4h3,g4f3,g4e2,g4d1,h7h6,a7a6,g6g5,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action": "make_move", "move": "d5f6"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move d5f6
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 50
+Material Count - White: 37, Black: 23
+Prompt Tokens: 165204
+Completion Tokens: 274132
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move e4e3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 51
+Material Count - White: 37, Black: 23
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ⭘ ♚ ♜ ⭘ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♘ ♝ ⭘ ♞ ♟ ⭘
+♖ ⭘ ♙ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♝ ⭘
+⭘ ♙ ⭘ ⭘ ♕ ⭘ ♙ ⭘
+⭘ ♗ ⭘ ♙ ⭘ ♙ ♗ ⭘
+⭘ ♘ ⭘ ⭘ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8f7,e8f7,e8d7,a8d8,a8c8,a8b8,f6g8,f6d7,f6h5,f6d5,f6e4,d6b8,d6e7,d6c7,d6c5,g4c8,g4d7,g4e6,g4h5,g4f5,g4h3,g4f3,g4e2,g4d1,h7h6,a7a6,g6g5,e5e4,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e8d7
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 52
+Material Count - White: 37, Black: 23
+Prompt Tokens: 170737
+Completion Tokens: 285886
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move a5a2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 53
+Material Count - White: 37, Black: 23
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ⭘ ⭘ ♜ ⭘ ⭘
+♟ ⭘ ⭘ ♚ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♘ ♝ ⭘ ♞ ♟ ⭘
+⭘ ⭘ ♙ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♝ ⭘
+⭘ ♙ ⭘ ⭘ ♕ ⭘ ♙ ⭘
+♖ ♗ ⭘ ♙ ⭘ ♙ ♗ ⭘
+⭘ ♘ ⭘ ⭘ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8e8,f8d8,f8c8,f8b8,f8f7,a8e8,a8d8,a8c8,a8b8,d7e8,d7c8,d7c7,d7e6,f6g8,f6e8,f6h5,f6d5,f6e4,d6b8,d6e7,d6c7,d6c5,g4e6,g4h5,g4f5,g4h3,g4f3,g4e2,g4d1,h7h6,a7a6,g6g5,e5e4,h7h5,a7a5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e5e4
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 54
+Material Count - White: 37, Black: 23
+Prompt Tokens: 176416
+Completion Tokens: 297848
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move c6a7
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 55
+Material Count - White: 37, Black: 22
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_current_board"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ⭘ ⭘ ♜ ⭘ ⭘
+♘ ⭘ ⭘ ♚ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ♝ ⭘ ♞ ♟ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ♟ ⭘ ♝ ⭘
+⭘ ♙ ⭘ ⭘ ♕ ⭘ ♙ ⭘
+♖ ♗ ⭘ ♙ ⭘ ♙ ♗ ⭘
+⭘ ♘ ⭘ ⭘ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8e8,f8d8,f8c8,f8b8,f8f7,a8e8,a8d8,a8c8,a8b8,a8a7,d7e8,d7d8,d7e7,d7c7,d7e6,f6g8,f6e8,f6h5,f6d5,d6b8,d6e7,d6c7,d6e5,d6c5,d6f4,d6g3,g4e6,g4h5,g4f5,g4h3,g4f3,g4e2,g4d1,h7h6,g6g5,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"make_move d6c5"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 56
+Material Count - White: 36, Black: 22
+Prompt Tokens: 182244
+Completion Tokens: 311295
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move d2d3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 57
+Material Count - White: 36, Black: 22
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ⭘ ⭘ ♜ ⭘ ⭘
+♘ ⭘ ⭘ ♚ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ♞ ♟ ⭘
+⭘ ⭘ ♝ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ♟ ⭘ ♝ ⭘
+⭘ ♙ ⭘ ♙ ♕ ⭘ ♙ ⭘
+♖ ♗ ⭘ ⭘ ⭘ ♙ ♗ ⭘
+⭘ ♘ ⭘ ⭘ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8e8,f8d8,f8c8,f8b8,f8f7,a8e8,a8d8,a8c8,a8b8,a8a7,d7e8,d7d8,d7e7,d7c7,d7e6,d7d6,f6g8,f6e8,f6h5,f6d5,c5e7,c5a7,c5d6,c5b6,c5d4,c5b4,c5e3,c5a3,g4e6,g4h5,g4f5,g4h3,g4f3,g4e2,g4d1,e4d3,h7h6,g6g5,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move c5e3
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 58
+Material Count - White: 27, Black: 22
+Prompt Tokens: 188044
+Completion Tokens: 321743
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move b1a3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 59
+Material Count - White: 27, Black: 22
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_current_board"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ⭘ ⭘ ♜ ⭘ ⭘
+♘ ⭘ ⭘ ♚ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ♞ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ♟ ⭘ ♝ ⭘
+♘ ♙ ⭘ ♙ ♝ ⭘ ♙ ⭘
+♖ ♗ ⭘ ⭘ ⭘ ♙ ♗ ⭘
+⭘ ⭘ ⭘ ⭘ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8e8,f8d8,f8c8,f8b8,f8f7,a8e8,a8d8,a8c8,a8b8,a8a7,d7e8,d7d8,d7e7,d7c7,d7e6,d7d6,f6g8,f6e8,f6h5,f6d5,g4e6,g4h5,g4f5,g4h3,g4f3,g4e2,g4d1,e3a7,e3h6,e3b6,e3g5,e3c5,e3f4,e3d4,e3f2,e3d2,e3c1,e4d3,h7h6,g6g5,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"make_move","move":"e3a7"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e3a7
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 60
+Material Count - White: 24, Black: 22
+Prompt Tokens: 197594
+Completion Tokens: 337321
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move b2f6
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 61
+Material Count - White: 24, Black: 19
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+Ranking (best to worst):
+1 = 2 = 4 = 5. All four use the correct JSON action schema (`{"action":"get_current_board"}`), which matches the expected API format.
+3. Returns plain `get_current_board` without the required JSON wrapper, so it won’t be parsed correctly.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ⭘ ⭘ ♜ ⭘ ⭘
+♝ ⭘ ⭘ ♚ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ♗ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ♟ ⭘ ♝ ⭘
+♘ ♙ ⭘ ♙ ⭘ ⭘ ♙ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ♙ ♗ ⭘
+⭘ ⭘ ⭘ ⭘ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8h8,f8g8,f8e8,f8d8,f8c8,f8b8,f8f7,f8f6,a8e8,a8d8,a8c8,a8b8,d7e8,d7c8,d7c7,d7e6,d7d6,d7c6,a7b8,a7b6,a7c5,a7d4,a7e3,a7f2,g4e6,g4h5,g4f5,g4h3,g4f3,g4e2,g4d1,e4d3,h7h6,g6g5,e4e3,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+Ranking (best to worst):
+5 > 4 > 1 > 2 > 3
+
+1. Model 5 (f8d8) – Immediately interposes the rook on d8 to shield the king on d7 and consolidate the center.  
+2. Model 4 (f8e8) – Brings the rook to e8, defending along the e-file and preparing to contest White’s rook on e1.  
+3. Model 1 (g4e6) – Centralizes the bishop and covers key squares, but leaves the king’s flank lightly defended.  
+4. Model 2 (e4e3) – Advances the pawn into enemy territory, but it can become a target and doesn’t address king safety.  
+5. Model 3 (f8g8) – Passively shifts the rook to g8 without improving Black’s defensive setup or counterplay.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move f8d8
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 62
+Material Count - White: 24, Black: 19
+Prompt Tokens: 208928
+Completion Tokens: 347978
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move f6b2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 63
+Material Count - White: 24, Black: 19
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+Model 1
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ⭘ ♜ ⭘ ⭘ ⭘ ⭘
+♝ ⭘ ⭘ ♚ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ♟ ⭘ ♝ ⭘
+♘ ♙ ⭘ ♙ ⭘ ⭘ ♙ ⭘
+♖ ♗ ⭘ ⭘ ⭘ ♙ ♗ ⭘
+⭘ ⭘ ⭘ ⭘ ♔ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+d8h8,d8g8,d8f8,d8e8,d8c8,d8b8,a8c8,a8b8,d7e8,d7c8,d7e7,d7c7,d7e6,d7d6,d7c6,a7b8,a7b6,a7c5,a7d4,a7e3,a7f2,g4e6,g4h5,g4f5,g4h3,g4f3,g4e2,g4d1,e4d3,h7h6,g6g5,e4e3,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move d7c8
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 64
+Material Count - White: 24, Black: 19
+Prompt Tokens: 216330
+Completion Tokens: 357039
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move e1f1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 65
+Material Count - White: 24, Black: 19
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+All five models gave the same, correct first step (“get_current_board”). Since they’re identical, they tie – you can pick Model 1 (or any) as the best.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♚ ♜ ⭘ ⭘ ⭘ ⭘
+♝ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ♟ ⭘ ♝ ⭘
+♘ ♙ ⭘ ♙ ⭘ ⭘ ♙ ⭘
+♖ ♗ ⭘ ⭘ ⭘ ♙ ♗ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+All five models gave the same, correct first step (“get_legal_moves”). Since their responses are identical, they tie—pick Model 1 (or any) as the best.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+d8h8,d8g8,d8f8,d8e8,d8d7,d8d6,d8d5,d8d4,d8d3,c8b8,c8d7,c8c7,c8b7,a8b8,a7b8,a7b6,a7c5,a7d4,a7e3,a7f2,g4d7,g4e6,g4h5,g4f5,g4h3,g4f3,g4e2,g4d1,e4d3,h7h6,g6g5,e4e3,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+Model 2 is best. Its move (g4e2) is legal and delivers an immediate check on White’s king. The others either overlook a stronger tactic, violate legality, or stall.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move g4e2
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 66
+Material Count - White: 24, Black: 19
+Prompt Tokens: 226435
+Completion Tokens: 369136
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move f1e2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 67
+Material Count - White: 24, Black: 16
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+Model 1’s response is most appropriate. It correctly calls the JSON-formatted  
+action to retrieve the current board:  
+{"action":"get_current_board"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♚ ♜ ⭘ ⭘ ⭘ ⭘
+♝ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ♟ ⭘ ⭘ ⭘
+♘ ♙ ⭘ ♙ ⭘ ⭘ ♙ ⭘
+♖ ♗ ⭘ ⭘ ♔ ♙ ♗ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+d8h8,d8g8,d8f8,d8e8,d8d7,d8d6,d8d5,d8d4,d8d3,c8b8,c8d7,c8c7,c8b7,a8b8,a7b8,a7b6,a7c5,a7d4,a7e3,a7f2,e4d3,h7h6,g6g5,e4e3,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"make_move","move":"e4d3"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e4d3
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 68
+Material Count - White: 23, Black: 16
+Prompt Tokens: 235639
+Completion Tokens: 379163
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move e2f1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 69
+Material Count - White: 23, Black: 16
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♚ ♜ ⭘ ⭘ ⭘ ⭘
+♝ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+♘ ♙ ⭘ ♟ ⭘ ⭘ ♙ ⭘
+♖ ♗ ⭘ ⭘ ⭘ ♙ ♗ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move d3d2
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 70
+Material Count - White: 23, Black: 16
+Prompt Tokens: 238379
+Completion Tokens: 384800
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move b2c3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 71
+Material Count - White: 23, Black: 16
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_current_board"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♜ ⭘ ♚ ♜ ⭘ ⭘ ⭘ ⭘
+♝ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+♘ ♙ ♗ ⭘ ⭘ ⭘ ♙ ⭘
+♖ ⭘ ⭘ ♟ ⭘ ♙ ♗ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+d8h8,d8g8,d8f8,d8e8,d8d7,d8d6,d8d5,d8d4,d8d3,c8b8,c8d7,c8c7,a8b8,a7b8,a7b6,a7c5,a7d4,a7e3,a7f2,h7h6,g6g5,d2d1q,d2d1r,d2d1b,d2d1n,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"make_move d2d1q"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 72
+Material Count - White: 23, Black: 24
+Prompt Tokens: 244021
+Completion Tokens: 397059
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move c3e1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 73
+Material Count - White: 23, Black: 24
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action": "get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+d8h8,d8g8,d8f8,d8e8,d8d7,d8d6,d8d5,d8d4,d8d3,d8d2,c8b8,c8d7,c8c7,a8b8,a7b8,a7b6,a7c5,a7d4,a7e3,a7f2,d1d7,d1d6,d1h5,d1d5,d1g4,d1d4,d1f3,d1d3,d1b3,d1e2,d1d2,d1c2,d1e1,d1c1,d1b1,d1a1,h7h6,g6g5,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action": "make_move", "move": "g6g5"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move g6g5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 74
+Material Count - White: 23, Black: 24
+Prompt Tokens: 248972
+Completion Tokens: 399917
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move g2a8
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 75
+Material Count - White: 23, Black: 19
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♗ ⭘ ♚ ♜ ⭘ ⭘ ⭘ ⭘
+♝ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+♘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+⭘ ⭘ ⭘ ♛ ♗ ♔ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+d8h8,d8g8,d8f8,d8e8,d8d7,d8d6,d8d5,d8d4,d8d3,d8d2,c8b8,c8d7,c8c7,a7b8,a7b6,a7c5,a7d4,a7e3,a7f2,d1d7,d1d6,d1h5,d1d5,d1g4,d1d4,d1f3,d1d3,d1b3,d1e2,d1d2,d1c2,d1e1,d1c1,d1b1,d1a1,h7h6,g5g4,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+Model 4 is incorrect—on Black’s turn you can’t play “d1e1,” which would move White’s queen. The legal pawn push “g5g4” is the correct Black move.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move g5g4
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 76
+Material Count - White: 23, Black: 19
+Prompt Tokens: 258391
+Completion Tokens: 413592
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move f1g1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 77
+Material Count - White: 23, Black: 19
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+The best response is Model 1. It correctly issues the plain-text action `get_current_board` as specified.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♗ ⭘ ♚ ♜ ⭘ ⭘ ⭘ ⭘
+♝ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♟ ⭘
+♘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+⭘ ⭘ ⭘ ♛ ♗ ⭘ ♔ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+The best response is Model 1, which correctly issues the `get_legal_moves` action.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+d8h8,d8g8,d8f8,d8e8,d8d7,d8d6,d8d5,d8d4,d8d3,d8d2,c8b8,c8d7,c8c7,a7b8,a7b6,a7c5,a7d4,a7e3,a7f2,d1d7,d1d6,d1d5,d1d4,d1f3,d1d3,d1b3,d1e2,d1d2,d1c2,d1e1,d1c1,d1b1,d1a1,h7h6,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+The best response is Model 1: make_move d1e1. This wins a piece (capturing the bishop on e1) and immediately checks White’s king.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 78
+Material Count - White: 20, Black: 19
+Prompt Tokens: 264449
+Completion Tokens: 420349
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move g1g2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 79
+Material Count - White: 20, Black: 19
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♗ ⭘ ♚ ♜ ⭘ ⭘ ⭘ ⭘
+♝ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♟ ⭘
+♘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ♙ ♔ ⭘
+⭘ ⭘ ⭘ ⭘ ♛ ⭘ ⭘ ♖
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+d8h8,d8g8,d8f8,d8e8,d8d7,d8d6,d8d5,d8d4,d8d3,d8d2,d8d1,c8b8,c8d7,c8c7,a7b8,a7b6,a7c5,a7d4,a7e3,a7f2,e1e8,e1e7,e1e6,e1e5,e1a5,e1e4,e1b4,e1e3,e1c3,e1f2,e1e2,e1d2,e1h1,e1g1,e1f1,e1d1,e1c1,e1b1,e1a1,h7h6,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e1h1
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 80
+Material Count - White: 15, Black: 19
+Prompt Tokens: 270329
+Completion Tokens: 431267
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move g2h1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 81
+Material Count - White: 15, Black: 10
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_current_board"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♗ ⭘ ♚ ♜ ⭘ ⭘ ⭘ ⭘
+♝ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♟ ⭘
+♘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♔
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+d8h8,d8g8,d8f8,d8e8,d8d7,d8d6,d8d5,d8d4,d8d3,d8d2,d8d1,c8b8,c8d7,c8c7,a7b8,a7b6,a7c5,a7d4,a7e3,a7f2,h7h6,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"make_move d8d1"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 82
+Material Count - White: 15, Black: 10
+Prompt Tokens: 275892
+Completion Tokens: 445439
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move h1h2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 83
+Material Count - White: 15, Black: 10
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+Model 1’s response is the correct one. It uses the required JSON format:
+
+{"action": "get_current_board"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♗ ⭘ ♚ ⭘ ⭘ ⭘ ⭘ ⭘
+♝ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♟ ⭘
+♘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ♔
+⭘ ⭘ ⭘ ♜ ⭘ ⭘ ⭘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action": "get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+c8d8,c8b8,c8d7,c8c7,a7b8,a7b6,a7c5,a7d4,a7e3,a7f2,d1d8,d1d7,d1d6,d1d5,d1d4,d1d3,d1d2,d1h1,d1g1,d1f1,d1e1,d1c1,d1b1,d1a1,h7h6,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action": "make_move", "move": "a7c5"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move a7c5
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 84
+Material Count - White: 15, Black: 10
+Prompt Tokens: 285143
+Completion Tokens: 453340
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move a3b5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 85
+Material Count - White: 15, Black: 10
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+♗ ⭘ ♚ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♘ ♝ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ♙ ⭘ ♔
+⭘ ⭘ ⭘ ♜ ⭘ ⭘ ⭘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+c8d8,c8b8,c8d7,c5f8,c5e7,c5a7,c5d6,c5b6,c5d4,c5b4,c5e3,c5a3,c5f2,d1d8,d1d7,d1d6,d1d5,d1d4,d1d3,d1d2,d1h1,d1g1,d1f1,d1e1,d1c1,d1b1,d1a1,h7h6,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move c5f2
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 86
+Material Count - White: 14, Black: 10
+Prompt Tokens: 290757
+Completion Tokens: 462407
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move a8c6
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 87
+Material Count - White: 14, Black: 10
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+Model 1
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ♚ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♗ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ♝ ⭘ ♔
+⭘ ⭘ ⭘ ♜ ⭘ ⭘ ⭘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+c8d8,c8b8,f2a7,f2b6,f2c5,f2d4,f2g3,f2e3,f2g1,f2e1,d1d8,d1d7,d1d6,d1d5,d1d4,d1d3,d1d2,d1h1,d1g1,d1f1,d1e1,d1c1,d1b1,d1a1,h7h6,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move f2g3
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 88
+Material Count - White: 13, Black: 10
+Prompt Tokens: 298074
+Completion Tokens: 470524
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move h2g3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 89
+Material Count - White: 13, Black: 7
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_current_board"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ♚ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♗ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♜ ⭘ ⭘ ⭘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+c8d8,c8b8,d1d8,d1d7,d1d6,d1d5,d1d4,d1d3,d1d2,d1h1,d1g1,d1f1,d1e1,d1c1,d1b1,d1a1,h7h6,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"make_move","move":"d1d8"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move c8d8
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 90
+Material Count - White: 13, Black: 7
+Prompt Tokens: 306624
+Completion Tokens: 486848
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move g3g2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 91
+Material Count - White: 13, Black: 7
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ♚ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♗ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+⭘ ⭘ ⭘ ♜ ⭘ ⭘ ⭘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+d8c8,d8e7,d1d7,d1d6,d1d5,d1d4,d1d3,d1d2,d1h1,d1g1,d1f1,d1e1,d1c1,d1b1,d1a1,h7h6,g4g3,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+The only move that avoids White’s looming Ra8+ tactic and actually gets your king off the back rank is 1…Ke7 (d8e7).  All the others leave you fatally vulnerable to Ra8+.  So Model 5’s choice is best.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move d8e7
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 92
+Material Count - White: 13, Black: 7
+Prompt Tokens: 315268
+Completion Tokens: 501298
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move b5c3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 93
+Material Count - White: 13, Black: 7
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♚ ⭘ ⭘ ♟
+⭘ ⭘ ♗ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ♙ ♘ ⭘ ⭘ ⭘ ⭘ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+⭘ ⭘ ⭘ ♜ ⭘ ⭘ ⭘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+e7f8,e7d8,e7f7,e7f6,e7e6,e7d6,d1d8,d1d7,d1d6,d1d5,d1d4,d1d3,d1d2,d1h1,d1g1,d1f1,d1e1,d1c1,d1b1,d1a1,h7h6,g4g3,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move g4g3
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 94
+Material Count - White: 13, Black: 7
+Prompt Tokens: 320781
+Completion Tokens: 511205
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move c6d5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 95
+Material Count - White: 13, Black: 7
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♚ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♗ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ♘ ⭘ ⭘ ⭘ ♟ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+⭘ ⭘ ⭘ ♜ ⭘ ⭘ ⭘ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+e7f8,e7e8,e7d8,e7d7,e7f6,e7d6,d1d5,d1d4,d1d3,d1d2,d1h1,d1g1,d1f1,d1e1,d1c1,d1b1,d1a1,h7h6,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move d1d2
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 96
+Material Count - White: 13, Black: 7
+Prompt Tokens: 326198
+Completion Tokens: 526446
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move g2g1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 97
+Material Count - White: 13, Black: 7
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action": "get_current_board"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♚ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♗ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ♘ ⭘ ⭘ ⭘ ♟ ⭘
+♖ ⭘ ⭘ ♜ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action": "get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+e7f8,e7e8,e7d8,e7d7,e7f6,e7d6,d2d5,d2d4,d2d3,d2h2,d2g2,d2f2,d2e2,d2c2,d2b2,d2a2,d2d1,h7h6,g3g2,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"make_move d2d5"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 98
+Material Count - White: 10, Black: 7
+Prompt Tokens: 331778
+Completion Tokens: 538819
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move b3b4
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 99
+Material Count - White: 10, Black: 7
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♚ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♜ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♘ ⭘ ⭘ ⭘ ♟ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+e7f8,e7e8,e7d8,e7f7,e7d7,e7f6,e7e6,e7d6,d5d8,d5d7,d5d6,d5h5,d5g5,d5f5,d5e5,d5c5,d5b5,d5a5,d5d4,d5d3,d5d2,d5d1,h7h6,g3g2,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move g3g2
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 100
+Material Count - White: 10, Black: 7
+Prompt Tokens: 337341
+Completion Tokens: 548519
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move c4c5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 101
+Material Count - White: 10, Black: 7
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+I’d choose Model 2’s response. Since no board state has been provided yet, the correct first step is to call get_current_board in order to see the current position before generating legal moves or making any play.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♚ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ♜ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♘ ⭘ ⭘ ⭘ ⭘ ⭘
+♖ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+The right first step is to ask for the legal moves. Models 1, 2, 3 and 5 (all issuing “get_legal_moves”) are correct. Model 4 jumped straight to “make_move d5d4” without first listing what’s legal.
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+e7f8,e7e8,e7d8,e7f7,e7d7,e7f6,e7e6,d5d8,d5d7,d5d6,d5h5,d5g5,d5f5,d5e5,d5c5,d5d4,d5d3,d5d2,d5d1,h7h6,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move e7f8
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 102
+Material Count - White: 10, Black: 7
+Prompt Tokens: 343621
+Completion Tokens: 563008
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move c3d5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 103
+Material Count - White: 10, Black: 2
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+Model 3 is correct. You should request the list of legal moves:
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8g8,f8e8,f8g7,f8f7,h7h6,h7h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move h7h6
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 104
+Material Count - White: 10, Black: 2
+Prompt Tokens: 345542
+Completion Tokens: 565793
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move a2d2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 105
+Material Count - White: 10, Black: 2
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"name":"get_current_board","arguments":{}}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♙ ♘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♖ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"name":"get_legal_moves","arguments":{}}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8g8,f8e8,f8g7,f8f7,h6h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"name":"make_move","arguments":{"move":"f8g8"}}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♙ ♘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♖ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move f8g8
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 106
+Material Count - White: 10, Black: 2
+Prompt Tokens: 357763
+Completion Tokens: 581692
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move d5c7
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 107
+Material Count - White: 10, Black: 2
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+The best choice is Model 2, since it cleanly issues the tool call without extra characters:
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘
+⭘ ⭘ ♘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♖ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,g8f8,g8h7,g8g7,g8f7,h6h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"assistant_response":"make_move g8f8","selected_model":"Model 2","reasoning":"Moving the king to f8 is the safest option. It stays out of potential checks along the g-file, avoids weakening the pawn structure, and keeps the king protected behind its pawns. The pawn push h6-h5 offers less strategic benefit and could create targets."}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 108
+Material Count - White: 10, Black: 2
+Prompt Tokens: 363125
+Completion Tokens: 588519
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move c7b5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 109
+Material Count - White: 10, Black: 2
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ♘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♖ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+f8g8,f8e8,f8g7,f8f7,f8e7,h6h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move f8g8
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 110
+Material Count - White: 10, Black: 2
+Prompt Tokens: 368244
+Completion Tokens: 600275
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move d2d7
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 111
+Material Count - White: 10, Black: 2
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"assistant_response":"1. Model 1: Best response. It uses the required JSON format for selecting the action (\"action\": \"get_current_board\"), matching the function‐calling schema.\n2. Model 2: Responds with the correct action name but lacks the JSON wrapper.\n3. Model 3: Same as Model 2 – correct action but no JSON.\n4. Model 4: Same as Model 2 – correct action but no JSON.\n5. Model 5: Same as Model 2 – correct action but no JSON."}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘
+⭘ ⭘ ⭘ ♖ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ♘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"get_legal_moves"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,g8f8,h6h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action":"make_move","move":"g8h8"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move g8h8
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 112
+Material Count - White: 10, Black: 2
+Prompt Tokens: 378111
+Completion Tokens: 611383
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move d7e7
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 113
+Material Count - White: 10, Black: 2
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+The correct response is Model 2:
+
+{"name": "get_current_board", "arguments": {}}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♚
+⭘ ⭘ ⭘ ⭘ ♖ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ♘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"name":"get_legal_moves","arguments":{}}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+h8g8,h6h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+Model 1
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move h8g8
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 114
+Material Count - White: 10, Black: 2
+Prompt Tokens: 386225
+Completion Tokens: 623153
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move e7d7
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 115
+Material Count - White: 10, Black: 2
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘
+⭘ ⭘ ⭘ ♖ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ♘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+g8h8,g8f8,h6h5
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move g8h8
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 116
+Material Count - White: 10, Black: 2
+Prompt Tokens: 391278
+Completion Tokens: 634732
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move b5c7
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 117
+Material Count - White: 10, Black: 2
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♚
+⭘ ⭘ ♘ ♖ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+make_move h8g8
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 118
+Material Count - White: 10, Black: 2
+Prompt Tokens: 394073
+Completion Tokens: 641282
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move c7b5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 119
+Material Count - White: 10, Black: 2
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to NoN_Synthesizer):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+NoN_Synthesizer (to Proxy):
+
+{"action": "get_current_board"}
+
+--------------------------------------------------------------------------------
+Proxy (to NoN_Synthesizer):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘
+⭘ ⭘ ⭘ ♖ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ♘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♔ ⭘
+
+--------------------------------------------------------------------------------
