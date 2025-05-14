@@ -1,0 +1,88 @@
+Proxy (to Chess_Engine_Dragon_White):
+
+Current board state:
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+Legal moves:
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Error using Dragon engine: [Errno 2] No such file or directory: './dragon/dragon-osx'
+Proxy (to Chess_Engine_Dragon_White):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Error using Dragon engine: [Errno 2] No such file or directory: './dragon/dragon-osx'
+Proxy (to Chess_Engine_Dragon_White):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Error using Dragon engine: [Errno 2] No such file or directory: './dragon/dragon-osx'
+BREAKING >>> Invalid action. Pick one, reply exactly with the name and space delimitted argument: make_move <UCI formatted move>
+Proxy (to Chess_Engine_Dragon_White):
+
+Too many wrong actions
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+
+GAME OVER
+
+Player_Black wins due to Too many wrong actions.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 3
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.000
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.05.06"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "0-1"]
+
+ 0-1
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Traceback (most recent call last):
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/run_experiments.py", line 120, in <module>
+    main()
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/run_experiments.py", line 117, in main
+    run_games(games, log_folder)
+  File "/ib-scratch/chenguang02/scratch1/cnicholas/llm_chess/run_multiple_games.py", line 182, in run_games
+    aggregate_data["std_dev_moves"] = statistics.stdev(moves_list)
+  File "/usr/local/lib/python3.10/statistics.py", line 828, in stdev
+    var = variance(data, xbar)
+  File "/usr/local/lib/python3.10/statistics.py", line 767, in variance
+    raise StatisticsError('variance requires at least two data points')
+statistics.StatisticsError: variance requires at least two data points
