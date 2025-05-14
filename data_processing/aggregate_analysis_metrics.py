@@ -13,6 +13,7 @@ from statistics import mean
 import argparse
 import re
 import shutil
+import sys
 
 # Configuration
 PHASES = ['Overall', 'Opening', 'Middlegame']
@@ -35,22 +36,29 @@ def process_game(file_path, phase):
     # filter by phase
     if phase != 'Overall':
         data = [ply for ply in data if ply.get('game_phase') == phase]
-    deltas = [ply['win_pct_after'] - ply['win_pct_before'] for ply in data]
-    evals = [ply['eval_delta_cp'] for ply in data]
-    abs_evals = [abs(ply['eval_delta_cp']) for ply in data]
-    wins = [ply['win_pct_after'] for ply in data]
-    total = len(data)
-    rates = {}
-    for cls in ['Blunder', 'Inaccuracy', 'Mistake', 'Best', 'OK']:
-        count = sum(1 for ply in data if ply.get('classification') == cls)
-        rates[cls.lower()] = count / total if total else 0
-    return {
-        'avg_delta_win_pct': mean(deltas) if deltas else 0,
-        'avg_eval_delta_cp': mean(evals) if evals else 0,
-        'avg_cp_loss': mean(abs_evals) if abs_evals else 0,
-        'avg_win_pct': mean(wins) if wins else 0,
-        'classification_rates': rates
-    }
+    # split by player color if available, else by ply index
+    white_data = [ply for ply in data if ply.get('player') == 'white']
+    black_data = [ply for ply in data if ply.get('player') == 'black']
+    # fallback: use ply index parity
+    if not white_data and not black_data:
+        white_data = data[0::2]
+        black_data = data[1::2]
+    def stats(dset):
+        deltas_ = [ply['win_pct_after'] - ply['win_pct_before'] for ply in dset]
+        evals_ = [ply['eval_delta_cp'] for ply in dset]
+        abs_evals_ = [abs(ply['eval_delta_cp']) for ply in dset]
+        wins_ = [ply['win_pct_after'] for ply in dset]
+        total_ = len(dset)
+        rates_ = {cls: (sum(1 for ply in dset if ply.get('classification','').lower() == cls)/total_ if total_ else 0) for cls in ['blunder','inaccuracy','mistake','best','ok']}
+        return {
+            'games_processed': 1,
+            'avg_delta_win_pct': mean(deltas_) if deltas_ else 0,
+            'avg_eval_delta_cp': mean(evals_) if evals_ else 0,
+            'avg_cp_loss': mean(abs_evals_) if abs_evals_ else 0,
+            'avg_win_pct': mean(wins_) if wins_ else 0,
+            'classification_rates': rates_
+        }
+    return {'white': stats(white_data), 'black': stats(black_data), 'total': stats(data)}
 
 def main(input_dir, max_games, output_json):
     # Derive model name from the input directory itself
@@ -70,11 +78,27 @@ def main(input_dir, max_games, output_json):
         if not games_stats: continue
         summary[model_name] = {
             'games_processed': len(games_stats),
-            'avg_delta_win_pct': mean(g['avg_delta_win_pct'] for g in games_stats),
-            'avg_eval_delta_cp': mean(g['avg_eval_delta_cp'] for g in games_stats),
-            'avg_cp_loss': mean(g['avg_cp_loss'] for g in games_stats),
-            'avg_win_pct': mean(g['avg_win_pct'] for g in games_stats),
-            'classification_rates': {cls: mean(g['classification_rates'][cls] for g in games_stats) for cls in games_stats[0]['classification_rates']}
+            'white': {
+                'avg_delta_win_pct': mean(g['white']['avg_delta_win_pct'] for g in games_stats),
+                'avg_eval_delta_cp': mean(g['white']['avg_eval_delta_cp'] for g in games_stats),
+                'avg_cp_loss': mean(g['white']['avg_cp_loss'] for g in games_stats),
+                'avg_win_pct': mean(g['white']['avg_win_pct'] for g in games_stats),
+                'classification_rates': {cls: mean(g['white']['classification_rates'][cls] for g in games_stats) for cls in games_stats[0]['white']['classification_rates']}
+            },
+            'black': {
+                'avg_delta_win_pct': mean(g['black']['avg_delta_win_pct'] for g in games_stats),
+                'avg_eval_delta_cp': mean(g['black']['avg_eval_delta_cp'] for g in games_stats),
+                'avg_cp_loss': mean(g['black']['avg_cp_loss'] for g in games_stats),
+                'avg_win_pct': mean(g['black']['avg_win_pct'] for g in games_stats),
+                'classification_rates': {cls: mean(g['black']['classification_rates'][cls] for g in games_stats) for cls in games_stats[0]['black']['classification_rates']}
+            },
+            'total': {
+                'avg_delta_win_pct': mean(g['total']['avg_delta_win_pct'] for g in games_stats),
+                'avg_eval_delta_cp': mean(g['total']['avg_eval_delta_cp'] for g in games_stats),
+                'avg_cp_loss': mean(g['total']['avg_cp_loss'] for g in games_stats),
+                'avg_win_pct': mean(g['total']['avg_win_pct'] for g in games_stats),
+                'classification_rates': {cls: mean(g['total']['classification_rates'][cls] for g in games_stats) for cls in games_stats[0]['total']['classification_rates']}
+            }
         }
         # prepare per-phase output data
         out_data = {'phase': phase}
@@ -94,6 +118,7 @@ if __name__ == '__main__':
     args = parse_args()
     root = args.input_dir
     base = os.path.basename(os.path.normpath(root))
+    orig_per_ply = PER_PLY_DIR
     # Multi-model root: iterate model folders under analysis_logs
     if base == 'analysis_logs':
         SKIP = ['RANDOM_PLAYER_vs_LLM_BLACK', 'LLM_WHITE_vs_RANDOM_PLAYER', 'CHESS_ENGINE_DRAGON_vs_LLM_BLACK']
@@ -105,32 +130,24 @@ if __name__ == '__main__':
             print(f"Processing model folder: {name}")
             main(os.path.join(root, name), args.max_games, args.output)
     elif base == 'RANDOM_PLAYER_vs_LLM_BLACK':
-        # group summaries under per_ply_analysis/RANDOM_PLAYER_vs_LLM_BLACK/{model_name}
-        group_root = os.path.join(PER_PLY_DIR, base)
-        os.makedirs(group_root, exist_ok=True)
-        # strategies contain folders (e.g., always_board_state)
-        strategies = [d for d in os.listdir(root)
-                      if os.path.isdir(os.path.join(root, d))]
-        if not strategies:
-            pass
-        else:
-            # model_names are subfolders under the first strategy
-            first = strategies[0]
-            model_dir = os.path.join(root, first)
-            model_names = [d for d in os.listdir(model_dir)
-                           if os.path.isdir(os.path.join(model_dir, d))]
-            for model in sorted(model_names):
-                model_out = os.path.join(group_root, model)
-                os.makedirs(model_out, exist_ok=True)
-                # override PER_PLY_DIR to model output
-                prev = globals().get('PER_PLY_DIR')
-                globals()['PER_PLY_DIR'] = model_out
-                for strat in strategies:
-                    inp = os.path.join(root, strat, model)
-                    print(f"Processing model {model}, strategy {strat}")
-                    main(inp, args.max_games, args.output)
-                # restore PER_PLY_DIR
-                globals()['PER_PLY_DIR'] = prev
+        # iterate over each strategy folder under RANDOM_PLAYER_vs_LLM_BLACK
+        strategies = [d for d in os.listdir(root) if os.path.isdir(os.path.join(root, d))]
+        for strat in sorted(strategies):
+            strat_root = os.path.join(root, strat)
+            # models under this strategy
+            models = [d for d in os.listdir(strat_root) if os.path.isdir(os.path.join(strat_root, d))]
+            # output dir per strategy
+            strat_out = os.path.join(orig_per_ply, base, strat)
+            os.makedirs(strat_out, exist_ok=True)
+            # override PER_PLY_DIR for this strategy
+            globals()['PER_PLY_DIR'] = strat_out
+            for model in sorted(models):
+                inp = os.path.join(strat_root, model)
+                print(f"Processing strategy {strat}, model {model}")
+                main(inp, args.max_games, args.output)
+        # restore PER_PLY_DIR and exit
+        globals()['PER_PLY_DIR'] = orig_per_ply
+        sys.exit(0)
     elif base == 'LLM_WHITE_vs_RANDOM_PLAYER':
         # group summaries under per_ply_analysis/LLM_WHITE_vs_RANDOM_PLAYER/{model_name}
         group_dir = os.path.join(PER_PLY_DIR, base)
