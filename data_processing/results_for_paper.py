@@ -333,216 +333,198 @@ def graph_loss_reasons(csv_file, models=None, fig_path="figures_for_paper"):
     if not isinstance(csv_file, str) or not os.path.isfile(csv_file):
         print(f"Error: Invalid CSV file path: {csv_file}")
         return
-
-    df = pd.read_csv(csv_file)
-    req = ['Player', 'player_wins', 'total_games',
-           'reason_unknown_issue', 'reason_error',
-           'reason_too_many_wrong_actions', 'reason_max_turns', 'reason_max_moves',
-           'reason_stalemate', 'reason_insufficient_material',
-           'reason_seventyfive_moves', 'reason_fivefold_repetition',
-           'white_checkmates', 'black_checkmates']
-    missing = [c for c in req if c not in df.columns]
-    if missing:
-        print(f"Error: Missing columns in CSV: {missing}")
-        return
-
-    if models is not None:
-        df = df[df['Player'].isin(models)]
-    if df.empty:
-        print("No models to plot after filtering.")
-        return
-
-    # Build the same groups as before (but checkmate split is separate)
-    groups = {
-        'Model Errors': ['reason_unknown_issue', 'reason_error'],
-        'Instruction-following': ['reason_too_many_wrong_actions', 'reason_max_turns', 'reason_max_moves'],
-        'Draw': ['reason_stalemate', 'reason_insufficient_material',
-                         'reason_seventyfive_moves', 'reason_fivefold_repetition']
-    }
-
-    records = []
-    for _, row in df.iterrows():
-        m = row['Player']
-        total = row['total_games']
-        # errors, failures, draws
-        for grp, cols in groups.items():
-            cnt = sum(row[c] for c in cols)
-            pct = cnt * 100  # already ratios
-            records.append({'model': m, 'category': grp, 'percent': pct})
-        # checkmate white / black
-        for side in ('white', 'black'):
-            cnt = row[f'{side}_checkmates']
-            pct = cnt / total * 100
-            records.append({'model': m,
-                            'category': f'Checkmate ({side})',
-                            'percent': pct})
-
-    plot_df = pd.DataFrame.from_records(records)
-
-    # Plot
-    try:
-        import seaborn as sns
-        sns.set_theme(style="whitegrid", palette="colorblind")
-        fig, ax = plt.subplots(figsize=(12, 6))
-        sns.barplot(data=plot_df, x='model', y='percent', hue='category', ax=ax)
-        ax.set_xlabel('Model')
-        ax.set_ylabel('Percent of games (%)')
-        ax.set_title('Loss Reason Breakdown by Model')
-        ax.yaxis.set_major_formatter(mtick.PercentFormatter())
-        plt.setp(ax.get_xticklabels(), rotation=75, ha='right')
-        plt.tight_layout()
-
-        os.makedirs(fig_path, exist_ok=True)
-        png = os.path.join(fig_path, 'loss_reasons_by_model.png')
-        svg = os.path.join(fig_path, 'loss_reasons_by_model.svg')
-        fig.savefig(png, dpi=300)
-        fig.savefig(svg)
-        print(f"Saved plot to {png} and {svg}")
-        # plt.show()
-    except Exception as e:
-        print(f"Plotting error: {e}")
-
-    # Print the new LaTeX table
     table = generate_latex_loss_reason_table(csv_file, models=models)
     print("\n--- LaTeX Table ---\n")
     print(table)
     input("Press Enter to continue...")
 
 
-def generate_latex_loss_reason_table(csv_file, models=None,
-                                     caption="Loss Reason Breakdown",
-                                     label="tab:loss_reasons"):
+def generate_latex_loss_reason_table(
+    csv_file,
+    models=None,
+    top_n=2,
+    caption="Loss reason breakdown for top and bottom two reasoning and non-reasoning models.",
+    label="tab:loss_reasons"
+):
     """
-    Builds a table with 6 rows:
-       1) Reasoning Avg   2) Non-reasoning Avg
-       3) Top-1 model     4) Top-2 model
-       5) Bottom-2 model  6) Bottom-1 model
-    Columns are the four reason groups plus white/black checkmate %.
+    Builds a single LaTeX table with:
+      1) Reasoning Avg
+      2) Non-Reasoning Avg
+      3) Reasoning: top_n by win rate / bottom_n by win rate
+      4) Non-Reasoning: top_n by win rate / bottom_n by win rate
+
+    Columns: Instruction (%) , Draw (%) , MateW (%) , MateB (%).
+    Bold = highest value in each column.
     """
     if not os.path.isfile(csv_file):
         return f"% Error: file not found: {csv_file}"
     df = pd.read_csv(csv_file)
 
-    # detect columns
+    # 1) identify id & win‐rate
     idcol = 'Player' if 'Player' in df.columns else 'model_name'
-    wincol = 'win_loss' if 'win_loss' in df.columns else None
-    if wincol is None:
-        # try computing win rate
-        if 'player_wins' in df.columns and 'total_games' in df.columns:
-            df['win_rate'] = df['player_wins'] / df['total_games']
-            wincol = 'win_rate'
-        else:
-            return "% Error: no win rate or win_loss column found."
+    if 'win_loss' in df.columns:
+        wincol = 'win_loss'
+    elif 'win_rate' in df.columns:
+        wincol = 'win_rate'
+    elif 'player_wins' in df.columns and 'total_games' in df.columns:
+        df['win_rate'] = df['player_wins'] / df['total_games']
+        wincol = 'win_rate'
+    else:
+        return "% Error: no win rate column found."
 
-    req = ['reason_unknown_issue', 'reason_error',
-           'reason_too_many_wrong_actions', 'reason_max_turns', 'reason_max_moves',
-           'reason_stalemate', 'reason_insufficient_material',
-           'reason_seventyfive_moves', 'reason_fivefold_repetition',
-           'white_checkmates', 'black_checkmates']
+    # 2) required raw columns
+    req = [
+        'reason_unknown_issue','reason_error',
+        'reason_too_many_wrong_actions','reason_max_turns','reason_max_moves',
+        'reason_stalemate','reason_insufficient_material',
+        'reason_seventyfive_moves','reason_fivefold_repetition',
+        'white_checkmates','black_checkmates','total_games'
+    ]
     missing = [c for c in req if c not in df.columns]
     if missing:
-        return f"% Error: missing reason columns: {missing}"
+        return f"% Error: missing columns {missing}"
 
+    # 3) optional model filter
     if models is not None:
         df = df[df[idcol].isin(models)]
     if df.empty:
         return "% Warning: no models to include."
 
-    # compute per-model percentages
-    def pct(r, cols):
-        tot = r['total_games'] if 'total_games' in r else (r['player_wins'] + r.get('player_losses',0))
-        tot = tot if tot>0 else 1
-        return r[cols].sum() * 100
-
+    # 4) compute percentages
     df = df.copy()
-    df['Model Errors%']   = df.apply(lambda r: pct(r, ['reason_unknown_issue','reason_error']), axis=1)
-    df['Instruction-following%'] = df.apply(lambda r: pct(r, ['reason_too_many_wrong_actions','reason_max_turns','reason_max_moves']), axis=1)
-    df['Draw%']     = df.apply(lambda r: pct(r, ['reason_stalemate','reason_insufficient_material','reason_seventyfive_moves','reason_fivefold_repetition']), axis=1)
-    df['ChkW%']     = df['white_checkmates'] / df['total_games'] * 100
-    df['ChkB%']     = df['black_checkmates'] / df['total_games'] * 100
+    df['Instruction%'] = (
+        df['reason_too_many_wrong_actions']
+      + df['reason_max_turns']
+    ) * 100.0
+    df['Draw%'] = (
+        df['reason_stalemate']
+      + df['reason_insufficient_material']
+      + df['reason_seventyfive_moves']
+      + df['reason_fivefold_repetition']
+      + df['reason_max_moves']
+    ) * 100.0
+    df['MateW%'] = df['white_checkmates'] / df['total_games'] * 100.0
+    df['MateB%'] = df['black_checkmates'] / df['total_games'] * 100.0
 
-    # split reasoning vs non
+    # 5) tag reasoning
     df['IsReasoning'] = df[idcol].apply(is_reasoning_model)
-    dfs = {
-        'Reasoning Avg':     df[df['IsReasoning']],
-        'Non-Reasoning Avg': df[~df['IsReasoning']]
+
+    # helper: slice top/bottom n in a group (drop zero wins)
+    def slice_group(sub):
+        s = sub[sub[wincol] > 0].sort_values(wincol, ascending=False)
+        return s.head(top_n), s.tail(top_n)
+
+    r_df = df[df['IsReasoning']]
+    nr_df = df[~df['IsReasoning']]
+
+    r_top, r_bot   = slice_group(r_df)
+    nr_top, nr_bot = slice_group(nr_df)
+
+    # 6) overall averages
+    def mean_row(sub, name):
+        if sub.empty:
+            return {'model': name, 'Instruction': 0., 'Draw': 0., 'MateW': 0., 'MateB': 0.}
+        return {
+            'model': name,
+            'Instruction': sub['Instruction%'].mean(),
+            'Draw':        sub['Draw%'].mean(),
+            'MateW':        sub['MateW%'].mean(),
+            'MateB':        sub['MateB%'].mean(),
+        }
+
+    avg_r  = mean_row(r_df,  "Reasoning Avg")
+    avg_nr = mean_row(nr_df, "Non-Reasoning Avg")
+
+    # 7) collect all entries for bolding logic
+    all_entries = [avg_r, avg_nr]
+    def collect(chunk, section, pos):
+        for _, r in chunk.iterrows():
+            all_entries.append({
+                'section': section,
+                'pos': pos,
+                'model': r[idcol],
+                'Instruction': r['Instruction%'],
+                'Draw':        r['Draw%'],
+                'MateW':        r['MateW%'],
+                'MateB':        r['MateB%'],
+            })
+    collect(r_top,   "Reasoning",     "top")
+    collect(r_bot,   "Reasoning",     "bottom")
+    collect(nr_top,  "Non-Reasoning", "top")
+    collect(nr_bot,  "Non-Reasoning", "bottom")
+
+    if len(all_entries) <= 2:
+        return "% Warning: insufficient data after filtering zero wins."
+
+    # 8) find column maxima
+    max_vals = {
+        'Instruction': max(e['Instruction'] for e in all_entries),
+        'Draw':        max(e['Draw']       for e in all_entries),
+        'MateW':        max(e['MateW']       for e in all_entries),
+        'MateB':        max(e['MateB']       for e in all_entries),
     }
-    # sort for overall top/bottom
-    sorted_df = df.sort_values(wincol, ascending=False).reset_index(drop=True)
 
-    # exclude if win rate == 0
-    sorted_df = sorted_df[sorted_df[wincol] > 0]
+    def fmt(val, key):
+        s = f"{val:5.1f}"
+        return r"\textbf{" + s + "}" if abs(val - max_vals[key]) < 1e-6 else s
 
-    # build a list of rows
-    rows = []
-
-    # 1) reasoning avg
-    r = dfs['Reasoning Avg']
-    rows.append((
-        'Reasoning Avg',
-        # r['Model Errors%'].mean(),
-        r['Instruction-following%'].mean(),
-        r['Draw%'].mean(),
-        r['ChkW%'].mean(),
-        r['ChkB%'].mean()
-    ))
-    # 2) non-reasoning Avg
-    r = dfs['Non-Reasoning Avg']
-    rows.append((
-        'Non-Reasoning Avg',
-        # r['Model Errors%'].mean(),
-        r['Instruction-following%'].mean(),
-        r['Draw%'].mean(),
-        r['ChkW%'].mean(),
-        r['ChkB%'].mean()
-    ))
-    # 3) top-1
-    top1 = sorted_df.iloc[0]
-    rows.append((
-        top1[idcol],
-        # top1['Model Errors%'], top1['Instruction-following%'], top1['Draw%'], top1['ChkW%'], top1['ChkB%']
-        top1['Instruction-following%'], top1['Draw%'], top1['ChkW%'], top1['ChkB%']
-    ))
-    # 4) top-2
-    top2 = sorted_df.iloc[1] if len(sorted_df)>1 else sorted_df.iloc[0]
-    rows.append((
-        top2[idcol],
-        # top2['Model Errors%'], top2['Instruction-following%'], top2['Draw%'], top2['ChkW%'], top2['ChkB%']
-        top2['Instruction-following%'], top2['Draw%'], top2['ChkW%'], top2['ChkB%']
-    ))
-    # 5) bottom-2
-    bot2 = sorted_df.iloc[-2] if len(sorted_df)>1 else sorted_df.iloc[-1]
-    rows.append((
-        bot2[idcol],
-        # bot2['Model Errors%'], bot2['Instruction-following%'], bot2['Draw%'], bot2['ChkW%'], bot2['ChkB%']
-        bot2['Instruction-following%'], bot2['Draw%'], bot2['ChkW%'], bot2['ChkB%']
-    ))
-    # 6) bottom-1
-    bot1 = sorted_df.iloc[-1]
-    rows.append((
-        bot1[idcol],
-        # bot1['Model Errors%'], bot1['Instruction-following%'], bot1['Draw%'], bot1['ChkW%'], bot1['ChkB%']
-        bot1['Instruction-following%'], bot1['Draw%'], bot1['ChkW%'], bot1['ChkB%']
-    ))
-
-    # Build LaTeX
+    # 9) start LaTeX
     lines = []
-    lines.append(r"\begin{table}[htbp]")
+    lines.append(r"\begin{table}[ht]")
     lines.append(r"  \centering")
     lines.append(f"  \\caption{{{caption}}}")
     lines.append(f"  \\label{{{label}}}")
-    lines.append(r"  \begin{tabular}{lrrrrr}")
+    lines.append(r"  \begin{tabular}{lrrrr}")
     lines.append(r"    \toprule")
-    # lines.append(r"    Model & Model Errors (\%) & Instruction-following (\%) & Draw (\%) & ChkW (\%) & ChkB (\%) \\")
-    lines.append(r"    Model & Instruction-following (\%) & Draw (\%) & ChkW (\%) & ChkB (\%) \\")
+    lines.append(r"    Model & Instruction (\%) & Draw (\%) & MateW (\%) & MateB (\%) \\")
     lines.append(r"    \midrule")
-    for name, f, d, cw, cb in rows:
-        # lines.append(f"    {name} & {e:5.1f} & {f:5.1f} & {d:5.1f} & {cw:5.1f} & {cb:5.1f} \\\\")
-        lines.append(f"    {name} & {f:5.1f} & {d:5.1f} & {cw:5.1f} & {cb:5.1f} \\\\")
-        if name == 'Non-Reasoning Avg' or name == rows[-2][0]:
-            lines.append(r"    \midrule")
+
+    # 10) print averages
+    for avg in (avg_r, avg_nr):
+        lines.append(
+            f"    {avg['model']} & "
+            f"{fmt(avg['Instruction'], 'Instruction')} & "
+            f"{fmt(avg['Draw'],        'Draw')} & "
+            f"{fmt(avg['MateW'],        'MateW')} & "
+            f"{fmt(avg['MateB'],        'MateB')} \\\\"
+        )
+    lines.append(r"    \midrule")
+
+    # helper to print each block
+    def print_block(section_name):
+        lines.append(r"    \addlinespace")
+        lines.append(
+            f"    \\multicolumn{{5}}{{l}}{{\\textbf{{{section_name} (top {top_n} / bottom {top_n})}}}}\\\\"
+        )
+        lines.append(r"    \midrule")
+        # top n
+        for e in all_entries:
+            if e.get('section') == section_name and e.get('pos') == 'top':
+                lines.append(
+                    f"    {e['model']} & "
+                    f"{fmt(e['Instruction'], 'Instruction')} & "
+                    f"{fmt(e['Draw'],        'Draw')} & "
+                    f"{fmt(e['MateW'],        'MateW')} & "
+                    f"{fmt(e['MateB'],        'MateB')} \\\\"
+                )
+        lines.append(r"    \cmidrule(l){1-5}")
+        # bottom n
+        for e in all_entries:
+            if e.get('section') == section_name and e.get('pos') == 'bottom':
+                lines.append(
+                    f"    {e['model']} & "
+                    f"{fmt(e['Instruction'], 'Instruction')} & "
+                    f"{fmt(e['Draw'],        'Draw')} & "
+                    f"{fmt(e['MateW'],        'MateW')} & "
+                    f"{fmt(e['MateB'],        'MateB')} \\\\"
+                )
+        lines.append(r"    \midrule")
+
+    print_block("Reasoning")
+    print_block("Non-Reasoning")
+
     lines.append(r"    \bottomrule")
     lines.append(r"  \end{tabular}")
-    lines.append(r"  \label{tab:llm-vs-random-loss-reasons}")
     lines.append(r"\end{table}")
+
     return "\n".join(lines)
