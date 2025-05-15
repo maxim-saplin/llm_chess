@@ -74,6 +74,8 @@ LOGS_DIRS = [
     {"_logs/new/o4-mini-2025-04-16-high": "o4-mini-2025-04-16-high"},
     {"_logs/new/grok-3-mini-beta-low" : "grok-3-mini-beta-low"},
     {"_logs/new/grok-3-mini-beta-high" : "grok-3-mini-beta-high"},
+    "_logs/new/grok-3-mini-beta",
+    "_logs/new/grok-3-beta"
 ]
 
 FILTER_OUT_BELOW_N = 30 # 0
