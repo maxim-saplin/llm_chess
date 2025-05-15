@@ -78,6 +78,11 @@ LOGS_DIRS = [
     "_logs/new/grok-3-beta"
 ]
 
+# LOGS_DIRS = [
+#     {"_logs/new/grok-3-mini-beta-low/2025-05-14-22-05" : "grok-3-mini-beta-low"},
+#     {"_logs/new/grok-3-mini-beta-high/2025-05-14-22-08" : "grok-3-mini-beta-high"}
+# ]
+
 FILTER_OUT_BELOW_N = 30 # 0
 DATE_AFTER = None # "2025.04.01_00:00"
 
