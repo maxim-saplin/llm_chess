@@ -79,8 +79,36 @@ LOGS_DIRS = [
 ]
 
 # LOGS_DIRS = [
-#     {"_logs/new/grok-3-mini-beta-low/2025-05-14-22-05" : "grok-3-mini-beta-low"},
-#     {"_logs/new/grok-3-mini-beta-high/2025-05-14-22-08" : "grok-3-mini-beta-high"}
+#     {"_logs/dragon_vs_llm/lvl-1_vs_3x-o4-mini-2025-04-16-low_o4-mini-2025-04-16-medium" : "lvl-1_vs_3x-o4-mini-2025-04-16-low_o4-mini-2025-04-16-medium"},
+#     {"_logs/dragon_vs_llm/lvl-1_vs_5x-o4-mini-2025-04-16-low_o4-mini-2025-04-16-medium" : "lvl-1_vs_5x-o4-mini-2025-04-16-low_o4-mini-2025-04-16-medium"},
+#     {"_logs/dragon_vs_llm/lvl-1_vs_7x-o4-mini-2025-04-16-low_o4-mini-2025-04-16-medium" : "lvl-1_vs_7x-o4-mini-2025-04-16-low_o4-mini-2025-04-16-medium"},
+#     {"_logs/dragon_vs_llm/lvl-1_vs_claude-3-7-sonnet-20250219-thinking-budget-10000" : "lvl-1_vs_claude-3-7-sonnet-20250219-thinking-budget-10000"},
+#     {"_logs/dragon_vs_llm/lvl-1_vs_claude-3-7-sonnet-20250219-thinking-budget-5000" : "lvl-1_vs_claude-3-7-sonnet-20250219-thinking-budget-5000"},
+#     {"_logs/dragon_vs_llm/lvl-1_vs_gemini-25pro-t03_mini41-t00_mini41-t03" : "lvl-1_vs_gemini-25pro-t03_mini41-t00_mini41-t03"},
+#     {"_logs/dragon_vs_llm/lvl-1_vs_grok-3-mini-beta-high" : "lvl-1_vs_grok-3-mini-beta-high"},
+#     {"_logs/dragon_vs_llm/lvl-1_vs_o3-2025-04-16-low" : "lvl-1_vs_o3-2025-04-16-low"},
+#     {"_logs/dragon_vs_llm/lvl-1_vs_o3-mini-2025-01-31-high" : "lvl-1_vs_o3-mini-2025-01-31-high"},
+#     {"_logs/dragon_vs_llm/lvl-1_vs_o3-mini-2025-01-31-low" : "lvl-1_vs_o3-mini-2025-01-31-low"},
+#     {"_logs/dragon_vs_llm/lvl-1_vs_o3-mini-2025-01-31-medium" : "lvl-1_vs_o3-mini-2025-01-31-medium"},
+#     {"_logs/dragon_vs_llm/lvl-1_vs_o4-mini-2025-04-16-high" : "lvl-1_vs_o4-mini-2025-04-16-high"},
+#     {"_logs/dragon_vs_llm/lvl-1_vs_o4-mini-2025-04-16-low" : "lvl-1_vs_o4-mini-2025-04-16-low"},
+#     {"_logs/dragon_vs_llm/lvl-1_vs_o4-mini-2025-04-16-medium" : "lvl-1_vs_o4-mini-2025-04-16-medium"},
+#     {"_logs/dragon_vs_llm/lvl-10_vs_o3-2025-04-16-low" : "lvl-10_vs_o3-2025-04-16-low"},
+#     {"_logs/dragon_vs_llm/lvl-10_vs_o3-2025-04-16-medium_timeout-60m" : "lvl-10_vs_o3-2025-04-16-medium_timeout-60m"},
+#     {"_logs/dragon_vs_llm/lvl-2_vs_grok-3-mini-beta-high" : "lvl-2_vs_grok-3-mini-beta-high"},
+#     {"_logs/dragon_vs_llm/lvl-2_vs_o3-2025-04-16-low" : "lvl-2_vs_o3-2025-04-16-low"},
+#     {"_logs/dragon_vs_llm/lvl-2_vs_o3-mini-2025-01-31-high" : "lvl-2_vs_o3-mini-2025-01-31-high"},
+#     {"_logs/dragon_vs_llm/lvl-2_vs_o4-mini-2025-04-16-high" : "lvl-2_vs_o4-mini-2025-04-16-high"},
+#     {"_logs/dragon_vs_llm/lvl-2_vs_o4-mini-2025-04-16-high_timeout-20m" : "lvl-2_vs_o4-mini-2025-04-16-high_timeout-20m"},
+#     {"_logs/dragon_vs_llm/lvl-2_vs_o4-mini-2025-04-16-high_timeout-60m" : "lvl-2_vs_o4-mini-2025-04-16-high_timeout-60m"},
+#     {"_logs/dragon_vs_llm/lvl-3_vs_grok-3-mini-beta-high" : "lvl-3_vs_grok-3-mini-beta-high"},
+#     {"_logs/dragon_vs_llm/lvl-3_vs_o3-2025-04-16-low" : "lvl-3_vs_o3-2025-04-16-low"},
+#     {"_logs/dragon_vs_llm/lvl-4_vs_grok-3-mini-beta-high" : "lvl-4_vs_grok-3-mini-beta-high"},
+#     {"_logs/dragon_vs_llm/lvl-4_vs_grok-3-mini-fast-beta-high" : "lvl-4_vs_grok-3-mini-fast-beta-high"},
+#     {"_logs/dragon_vs_llm/lvl-4_vs_o3-2025-04-16-low" : "lvl-4_vs_o3-2025-04-16-low"},
+#     {"_logs/dragon_vs_llm/lvl-5_vs_grok-3-mini-beta-high" : "lvl-5_vs_grok-3-mini-beta-high"},
+#     {"_logs/dragon_vs_llm/lvl-5_vs_grok-3-mini-fast-beta-high" : "lvl-5_vs_grok-3-mini-fast-beta-high"},
+#     {"_logs/dragon_vs_llm/lvl-5_vs_o3-2025-04-16-low" : "lvl-5_vs_o3-2025-04-16-low"},
 # ]
 
 FILTER_OUT_BELOW_N = 30 # 0
@@ -90,6 +118,7 @@ DATE_AFTER = None # "2025.04.01_00:00"
 OUTPUT_DIR = "data_processing"
 AGGREGATE_CSV = os.path.join(OUTPUT_DIR, "aggregate.csv")
 REFINED_CSV = os.path.join(OUTPUT_DIR, "refined.csv")
+# REFINED_CSV = "_logs/dragon_vs_llm/dragon_vs_llm_aggr.csv"
 
 FILTER_OUT_MODELS = [
     "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp03",
