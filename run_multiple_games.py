@@ -9,9 +9,7 @@ import llm_chess
 model_name = llm_chess.llm_config_black["config_list"][0]["model"]
 
 NUM_REPETITIONS = 42  # Set the number of games to run
-LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
-# LOG_FOLDER = f"_logs/llm_vs_llm/haiku_35_vs_4o_mini/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
-# LOG_FOLDER = f"_logs/ensemble-ai/41-mini_t00_t03_t05_t07_t10_t10_t03/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+LOG_FOLDER = f"_logs/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 STORE_INDIVIDUAL_LOGS = True
 
 ## ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`, hyper params defaults are defined in `utils.py`
@@ -31,31 +29,11 @@ llm_chess.dialog_turn_delay = 0
 # llm_chess.dragon_path = "dragon/dragon-linux"
 # llm_chess.dragon_level = 5
 
-# LOG_FOLDER = f"_logs/dragon_vs_llm/lvl-{llm_chess.dragon_level}_vs_{model_name}-{llm_chess.reasoning_effort}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 
 # llm_chess.white_player_type = llm_chess.PlayerType.CHESS_ENGINE_DRAGON
 # llm_chess.black_player_type = llm_chess.PlayerType.LLM_NON
 # llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
 # llm_chess.rotate_board_for_white = True
-
-## NoN Agents LLM configs for black player, used if PlayerType.LLM_NON is chosen
-# llm_chess.non_llm_configs_black = [
-#             {
-#                 **llm_chess.llm_config_white,
-#                 "temperature": 1.0,
-#                 "reasoning_effort": "low"
-#             },
-#             {
-#                 **llm_chess.llm_config_white,
-#                 "temperature": 1.0,
-#                 "reasoning_effort": "low"
-#             },
-#             {
-#                 **llm_chess.llm_config_white,
-#                 "temperature": 1.0,
-#                 "reasoning_effort": "low"
-#             },
-#         ]
 
 # Workaround, reinitializing llm config after llm_chess import was done at the top of the file
 llm_chess.llm_config_white, llm_chess.llm_config_black = get_llms_autogen(

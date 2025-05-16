@@ -34,82 +34,11 @@ except ImportError:
 # Define a list of log directories to process
 # if key/value is provided, the key is the directory path and the value is the alias for all models in that directory
 LOGS_DIRS = [
-    "_logs/no_reflection",
-    "_logs/new/deepseek-v3-0324",
-    "_logs/new/anthropic.claude-v3-5-haiku",
-    "_logs/new/mercury-coder-small",
-    "_logs/new/non_gpt-4o-mini-2024-07-18_t00_07_03",
-    "_logs/new/gpt-4o-mini-2024-07-18_moa_baseline_2025-04-12",
-    {"_logs/new/llama-4-scout-17b-16e-instruct" : "llama-4-scout-cerebras"},
-    "_logs/new/gpt-4.1-mini-2025-04-14",
-    "_logs/new/gpt-4.1-nano-2025-04-14",
-    "_logs/new/gpt-4.5-preview-2025-02-27_openai",
-    "_logs/new/gpt-4.5-preview-2025-02-27",
-    {"_logs/new/o4-mini-2025-04-16-low": "o4-mini-2025-04-16-low"},
-    {"_logs/new/o4-mini-2025-04-16-medium": "o4-mini-2025-04-16-medium"},
-    # {"_logs/new/o4-mini-2025-04-16-high": "o4-mini-2025-04-16-high"},
-    {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_1024": "claude-v3-7-sonnet-thinking_1024"},
-    {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_2048": "claude-v3-7-sonnet-thinking_2048"},
-    {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_5000": "claude-v3-7-sonnet-thinking_5000"},
-    {"_logs/new/claude-3-7-sonnet-20250219-thinking_budget_10000": "claude-v3-7-sonnet-thinking_10000"},
-    {"_logs/new/o1-2024-12-17-medium": "o1-2024-12-17-medium"},
-    {"_logs/new/o1-2024-12-17-medium_openai": "o1-2024-12-17-medium"},
-    {"_logs/ensemble-ai/mini41-2025-04-14_t00_t07_t03": "non_gpt-4.1-mini-2025-04-14_t00_t07_t03"},
-    {"_logs/ensemble-ai/haiku35-t07_haiku35-t10_haiku35-t03": "non-haiku35-t07_haiku35-t10_haiku35-t03"},
-    # {"_logs/ensemble-ai/nano41-t00_nano41-t03_nano41-t05_nano41-t07_nano-t10_nano41-t03": "non-nano41-t00_nano41-t03_nano41-t05_nano41-t07_nano-t10_nano41-t03"},
-    # {"_logs/ensemble-ai/nano41-t03_nano41-t05_nano41-t07_nano-t10_nano41-t03": "non-nano41-t03_nano41-t05_nano41-t07_nano-t10_nano41-t03"},
-    # {"_logs/ensemble-ai/nano41-t05_nano41-t07_nano-t10_nano41-t03": "non-nano41-t05_nano41-t07_nano-t10_nano41-t03"},
-    {"_logs/new/o3-2025-04-16-medium-timeout1200": "o3-2025-04-16-medium"},
-    {"_logs/new/o3-2025-04-16-low": "o3-2025-04-16-low"},
-    # {"_logs/new/o3-mini-2025-01-31-high": "o3-mini-2025-01-31-high"},
-    "_logs/new/gemini-2.5-pro-preview-03-25",
-    {"_logs/ensemble-ai/gemini-25pro-t03_mini41-t00_mini41-t03": "non-gemini-25pro-t03_mini41-t00_mini41-t03"},
-    {"_logs/ensemble-ai/r1-t03-with<think>_mini41-t10_mini41-t03": "non-r1-t03_mini41-t10_mini41-t03"},
-    # {"_logs/ensemble-ai/haiku35-t07_haiku35-t10_haiku35-t03": "non-haiku35-t07_haiku35-t10_haiku35-t03"},
-    # {"_logs/ensemble-ai/r1-14b-t03_haiku35-t10_haiku35-t03": "non-r1-14b-t03_haiku35-t10_haiku35-t03"},
-    # {"_logs/ensemble-ai/r1-14b-t03_mini41-t10_mini41-t03": "non-r1-14b-t03_mini41-t10_mini41-t03"},
-    # {"_logs/ensemble-ai/r1-t03_mini41-t10_mini41-t03": "non-r1-t03_mini41-t10_mini41-t03"},
-    # "_logs/new"
-    "_logs/new/gpt-4.1-2025-04-14",
-    {"_logs/new/o4-mini-2025-04-16-high": "o4-mini-2025-04-16-high"},
-    {"_logs/new/grok-3-mini-beta-low" : "grok-3-mini-beta-low"},
+    "_logs/",
+    # setting model name for all logs within the given directory
     {"_logs/new/grok-3-mini-beta-high" : "grok-3-mini-beta-high"},
-    "_logs/new/grok-3-mini-beta",
-    "_logs/new/grok-3-beta"
 ]
 
-# LOGS_DIRS = [
-#     {"_logs/dragon_vs_llm/lvl-1_vs_3x-o4-mini-2025-04-16-low_o4-mini-2025-04-16-medium" : "lvl-1_vs_3x-o4-mini-2025-04-16-low_o4-mini-2025-04-16-medium"},
-#     {"_logs/dragon_vs_llm/lvl-1_vs_5x-o4-mini-2025-04-16-low_o4-mini-2025-04-16-medium" : "lvl-1_vs_5x-o4-mini-2025-04-16-low_o4-mini-2025-04-16-medium"},
-#     {"_logs/dragon_vs_llm/lvl-1_vs_7x-o4-mini-2025-04-16-low_o4-mini-2025-04-16-medium" : "lvl-1_vs_7x-o4-mini-2025-04-16-low_o4-mini-2025-04-16-medium"},
-#     {"_logs/dragon_vs_llm/lvl-1_vs_claude-3-7-sonnet-20250219-thinking-budget-10000" : "lvl-1_vs_claude-3-7-sonnet-20250219-thinking-budget-10000"},
-#     {"_logs/dragon_vs_llm/lvl-1_vs_claude-3-7-sonnet-20250219-thinking-budget-5000" : "lvl-1_vs_claude-3-7-sonnet-20250219-thinking-budget-5000"},
-#     {"_logs/dragon_vs_llm/lvl-1_vs_gemini-25pro-t03_mini41-t00_mini41-t03" : "lvl-1_vs_gemini-25pro-t03_mini41-t00_mini41-t03"},
-#     {"_logs/dragon_vs_llm/lvl-1_vs_grok-3-mini-beta-high" : "lvl-1_vs_grok-3-mini-beta-high"},
-#     {"_logs/dragon_vs_llm/lvl-1_vs_o3-2025-04-16-low" : "lvl-1_vs_o3-2025-04-16-low"},
-#     {"_logs/dragon_vs_llm/lvl-1_vs_o3-mini-2025-01-31-high" : "lvl-1_vs_o3-mini-2025-01-31-high"},
-#     {"_logs/dragon_vs_llm/lvl-1_vs_o3-mini-2025-01-31-low" : "lvl-1_vs_o3-mini-2025-01-31-low"},
-#     {"_logs/dragon_vs_llm/lvl-1_vs_o3-mini-2025-01-31-medium" : "lvl-1_vs_o3-mini-2025-01-31-medium"},
-#     {"_logs/dragon_vs_llm/lvl-1_vs_o4-mini-2025-04-16-high" : "lvl-1_vs_o4-mini-2025-04-16-high"},
-#     {"_logs/dragon_vs_llm/lvl-1_vs_o4-mini-2025-04-16-low" : "lvl-1_vs_o4-mini-2025-04-16-low"},
-#     {"_logs/dragon_vs_llm/lvl-1_vs_o4-mini-2025-04-16-medium" : "lvl-1_vs_o4-mini-2025-04-16-medium"},
-#     {"_logs/dragon_vs_llm/lvl-10_vs_o3-2025-04-16-low" : "lvl-10_vs_o3-2025-04-16-low"},
-#     {"_logs/dragon_vs_llm/lvl-10_vs_o3-2025-04-16-medium_timeout-60m" : "lvl-10_vs_o3-2025-04-16-medium_timeout-60m"},
-#     {"_logs/dragon_vs_llm/lvl-2_vs_grok-3-mini-beta-high" : "lvl-2_vs_grok-3-mini-beta-high"},
-#     {"_logs/dragon_vs_llm/lvl-2_vs_o3-2025-04-16-low" : "lvl-2_vs_o3-2025-04-16-low"},
-#     {"_logs/dragon_vs_llm/lvl-2_vs_o3-mini-2025-01-31-high" : "lvl-2_vs_o3-mini-2025-01-31-high"},
-#     {"_logs/dragon_vs_llm/lvl-2_vs_o4-mini-2025-04-16-high" : "lvl-2_vs_o4-mini-2025-04-16-high"},
-#     {"_logs/dragon_vs_llm/lvl-2_vs_o4-mini-2025-04-16-high_timeout-20m" : "lvl-2_vs_o4-mini-2025-04-16-high_timeout-20m"},
-#     {"_logs/dragon_vs_llm/lvl-2_vs_o4-mini-2025-04-16-high_timeout-60m" : "lvl-2_vs_o4-mini-2025-04-16-high_timeout-60m"},
-#     {"_logs/dragon_vs_llm/lvl-3_vs_grok-3-mini-beta-high" : "lvl-3_vs_grok-3-mini-beta-high"},
-#     {"_logs/dragon_vs_llm/lvl-3_vs_o3-2025-04-16-low" : "lvl-3_vs_o3-2025-04-16-low"},
-#     {"_logs/dragon_vs_llm/lvl-4_vs_grok-3-mini-beta-high" : "lvl-4_vs_grok-3-mini-beta-high"},
-#     {"_logs/dragon_vs_llm/lvl-4_vs_grok-3-mini-fast-beta-high" : "lvl-4_vs_grok-3-mini-fast-beta-high"},
-#     {"_logs/dragon_vs_llm/lvl-4_vs_o3-2025-04-16-low" : "lvl-4_vs_o3-2025-04-16-low"},
-#     {"_logs/dragon_vs_llm/lvl-5_vs_grok-3-mini-beta-high" : "lvl-5_vs_grok-3-mini-beta-high"},
-#     {"_logs/dragon_vs_llm/lvl-5_vs_grok-3-mini-fast-beta-high" : "lvl-5_vs_grok-3-mini-fast-beta-high"},
-#     {"_logs/dragon_vs_llm/lvl-5_vs_o3-2025-04-16-low" : "lvl-5_vs_o3-2025-04-16-low"},
-# ]
 
 FILTER_OUT_BELOW_N = 30 # 0
 DATE_AFTER = None # "2025.04.01_00:00"
@@ -118,38 +47,14 @@ DATE_AFTER = None # "2025.04.01_00:00"
 OUTPUT_DIR = "data_processing"
 AGGREGATE_CSV = os.path.join(OUTPUT_DIR, "aggregate.csv")
 REFINED_CSV = os.path.join(OUTPUT_DIR, "refined.csv")
-# REFINED_CSV = "_logs/dragon_vs_llm/dragon_vs_llm_aggr.csv"
 
 FILTER_OUT_MODELS = [
-    "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp03",
-    "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp03",
-    "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp06",
-    "anthropic.claude-v3-5-sonnet",
-    "llama-3.1-tulu-3-8b@q4_k_m",
-    "llama-3.1-8b-instant",  # Groq
-    "meta-llama-3.1-8b-instruct-fp16",  # local
-    "gemini-2.0-pro-exp-02-05", # to many errors, I'm done with EXP models, to much trouble, going to use only release versions
-    "qwq-32b-thinking-not-cleaned",
-    "google_gemma-3-27b-it@q4_k_m",
-    "google_gemma-3-12b-it@q4_k_m",
     "ignore",  # models marked to be ignored via aggregate_models_to_csv.MODEL_OVERRIDES
 ]
 
+# if you want to change model names after they are aggregated
 ALIASES = {
     "deepseek-r1-distill-qwen-32b@q4_k_m|isol_temp06": "deepseek-r1-distill-qwen-32b@q4_k_m",
-    "deepseek-reasoner": "deepseek-reasoner-r1",  # at the time of testing (Jan 2025) R1 was called "deepseek-reasoner"
-    "deepseek-chat": "deepseek-chat-v3",  # at the time of testing (Jan 2025) V3 was called "deepseek-chat"
-    "deepseek-chat-0324": "deepseek-chat-v3-0324",
-    "gemma2-9b-it": "gemma2-9b-it-groq",
-    "anthropic.claude-v3-5-sonnet-v1": "claude-v3-5-sonnet-v1",
-    "anthropic.claude-v3-5-sonnet-v2": "claude-v3-5-sonnet-v2",
-    "anthropic.claude-v3-haiku": "claude-v3-haiku",
-    "anthropic.claude-v3-5-haiku": "claude-v3-5-haiku",
-    "anthropic.claude-v3-opus": "claude-v3-opus",
-    "anthropic.claude-3-7-sonnet-20250219-v1:0": "claude-v3-7-sonnet",
-    "google_gemma-3-12b-it@iq4_xs": "gemma-3-12b-it@iq4_xs",
-    "google_gemma-3-12b-it@q8_0": "gemma-3-12b-it@q8_0",
-    "google_gemma-3-27b-it@iq4_xs": "gemma-3-27b-it@iq4_xs",
 }
 
 

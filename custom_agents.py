@@ -308,7 +308,7 @@ class ChessEngineStockfishAgent(GameAgent):
 
 class ChessEngineDragonAgent(GameAgent):
     """
-    A chess agent that uses the Komodo Dragon engine to determine moves.
+    A chess agent that uses the Komodo Dragon engine to determine moves. Download at https://komodochess.com
 
     Parameters:
         board (chess.Board): The current state of the chess board.
