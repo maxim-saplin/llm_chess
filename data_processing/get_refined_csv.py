@@ -74,7 +74,14 @@ LOGS_DIRS = [
     {"_logs/new/o4-mini-2025-04-16-high": "o4-mini-2025-04-16-high"},
     {"_logs/new/grok-3-mini-beta-low" : "grok-3-mini-beta-low"},
     {"_logs/new/grok-3-mini-beta-high" : "grok-3-mini-beta-high"},
+    "_logs/new/grok-3-mini-beta",
+    "_logs/new/grok-3-beta"
 ]
+
+# LOGS_DIRS = [
+#     {"_logs/new/grok-3-mini-beta-low/2025-05-14-22-05" : "grok-3-mini-beta-low"},
+#     {"_logs/new/grok-3-mini-beta-high/2025-05-14-22-08" : "grok-3-mini-beta-high"}
+# ]
 
 FILTER_OUT_BELOW_N = 30 # 0
 DATE_AFTER = None # "2025.04.01_00:00"
@@ -173,6 +180,8 @@ def convert_aggregate_to_refined(
             "moe_games_not_interrupted",
             "average_game_cost",
             "moe_average_game_cost",
+            "price_per_1000_moves",
+            "moe_price_per_1000_moves",
         ]
 
         # Prepare to write to the refined CSV
@@ -248,6 +257,8 @@ def convert_aggregate_to_refined(
                 # Get cost metrics
                 average_game_cost = float(row.get("average_game_cost", 0))
                 moe_average_game_cost = float(row.get("moe_average_game_cost", 0))
+                price_per_1000_moves = float(row.get("price_per_1000_moves", 0))
+                moe_price_per_1000_moves = float(row.get("moe_price_per_1000_moves", 0))
 
                 # Append the row to the list of rows to write
                 rows_to_write.append(
@@ -291,6 +302,8 @@ def convert_aggregate_to_refined(
                         "moe_games_not_interrupted": round(moe_games_not_interrupted, 3),
                         "average_game_cost": round(average_game_cost, 5),
                         "moe_average_game_cost": round(moe_average_game_cost, 5),
+                        "price_per_1000_moves": round(price_per_1000_moves, 5),
+                        "moe_price_per_1000_moves": round(moe_price_per_1000_moves, 5),
                     }
                 )
 

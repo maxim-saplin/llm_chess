@@ -385,6 +385,8 @@ def aggregate_models_to_csv(
         "average_game_cost",
         "std_dev_game_cost",
         "moe_average_game_cost",
+        "price_per_1000_moves",
+        "moe_price_per_1000_moves",
     ]
 
     csv_data = []
@@ -796,6 +798,7 @@ def aggregate_models_to_csv(
 
         # Calculate per-game costs
         per_game_costs = []
+        per_game_price_per_1000_moves = []
         for log in model_logs:
             prompt_tokens = (
                 log.usage_stats_black.details.get("prompt_tokens", 0)
@@ -814,7 +817,11 @@ def aggregate_models_to_csv(
 
             game_cost = prompt_cost + completion_cost
             per_game_costs.append(game_cost)
-
+            moves = log.number_of_moves
+            if moves > 0:
+                per_game_price_per_1000_moves.append(game_cost / moves * 1000)
+            else:
+                per_game_price_per_1000_moves.append(0)
         average_game_cost = mean(per_game_costs) if per_game_costs else 0
         std_dev_game_cost = stdev(per_game_costs) if len(per_game_costs) > 1 else 0
         moe_average_game_cost = (
@@ -822,6 +829,11 @@ def aggregate_models_to_csv(
             if total_games > 1
             else 0
         )
+        # Calculate per-1000-move cost metrics across games
+        average_price_per_1000_moves = mean(per_game_price_per_1000_moves) if per_game_price_per_1000_moves else 0
+        std_dev_price_per_1000_moves = stdev(per_game_price_per_1000_moves) if len(per_game_price_per_1000_moves) > 1 else 0
+        moe_price_per_1000_moves = 1.96 * (std_dev_price_per_1000_moves / math.sqrt(total_games)) if total_games > 1 else 0
+        price_per_1000_moves = average_price_per_1000_moves
 
         # Append the calculated data to the CSV data list
         csv_data.append(
@@ -906,6 +918,8 @@ def aggregate_models_to_csv(
                 average_game_cost,
                 std_dev_game_cost,
                 moe_average_game_cost,
+                price_per_1000_moves,
+                moe_price_per_1000_moves,
             ]
         )
 

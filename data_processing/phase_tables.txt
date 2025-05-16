@@ -1,0 +1,57 @@
+\begin{table}[ht]
+  \centering
+  \caption{Comparison of Metrics across runs (phase: overall)}
+  \label{tab:comp_overall}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Run  & Win \% (\%) & CP Loss (cp) & Eval $\Delta$ (CP) (cp/ply) & $\Delta$ Win \% (\%/ply) \\
+    \midrule
+    \texttt{3x-o4-mini-2025-04-16-low-41mini-t03} & 30.25 & 236.28 & -221.85 & -11.95 \\
+    \texttt{3x-o4-mini-2025-04-16-low} & 64.93 & 187.82 & -156.89 & -8.02 \\
+    \texttt{5x-o4-mini-2025-04-16-low} & 56.31 & 134.69 & -120.70 & -6.78 \\
+    \texttt{7x-o4-mini-2025-04-16-low} & 54.91 & 162.81 & -149.11 & -8.55 \\
+    \texttt{o4-mini-2025-04-16-high} & 74.09 & 133.69 & -102.66 & -5.52 \\
+    \texttt{o4-mini-2025-04-16-low} & 35.89 & 246.71 & -224.27 & -12.57 \\
+    \texttt{o4-mini-2025-04-16-medium} & 66.79 & 150.32 & -117.34 & -6.43 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[ht]
+  \centering
+  \caption{Comparison of Metrics across runs (phase: opening)}
+  \label{tab:comp_opening}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Run  & Win \% (\%) & CP Loss (cp) & Eval $\Delta$ (CP) (cp/ply) & $\Delta$ Win \% (\%/ply) \\
+    \midrule
+    \texttt{3x-o4-mini-2025-04-16-low-41mini-t03} & 47.32 & 188.24 & -187.44 & -14.27 \\
+    \texttt{3x-o4-mini-2025-04-16-low} & 51.17 & 194.98 & -193.75 & -13.81 \\
+    \texttt{5x-o4-mini-2025-04-16-low} & 52.98 & 117.93 & -117.26 & -8.39 \\
+    \texttt{7x-o4-mini-2025-04-16-low} & 53.47 & 173.61 & -171.72 & -12.06 \\
+    \texttt{o4-mini-2025-04-16-high} & 58.87 & 98.78 & -96.79 & -7.02 \\
+    \texttt{o4-mini-2025-04-16-low} & 50.63 & 161.85 & -160.27 & -11.99 \\
+    \texttt{o4-mini-2025-04-16-medium} & 56.88 & 138.01 & -136.40 & -10.03 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[ht]
+  \centering
+  \caption{Comparison of Metrics across runs (phase: middlegame)}
+  \label{tab:comp_middlegame}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Run  & Win \% (\%) & CP Loss (cp) & Eval $\Delta$ (CP) (cp/ply) & $\Delta$ Win \% (\%/ply) \\
+    \midrule
+    \texttt{3x-o4-mini-2025-04-16-low-41mini-t03} & 57.92 & 252.87 & -246.16 & -13.04 \\
+    \texttt{3x-o4-mini-2025-04-16-low} & 42.31 & 190.14 & -171.12 & -9.20 \\
+    \texttt{5x-o4-mini-2025-04-16-low} & 31.70 & 134.47 & -125.01 & -6.05 \\
+    \texttt{7x-o4-mini-2025-04-16-low} & 48.13 & 203.58 & -191.48 & -9.70 \\
+    \texttt{o4-mini-2025-04-16-high} & 21.71 & 125.74 & -110.18 & -5.31 \\
+    \texttt{o4-mini-2025-04-16-low} & 47.81 & 317.80 & -309.78 & -16.94 \\
+    \texttt{o4-mini-2025-04-16-medium} & 31.70 & 187.60 & -170.54 & -8.81 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
