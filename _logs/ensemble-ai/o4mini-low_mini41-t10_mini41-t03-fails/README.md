@@ -1,1 +1,0 @@
-Performance not even close to singular o4-mini low, no wins at all

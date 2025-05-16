@@ -1,8 +1,4 @@
-# 🏆 [Click Here for the LIVE LEADERBOARD! 🏆](https://maxim-saplin.github.io/llm_chess/)
 
-Putting LLMs up against ~each other~ Random Player in a chess game. Testing basic instruction following capabilities and of course chess proficiency :)
-
-- `llm_chessp.py` runs the game, collects the results, records video
 
 ## Rules
 
@@ -71,19 +67,13 @@ Notes:
 
 - `data_processing/aggregate_logss_to_csv.py` can process individual games logs within a given folder and produce a CSV grouping logs by model name and aggregating stats. Change the default params to point the script to the correct folder and output CSV file:
 
-### Web
-
-Run `data_processing/get_refined.py` to prdouce `refined.csv` ready for `index.html` emdedding. Manually copy the needed rows to `index.html` const in JS - the data will be used in the Web Leaderboard.
-
-Why copy manually? Cause you are likely updating a leaderboard and some of the models in the Web migth have different names, not the ones used in the logs.
-
 ## Kinds of Agents
 
 - LLM Player Agent (instantiated from Autogen's standard ConversiableAgent) is used to evaluate the board and make moves on behalf of one of the players (white or black)
 - Random Player Agent (custom RandomPlayerAgent) requests for a list of legal moves, randomly picks one, and then makes a move. Always plays as white
 - Proxy Agent (custom AutoReplyAgent) is used to kick off conversation with a player agent and provides a list of available actions (get_current_board, get_legal_moves, make_move)
 - Chess Engine Players:
-  - Sunfish: A simple Python engine.
+  - Komodo Dragon: chess.com Elo rated (Skill 1 - Elo 250, Skill 2 - Elo 400 etc.).
   - Stockfish: A powerful engine requiring separate installation.
 
 ## Sample Dialog Happening within a Single Move
