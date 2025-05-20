@@ -302,6 +302,252 @@ def graph_results(csv_file,
         import traceback
         traceback.print_exc()
 
+def create_latex_reason_table(zero_win_loss_df):
+    """
+    Generates a booktabs LaTeX table from a DataFrame, focusing on 'reason_' columns.
+
+    Args:
+        zero_win_loss_df (pd.DataFrame): Input DataFrame with 'Player' and 'reason_...' columns.
+
+    Returns:
+        str: A string containing the LaTeX table.
+    """
+    # Select 'Player' and 'reason_' columns
+    reason_cols = [col for col in zero_win_loss_df.columns if col.startswith('reason_')]
+    if not reason_cols:
+        return "\\textit{No 'reason_' columns found in the DataFrame.}"
+
+    df_selected = zero_win_loss_df[['Player'] + reason_cols].copy()
+
+    # Identify and drop reason_ columns with all zero values
+    cols_to_drop = []
+    for col in reason_cols:
+        # Using np.isclose for robust zero checking with floats
+        if np.isclose(df_selected[col], 0).all():
+            cols_to_drop.append(col)
+
+    active_reason_cols = [col for col in reason_cols if col not in cols_to_drop]
+
+    if not active_reason_cols:
+        return "\\textit{All 'reason_' columns have zero values after filtering.}"
+
+    # Keep only 'Player' and active reason columns
+    df_final = df_selected[['Player'] + active_reason_cols].copy() # Use .copy()
+
+    # Convert reason columns to percentage
+    for col in active_reason_cols:
+        df_final[col] = df_final[col] * 100
+
+    # Prepare new column names for LaTeX
+    new_column_names = {'Player': 'Player'}
+    for col in active_reason_cols:
+        # Remove 'reason_', replace '_', title case
+        clean_name = col.replace('reason_', '').replace('_', ' ').title()
+        new_column_names[col] = clean_name
+
+    df_final.rename(columns=new_column_names, inplace=True)
+
+    # Define formatters for the numeric columns to ensure one decimal place
+    # Get the renamed active reason columns
+    renamed_active_reason_cols = [new_column_names[col] for col in active_reason_cols]
+    
+    formatters = {}
+    for col_name in renamed_active_reason_cols:
+        formatters[col_name] = lambda x: f"{x:.1f}"
+        
+    # Define column alignment: 'l' for Player, 'r' for numeric (reason) columns
+    num_reason_cols = len(active_reason_cols)
+    column_format = 'l' + 'r' * num_reason_cols
+
+    # Generate LaTeX table
+    # Ensure caption and label are added outside if needed, or passed as parameters
+    latex_table = df_final.to_latex(
+        index=False,
+        # booktabs=True,
+        escape=True, # Escapes LaTeX special characters in Player names
+        column_format=column_format,
+        formatters=formatters
+    )
+
+    return latex_table
+
+def escape_latex_text(text):
+    """Robustly escapes LaTeX special characters in a string."""
+    if not isinstance(text, str):
+        text = str(text)
+    # Order of replacements can be important for some sequences
+    replacements = [
+        ('\\', r'\textbackslash{}'), # Must be first
+        ('{', r'\{'),
+        ('}', r'\}'),
+        ('&', r'\&'),
+        ('%', r'\%'),
+        ('$', r'\$'),
+        ('#', r'\#'),
+        ('_', r'\_'),
+        ('~', r'\textasciitilde{}'),
+        ('^', r'\textasciicircum{}'),
+    ]
+    for old, new in replacements:
+        text = text.replace(old, new)
+    return text
+
+def create_latex_reason_table_extended(df):
+    """
+    Generates a booktabs LaTeX table with grouped 'reason_' columns.
+    - win_loss is in pct with 1 decimal.
+    - Percentages do not display the '%' symbol (caption should specify units).
+    - Reason columns are grouped with multi-column headers and vertical lines.
+    - Assumes booktabs package (\toprule, \midrule, \bottomrule, \cmidrule) in LaTeX doc.
+
+    Args:
+        df (pd.DataFrame): Input DataFrame with 'Player', 'total_games', 
+                           'win_loss', and 'reason_...' columns.
+
+    Returns:
+        str: A string containing the LaTeX table.
+    """
+    # --- 1. Sort the DataFrame ---
+    df_sorted = df.copy()
+    df_sorted.sort_values(by=['win_loss', 'total_games'], ascending=[False, False], inplace=True)
+
+    # --- 2. Define column groups and identify active reason columns ---
+    all_reason_cols_in_df = [col for col in df_sorted.columns if col.startswith('reason_')]
+
+    active_reason_cols_overall = []
+    if all_reason_cols_in_df:
+        for col in all_reason_cols_in_df:
+            # Ensure column exists and then check if not all values are close to zero
+            if col in df_sorted.columns and not np.isclose(df_sorted[col].fillna(0), 0).all():
+                active_reason_cols_overall.append(col)
+    
+    # Define the structure and preferred order of reason groups
+    group_definitions = {
+        'Checkmate': ['reason_checkmate'],
+        'Instruction Issues': ['reason_too_many_wrong_actions', 'reason_max_turns'],
+        'Draws': ['reason_stalemate', 'reason_insufficient_material', 
+                  'reason_seventyfive_moves', 'reason_fivefold_repetition', 'reason_max_moves'],
+        # 'Other Issues' will be dynamically populated
+    }
+    # Explicit order for processing and display of groups
+    group_display_order = ['Checkmate', 'Instruction Issues', 'Draws'] 
+    
+    active_cols_by_group = {} # Stores {group_name: [active_col1, active_col2]}
+    final_ordered_reason_cols = [] # Stores original reason col names in final display order
+    processed_reasons_in_groups = set()
+
+    # Populate groups based on definitions and active columns
+    for group_name in group_display_order:
+        defined_cols_for_group = group_definitions.get(group_name, [])
+        current_group_active_cols = [col for col in defined_cols_for_group if col in active_reason_cols_overall]
+        if current_group_active_cols:
+            active_cols_by_group[group_name] = current_group_active_cols
+            final_ordered_reason_cols.extend(current_group_active_cols)
+            processed_reasons_in_groups.update(current_group_active_cols)
+
+    # Collect any remaining active reasons into 'Other Issues'
+    other_active_reasons = [col for col in active_reason_cols_overall if col not in processed_reasons_in_groups]
+    if other_active_reasons:
+        group_display_order.append('Other Issues') # Add to display order if it has content
+        active_cols_by_group['Other Issues'] = other_active_reasons
+        final_ordered_reason_cols.extend(other_active_reasons)
+
+    # --- 3. Prepare DataFrame for LaTeX (select and order columns) ---
+    cols_for_final_df = ['Player', 'total_games', 'win_loss'] + final_ordered_reason_cols
+    df_final = df_sorted[cols_for_final_df].copy()
+
+    # --- 4. Data Transformations (Convert to Percentages) ---
+    df_final['win_loss'] = df_final['win_loss'] * 100
+    for col in final_ordered_reason_cols:
+        df_final[col] = df_final[col] * 100
+
+    # --- 5. Column Name Cleaning (for second header row display) ---
+    cleaned_reason_display_names = {} 
+    for original_col_name in final_ordered_reason_cols:
+        display_name = original_col_name.replace('reason_', '').replace('_', ' ').title()
+        if display_name == "Too Many Wrong Actions": display_name = "Wrong Actions"
+        if display_name == "Insufficient Material": display_name = "Insuff. Material"
+        if display_name == "Seventyfive Moves": display_name = "75 Moves"
+        if display_name == "Fivefold Repetition": display_name = "5x Repetition"
+        
+        cleaned_reason_display_names[original_col_name] = display_name
+    
+    # --- 6. Formatters (Numeric formatting, no '%' symbol) ---
+    formatters = {
+        'total_games': lambda x: f"{int(x):d}",
+        'win_loss': lambda x: f"{x:.1f}" if pd.notnull(x) else ""
+    }
+    for original_col_name in final_ordered_reason_cols:
+        formatters[original_col_name] = lambda x: f"{x:.1f}" if pd.notnull(x) else ""
+
+    # --- 7. Construct LaTeX Table String ---
+    # Initial parts for Player, Total Games, Win/Loss
+    header1_parts = ['Player', 'Total Games', 'Win/Loss'] # Top-level headers
+    header2_parts = ['', '', '']                         # Sub-level headers (empty for first 3)
+    column_format_parts = ['l', 'r', 'r']                # LaTeX column specifiers
+    
+    cmidrule_definitions = [] # For \cmidrule commands
+    current_latex_col_index = 3 # Tracks 1-based column index for LaTeX rules
+
+    first_reason_group_added = False
+    for group_name_key in group_display_order: # Iterate in the order they should appear
+        if group_name_key in active_cols_by_group and active_cols_by_group[group_name_key]:
+            actual_cols_in_this_group = active_cols_by_group[group_name_key]
+            num_display_cols_in_group = len(actual_cols_in_this_group)
+
+            if num_display_cols_in_group > 0:
+                # Add vertical line separator in column_format_parts before this group
+                if not first_reason_group_added:
+                    if column_format_parts: column_format_parts[-1] += '|' # After Win/Loss
+                    first_reason_group_added = True
+                else:
+                    if column_format_parts: column_format_parts[-1] += '|' # After previous group
+                
+                # Top-level header for the group
+                header1_parts.append(f"\\multicolumn{{{num_display_cols_in_group}}}{{c}}{{{group_name_key}}}")
+                
+                # \cmidrule for this group
+                cmid_start_col = current_latex_col_index + 1
+                cmid_end_col = current_latex_col_index + num_display_cols_in_group
+                cmidrule_definitions.append(f"\\cmidrule(lr){{{cmid_start_col}-{cmid_end_col}}}")
+                
+                # Sub-level headers (cleaned names) and column formats for each column in group
+                for original_col_name in actual_cols_in_this_group:
+                    header2_parts.append(cleaned_reason_display_names[original_col_name])
+                    column_format_parts.append('r') # All reason columns are right-aligned
+                    current_latex_col_index += 1
+    
+    final_latex_column_spec = "".join(column_format_parts)
+    
+    # Assemble the LaTeX table
+    latex_output_lines = ["\\begin{tabular}{" + final_latex_column_spec + "}"]
+    latex_output_lines.append("\\toprule")
+    latex_output_lines.append(" & ".join(header1_parts) + " \\\\") 
+    if cmidrule_definitions: 
+        latex_output_lines.append(" ".join(cmidrule_definitions)) 
+    latex_output_lines.append(" & ".join(header2_parts) + " \\\\") 
+    latex_output_lines.append("\\midrule")
+
+    # Add data rows
+    for _, row_data in df_final.iterrows():
+        current_row_latex_values = []
+        # Player name (escaped)
+        current_row_latex_values.append(escape_latex_text(row_data['Player']))
+        # Total Games and Win/Loss (formatted)
+        current_row_latex_values.append(formatters['total_games'](row_data['total_games']))
+        current_row_latex_values.append(formatters['win_loss'](row_data['win_loss']))
+        
+        # Reason columns (formatted)
+        for original_col_name in final_ordered_reason_cols:
+            current_row_latex_values.append(formatters[original_col_name](row_data[original_col_name]))
+            
+        latex_output_lines.append(" & ".join(current_row_latex_values) + " \\\\")
+
+    latex_output_lines.append("\\bottomrule")
+    latex_output_lines.append("\\end{tabular}")
+    
+    return "\n".join(latex_output_lines)
+
 def graph_results(csv_file,
                   win_loss_threshold=1.0,
                   reasoning_color='coral',
@@ -376,13 +622,18 @@ def graph_results(csv_file,
         # --- Generate and Print LaTeX Table for Zero Win/Loss ---
         if not zero_win_loss_players.empty:
             print("\n--- LaTeX Code for Players with Zero Win/Loss Ratio ---")
-            latex_table_code = generate_latex_table(
-                zero_win_loss_players[['Player', 'win_loss']],
-                caption="Players with Zero Win/Loss Ratio (*Denotes Reasoning Model)",
-                label="tab:zero_win_loss"
-            )
+            zero_win_loss_df = df[df['win_loss'] == 0].copy()
+            # get distribution of reasons why it lost
+            print(zero_win_loss_df[['Player', 'win_loss', 'reason_too_many_wrong_actions', 'reason_checkmate', 'reason_stalemate', 'reason_insufficient_material', 'reason_seventyfive_moves', 'reason_fivefold_repetition', 'reason_max_turns', 'reason_unknown_issue', 'reason_max_moves', 'reason_error']])
+            # latex_table_code = generate_latex_table(
+            #     zero_win_loss_players[['Player', 'win_loss']],
+            #     caption="Players with Zero Win/Loss Ratio (*Denotes Reasoning Model)",
+            #     label="tab:zero_win_loss"
+            # )
+            latex_table_code = create_latex_reason_table(zero_win_loss_df)
             print(latex_table_code)
             print("-------------------------------------------------------\n")
+            input("Save the table. Press Enter to continue...")
         else:
             print("\nNo players found with a zero win/loss ratio.\n")
 
@@ -390,6 +641,16 @@ def graph_results(csv_file,
         if positive_win_loss_players.empty:
             print("No players found with a positive win/loss ratio to plot.")
             return
+
+        # --- Generate and Print LaTeX Table for >0 Win/Loss ---
+        print("\n--- LaTeX Code for Players with Win/Loss Ratio > 0 ---")
+        over_zero_win_loss_df = df[df['win_loss'] > 0].copy()
+        # get distribution of reasons why it lost
+        print(over_zero_win_loss_df[['Player', 'total_games', 'win_loss', 'reason_too_many_wrong_actions', 'reason_checkmate', 'reason_stalemate', 'reason_insufficient_material', 'reason_seventyfive_moves', 'reason_fivefold_repetition', 'reason_max_turns', 'reason_unknown_issue', 'reason_max_moves', 'reason_error']])
+        latex_table_code = create_latex_reason_table_extended(over_zero_win_loss_df)
+        print(latex_table_code)
+        print("-------------------------------------------------------\n")
+        input("Save the table. Press Enter to continue...")
 
         sort_ascending = True
         data_below_threshold = positive_win_loss_players[
