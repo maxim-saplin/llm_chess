@@ -19,18 +19,18 @@ import sys
 import os
 import csv
 from tabulate import tabulate  # Add this import for the print_leaderboard function
-from results_for_paper import graph_results, graph_scaling_results, graph_loss_reasons
+from results_for_paper import graph_results, graph_scaling_results, graph_loss_reasons, generate_latex_instruction_following_table, generate_winpct_vs_winrate_scatter
 
 # Try relative import first (for tests)
 try:
-    from .aggregate_logs_to_csv import aggregate_models_to_csv, MODEL_OVERRIDES
+    from .aggregate_logs_to_csv_for_paper import aggregate_models_to_csv, MODEL_OVERRIDES
 except ImportError:
     # Add project root to path (for direct script execution)
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if project_root not in sys.path:
         sys.path.append(project_root)
-    # Now try the direct import
-    from data_processing.aggregate_logs_to_csv import aggregate_models_to_csv, MODEL_OVERRIDES
+    # Now try the direct import for paper version
+    from data_processing.aggregate_logs_to_csv_for_paper import aggregate_models_to_csv, MODEL_OVERRIDES
 
 # Define a list of log directories to process
 # if key/value is provided, the key is the directory path and the value is the alias for all models in that directory
@@ -187,7 +187,11 @@ def convert_aggregate_to_refined(
             "reason_error",
             # Add white and black checkmate columns
             "white_checkmates",
-            "black_checkmates",
+        "black_checkmates",
+        # API actions per move metrics
+        "get_board_actions_per_move",
+        "get_legal_moves_per_move",
+        "make_move_per_move",
         ]
 
         # Prepare to write to the refined CSV
@@ -272,6 +276,10 @@ def convert_aggregate_to_refined(
                 reason_error = int(row["reason_error"])/total_games
                 white_checkmates = int(row["white_rand_checkmates"])
                 black_checkmates = int(row["black_llm_checkmates"])
+                # API actions per move metrics
+                get_board_actions_per_move = float(row.get("get_board_actions_per_move", 0))
+                get_legal_moves_per_move = float(row.get("get_legal_moves_per_move", 0))
+                make_move_per_move = float(row.get("make_move_per_move", 0))
 
                 # Calculate loss rate statistics
                 moe_black_llm_loss_rate = float(row["moe_black_llm_loss_rate"])
@@ -350,6 +358,10 @@ def convert_aggregate_to_refined(
                         # Add white and black checkmate columns
                         "white_checkmates": white_checkmates,
                         "black_checkmates": black_checkmates,
+                        # API actions per move metrics
+                        "get_board_actions_per_move": round(get_board_actions_per_move, 3),
+                        "get_legal_moves_per_move": round(get_legal_moves_per_move, 3),
+                        "make_move_per_move": round(make_move_per_move, 3),
                     }
                 )
 
@@ -434,6 +446,145 @@ def print_leaderboard(csv_file, top_n=None):
     print(tabulate(rows, headers=headers, tablefmt='grid'))
     print(f"\nTotal cost across all models: ${total_cost_all_models:.2f}")
 
+def clean_names_mapping(REFINED_CSV):
+    """Mapping from model names to their cleaned versions."""
+    # first print all the names in the csv
+    with open(REFINED_CSV, 'r') as f:
+        reader = csv.DictReader(f)
+        data = list(reader)
+    # Get all unique model names
+    model_names = set(row['Player'] for row in data)
+    # Print the model names
+    print("Unique model names in the CSV:")
+    for name in model_names:
+        print(name)
+    # The logic is for the main body we remove quantization tags, as well as dates iff we only have one model with that name. If we have multiple models with the same name (e.g., gpt-4o-2024-05-13 and gpt-4o-2024-11-20) we keep the date.
+    api_name_mapping = {
+        "gpt-4-0613": "GPT-4",
+        "qwen2.5-7b-instruct-1m": "Qwen2.5-7B-Instruct",
+        "internlm3-8b-instruct": "InternLM3-8B-Instruct",
+        "qwen-max-2025-01-25": "Qwen2.5-Max",  # double check
+        "qwen2.5-14b-instruct@q8_0": "Qwen2.5-14B-Instruct (Q8)",
+        "qwq-32b": "QWQ-32B",
+        "o3-2025-04-16-low": "o3 (low)",
+        "gpt-4o-2024-08-06": "GPT-4o (2024-08-06)",
+        "mistral-nemo-12b-instruct-2407": "Mistral-Nemo-Instruct-2407",
+        "gpt-35-turbo-1106": "GPT-3.5 Turbo (11/06)",
+        "o1-preview-2024-09-12": "o1-preview",
+        "grok-3-mini-beta-high": "Grok 3 Mini (high)",
+        "claude-v3-5-sonnet-v1": "Claude 3.5 Sonnet",
+        "amazon.nova-lite-v1": "Amazon Nova Lite",
+        "gemini-2.0-flash-exp": "Gemini 2.0 Flash (exp)",
+        "o4-mini-2025-04-16-low": "o4-mini (low)",
+        "llama-3-70b-instruct-awq": "Llama-3-70B-Instruct",
+        "gpt-4.5-preview-2025-02-27": "GPT-4.5",
+        "deepseek-chat-v3": "DeepSeek-V3",
+        "gemma-2-27b-it@q6_k_l": "Gemma 2 27B",
+        "llama3.1-8b": "Llama-3.1-8B",
+        "claude-v3-5-haiku": "Claude 3.5 Haiku",
+        "qwen2.5-72b-instruct": "Qwen2.5-72B-Instruct",
+        "gpt-4.1-nano-2025-04-14": "GPT-4.1 Nano",
+        "granite-3.1-8b-instruct": "Granite-3.1-8B-Instruct",
+        "llama3-8b-8192": "Llama-3-8B",
+        "gemma2-9b-it-groq": "Gemma 2 9B",
+        "qwen-turbo-2024-11-01": "Qwen Turbo",
+        "gpt-4o-2024-11-20": "GPT-4o (2024-11-20)",
+        "amazon.nova-pro-v1": "Amazon Nova Pro",
+        "o1-2024-12-17-low": "o1 (low)",
+        "qwen-plus-2025-01-25": "Qwen Plus",
+        "gpt-35-turbo-0301": "GPT-3.5 Turbo (03/01)",
+        "mercury-coder-small": "Mercury Coder Small",
+        "deephermes-3-llama-3-8b-preview@q8": "DeepHermes-3-Llama-3-8B-Preview",
+        "o4-mini-2025-04-16-high": "o4-mini (high)",
+        "gpt-4o-mini-2024-07-18": "GPT-4o Mini",
+        "gpt-4-turbo-2024-04-09": "GPT-4 Turbo",
+        "o4-mini-2025-04-16-medium": "o4-mini (medium)",
+        "gemini-2.5-pro-preview-03-25": "Gemini 2.5 Pro Preview",
+        "gpt-4-32k-0613": "GPT-4 32K",
+        "phi-4": "Phi-4",
+        "gemini-2.0-flash-thinking-exp-1219": "Gemini 2.0 Flash Thinking",
+        "mistral-small-instruct-2409": "Mistral-Small-Instruct-2409",
+        "mistral-small-24b-instruct-2501@q4_k_m": "Mistral-Small-24B-Instruct-2501",
+        "llama-2-7b-chat": "Llama-2-7B-Chat",
+        "gemma-3-12b-it@iq4_xs": "Gemma 3 12B (iq4)",
+        "claude-v3-7-sonnet-thinking_10000": "Claude 3.7 Sonnet Thinking",
+        "gemini-1.5-flash-001": "Gemini 1.5 Flash",
+        "deepseek-chat-v3-0324": "DeepSeek-V3 (0324)",
+        "deepseek-reasoner-r1": "Deepseek-R1",
+        "llama-4-scout-cerebras": "Llama 4 Scout",
+        "chat-bison-32k@002": "Chat-Bison-32K",
+        "qwen2.5-14b-instruct-1m": "Qwen2.5-14B-Instruct",
+        "o1-2024-12-17-medium": "o1 (medium)",
+        "claude-v3-haiku": "Claude 3 Haiku",
+        "grok-3-mini-beta-low": "Grok 3 Mini (low)",
+        "o3-mini-2025-01-31-low": "o3-mini (low)",
+        "llama-3.1-tulu-3-8b@q8_0": "Llama-3.1-Tulu-3-8B",
+        "gpt-4o-2024-05-13": "GPT-4o (2024-05-13)",
+        "gpt-35-turbo-0125": "GPT-3.5 Turbo (01/25)",
+        "claude-v3-7-sonnet": "Claude 3.7 Sonnet",
+        "gemma-2-9b-it-8bit": "Gemma 2 9B (8bit)",
+        "gpt-35-turbo-0613": "GPT-3.5 Turbo (06/13)",
+        "gemini-2.0-flash-lite-preview-02-05": "Gemini 2.0 Flash Lite (preview)",
+        "o3-mini-2025-01-31-medium": "o3-mini (medium)",
+        "gpt-4.1-2025-04-14": "GPT-4.1",
+        "gemini-2.0-flash-lite-001": "Gemini 2.0 Flash Lite",
+        "o3-2025-04-16-medium": "o3 (medium)",
+        "gemini-2.0-flash-001": "Gemini 2.0 Flash",
+        "deepseek-r1-distill-qwen-14b@q8_0": "DeepSeek-R1-Distill-Qwen-14B",
+        "ministral-8b-instruct-2410": "Mistral 8B Instruct",
+        "deepseek-r1-distill-qwen-32b@q4_k_m": "DeepSeek-R1-Distill-Qwen-32B",
+        "llama-3.3-70b": "Llama-3.3-70B",
+        "grok-2-1212": "Grok-2",
+        "gemma-3-12b-it@q8_0": "Gemma 3 12B (q8)",
+        "gemma-3-27b-it@iq4_xs": "Gemma 3 27B",
+        "claude-v3-5-sonnet-v2": "Claude 3.5 Sonnet v2",
+        "gpt-4.1-mini-2025-04-14": "GPT-4.1 Mini",
+    }
+    # assert that all the names in the mapping are unique
+    if len(api_name_mapping) != len(set(api_name_mapping.values())):
+        # print the duplicates
+        duplicates = {}
+        for name in api_name_mapping.values():
+            if name in duplicates:
+                duplicates[name] += 1
+            else:
+                duplicates[name] = 1
+        duplicates = {k: v for k, v in duplicates.items() if v > 1}
+        print("Duplicates in the mapping:")
+        print(duplicates)
+        quit()
+    # print a booktabs table of the mapping
+    print("\n\\begin{table}[h]")
+    print("\\centering")
+    print("\\begin{tabular}{ll}")
+    print("\\toprule")
+    print("Model Name & API Name \\\\")
+    print("\\midrule")
+    for model_name, api_name in api_name_mapping.items():
+        print(f"{model_name} & {api_name} \\\\")
+    print("\\bottomrule")
+    print("\\end{tabular}")
+    print("\\caption{Model name mapping}")
+    print("\\label{tab:model_name_mapping}")
+    print("\\end{table}")
+    # now change the refined csv to use the mapping and re-save it.
+    with open(REFINED_CSV, 'r') as f:
+        reader = csv.DictReader(f)
+        data = list(reader)
+    # Change the names in the data
+    for row in data:
+        model_name = row['Player']
+        if model_name in api_name_mapping:
+            row['Player'] = api_name_mapping[model_name]
+            
+    # Save the data back to the csv
+    with open(REFINED_CSV, 'w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=data[0].keys())
+        writer.writeheader()
+        writer.writerows(data)
+
+    return
+        
 
 def main():
     # Step 1: Aggregate logs from all directories to a single CSV
@@ -452,9 +603,17 @@ def main():
     print(f"Successfully refined data to {REFINED_CSV}")
 
     # Step 2.5: Make a graph.
-    graph_results(REFINED_CSV) 
+    clean_names_mapping(REFINED_CSV)
+    graph_results(REFINED_CSV)
     graph_scaling_results(REFINED_CSV)
     graph_loss_reasons(REFINED_CSV)
+    import pdb; pdb.set_trace()
+    generate_winpct_vs_winrate_scatter(REFINED_CSV)
+    # Instruction-following metrics table
+    print("\n--- Instruction-Following Metrics Table ---\n")
+    table_str = generate_latex_instruction_following_table(REFINED_CSV)
+    print(table_str)
+    input("Press Enter to continue...")
     
     # Step 3: Print the leaderboard
     print("\n=== LLM CHESS LEADERBOARD ===\n")

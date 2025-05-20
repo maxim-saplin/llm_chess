@@ -380,6 +380,10 @@ def aggregate_models_to_csv(
         "completion_tokens_black_per_move",
         "std_dev_completion_tokens_black_per_move",
         "moe_completion_tokens_black_per_move",
+        # API actions per move metrics
+        "get_board_actions_per_move",
+        "get_legal_moves_per_move",
+        "make_move_per_move",
         "min_moves",
         "max_moves",
         "prompt_tokens_black",
@@ -406,6 +410,11 @@ def aggregate_models_to_csv(
     model_prices = load_model_prices(models_metadata_csv)
 
     for model_name, model_logs in model_groups.items():
+        # # Following Sai's code, we will sort logs by date.
+        # model_logs.sort(
+        #     key=lambda x: x.time_started
+        # )
+        # model_groups[model_name] = model_logs
         if filter_out_errors:
             # Filter out logs with errors
             print(f"Filtering out logs with errors for model: {model_name}. Original count: {len(model_logs)}")
@@ -765,6 +774,26 @@ def aggregate_models_to_csv(
             if log.usage_stats_black.details
         )
         total_tokens_black = completion_tokens_black + prompt_tokens_black
+        # Compute API actions per move (average across games)
+        # Compute per-game API actions per move, treating missing counts as zero
+        per_game_get_board_per_move = [
+            (log.player_black.get_board_count if log.player_black.get_board_count > 0 else 0) / log.number_of_moves
+            for log in model_logs
+            if log.number_of_moves > 0
+        ]
+        per_game_get_legal_moves_per_move = [
+            (log.player_black.get_legal_moves_count if log.player_black.get_legal_moves_count > 0 else 0) / log.number_of_moves
+            for log in model_logs
+            if log.number_of_moves > 0
+        ]
+        per_game_make_move_per_move = [
+            (log.player_black.make_move_count if log.player_black.make_move_count > 0 else 0) / log.number_of_moves
+            for log in model_logs
+            if log.number_of_moves > 0
+        ]
+        get_board_actions_per_move = mean(per_game_get_board_per_move) if per_game_get_board_per_move else 0
+        get_legal_moves_per_move = mean(per_game_get_legal_moves_per_move) if per_game_get_legal_moves_per_move else 0
+        make_move_per_move = mean(per_game_make_move_per_move) if per_game_make_move_per_move else 0
 
         # Calculate margins of error
         if total_games > 1:
@@ -925,6 +954,10 @@ def aggregate_models_to_csv(
                 completion_tokens_black_per_move,
                 std_dev_completion_tokens_black_per_move,
                 moe_completion_tokens_black_per_move,
+                # API actions per move metrics
+                get_board_actions_per_move,
+                get_legal_moves_per_move,
+                make_move_per_move,
                 min_moves,
                 max_moves,
                 prompt_tokens_black,

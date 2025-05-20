@@ -165,6 +165,8 @@ def load_llm_vs_dragon_records(vslm_dir):
         if not m:
             continue
         lvl = int(m.group(1))
+        # if lvl != 1:
+        #     continue
         raw_model = m.group(2)
         # map folder variant to canonical alias if defined
         model_key = raw_model
