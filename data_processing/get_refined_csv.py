@@ -75,7 +75,8 @@ LOGS_DIRS = [
     {"_logs/new/grok-3-mini-beta-low" : "grok-3-mini-beta-low"},
     {"_logs/new/grok-3-mini-beta-high" : "grok-3-mini-beta-high"},
     "_logs/new/grok-3-mini-beta",
-    "_logs/new/grok-3-beta"
+    "_logs/new/grok-3-beta",
+    "_logs/new/qwen3-14b@iq4_xs-thinking"
 ]
 
 # LOGS_DIRS = [
