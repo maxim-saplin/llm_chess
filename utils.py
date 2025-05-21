@@ -209,11 +209,25 @@ def generate_game_stats(
         }
     else:
         white_summary = gather_usage_summary([player_white])
-        white_model = (
-            player_white.llm_config["config_list"][0]["model"]
-            if isinstance(player_white.llm_config, dict)
-            else "N/A"
-        )
+        # Try to extract the model name from player_white.llm_config, supporting both dict and LLMConfig object
+        if isinstance(player_white.llm_config, dict):
+            white_model = player_white.llm_config.get("config_list", [{}])[0].get("model", "N/A")
+        elif hasattr(player_white.llm_config, "config_list"):
+            # LLMConfig object: config_list is a list of dicts or config entries
+            config_list = getattr(player_white.llm_config, "config_list", [])
+            if config_list:
+                # config_list may contain dicts or objects with .model attribute
+                first_entry = config_list[0]
+                if isinstance(first_entry, dict):
+                    white_model = first_entry.get("model", "N/A")
+                elif hasattr(first_entry, "model"):
+                    white_model = getattr(first_entry, "model", "N/A")
+                else:
+                    white_model = "N/A"
+            else:
+                white_model = "N/A"
+        else:
+            white_model = "N/A"
         white_usage = white_summary["usage_excluding_cached_inference"] if white_summary else {}
 
     # Determine model name and usage stats for black player
@@ -229,11 +243,25 @@ def generate_game_stats(
         }
     else:
         black_summary = gather_usage_summary([player_black])
-        black_model = (
-            player_black.llm_config["config_list"][0]["model"]
-            if isinstance(player_black.llm_config, dict)
-            else "N/A"
-        )
+        # Try to extract the model name from player_black.llm_config, supporting both dict and LLMConfig object
+        if isinstance(player_black.llm_config, dict):
+            black_model = player_black.llm_config.get("config_list", [{}])[0].get("model", "N/A")
+        elif hasattr(player_black.llm_config, "config_list"):
+            # LLMConfig object: config_list is a list of dicts or config entries
+            config_list = getattr(player_black.llm_config, "config_list", [])
+            if config_list:
+                # config_list may contain dicts or objects with .model attribute
+                first_entry = config_list[0]
+                if isinstance(first_entry, dict):
+                    black_model = first_entry.get("model", "N/A")
+                elif hasattr(first_entry, "model"):
+                    black_model = getattr(first_entry, "model", "N/A")
+                else:
+                    black_model = "N/A"
+            else:
+                black_model = "N/A"
+        else:
+            black_model = "N/A"
         black_usage = black_summary["usage_excluding_cached_inference"] if black_summary else {}
 
     stats = {
