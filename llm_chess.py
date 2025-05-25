@@ -52,9 +52,14 @@ random_print_board = (
 )
 visualize_board = False  # You can skip board visualization (animated board in popup window) to speed up execution
 
-# Set to None to use defaults, "remove" to not send it
-# o1-mini fails with any params other than 1.0 or not present, R1 distil recomends 0.5-0.7, kimi-k1.5-preview 0.3
-temp_override = None
+# Default hyperparameters are temperature 0.3, top_p 1.0
+# o1-mini fails with any temp params other than 1.0 or not present, R1 distil recomends 0.5-0.7, kimi-k1.5-preview 0.3
+# For thinking mode (temperature will be removed automatically if thinking_budget is set):
+default_hyperparams = {
+    "temperature": 0.3,
+    "top_p": 1.0,
+}
+
 
 reasoning_effort = None # Default is None, used with OpenAI models low, medium, or high
 
@@ -68,38 +73,6 @@ thinking_budget = None # Default is None, if set will enable extended thinking w
 # r"<reasoning>.*?</reasoning>" - Reka Flash
 # Default None
 remove_text = None
-
-# LLM
-llm_config_white, llm_config_black = get_llms_autogen(temp_override, reasoning_effort, thinking_budget)
-# llm_config_white = llm_config_black  # Quick hack to use same model
-
-non_llm_configs_white = [{
-                **llm_config_white,
-                "temperature": 0.0
-            }, {
-                **llm_config_white,
-                "temperature": 1.0
-            }]
-non_llm_configs_black = [{
-                **llm_config_black,
-                "temperature": 0.0
-            }, {
-                **llm_config_black,
-                "temperature": 1.0
-            }]
-
-
-# Add warnings for both temp_override and reasoning_effort
-if temp_override is not None:
-    print(
-        "\033[93mWarning: 'temp_override' is not None."
-        " This override is only needed for special models (e.g., o1 requires temp 1.0, Deepseek R1 local models recommend 0.5 - 0.7)\033[0m"
-    )
-if reasoning_effort is not None:
-    print(
-        "\033[93mWarning: 'reasoning_effort' is set to '{}'."
-        " This setting is only applicable to specific models and may not be supported by all models.\033[0m".format(reasoning_effort)
-    )
 
 stockfish_path = "/opt/homebrew/bin/stockfish"
 reset_stockfish_history = True  # If True, Stockfish will get no history before making a move, default is True
@@ -178,16 +151,53 @@ def make_move(move: str):
     if visualize_board:
         display_board(board, move_obj)
 
-def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
+def run(
+    log_dir="_logs",
+    llm_config_white=None,
+    llm_config_black=None,
+    non_llm_configs_white=None,
+    non_llm_configs_black=None,
+) -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
     """
     Runs the chess game simulation.
 
     Args:
         log_dir (str): Directory to save log file with game result. Set to NONE to not create one
+        llm_config_white (dict, optional): LLM config for white. If None, uses default from get_llms_autogen.
+        llm_config_black (dict, optional): LLM config for black. If None, uses default from get_llms_autogen.
+        non_llm_configs_white (list, optional): List of configs for non-LLM white. If None, uses default.
+        non_llm_configs_black (list, optional): List of configs for non-LLM black. If None, uses default.
 
     Returns:
         tuple: A tuple containing game statistics, the white player, and the black player.
     """
+
+    if any(v is not None for v in [reasoning_effort, thinking_budget]) or default_hyperparams != {"temperature": 0.3, "top_p": 1.0, "top_k": None, "min_p": None, "frequency_penalty": None, "presence_penalty": None}:
+        print(f"\033[93mInfo: Using custom hyperparameters: {default_hyperparams}\033[0m")
+    if reasoning_effort is not None:
+        print(
+            "\033[93mWarning: 'reasoning_effort' is set to '{}'."
+            " This setting is only applicable to specific models and may not be supported by all models.\033[0m".format(reasoning_effort)
+        )
+
+    # Set up configs if not provided
+    if llm_config_white is None or llm_config_black is None:
+        _llm_config_white, _llm_config_black = get_llms_autogen(default_hyperparams, reasoning_effort, thinking_budget)
+        if llm_config_white is None:
+            llm_config_white = _llm_config_white
+        if llm_config_black is None:
+            llm_config_black = _llm_config_black
+
+    if non_llm_configs_white is None:
+        non_llm_configs_white = [
+            {**llm_config_white, "temperature": 0.0},
+            {**llm_config_white, "temperature": 1.0},
+        ]
+    if non_llm_configs_black is None:
+        non_llm_configs_black = [
+            {**llm_config_black, "temperature": 0.0},
+            {**llm_config_black, "temperature": 1.0},
+        ]
 
     time_started = time.strftime("%Y.%m.%d_%H:%M")
 

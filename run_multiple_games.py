@@ -2,35 +2,40 @@ import datetime
 import os
 import json
 import statistics  # Import the statistics module
-from llm_chess import run
 from utils import setup_console_logging, get_llms_autogen
 import llm_chess
 
-model_name = llm_chess.llm_config_black["config_list"][0]["model"]
+HYPERPARAMS = llm_chess.default_hyperparams
+# # Qwen 3 thinking recomended params
+# HYPERPARAMS = {
+#     "temperature": 0.7,
+#     "top_p": 0.8,
+# }
+
+REASONING_EFFORT = None # Default is None, used with OpenAI models low, medium, or high
+THINKING_BUDGET = None # Anrhropic thinking budget, e.g. 4096
+
+LLM_CONFIG_WHITE, LLM_CONFIG_BLACK = get_llms_autogen(
+    HYPERPARAMS,
+    REASONING_EFFORT,
+    THINKING_BUDGET)
+
+model_name = LLM_CONFIG_BLACK["config_list"][0]["model"]
 
 NUM_REPETITIONS = 42  # Set the number of games to run
 LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
-# LOG_FOLDER = f"_logs/llm_vs_llm/haiku_35_vs_4o_mini/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
-# LOG_FOLDER = f"_logs/ensemble-ai/41-mini_t00_t03_t05_t07_t10_t10_t03/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 STORE_INDIVIDUAL_LOGS = True
 
-## ALSO CHECK INDIVIDUAL PARAMS AT `llm_chess.py`, hyper params defaults are defined in `utils.py`
-
 llm_chess.throttle_delay = 0
-llm_chess.dialog_turn_delay = 0
+llm_chess.dialog_turn_delay = 1
 
-# llm_chess.temp_override = "remove" # For OpenAI and Anthropic thinking modes
-# llm_chess.reasoning_effort = "high" # Default is None, used with OpenAI models low, medium, or high
-# llm_chess.thinking_budget = 10000
-
-## r"<think>.*?</think>" - Deepseek R1 Distil, Phi-4
+## r"<think>.*?</think>" - Deepseek R1 Distil, Phi-4, Qwen 3 thinking
 ## r"◁think▷.*?◁/think▷ - Kimi 1.5
 ## r"<reasoning>.*?</reasoning>" - Reka Flash
-# llm_chess.remove_text = None
+# llm_chess.remove_text = r"<think>.*?</think>"
 
 # llm_chess.dragon_path = "dragon/dragon-linux"
 # llm_chess.dragon_level = 5
-
 # LOG_FOLDER = f"_logs/dragon_vs_llm/lvl-{llm_chess.dragon_level}_vs_{model_name}-{llm_chess.reasoning_effort}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 
 # llm_chess.white_player_type = llm_chess.PlayerType.CHESS_ENGINE_DRAGON
@@ -38,7 +43,15 @@ llm_chess.dialog_turn_delay = 0
 # llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
 # llm_chess.rotate_board_for_white = True
 
-## NoN Agents LLM configs for black player, used if PlayerType.LLM_NON is chosen
+NON_LLM_CONFIGS_WHITE = [
+    {**LLM_CONFIG_WHITE, "temperature": 0.0},
+    {**LLM_CONFIG_WHITE, "temperature": 1.0},
+]
+NON_LLM_CONFIGS_BLACK = [
+    {**LLM_CONFIG_BLACK, "temperature": 0.0},
+    {**LLM_CONFIG_BLACK, "temperature": 1.0},
+]
+
 # llm_chess.non_llm_configs_black = [
 #             {
 #                 **llm_chess.llm_config_white,
@@ -57,14 +70,8 @@ llm_chess.dialog_turn_delay = 0
 #             },
 #         ]
 
-# Workaround, reinitializing llm config after llm_chess import was done at the top of the file
-llm_chess.llm_config_white, llm_chess.llm_config_black = get_llms_autogen(
-    llm_chess.temp_override,
-    llm_chess.reasoning_effort,
-    llm_chess.thinking_budget)
-
-def run_games(num_repetitions, log_folder=LOG_FOLDER):
-    setup_console_logging(log_folder) # save raw console output to output.txt
+def run_games():
+    setup_console_logging(LOG_FOLDER) # save raw console output to output.txt
     aggregate_data = {
         "total_games": 0,
         "white_wins": 0,
@@ -96,10 +103,14 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
 
     moves_list = []  # List to track moves for each game
 
-    for _ in range(num_repetitions):
+    for _ in range(NUM_REPETITIONS):
         # Call the run function and get the game stats
-        game_stats, player_white, player_black = run(
-            log_dir=log_folder if STORE_INDIVIDUAL_LOGS else None
+        game_stats, player_white, player_black = llm_chess.run(
+            log_dir=LOG_FOLDER if STORE_INDIVIDUAL_LOGS else None,
+            llm_config_white=LLM_CONFIG_WHITE,
+            llm_config_black=LLM_CONFIG_BLACK,
+            non_llm_configs_white=NON_LLM_CONFIGS_WHITE,
+            non_llm_configs_black=NON_LLM_CONFIGS_BLACK,
         )
 
         moves_list.append(game_stats["number_of_moves"])  # Track moves
@@ -194,7 +205,7 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
         aggregate_data["player_black"]["material_list"]
     )
 
-    aggregate_filename = os.path.join(log_folder, "_aggregate_results.json")
+    aggregate_filename = os.path.join(LOG_FOLDER, "_aggregate_results.json")
     del aggregate_data["player_white"]["material_list"]
     del aggregate_data["player_black"]["material_list"]
     with open(aggregate_filename, "w") as aggregate_file:
@@ -204,4 +215,4 @@ def run_games(num_repetitions, log_folder=LOG_FOLDER):
 
 
 if __name__ == "__main__":
-    run_games(NUM_REPETITIONS, LOG_FOLDER)
+    run_games()

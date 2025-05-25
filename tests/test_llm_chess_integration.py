@@ -1,26 +1,10 @@
 import re
 import unittest
-import multiprocessing
 import json
-import time
 import os
 import requests
-import shutil
-import tempfile
-from tests.mock_openai_server import start_server
 
-# White player settings
-os.environ["MODEL_KIND_W"] = "azure"
-os.environ["AZURE_OPENAI_VERSION_W"] = "2024-02-15-preview"
-os.environ["AZURE_OPENAI_ENDPOINT_W"] = "http://localhost:8000/v1"
-os.environ["AZURE_OPENAI_KEY_W"] = "your-azure-key"
-os.environ["AZURE_OPENAI_DEPLOYMENT_W"] = "gpt-4o"
-
-# Black player settings
-os.environ["MODEL_KIND_B"] = "local"
-os.environ["LOCAL_MODEL_NAME_B"] = "gpt-3.5-turbo"
-os.environ["LOCAL_BASE_URL_B"] = "http://localhost:8080/v1"
-os.environ["LOCAL_API_KEY_B"] = "mock-key"
+from .helper import _MockServerTestCaseBase
 
 # Importing after env vars are set
 import llm_chess
@@ -30,28 +14,6 @@ from llm_chess import (
     TerminationReason
 )
 
-class _MockServerTestCaseBase(unittest.TestCase):
-    """Base class for tests requiring a mock OpenAI server."""
-    server_process: multiprocessing.Process | None = None
-    temp_dir: str | None = None
-
-    @classmethod
-    def setUpClass(cls):
-        # Start mock OpenAI server in a separate process
-        cls.server_process = multiprocessing.Process(target=start_server, args=(8080,))
-        cls.server_process.start()
-        time.sleep(2)  # Wait for server to start
-        cls.temp_dir = tempfile.mkdtemp(prefix="test_llm_chess_integration_")
-
-    @classmethod
-    def tearDownClass(cls):
-        if cls.server_process and cls.server_process.is_alive(): # Keep basic check if process exists
-            cls.server_process.terminate()
-            cls.server_process.join()
-            
-        if cls.temp_dir and os.path.exists(cls.temp_dir): # Keep basic check if dir exists
-            shutil.rmtree(cls.temp_dir, ignore_errors=True)
-        cls.temp_dir = None # Ensure temp_dir is reset
 
 class TestRandomVsRandomGame(unittest.TestCase):
     def setUp(self):
@@ -749,7 +711,6 @@ class TestRandomVsDragonGame(unittest.TestCase):
 
         # The game should likely end in checkmate given the skill difference
         self.assertEqual(game_stats["reason"], TerminationReason.MAX_MOVES.value)
-
 
 
 if __name__ == "__main__":
