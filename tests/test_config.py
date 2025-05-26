@@ -45,7 +45,7 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         cfg = player_black.llm_config
         self.assertIsNotNone(cfg)
         self.assertEqual(cfg.get("temperature"), 0.7)
-        self.assertEqual(cfg.get("top_p"), 0.8)
+        self.assertEqual(cfg.config_list[0].get("top_p"), 0.8)
 
         self.assertIsNotNone(game_stats["winner"])
         self.assertIsNotNone(game_stats["reason"])
@@ -74,7 +74,7 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         cfg = player_white.llm_config
         self.assertIsNotNone(cfg)
         self.assertEqual(cfg.get("temperature"), 0.7)
-        self.assertEqual(cfg.get("top_p"), 0.8)
+        self.assertEqual(cfg.config_list[0].get("top_p"), 0.8)
 
         self.assertIsNotNone(game_stats["winner"])
         self.assertIsNotNone(game_stats["reason"])
@@ -119,7 +119,7 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
             thinking_budget=thinking_budget
         )
 
-        game_stats, player_white, player_black = llm_chess.run(
+        game_stats, _, player_black = llm_chess.run(
             log_dir=None,
             llm_config_white=llm_config_white,
             llm_config_black=llm_config_black
@@ -127,12 +127,9 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
 
         # With thinking_budget, top-level hyperparameters are removed
         cfg = player_black.llm_config
-        self.assertNotIn("temperature", cfg)
-        self.assertNotIn("top_p", cfg)
-        # If using Anthropic, the inner config would have a 'thinking' field:
-        inner = cfg.get("config_list", [])[0]
-        if "thinking" in inner:
-            self.assertEqual(inner["thinking"].get("budget_tokens"), thinking_budget)
+
+        self.assertIsNone(cfg.temperature)
+        self.assertIsNone(cfg.config_list[0]["top_p"])
 
         self.assertIsNotNone(game_stats["winner"])
         self.assertIsNotNone(game_stats["reason"])
@@ -157,8 +154,8 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
 
         # With both reasoning_effort and thinking_budget, top-level temperature & top_p are removed
         cfg = player_black.llm_config
-        self.assertNotIn("temperature", cfg)
-        self.assertNotIn("top_p", cfg)
+        self.assertIsNone(cfg.temperature)
+        self.assertIsNone(cfg.config_list[0]["top_p"])
         # Inner config must still exist without error
         self.assertGreater(len(cfg.get("config_list", [])), 0)
 
@@ -203,7 +200,7 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
 
         cfg = player_black.llm_config
         self.assertEqual(cfg.get("temperature"), 0.42)
-        self.assertEqual(cfg.get("top_p"), 0.88)
+        self.assertEqual(cfg.config_list[0].get("top_p"), 0.88)
 
         self.assertIsNotNone(game_stats["winner"])
         self.assertLessEqual(game_stats["number_of_moves"], 4)
