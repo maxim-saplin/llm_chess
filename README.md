@@ -312,6 +312,7 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - llama-4-scout-17b-16e-instruct
   - llama-3.3-70b
   - llama3.1-8b
+  - qwen3-32b
 - Deepseek:
   - deepseek-chat-v3
   - deepseek-reasoner-r1
@@ -324,7 +325,7 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - qwen2.5-7b-instruct-1m
 - Mercury
   - mercury-coder-small
-- Local (llama.cpp/LM Studio, default settings - 8k context, Flash Attention enabled, 100% GPU off-load when possible):
+- Local (up to date llama.cpp/LM Studio as of time of testing, RTX4090 24GB, default settings - 8k context, 100% GPU off-load when possible):
   - llama-2-7b-chat@q8_0
   - llama-3-70b-instruct-awq
   - meta-llama-3.1-8b-instruct@fp16
@@ -343,6 +344,7 @@ Failed to make move: illegal uci: 'h7h6' in rnbqkb2/1pppp2r/p4ppp/P6n/3P1P2/1PN2
   - qwq-32b-preview@q4_k_m
   - sky-t1-32b-preview@q4_0
   - deephermes-3-llama-3-8b-preview@q8
+  - qwen3-14b@iq4_xs
 
 
 ## Random and Chess Engine Players
