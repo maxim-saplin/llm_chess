@@ -48,9 +48,12 @@ class MinimalMD {
                 .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                 
                 // Convert URLs
-                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
                 
-                // Convert unordered lists
+                // Convert nested unordered lists (4 spaces before "-")
+                .replace(/^( {4})-\s+(.+)$/gm, '<br>&nbsp;&nbsp;- $2')
+                // Convert top-level unordered lists
+                .replace(/\n\n-\s+(.+)/g, '<br><br>- $1')
                 .replace(/^\s*-\s+(.+)$/gm, '<br>- $1')
                 
                 // Convert line breaks
