@@ -1,4 +1,4 @@
-Using LLM Chess default params - temp 0.3, top_p 1.0
+Using LLM Chess default params - temp 0.3, top_p 1.0. Thinking mode (no /no_think passed in).
 
 Errors are treated as losses:
 
