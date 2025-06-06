@@ -8,11 +8,56 @@ import chess.engine
 from autogen import ConversableAgent
 from typing import Any, Dict, List, Optional, Union
 
+# Define retryable exceptions
+RETRYABLE_EXCEPTIONS = (
+    # OpenAI exceptions
+    "openai.InternalServerError",
+    # "openai.RateLimitError", 
+    # "openai.APITimeoutError",
+    # "openai.APIConnectionError",
+    # # Anthropic exceptions
+    # "anthropic.InternalServerError",
+    # "anthropic.RateLimitError",
+    # "anthropic.APITimeoutError", 
+    # "anthropic.APIConnectionError",
+    # # Generic connection/service errors
+    # "ConnectionError",
+    # "TimeoutError",
+    # "ServiceUnavailableError",
+)
+
+def is_retryable_error(exception) -> bool:
+    """Check if an exception is retryable based on its type or message."""
+    exception_name = type(exception).__name__
+    exception_module = type(exception).__module__
+    full_exception_name = f"{exception_module}.{exception_name}"
+    
+    # Check if the exception type is in our retryable list
+    for retryable in RETRYABLE_EXCEPTIONS:
+        if retryable in full_exception_name or retryable in exception_name:
+            return True
+    
+    # Check specific error messages
+    error_message = str(exception).lower()
+    retryable_messages = [
+        "service is not available",
+        "rate limit",
+        "timeout",
+        "connection error",
+        "temporarily unavailable",
+        "try again later",
+        "internal server error"
+    ]
+    
+    return any(msg in error_message for msg in retryable_messages)
+
 
 class GameAgent(ConversableAgent):
     def __init__(
         self,
         dialog_turn_delay=0,
+        max_retries=3,
+        retry_delay=2.0,
         *args,
         **kwargs,
     ):
@@ -21,6 +66,8 @@ class GameAgent(ConversableAgent):
 
         Parameters:
             dialog_turn_delay (int): The delay (in seconds) before the agent responds during a dialog turn. Set to 0.
+            max_retries (int): Maximum number of retries for API errors. Default is 3.
+            retry_delay (float): Base delay in seconds between retries. Uses exponential backoff. Default is 2.0.
         """
         super().__init__(*args, **kwargs)
         # Initialize the counter for wrong moves made by the agent.
@@ -37,6 +84,9 @@ class GameAgent(ConversableAgent):
         self.dialog_turn_delay = dialog_turn_delay  # Store it locally
         # Track execution time of generate_reply
         self.accumulated_reply_time_seconds = 0.0
+        # Retry configuration
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
 
     def prep_to_move(self):
         """
@@ -57,13 +107,39 @@ class GameAgent(ConversableAgent):
         
         # Start timing only after the delay
         start_time = time.time()
-        reply = super().generate_reply(messages, sender, **kwargs)
+        
+        # Implement retry logic for API errors
+        for attempt in range(self.max_retries + 1):  # +1 for initial attempt
+            try:
+                start_time = time.time()
+                reply = super().generate_reply(messages, sender, **kwargs)
+                end_time = time.time()
+                # Accumulate only the actual execution time, not the delay
+                self.accumulated_reply_time_seconds += (end_time - start_time)
+                return reply
+                
+            except Exception as e:
+                if attempt < self.max_retries and is_retryable_error(e):
+                    # Calculate exponential backoff delay
+                    delay = self.retry_delay * (2 ** attempt)
+                    print(f"\033[93mAPI error on attempt {attempt + 1}/{self.max_retries + 1} for {self.name}: {str(e)}\033[0m")
+                    print(f"\033[93mRetrying in {delay:.1f} seconds...\033[0m")
+                    time.sleep(delay)
+                    continue
+                else:
+                    # Either max retries reached or non-retryable error
+                    end_time = time.time()
+                    self.accumulated_reply_time_seconds += (end_time - start_time)
+                    if attempt >= self.max_retries:
+                        print(f"\033[91mMax retries ({self.max_retries}) reached for {self.name}. Error: {str(e)}\033[0m")
+                    else:
+                        print(f"\033[91mNon-retryable error for {self.name}: {str(e)}\033[0m")
+                    raise e
+        
+        # This should never be reached, but just in case
         end_time = time.time()
-        
-        # Accumulate only the actual execution time, not the delay
         self.accumulated_reply_time_seconds += (end_time - start_time)
-        
-        return reply
+        return None
 
 
 class RandomPlayerAgent(GameAgent):

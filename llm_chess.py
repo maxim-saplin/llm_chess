@@ -47,6 +47,11 @@ max_llm_turns = 10  # how many conversation turns can an LLM make deciding on a 
 max_failed_attempts = 3  # number of wrong replies within a dialog (e.g. non existing action) before stopping/giving a loss, default 3
 throttle_delay = 0 # some LLM providers might thorttle frequent API reuqests, make a delay (in seconds) between moves
 dialog_turn_delay = 1  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
+
+# API Retry configuration
+max_api_retries = 3  # Maximum number of retries for API errors (e.g., "Service is not available"), default 3
+api_retry_delay = 2.0  # Base delay in seconds between retries (uses exponential backoff), default 2.0
+
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
@@ -278,6 +283,8 @@ def run(
         is_termination_msg=is_termination_message,
         human_input_mode="NEVER",
         dialog_turn_delay=dialog_turn_delay,
+        max_retries=max_api_retries,
+        retry_delay=api_retry_delay,
     )
 
     llm_black = GameAgent(
@@ -289,6 +296,8 @@ def run(
         is_termination_msg=is_termination_message,
         human_input_mode="NEVER",
         dialog_turn_delay=dialog_turn_delay,
+        max_retries=max_api_retries,
+        retry_delay=api_retry_delay,
     )
 
     random_player = RandomPlayerAgent(
@@ -357,6 +366,8 @@ def run(
             is_termination_msg=is_termination_message,
             human_input_mode="NEVER",
             dialog_turn_delay=dialog_turn_delay,
+            max_retries=max_api_retries,
+            retry_delay=api_retry_delay,
         ),
     }.get(white_player_type)
 
@@ -393,6 +404,8 @@ def run(
             is_termination_msg=is_termination_message,
             human_input_mode="NEVER",
             dialog_turn_delay=dialog_turn_delay,
+            max_retries=max_api_retries,
+            retry_delay=api_retry_delay,
         ),
     }.get(black_player_type)
 

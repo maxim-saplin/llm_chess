@@ -3,7 +3,7 @@ import chess
 from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent
 from utils import generate_game_stats
 import time
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 class TestCustomAgents(unittest.TestCase):
     def test_game_agent_initialization(self):
@@ -366,108 +366,305 @@ class TestAutoReplyAgent(unittest.TestCase):
 
 
 class TestReplyTimeTracking(unittest.TestCase):
-    
+    def setUp(self):
+        """Set up a GameAgent instance for testing reply time tracking."""
+        self.agent = GameAgent(name="TestAgent", dialog_turn_delay=0)
+
     def test_reply_time_tracking_initialization(self):
-        """Test that the accumulated_reply_time_seconds is initialized to 0."""
-        agent = GameAgent(name="TestAgent")
-        self.assertEqual(agent.accumulated_reply_time_seconds, 0.0)
-    
+        """Test that reply time tracking initializes correctly."""
+        self.assertEqual(self.agent.accumulated_reply_time_seconds, 0.0)
+
     def test_reply_time_accumulation(self):
-        """Test that reply time is properly accumulated across multiple calls."""
-        # Create a game agent
-        agent = GameAgent(name="TestAgent")
+        """Test that reply time accumulates correctly across multiple calls."""
+        # Mock the super().generate_reply method to control timing
         
-        # Create a mock sender
-        mock_sender = MagicMock()
+        def mock_generate_reply(*args, **kwargs):
+            time.sleep(0.1)  # Simulate processing time
+            return "Test response"
         
-        # Create mock messages
-        mock_messages = [{"content": "Hello"}]
-        
-        # Mock the parent's generate_reply to avoid actual LLM calls
-        with patch('autogen.ConversableAgent.generate_reply', return_value="Mock reply"):
-            # Call generate_reply multiple times
-            for _ in range(3):
-                # Add a small delay to simulate processing time
-                time.sleep(0.01)
-                agent.generate_reply(messages=mock_messages, sender=mock_sender)
+        with patch.object(self.agent.__class__.__bases__[0], 'generate_reply', side_effect=mock_generate_reply):
+            # First call
+            self.agent.generate_reply(messages=[{"content": "test"}])
+            first_time = self.agent.accumulated_reply_time_seconds
+            self.assertGreater(first_time, 0.05)  # Should be around 0.1 seconds
             
-            # Check that accumulated_reply_time_seconds is greater than 0
-            self.assertGreater(agent.accumulated_reply_time_seconds, 0.0)
-            
-            # Get the current accumulated time for later comparison
-            current_time = agent.accumulated_reply_time_seconds
-            
-            # Call again and check that the time increases
-            agent.generate_reply(messages=mock_messages, sender=mock_sender)
-            self.assertGreater(agent.accumulated_reply_time_seconds, current_time)
-    
+            # Second call
+            self.agent.generate_reply(messages=[{"content": "test2"}])
+            second_time = self.agent.accumulated_reply_time_seconds
+            self.assertGreater(second_time, first_time)  # Should accumulate
+            self.assertGreater(second_time, 0.15)  # Should be around 0.2 seconds total
+
     def test_game_stats_includes_reply_time(self):
-        """Test that reply time is included in game stats."""
-        # Create game agents
-        white_agent = GameAgent(name="WhitePlayer")
-        black_agent = GameAgent(name="BlackPlayer")
+        """Test that game stats include reply time for agents."""
+        # Set up agents with some reply time
+        agent_white = GameAgent(name="WhiteAgent")
+        agent_black = GameAgent(name="BlackAgent")
         
-        # Set accumulated_reply_time_seconds for testing
-        white_agent.accumulated_reply_time_seconds = 1.5
-        black_agent.accumulated_reply_time_seconds = 2.5
+        agent_white.accumulated_reply_time_seconds = 5.5
+        agent_black.accumulated_reply_time_seconds = 7.2
         
-        # Add required attributes for game_stats
-        white_agent.wrong_moves = 0
-        white_agent.wrong_actions = 0
-        white_agent.reflections_used = 0
-        white_agent.reflections_used_before_board = 0
-        white_agent.get_board_count = 0
-        white_agent.get_legal_moves_count = 0
-        white_agent.make_move_count = 0
-        white_agent.llm_config = None
+        # Mock other required attributes
+        agent_white.get_board_count = 1
+        agent_white.get_legal_moves_count = 2
+        agent_white.make_move_count = 3
+        agent_white.reflections_used = 0
+        agent_white.reflections_used_before_board = 0
+        agent_white.wrong_moves = 0
+        agent_white.wrong_actions = 0
+        agent_white.material_count = {"white": 39, "black": 38}
         
-        black_agent.wrong_moves = 0
-        black_agent.wrong_actions = 0
-        black_agent.reflections_used = 0
-        black_agent.reflections_used_before_board = 0
-        black_agent.get_board_count = 0
-        black_agent.get_legal_moves_count = 0
-        black_agent.make_move_count = 0
-        black_agent.llm_config = None
+        agent_black.get_board_count = 2
+        agent_black.get_legal_moves_count = 3
+        agent_black.make_move_count = 4
+        agent_black.reflections_used = 1
+        agent_black.reflections_used_before_board = 0
+        agent_black.wrong_moves = 1
+        agent_black.wrong_actions = 2
+        agent_black.material_count = {"white": 39, "black": 38}
         
-        # Generate game stats
-        stats = generate_game_stats(
-            time_started="2023-01-01_12-00-00",
-            winner="White",
+        game_stats = generate_game_stats(
+            time_started="2025.03.16_22:18",
+            winner="WhiteAgent",
             reason="Checkmate",
             current_move=10,
-            player_white=white_agent,
-            player_black=black_agent,
-            material_count={"white": 39, "black": 39}
+            player_white=agent_white,
+            player_black=agent_black,
+            material_count={"white": 39, "black": 38},
+            pgn_string=""
         )
         
-        # Check that accumulated_reply_time_seconds is included in stats
-        self.assertEqual(stats["player_white"]["accumulated_reply_time_seconds"], 1.5)
-        self.assertEqual(stats["player_black"]["accumulated_reply_time_seconds"], 2.5)
-    
+        # Check that reply times are included in game stats
+        self.assertEqual(game_stats["player_white"]["accumulated_reply_time_seconds"], 5.5)
+        self.assertEqual(game_stats["player_black"]["accumulated_reply_time_seconds"], 7.2)
+
     def test_dialog_turn_delay_not_included_in_time(self):
-        """Test that dialog_turn_delay is NOT included in the accumulated time."""
-        # Create a game agent with a delay (use integer to match implementation)
-        agent = GameAgent(name="DelayedAgent", dialog_turn_delay=1)
+        """Test that dialog turn delay is not included in accumulated reply time."""
+        # Create agent with dialog turn delay (use integer to match the implementation check)
+        agent = GameAgent(name="TestAgent", dialog_turn_delay=1)  # Use integer as per implementation
         
-        # Create mock messages and sender
-        mock_messages = [{"content": "Hello"}]
-        mock_sender = MagicMock()
+        def mock_generate_reply(*args, **kwargs):
+            time.sleep(0.01)  # Simulate very short processing time
+            return "Test response"
         
-        # Mock both time.sleep (to avoid actual delay) and the parent's generate_reply
-        with patch('time.sleep') as mock_sleep, \
-             patch('autogen.ConversableAgent.generate_reply', return_value="Mock reply"):
+        with patch.object(agent.__class__.__bases__[0], 'generate_reply', side_effect=mock_generate_reply):
+            start_time = time.time()
+            agent.generate_reply(messages=[{"content": "test"}])
+            end_time = time.time()
             
-            # Call generate_reply
-            agent.generate_reply(messages=mock_messages, sender=mock_sender)
+            # Total elapsed time should include the dialog delay
+            total_elapsed = end_time - start_time
+            self.assertGreater(total_elapsed, 0.8)  # Should be at least close to the 1 second delay
             
-            # Verify time.sleep was called with the delay value 
-            mock_sleep.assert_called_once_with(1)
-            
-            # The accumulated time should be very small since we're just measuring
-            # the execution time of the mocked generate_reply, not the delay
-            self.assertLess(agent.accumulated_reply_time_seconds, 0.01)  # Should be small without delay
+            # But accumulated reply time should only be the processing time (much smaller)
+            self.assertLess(agent.accumulated_reply_time_seconds, 0.1)
+            self.assertGreater(agent.accumulated_reply_time_seconds, 0.005)
 
 
-if __name__ == "__main__":
+class TestRetryLogic(unittest.TestCase):
+    """Test suite for API retry logic in GameAgent."""
+    
+    def setUp(self):
+        """Set up a GameAgent instance for testing retry logic."""
+        self.agent = GameAgent(
+            name="TestAgent", 
+            dialog_turn_delay=0,
+            max_retries=3,
+            retry_delay=0.1  # Short delay for testing
+        )
+    
+    def test_retry_initialization(self):
+        """Test that retry parameters are properly initialized."""
+        self.assertEqual(self.agent.max_retries, 3)
+        self.assertEqual(self.agent.retry_delay, 0.1)
+    
+    def test_no_retry_on_success(self):
+        """Test that successful calls don't trigger retries."""
+        with patch.object(self.agent.__class__.__bases__[0], 'generate_reply', return_value="Success"):
+            result = self.agent.generate_reply(messages=[{"content": "test"}])
+            self.assertEqual(result, "Success")
+    
+    def test_retry_on_openai_internal_server_error(self):
+        """Test that openai.InternalServerError triggers retries."""
+        # Create a mock exception that matches the pattern
+        class MockInternalServerError(Exception):
+            def __init__(self, message="Service is not available"):
+                super().__init__(message)
+                self.__module__ = "openai"
+                self.__class__.__name__ = "InternalServerError"
+        
+        call_count = 0
+        def mock_generate_reply(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count <= 2:  # Fail first 2 times
+                raise MockInternalServerError("Service is not available")
+            return "Success after retry"
+        
+        with patch.object(self.agent.__class__.__bases__[0], 'generate_reply', side_effect=mock_generate_reply):
+            with patch('builtins.print'):  # Suppress print output during test
+                result = self.agent.generate_reply(messages=[{"content": "test"}])
+                self.assertEqual(result, "Success after retry")
+                self.assertEqual(call_count, 3)  # Should have been called 3 times
+    
+    def test_max_retries_reached(self):
+        """Test that after max retries, the original exception is raised."""
+        # Create a mock exception that matches the pattern
+        class MockInternalServerError(Exception):
+            def __init__(self, message="Service is not available"):
+                super().__init__(message)
+                self.__module__ = "openai"
+                self.__class__.__name__ = "InternalServerError"
+        
+        def mock_generate_reply(*args, **kwargs):
+            raise MockInternalServerError("Service is not available")
+        
+        with patch.object(self.agent.__class__.__bases__[0], 'generate_reply', side_effect=mock_generate_reply):
+            with patch('builtins.print'):  # Suppress print output during test
+                with self.assertRaises(MockInternalServerError):
+                    self.agent.generate_reply(messages=[{"content": "test"}])
+    
+    def test_non_retryable_error_no_retry(self):
+        """Test that non-retryable errors don't trigger retries."""
+        class NonRetryableError(Exception):
+            def __init__(self, message="Authentication failed"):
+                super().__init__(message)
+        
+        call_count = 0
+        def mock_generate_reply(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            raise NonRetryableError("Authentication failed")
+        
+        with patch.object(self.agent.__class__.__bases__[0], 'generate_reply', side_effect=mock_generate_reply):
+            with patch('builtins.print'):  # Suppress print output during test
+                with self.assertRaises(NonRetryableError):
+                    self.agent.generate_reply(messages=[{"content": "test"}])
+                self.assertEqual(call_count, 1)  # Should only be called once
+    
+    def test_exponential_backoff_timing(self):
+        """Test that exponential backoff timing works correctly."""
+        # Create a mock exception that matches the pattern
+        class MockInternalServerError(Exception):
+            def __init__(self, message="Service is not available"):
+                super().__init__(message)
+                self.__module__ = "openai"
+                self.__class__.__name__ = "InternalServerError"
+        
+        call_times = []
+        def mock_generate_reply(*args, **kwargs):
+            call_times.append(time.time())
+            raise MockInternalServerError("Service is not available")
+        
+        with patch.object(self.agent.__class__.__bases__[0], 'generate_reply', side_effect=mock_generate_reply):
+            with patch('builtins.print'):  # Suppress print output during test
+                with self.assertRaises(MockInternalServerError):
+                    self.agent.generate_reply(messages=[{"content": "test"}])
+        
+        # Check that we have the expected number of calls (1 initial + 3 retries)
+        self.assertEqual(len(call_times), 4)
+        
+        # Check exponential backoff timing (with some tolerance for test execution)
+        # Expected delays: 0.1s, 0.2s, 0.4s
+        if len(call_times) >= 2:
+            delay1 = call_times[1] - call_times[0]
+            self.assertGreater(delay1, 0.08)  # Should be around 0.1s
+            self.assertLess(delay1, 0.15)
+        
+        if len(call_times) >= 3:
+            delay2 = call_times[2] - call_times[1]
+            self.assertGreater(delay2, 0.18)  # Should be around 0.2s
+            self.assertLess(delay2, 0.25)
+    
+    def test_is_retryable_error_function(self):
+        """Test the is_retryable_error function directly."""
+        from custom_agents import is_retryable_error
+        
+        # Test retryable exception by type
+        class MockInternalServerError(Exception):
+            def __init__(self, message="Service is not available"):
+                super().__init__(message)
+                self.__module__ = "openai"
+                self.__class__.__name__ = "InternalServerError"
+        
+        retryable_error = MockInternalServerError("Service is not available")
+        self.assertTrue(is_retryable_error(retryable_error))
+        
+        # Test retryable exception by message
+        class GenericError(Exception):
+            pass
+        
+        retryable_by_message = GenericError("service is not available")
+        self.assertTrue(is_retryable_error(retryable_by_message))
+        
+        # Test non-retryable exception
+        non_retryable = GenericError("Authentication failed")
+        self.assertFalse(is_retryable_error(non_retryable))
+    
+    def test_retry_with_dialog_turn_delay(self):
+        """Test that retry logic works correctly when dialog_turn_delay is set."""
+        # Create agent with dialog turn delay
+        agent = GameAgent(
+            name="TestAgent",
+            dialog_turn_delay=0.02,  # Very small delay for testing
+            max_retries=2,
+            retry_delay=0.02  # Very small retry delay
+        )
+        
+        # Create a mock exception that matches the pattern
+        class MockInternalServerError(Exception):
+            def __init__(self, message="Service is not available"):
+                super().__init__(message)
+                self.__module__ = "openai"
+                self.__class__.__name__ = "InternalServerError"
+        
+        call_count = 0
+        def mock_generate_reply(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:  # Fail first time
+                raise MockInternalServerError("Service is not available")
+            return "Success after retry"
+        
+        with patch.object(agent.__class__.__bases__[0], 'generate_reply', side_effect=mock_generate_reply):
+            with patch('builtins.print'):  # Suppress print output during test
+                start_time = time.time()
+                result = agent.generate_reply(messages=[{"content": "test"}])
+                end_time = time.time()
+                
+                self.assertEqual(result, "Success after retry")
+                self.assertEqual(call_count, 2)
+                
+                # Just verify that some time passed (more forgiving test)
+                total_time = end_time - start_time
+                self.assertGreater(total_time, 0.01)  # Should be at least some minimal time
+    
+    def test_accumulated_reply_time_with_retries(self):
+        """Test that accumulated reply time is properly tracked even with retries."""
+        # Create a mock exception that matches the pattern
+        class MockInternalServerError(Exception):
+            def __init__(self, message="Service is not available"):
+                super().__init__(message)
+                self.__module__ = "openai"
+                self.__class__.__name__ = "InternalServerError"
+        
+        call_count = 0
+        def mock_generate_reply(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            time.sleep(0.01)  # Simulate processing time
+            if call_count <= 2:  # Fail first 2 times
+                raise MockInternalServerError("Service is not available")
+            return "Success after retry"
+        
+        with patch.object(self.agent.__class__.__bases__[0], 'generate_reply', side_effect=mock_generate_reply):
+            with patch('builtins.print'):  # Suppress print output during test
+                self.agent.generate_reply(messages=[{"content": "test"}])
+                
+                # Should have accumulated time the last call
+                self.assertGreater(self.agent.accumulated_reply_time_seconds, 0.01)
+                # Allow more time due to test overhead and retry delays
+                self.assertLess(self.agent.accumulated_reply_time_seconds, 1.0)
+
+
+if __name__ == '__main__':
     unittest.main()
