@@ -122,7 +122,7 @@ class GameAgent(ConversableAgent):
                 if attempt < self.max_retries and is_retryable_error(e):
                     # Calculate exponential backoff delay
                     delay = self.retry_delay * (2 ** attempt)
-                    print(f"\033[93mAPI error on attempt {attempt + 1}/{self.max_retries + 1} for {self.name}: {str(e)}\033[0m")
+                    print(f"\033[93mAPI error on attempt {attempt + 1}/{self.max_retries} for {self.name}: {str(e)}\033[0m")
                     print(f"\033[93mRetrying in {delay:.1f} seconds...\033[0m")
                     time.sleep(delay)
                     continue
