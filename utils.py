@@ -166,6 +166,15 @@ def get_llms_autogen(hyperparams=None, reasoning_effort=None, thinking_budget=No
             
         return config
 
+    def mistral_config(key):
+        config = {
+            "model": os.environ[f"MISTRAL_MODEL_NAME_{key}"],
+            "api_key": os.environ[f"MISTRAL_API_KEY_{key}"],
+            "api_type": "mistral",
+        }
+            
+        return config
+
     def create_config(config_list):
         config = {
             "config_list": config_list,
@@ -202,6 +211,8 @@ def get_llms_autogen(hyperparams=None, reasoning_effort=None, thinking_budget=No
             configs.append(create_config([xai_config(key)]))
         elif kind == "anthropic":
             configs.append(create_config([anthropic_config(key)]))
+        elif kind == "mistral":
+            configs.append(create_config([mistral_config(key)]))
 
     for config in configs:
         config["cache_seed"] = None

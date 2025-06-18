@@ -49,7 +49,7 @@ throttle_delay = 0 # some LLM providers might thorttle frequent API reuqests, ma
 dialog_turn_delay = 1  # adds a delay in seconds inside LLM agent, i.e. delays between turns in a dialog happenning within a move
 
 # API Retry configuration
-max_api_retries = 12  # Maximum number of retries for API errors (e.g., "Service is not available"), default 3
+max_api_retries = 3  # Maximum number of retries for API errors (e.g., "Service is not available"), default 3
 api_retry_delay = 2.0  # Base delay in seconds between retries (uses exponential backoff), default 2.0
 
 random_print_board = (

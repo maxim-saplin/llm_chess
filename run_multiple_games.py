@@ -32,7 +32,7 @@ llm_chess.dialog_turn_delay = 1
 ## r"<think>.*?</think>" - Deepseek R1 Distil, Phi-4, Qwen 3 thinking
 ## r"◁think▷.*?◁/think▷ - Kimi 1.5
 ## r"<reasoning>.*?</reasoning>" - Reka Flash
-# llm_chess.remove_text = r"<think>.*?</think>"
+llm_chess.remove_text = r"<think>.*?</think>"
 
 # llm_chess.dragon_path = "dragon/dragon-linux"
 # llm_chess.dragon_level = 5
