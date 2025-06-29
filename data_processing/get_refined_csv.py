@@ -72,6 +72,10 @@ LOGS_DIRS = [
     "_logs/new/grok-3-beta",
     "_logs/new/qwen3-14b@iq4_xs-thinking",
     {"_logs/new/qwen-3-32b-cerebras-recommended": "qwen3-32b-cerebras-thinking"},
+    {"_logs/new/gemini-2.5-pro-preview-05-06": "gemini-2.5-pro-preview-05-06"},
+    {"_logs/new/gemini-2.5-flash": "gemini-2.5-flash"},
+    {"_logs/new/gemini-2.5-pro": "gemini-2.5-pro"},
+    {"_logs/new/magistral-small-2506": "magistral-small-2506"},
 ]
 
 # LOGS_DIRS = [
