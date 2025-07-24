@@ -1,0 +1,18 @@
+{
+    "experiments": [
+        {
+            "name": "llm_vs_random_no_legal_moves_fen",
+            "num_games": 30,
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK",
+            "symmetric": false,
+            "board_representation_mode": "FEN_ONLY",
+            "llm_actions": [
+                "make_move"
+            ],
+	    "use_legal_moves": false,
+            "default_move_style": "UCI",
+            "see_previous_moves": false
+        }
+    ]
+}

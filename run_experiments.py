@@ -68,6 +68,7 @@ def main():
         symmetric = exp.get('symmetric', False)
         board_repr = exp['board_representation_mode']
         llm_actions = exp['llm_actions']
+        use_legal_moves = exp.get('use_legal_moves', False)
         default_move_style = exp['default_move_style']
         see_prev = exp['see_previous_moves']
 
@@ -101,6 +102,7 @@ def main():
             llm_chess.black_player_type = b_pt
             llm_chess.board_representation_mode = board_mode
             llm_chess.llm_actions = llm_actions
+            llm_chess.use_legal_moves = use_legal_moves
             llm_chess.DEFAULT_MOVE_STYLE = default_move_style
             llm_chess.SEE_PREVIOUS_MOVES = see_prev
 

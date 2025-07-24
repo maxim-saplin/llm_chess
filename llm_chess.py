@@ -12,6 +12,7 @@ class BoardRepresentation(Enum):
     UNICODE_ONLY = 2
     UNICODE_WITH_PGN = 3
     ASCII_ONLY = 4  # Plain ASCII with uppercase (White) and lowercase (Black) letters
+    NONE = 5  # No board representation; for use only when we have previous moves
 
 
 class TerminationReason(Enum):
@@ -42,6 +43,9 @@ enable_reflection = False  # Whether to offer the LLM time to think and evaluate
 board_representation_mode = BoardRepresentation.UNICODE_ONLY  # What kind of board is printed in response to get_current_board
 rotate_board_for_white = False # Whether to rotate the Uicode board for the white player so it gets it's pieces at the bottom
 llm_actions: List[str] = ["get_current_board", "get_legal_moves", "make_move"]  # List of actions the LLM agent should take; actions not included will be auto-provided
+use_legal_moves = True  # Whether to include legal moves in the auto-provided context
+if not use_legal_moves:
+    assert board_representation_mode == BoardRepresentation.FEN_ONLY, "If you want to disable legal moves, you must use FEN_ONLY board representation model, as unicode doesn't have all the information."
 
 # Game configuration
 max_game_moves = 200  # maximum number of game moves before terminating, dafault 200
@@ -60,7 +64,7 @@ SEE_PREVIOUS_MOVES = False  # True  # False
 
 # Set to None to use defaults, "remove" to not send it
 # o1-mini fails with any params other than 1.0 or not present, R1 distil recomends 0.5-0.7, kimi-k1.5-preview 0.3
-temp_override = None  # "remove"  # None
+temp_override = "remove"  # None
 
 reasoning_effort = "low" # Default is None, used with OpenAI models low, medium, or high
 print(f"NOTE: Using reasoning_effort={reasoning_effort}, temperature={temp_override}. Make sure to change for non-OpenAI models if needed, e.g. Anthropic models use thinking_budget instead.")
@@ -115,7 +119,7 @@ stockfish_time_per_move = 0.1  # Time limit (in seconds) for Stockfish to think 
 
 # Komodo Dragon chess engine configuration
 # Download Dragon 1 from https://komodochess.com
-dragon_path = "./dragon/dragon-osx"  # Path to Komodo Dragon executable
+dragon_path = "../llm-chess/dragon_05e2a7/Linux/dragon-linux"  # "./dragon/dragon-osx"  # Path to Komodo Dragon executable
 reset_dragon_history = True  # If True, Dragon will get no history before making a move
 dragon_level = 1  # Skill level (1-25) for Komodo Dragon
 dragon_time_per_move = 0.1  # Time limit (in seconds) for Dragon to think per move
@@ -485,7 +489,7 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                 # Auto-provide excluded action outputs
                 if not handle_board:
                     auto_context += "Current board state:\n" + get_current_board() + "\n\n"
-                if not handle_legal:
+                if not handle_legal and use_legal_moves:
                     legal = get_legal_moves()
                     auto_context += "Legal moves:\n" + (legal or "None") + "\n\n"   # + "Please reason before making a move.\n\n"  # NOTE: This reasoning prompt was necessary for gpt-4.1-mini else it would just give the answer.
                 # Build message for the LLM with auto-provided context

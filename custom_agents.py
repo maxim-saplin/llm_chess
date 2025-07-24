@@ -215,7 +215,7 @@ class AutoReplyAgent(GameAgent):
             sender.get_board_count += 1
             reply = self.get_current_board()
             sender.has_requested_board = True
-        elif self.get_legal_moves_action and self.get_legal_moves_action in action_choice:
+        elif (self.get_legal_moves_action and self.get_legal_moves_action in action_choice) or (sender.name == "Random_Player" and 'get_legal_moves' in action_choice):  # Needed if we don't include legal moves else Random Player won't move.
             sender.get_legal_moves_count += 1
             reply = self.get_legal_moves()
             sender.has_requested_board = True

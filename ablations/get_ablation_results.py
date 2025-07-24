@@ -131,6 +131,8 @@ def main(root_dir):
         "llm_vs_random_fen/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-06-21-27-25",
         "llm_white_vs_random/o4-mini/LLM_WHITE_vs_RANDOM_PLAYER/2025-05-09-10-03-48",
         "llm_white_vs_random/grok-3-mini-beta/LLM_WHITE_vs_RANDOM_PLAYER/2025-05-09-14-15-32",
+        "llm_vs_random_no_legal_moves_fen/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-14-20-39-54/",
+        "llm_vs_random_no_legal_moves_fen/grok-3-mini-fast-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-14-13-24-43/",
     ]
 
     # We know there is _aggregate_results.json in each of these folders
@@ -149,9 +151,15 @@ def main(root_dir):
             continue
         player_color, player_info, wins = get_llm_player_info(data)
         total_games = data["total_games"]
-        win_rate = wins / total_games if total_games > 0 else 0
-        aggregated_results[model_name][setting] = win_rate
-        print(f"Model: {model_name}, Setting: {setting}, Win Rate: {win_rate:.2f}")
+        win_rate = None  # wins / total_games if total_games > 0 else 0  # NOTE: We use win/loss instead.
+        white_rand_wins = data["white_wins"] if player_color == "black" else data["black_wins"]
+        win_loss = (
+            ((wins - white_rand_wins) / total_games) / 2 + 0.5
+            if total_games > 0
+            else 0.5
+        )
+        aggregated_results[model_name][setting] = win_loss
+        print(f"Model: {model_name}, Setting: {setting}, Win/Loss: {win_loss:.2f}")
 
     # Generate LaTeX table
     latex_table = generate_latex_table(aggregated_results)
