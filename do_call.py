@@ -3,7 +3,7 @@ from autogen import ConversableAgent
 from utils import get_llms_autogen
 
 
-_, llm_config_black = get_llms_autogen("remove", "high")
+_, llm_config_black = get_llms_autogen(reasoning_effort="high")
 
 agent = ConversableAgent(
     name="test",
