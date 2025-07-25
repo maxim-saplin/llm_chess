@@ -161,6 +161,7 @@ class AutoReplyAgent(GameAgent):
         reflect_prompt,
         reflection_followup_prompt,
         remove_text,
+        dont_provide_fen_in_move_error,
         *args,
         **kwargs,
     ):
@@ -179,6 +180,7 @@ class AutoReplyAgent(GameAgent):
         self.reflect_prompt = reflect_prompt
         self.reflection_followup_prompt = reflection_followup_prompt
         self.remove_text = remove_text
+        self.dont_provide_fen_in_move_error = dont_provide_fen_in_move_error
 
     def generate_reply(
         self,
@@ -239,7 +241,11 @@ class AutoReplyAgent(GameAgent):
                     self.make_move(move)
                     reply = self.move_was_made
                 except Exception as e:
-                    reply = f"Failed to make move: {e}"
+                    if self.dont_provide_fen_in_move_error:
+                        # In our hardest setting when we provide only previous moves (no board state), we don't want to provide FEN in the error message as we don't want to give away the board state.
+                        reply = f"Failed to make move. Ensure you are providing a valid move in `{self.make_move_action} <UCI formatted move>` format."
+                    else:
+                        reply = f"Failed to make move: {e}"
                     sender.failed_action_attempts += 1
                     sender.wrong_moves += 1
             else:

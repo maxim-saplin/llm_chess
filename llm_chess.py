@@ -43,9 +43,6 @@ enable_reflection = False  # Whether to offer the LLM time to think and evaluate
 board_representation_mode = BoardRepresentation.UNICODE_ONLY  # What kind of board is printed in response to get_current_board
 rotate_board_for_white = False # Whether to rotate the Uicode board for the white player so it gets it's pieces at the bottom
 llm_actions: List[str] = ["get_current_board", "get_legal_moves", "make_move"]  # List of actions the LLM agent should take; actions not included will be auto-provided
-use_legal_moves = True  # Whether to include legal moves in the auto-provided context
-if not use_legal_moves:
-    assert board_representation_mode == BoardRepresentation.FEN_ONLY, "If you want to disable legal moves, you must use FEN_ONLY board representation model, as unicode doesn't have all the information."
 
 # Game configuration
 max_game_moves = 200  # maximum number of game moves before terminating, dafault 200
@@ -61,6 +58,11 @@ visualize_board = False  # You can skip board visualization (animated board in p
 DEFAULT_MOVE_STYLE = "UCI"
 # If True, LLM prompts include all previous moves in SAN notation
 SEE_PREVIOUS_MOVES = False  # True  # False
+use_legal_moves = True  # Whether to include legal moves in the auto-provided context
+# NOTE: All the below is also in run_experiment.py bc it will load first before we override variables with `llm_chess.<var_name> = <value>` in `run_experiments.py` via the configs
+if not use_legal_moves:
+    assert board_representation_mode == BoardRepresentation.FEN_ONLY or SEE_PREVIOUS_MOVES, "If you want to disable legal moves, you must use FEN_ONLY board representation model or SEE_PREVIOUS_MOVES, as unicode doesn't have all the information."
+dont_provide_fen_in_move_error = board_representation_mode == BoardRepresentation.NONE  # When we are not providing a board representation, we do not want to provide FEN in the error message else it will spoil the board state instead of it being focused on previous moves.
 
 # Set to None to use defaults, "remove" to not send it
 # o1-mini fails with any params other than 1.0 or not present, R1 distil recomends 0.5-0.7, kimi-k1.5-preview 0.3
@@ -162,6 +164,8 @@ def get_current_board() -> str:
                 pgn_moves += "\n"
 
         return f"{board.unicode(orientation=orientation)}\n\nPGN:\n{pgn_header}{pgn_moves}"
+    elif board_representation_mode == BoardRepresentation.NONE:
+        return None  # No board representation, used when we have previous moves
 
 
 def get_legal_moves() -> str:
@@ -347,6 +351,7 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
         reflection_followup_prompt=reflection_followup_prompt,
         make_move_action=make_move_action if handle_move else None,
         remove_text=remove_text,
+        dont_provide_fen_in_move_error=dont_provide_fen_in_move_error,
     )
 
     player_white = {
@@ -488,7 +493,9 @@ def run(log_dir="_logs") -> Tuple[Dict[str, Any], GameAgent, GameAgent]:
                     auto_context = ""
                 # Auto-provide excluded action outputs
                 if not handle_board:
-                    auto_context += "Current board state:\n" + get_current_board() + "\n\n"
+                    current_board = get_current_board()
+                    if current_board is not None:
+                        auto_context += "Current board state:\n" + current_board + "\n\n"
                 if not handle_legal and use_legal_moves:
                     legal = get_legal_moves()
                     auto_context += "Legal moves:\n" + (legal or "None") + "\n\n"   # + "Please reason before making a move.\n\n"  # NOTE: This reasoning prompt was necessary for gpt-4.1-mini else it would just give the answer.

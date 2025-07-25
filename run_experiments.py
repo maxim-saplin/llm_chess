@@ -105,6 +105,9 @@ def main():
             llm_chess.use_legal_moves = use_legal_moves
             llm_chess.DEFAULT_MOVE_STYLE = default_move_style
             llm_chess.SEE_PREVIOUS_MOVES = see_prev
+            if not use_legal_moves:
+                assert board_mode == BoardRepresentation.FEN_ONLY or see_prev, "If you want to disable legal moves, you must use FEN_ONLY board representation model or SEE_PREVIOUS_MOVES, as unicode doesn't have all the information."
+            llm_chess.dont_provide_fen_in_move_error = board_mode == BoardRepresentation.NONE  # When we are not providing a board representation, we do not want to provide FEN in the error message else it will spoil the board state instead of it being focused on previous moves.
 
             # Prepare log folder
             ts = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
