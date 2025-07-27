@@ -290,58 +290,8 @@ def run(
     llm_black = GameAgent(
         name="Player_Black",
         system_message="",
-        description='''You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
-
-'get_current_board' to get the schema and current status of the board
-'get_legal_moves' to get a UCI formatted list of available moves
-'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
-
-Follow the pattern in the examples and then continue the game.
-
-EXAMPLE #1
-Black (thinking):
-get_legal_moves
-Proxy → Black:
-e7e6, g8f6, d7d5, …
-Black:
-make_move g8f6
-
-EXAMPLE #2
-Black (thinking):
-get_current_board
-Proxy → Black:
-♜ ♞ ♝ ♛ ♚ ♝ ⭘ ♜
-♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
-⭘ ⭘ ⭘ ⭘ ⭘ ♞ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-♙ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-⭘ ⭘ ♙ ♙ ♙ ♙ ♙ ♙
-♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
-Black:
-make_move c7c5
-
-EXAMPLE #3
-Black (thinking):
-get_current_board
-Proxy → Black:
-♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
-♟ ♟ ♟ ♟ ⭘ ♟ ♟ ♟
-⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
-♙ ♙ ♙ ♙ ♘ ♙ ♙ ♙
-♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
-Black (thinking):
-get_legal_moves
-Proxy → Black:
-e7e5, g8f6, b8c6, d7d6, c7c5, …
-Black:
-make_move e7e5
-
-End of examples – real game starts now.
-Remember: respond with exactly one command on a single line.''',
+        description="You are a professional chess player and you play as black. "
+        + common_prompt,
         llm_config=llm_config_black,
         is_termination_msg=is_termination_message,
         human_input_mode="NEVER",
