@@ -20,14 +20,24 @@ LLM_CONFIG_WHITE, LLM_CONFIG_BLACK = get_llms_autogen(
     REASONING_EFFORT,
     THINKING_BUDGET)
 
-model_name = LLM_CONFIG_BLACK["config_list"][0]["model"]
+# reasoning_effort_white = "high"
+# reasoning_effort_black = "low"
+# LLM_CONFIG_WHITE["config_list"][0]["reasoning_effort"] = reasoning_effort_white
+# LLM_CONFIG_BLACK["config_list"][0]["reasoning_effort"] = reasoning_effort_black
+# llm_chess.white_player_type = llm_chess.PlayerType.LLM_WHITE
 
-NUM_REPETITIONS = 42  # Set the number of games to run
-LOG_FOLDER = f"_logs/new/{model_name}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+model_name_white = LLM_CONFIG_WHITE["config_list"][0]["model"]
+model_name_black = LLM_CONFIG_BLACK["config_list"][0]["model"]
+
+NUM_REPETITIONS = 33  # Set the number of games to run
+LOG_FOLDER = f"_logs/new/{model_name_black}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+# LOG_FOLDER = f"_logs/llm_vs_llm/{model_name_white}-{reasoning_effort_white}_vs_{model_name}-{reasoning_effort_black}"
 STORE_INDIVIDUAL_LOGS = True
 
 llm_chess.throttle_delay = 0
 llm_chess.dialog_turn_delay = 1
+# llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
+# llm_chess.rotate_board_for_white = True
 
 ## r"<think>.*?</think>" - Deepseek R1 Distil, Phi-4, Qwen 3 thinking
 ## r"◁think▷.*?◁/think▷ - Kimi 1.5
@@ -35,13 +45,11 @@ llm_chess.dialog_turn_delay = 1
 llm_chess.remove_text = r"<think>.*?</think>"
 
 # llm_chess.dragon_path = "dragon/dragon-linux"
-# llm_chess.dragon_level = 5
+# llm_chess.dragon_level = 10
 # LOG_FOLDER = f"_logs/dragon_vs_llm/lvl-{llm_chess.dragon_level}_vs_{model_name}-{llm_chess.reasoning_effort}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
 
 # llm_chess.white_player_type = llm_chess.PlayerType.CHESS_ENGINE_DRAGON
 # llm_chess.black_player_type = llm_chess.PlayerType.LLM_NON
-# llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
-# llm_chess.rotate_board_for_white = True
 
 NON_LLM_CONFIGS_WHITE = [
     {**LLM_CONFIG_WHITE, "temperature": 0.0},
