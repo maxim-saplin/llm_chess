@@ -12,7 +12,7 @@ HYPERPARAMS = llm_chess.default_hyperparams
 #     "top_p": 0.8,
 # }
 
-REASONING_EFFORT = "low" # Default is None, used with OpenAI models low, medium, or high
+REASONING_EFFORT = None # Default is None, used with OpenAI models low, medium, or high
 THINKING_BUDGET = None # Anrhropic thinking budget, e.g. 4096
 
 LLM_CONFIG_WHITE, LLM_CONFIG_BLACK = get_llms_autogen(
@@ -20,16 +20,18 @@ LLM_CONFIG_WHITE, LLM_CONFIG_BLACK = get_llms_autogen(
     REASONING_EFFORT,
     THINKING_BUDGET)
 
-# LLM_CONFIG_WHITE["config_list"][0]["reasoning_effort"] = "high"
-# LLM_CONFIG_BLACK["config_list"][0]["reasoning_effort"] = "low"
+# reasoning_effort_white = "high"
+# reasoning_effort_black = "low"
+# LLM_CONFIG_WHITE["config_list"][0]["reasoning_effort"] = reasoning_effort_white
+# LLM_CONFIG_BLACK["config_list"][0]["reasoning_effort"] = reasoning_effort_black
 # llm_chess.white_player_type = llm_chess.PlayerType.LLM_WHITE
 
-# model_name_white = LLM_CONFIG_WHITE["config_list"][0]["model"]
-model_name = LLM_CONFIG_BLACK["config_list"][0]["model"]
+model_name_white = LLM_CONFIG_WHITE["config_list"][0]["model"]
+model_name_black = LLM_CONFIG_BLACK["config_list"][0]["model"]
 
-NUM_REPETITIONS = 42  # Set the number of games to run
-LOG_FOLDER = f"_logs/ablations/llm_vs_random_prompt_variations/verbose_few_shot_prompt/{model_name}-low/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
-# LOG_FOLDER = f"_logs/llm_vs_llm/{model_name_white}-high_vs_{model_name}-low"
+NUM_REPETITIONS = 33  # Set the number of games to run
+LOG_FOLDER = f"_logs/new/{model_name_black}/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+# LOG_FOLDER = f"_logs/llm_vs_llm/{model_name_white}-{reasoning_effort_white}_vs_{model_name}-{reasoning_effort_black}"
 STORE_INDIVIDUAL_LOGS = True
 
 llm_chess.throttle_delay = 0
