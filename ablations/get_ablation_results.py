@@ -115,28 +115,41 @@ def main(root_dir):
     file_paths = []
 
     dir_paths = [
-        "llm_vs_random_previous_moves/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-03-20-16-03",
-        "llm_vs_random_previous_moves/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-05-11-57-01",
-        "llm_vs_random_always_legal_moves/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-03-20-16-28",
-        "llm_vs_random_always_legal_moves/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-05-11-25-50",
-        "llm_vs_random_always_board_state/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-03-20-17-01",
-        "llm_vs_random_always_board_state/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-05-11-28-09",
-        "llm_vs_random_only_make_move/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-04-18-09-44",
-        "llm_vs_random_only_make_move/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-05-11-17-02",
-        "llm_vs_random_only_make_move_previous_moves/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-06-10-20-00",
-        "llm_vs_random_only_make_move_previous_moves/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-08-08-47-26",
-        "llm_vs_random_ascii/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-08-08-45-58",
-        "llm_vs_random_ascii/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-06-21-27-29",
-        "llm_vs_random_fen/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-08-08-46-29",
-        "llm_vs_random_fen/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-06-21-27-25",
-        "llm_white_vs_random/o4-mini/LLM_WHITE_vs_RANDOM_PLAYER/2025-05-09-10-03-48",
-        "llm_white_vs_random/grok-3-mini-beta/LLM_WHITE_vs_RANDOM_PLAYER/2025-05-09-14-15-32",
-        "llm_vs_random_no_legal_moves_fen/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-14-20-39-54/",
-        "llm_vs_random_no_legal_moves_fen/grok-3-mini-fast-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-14-13-24-43/",
+        # For original NeurIPS submission:
+        # "llm_vs_random_previous_moves/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-03-20-16-03",
+        # "llm_vs_random_previous_moves/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-05-11-57-01",
+        # "llm_vs_random_always_legal_moves/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-03-20-16-28",
+        # "llm_vs_random_always_legal_moves/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-05-11-25-50",
+        # "llm_vs_random_always_board_state/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-03-20-17-01",
+        # "llm_vs_random_always_board_state/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-05-11-28-09",
+        # "llm_vs_random_only_make_move/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-04-18-09-44",
+        # "llm_vs_random_only_make_move/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-05-11-17-02",
+        # "llm_vs_random_only_make_move_previous_moves/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-06-10-20-00",
+        # "llm_vs_random_only_make_move_previous_moves/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-08-08-47-26",
+        # "llm_vs_random_ascii/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-08-08-45-58",
+        # "llm_vs_random_ascii/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-06-21-27-29",
+        # "llm_vs_random_fen/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-08-08-46-29",
+        # "llm_vs_random_fen/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-06-21-27-25",
+        # "llm_white_vs_random/o4-mini/LLM_WHITE_vs_RANDOM_PLAYER/2025-05-09-10-03-48",
+        # "llm_white_vs_random/grok-3-mini-beta/LLM_WHITE_vs_RANDOM_PLAYER/2025-05-09-14-15-32",
+        # "llm_vs_random_no_legal_moves_fen/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-14-20-39-54/",
+        # "llm_vs_random_no_legal_moves_fen/grok-3-mini-fast-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-05-14-13-24-43/",
+        # For NeurIPS rebuttals:
+        "llm_vs_random_realistic/o4-mini/RANDOM_PLAYER_vs_LLM_BLACK/2025-07-24-19-29-57",
+        "llm_vs_random_realistic/grok-3-mini-beta/RANDOM_PLAYER_vs_LLM_BLACK/2025-07-27-22-19-44",
+        ("llm_black_vs_default_dragon/grok-3-mini-beta/CHESS_ENGINE_DRAGON_vs_LLM_BLACK/2025-07-28-11-58-11", "Skill 1 (default)"),
+        ("llm_vs_dragon_only_make_move/grok-3-mini-beta/CHESS_ENGINE_DRAGON_vs_LLM_BLACK/2025-07-26-21-07-17", "Skill 1"),
+        ("llm_vs_dragon_only_make_move/grok-3-mini-beta/CHESS_ENGINE_DRAGON_vs_LLM_BLACK/2025-07-27-10-08-46", "Skill 2"),
+        ("llm_vs_dragon_only_make_move/grok-3-mini-beta/CHESS_ENGINE_DRAGON_vs_LLM_BLACK/2025-07-26-21-06-58", "Skill 3"),
+        ("llm_vs_dragon_only_make_move/grok-3-mini-beta/CHESS_ENGINE_DRAGON_vs_LLM_BLACK/2025-07-27-10-20-42", "Skill 4"),
+        ("llm_vs_dragon_only_make_move/grok-3-mini-beta/CHESS_ENGINE_DRAGON_vs_LLM_BLACK/2025-07-26-10-50-27", "Skill 5"),
+        ("llm_black_vs_default_dragon/grok-3-mini-beta/CHESS_ENGINE_DRAGON_vs_LLM_BLACK/2025-07-28-11-56-23", "Skill 5 (default)"),
     ]
 
     # We know there is _aggregate_results.json in each of these folders
     for dir_path in dir_paths:
+        if isinstance(dir_path, tuple):
+            dir_path, additional_info = dir_path
         file_path = os.path.join("../_logs/ablations", dir_path, "_aggregate_results.json")
         if os.path.exists(file_path):
             file_paths.append(file_path)
@@ -159,6 +172,8 @@ def main(root_dir):
             else 0.5
         )
         aggregated_results[model_name][setting] = win_loss
+        if "additional_info" in locals():
+            setting += f" ({additional_info})"
         print(f"Model: {model_name}, Setting: {setting}, Win/Loss: {win_loss:.2f}")
 
     # Generate LaTeX table

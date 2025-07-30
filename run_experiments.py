@@ -68,9 +68,10 @@ def main():
         symmetric = exp.get('symmetric', False)
         board_repr = exp['board_representation_mode']
         llm_actions = exp['llm_actions']
-        use_legal_moves = exp.get('use_legal_moves', False)
+        use_legal_moves = exp.get('use_legal_moves', True)
         default_move_style = exp['default_move_style']
         see_prev = exp['see_previous_moves']
+        dragon_level = exp.get('dragon_level', None)
 
         # Parse enum values
         try:
@@ -108,6 +109,9 @@ def main():
             if not use_legal_moves:
                 assert board_mode == BoardRepresentation.FEN_ONLY or see_prev, "If you want to disable legal moves, you must use FEN_ONLY board representation model or SEE_PREVIOUS_MOVES, as unicode doesn't have all the information."
             llm_chess.dont_provide_fen_in_move_error = board_mode == BoardRepresentation.NONE  # When we are not providing a board representation, we do not want to provide FEN in the error message else it will spoil the board state instead of it being focused on previous moves.
+            if not dragon_level and w_pt == PlayerType.CHESS_ENGINE_DRAGON:
+                raise ValueError("You must specify a dragon_level if you want to use the Dragon chess engine.")
+            llm_chess.dragon_level = dragon_level
 
             # Prepare log folder
             ts = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
