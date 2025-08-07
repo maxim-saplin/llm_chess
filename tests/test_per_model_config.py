@@ -58,10 +58,12 @@ class TestPerModelConfig(unittest.TestCase):
     def test_reasoning_effort_strips_temp_and_top_p(self):
         with _prepare_env("openai", "openai"):
             cfg_w, cfg_b = get_llms_autogen_per_model({"reasoning_effort": "high"}, {"reasoning_effort": "low"})
-        self.assertIn("reasoning_effort", cfg_w)
+        # reasoning_effort should be placed inside the provider-specific dict
+        self.assertIn("reasoning_effort", cfg_w["config_list"][0])
+        # temperature must be removed, but top_p should remain (matches ground-truth function)
         self.assertNotIn("temperature", cfg_w)
-        self.assertNotIn("top_p", cfg_w)
-        self.assertEqual(cfg_b["reasoning_effort"], "low")
+        self.assertIn("top_p", cfg_w)
+        self.assertEqual(cfg_b["config_list"][0]["reasoning_effort"], "low")
 
     def test_thinking_budget_sets_thinking_and_strips_top_p(self):
         with _prepare_env("openai", "anthropic"):

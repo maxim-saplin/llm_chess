@@ -3,6 +3,7 @@ import os
 import json
 import statistics  # Import the statistics module
 from utils import setup_console_logging, get_llms_autogen_per_model
+from get_run_metadata import collect_run_metadata, write_run_metadata
 import llm_chess
 
 # ---------------------------------------------------------------------------
@@ -28,7 +29,7 @@ WHITE_MODEL_HYPERPARAMS = {
 
 BLACK_MODEL_HYPERPARAMS = {
     "hyperparams": DEFAULT_HYPERPARAMS.copy(),  # <-- override here per need
-    # "reasoning_effort": "low",
+    "reasoning_effort": "low",
 }
 
 
@@ -91,8 +92,28 @@ NON_LLM_CONFIGS_BLACK = [
 #         ]
 
 def run_games():
-    setup_console_logging(LOG_FOLDER) # save raw console output to output.txt
+    setup_console_logging(LOG_FOLDER)  # save raw console output to output.txt
+
+    # Create _run.json metadata file (once, before the first game starts)
+
+    _run_metadata = None
+    try:
+        _run_metadata = collect_run_metadata(
+            log_folder_relative=LOG_FOLDER,
+            num_repetitions=NUM_REPETITIONS,
+            store_individual_logs=STORE_INDIVIDUAL_LOGS,
+            llm_config_white=LLM_CONFIG_WHITE,
+            llm_config_black=LLM_CONFIG_BLACK,
+            non_llm_configs_white=NON_LLM_CONFIGS_WHITE,
+            non_llm_configs_black=NON_LLM_CONFIGS_BLACK,
+        )
+        write_run_metadata(_run_metadata, os.path.join(LOG_FOLDER, "_run.json"))
+    except Exception as _meta_err:
+        # Do not interrupt the experiment if metadata collection fails
+        print(f"[run_metadata] Error: {_meta_err}")
     aggregate_data = {
+        # run_metadata will be attached later; initialise as empty dict
+        "run_metadata": {},
         "total_games": 0,
         "white_wins": 0,
         "black_wins": 0,
@@ -225,10 +246,14 @@ def run_games():
         aggregate_data["player_black"]["material_list"]
     )
 
+    # Persist run metadata into aggregate results
+    if _run_metadata:
+        aggregate_data["run_metadata"] = _run_metadata
+
     aggregate_filename = os.path.join(LOG_FOLDER, "_aggregate_results.json")
     del aggregate_data["player_white"]["material_list"]
     del aggregate_data["player_black"]["material_list"]
-    with open(aggregate_filename, "w") as aggregate_file:
+    with open(aggregate_filename, "w", encoding="utf-8") as aggregate_file:
         json.dump(aggregate_data, aggregate_file, indent=4)
 
     print("\n\n\033[92m" + json.dumps(aggregate_data, indent=4) + "\033[0m")

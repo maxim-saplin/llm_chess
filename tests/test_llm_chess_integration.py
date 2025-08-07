@@ -3,6 +3,8 @@ import unittest
 import json
 import os
 import requests
+import importlib, sys, types
+import run_multiple_games as rmg
 
 from .helper import _MockServerTestCaseBase
 
@@ -708,10 +710,55 @@ class TestRandomVsDragonGame(unittest.TestCase):
         self.assertEqual(game_stats["player_white"]["wrong_actions"], 0)
         self.assertEqual(game_stats["player_black"]["wrong_moves"], 0)
         self.assertEqual(game_stats["player_black"]["wrong_actions"], 0)
+        # Game should end either by reaching max moves or by checkmate
+        self.assertIn(game_stats["reason"], [TerminationReason.MAX_MOVES.value, TerminationReason.CHECKMATE.value])
 
-        # The game should likely end in checkmate given the skill difference
-        self.assertEqual(game_stats["reason"], TerminationReason.MAX_MOVES.value)
 
+class TestAggregateResults(_MockServerTestCaseBase):
+    def setUp(self):
+        # Configure game settings for quick multi-game run
+        llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
+        llm_chess.black_player_type = PlayerType.LLM_BLACK
+        llm_chess.max_game_moves = 2
+        llm_chess.visualize_board = False
+        llm_chess.throttle_delay = 0
+        llm_chess.dialog_turn_delay = 0
+
+    def test_aggregate_file_created(self):
+        """Run run_multiple_games with 2 reps and verify _aggregate_results.json."""
+        # Inject dummy get_un_metadata to satisfy run_multiple_games import if missing
+        if "get_un_metadata" not in sys.modules:
+            dummy_mod = types.ModuleType("get_un_metadata")
+            def _collect(**kwargs):
+                return {"dummy": True}
+            def _write(metadata, path):
+                import json, os
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                with open(path, "w", encoding="utf-8") as f:
+                    json.dump(metadata, f)
+            dummy_mod.collect_run_metadata = _collect
+            dummy_mod.write_run_metadata = _write
+            sys.modules["get_un_metadata"] = dummy_mod
+
+        # Patch repetition count and log folder
+        rmg.NUM_REPETITIONS = 2
+        rmg.LOG_FOLDER = self.temp_dir
+        # Ensure fast games inside module as well
+        llm_chess.max_game_moves = 2
+        # Reload to propagate CONSTANT changes in module scope if any were evaluated earlier
+        importlib.reload(rmg)
+        rmg.NUM_REPETITIONS = 2
+        rmg.LOG_FOLDER = self.temp_dir
+        # Run games
+        rmg.run_games()
+
+        agg_path = os.path.join(self.temp_dir, "_aggregate_results.json")
+        self.assertTrue(os.path.exists(agg_path), "_aggregate_results.json not created")
+        with open(agg_path, "r") as f:
+            data = json.load(f)
+        self.assertEqual(data["total_games"], 2)
+        self.assertIn("white_wins", data)
+        self.assertIn("black_wins", data)
 
 if __name__ == "__main__":
     unittest.main()

@@ -32,7 +32,7 @@ PROVIDER_CAPABILITIES = {
     "xai": {"reasoning_effort", "frequency_penalty", "presence_penalty"},
     "anthropic": {"thinking_budget", "max_tokens"},
     "google": {"top_k"},
-    "local": set(),
+    "local": {"reasoning_effort"},
     "mistral": set(),
 }
 
@@ -61,12 +61,13 @@ def _apply_model_specific_config(config: Dict, model_config: Dict, provider_type
     merged_hyperparams = _merge_hyperparams(model_config)
 
     # Provider-specific features
-    if provider_type in ("openai", "azure", "xai"):
+    if provider_type in ("openai", "azure", "xai", "local"):
         if model_config and "reasoning_effort" in model_config:
-            config["reasoning_effort"] = model_config["reasoning_effort"]
-            # Remove temp / top_p when reasoning_effort is used
+            # Store reasoning_effort inside the provider-specific entry (matches get_llms_autogen)
+            if config.get("config_list"):
+                config["config_list"][0]["reasoning_effort"] = model_config["reasoning_effort"]
+            # Remove temperature when reasoning_effort is used (top_p is kept just like in get_llms_autogen)
             merged_hyperparams.pop("temperature", None)
-            merged_hyperparams.pop("top_p", None)
     elif provider_type == "anthropic":
         if model_config and "thinking_budget" in model_config:
             config["thinking"] = {
@@ -75,6 +76,8 @@ def _apply_model_specific_config(config: Dict, model_config: Dict, provider_type
             }
             # Remove top_p in thinking mode
             merged_hyperparams.pop("top_p", None)
+            # Remove temperature in thinking mode to match get_llms_autogen behavior
+            merged_hyperparams.pop("temperature", None)
 
     # Apply final hyperparams
     for param, value in merged_hyperparams.items():

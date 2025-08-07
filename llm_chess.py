@@ -180,15 +180,6 @@ def run(
     Returns:
         tuple: A tuple containing game statistics, the white player, and the black player.
     """
-
-    if any(v is not None for v in [reasoning_effort, thinking_budget]) or default_hyperparams != {"temperature": 0.3, "top_p": 1.0, "top_k": None, "min_p": None, "frequency_penalty": None, "presence_penalty": None}:
-        print(f"\033[93mInfo: Using custom hyperparameters: {default_hyperparams}\033[0m")
-    if reasoning_effort is not None:
-        print(
-            "\033[93mWarning: 'reasoning_effort' is set to '{}'."
-            " This setting is only applicable to specific models and may not be supported by all models.\033[0m".format(reasoning_effort)
-        )
-
     # Set up configs if not provided
     if llm_config_white is None or llm_config_black is None:
         WHITE_MODEL_CONFIG = {
