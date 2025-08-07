@@ -5,7 +5,7 @@ import chess.svg
 from typing import Any, Dict, Tuple
 from enum import Enum
 from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent, ChessEngineDragonAgent, NonGameAgent
-from utils import calculate_material_count, generate_game_stats, get_llms_autogen, display_board, display_store_game_video_and_stats
+from utils import calculate_material_count, generate_game_stats, get_llms_autogen_per_model, display_board, display_store_game_video_and_stats
 
 class BoardRepresentation(Enum):
     FEN_ONLY = 1
@@ -77,7 +77,11 @@ thinking_budget = None # Default is None, if set will enable extended thinking w
 # r"◁think▷.*?◁/think▷ - Kimi 1.5
 # r"<reasoning>.*?</reasoning>" - Reka Flash
 # Default None
-remove_text = None
+# Per-player regex for stripping text from message history
+remove_text_white: str | None = None  # e.g. r"<think>.*?</think>"
+remove_text_black: str | None = None
+# Backward-compat global (applies to both sides when per-player not set)
+remove_text: str | None = None
 
 stockfish_path = "/opt/homebrew/bin/stockfish"
 reset_stockfish_history = True  # If True, Stockfish will get no history before making a move, default is True
@@ -187,7 +191,16 @@ def run(
 
     # Set up configs if not provided
     if llm_config_white is None or llm_config_black is None:
-        _llm_config_white, _llm_config_black = get_llms_autogen(default_hyperparams, reasoning_effort, thinking_budget)
+        WHITE_MODEL_CONFIG = {
+            "hyperparams": default_hyperparams,
+            **({"reasoning_effort": reasoning_effort} if reasoning_effort else {}),
+            **({"thinking_budget": thinking_budget} if thinking_budget else {}),
+        }
+        BLACK_MODEL_CONFIG = WHITE_MODEL_CONFIG.copy()
+        _llm_config_white, _llm_config_black = get_llms_autogen_per_model(
+            white_config=WHITE_MODEL_CONFIG,
+            black_config=BLACK_MODEL_CONFIG,
+        )
         if llm_config_white is None:
             llm_config_white = _llm_config_white
         if llm_config_black is None:
@@ -313,6 +326,7 @@ def run(
         ),
     )
 
+    # Proxy mediates between board functions and either player
     proxy_agent = AutoReplyAgent(
         name="Proxy",
         human_input_mode="NEVER",
@@ -456,10 +470,15 @@ def run(
         current_move = 0
         reason = None
 
-        while (
-            current_move < max_game_moves and not reason
-        ):
+        while current_move < max_game_moves and not reason:
             for player in [player_white, player_black]:
+                # Set per-player remove_text dynamically
+                if player is player_white and remove_text_white is not None:
+                    proxy_agent.remove_text = remove_text_white
+                elif player is player_black and remove_text_black is not None:
+                    proxy_agent.remove_text = remove_text_black
+                else:
+                    proxy_agent.remove_text = remove_text
                 # Reset player state variables before each move: has_requested_board, failed_action_attempts
                 player.prep_to_move()
                 chat_result = proxy_agent.initiate_chat(

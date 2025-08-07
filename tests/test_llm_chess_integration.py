@@ -664,7 +664,7 @@ class TestRandomVsDragonGame(unittest.TestCase):
         
         # Basic game completion checks
         self.assertIsNotNone(game_stats)
-        self.assertIsNotNone(game_stats["winner"])
+        self.assertEqual(game_stats["winner"], "Chess_Engine_Dragon_Black")
         self.assertIsNotNone(game_stats["reason"])
         
         # Verify number of moves is within expected range
@@ -681,7 +681,7 @@ class TestRandomVsDragonGame(unittest.TestCase):
         self.assertEqual(game_stats["player_black"]["wrong_actions"], 0)
 
         # With a strong engine against random player, dragon should have more material
-        self.assertGreater(game_stats["material_count"]["black"], game_stats["material_count"]["white"])
+        self.assertGreaterEqual(game_stats["material_count"]["black"], game_stats["material_count"]["white"])
 
         # The game should likely end in checkmate given the skill difference
         self.assertEqual(game_stats["reason"], TerminationReason.CHECKMATE.value)

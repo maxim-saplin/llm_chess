@@ -2,29 +2,41 @@ import datetime
 import os
 import json
 import statistics  # Import the statistics module
-from utils import setup_console_logging, get_llms_autogen
+from utils import setup_console_logging, get_llms_autogen_per_model
 import llm_chess
 
-HYPERPARAMS = llm_chess.default_hyperparams
-# # Qwen 3 thinking recomended params
-# HYPERPARAMS = {
-#     "temperature": 0.7,
-#     "top_p": 0.8,
-# }
+# ---------------------------------------------------------------------------
+# Explicit baseline hyper-parameters
+# ---------------------------------------------------------------------------
+DEFAULT_HYPERPARAMS = {
+    "temperature": 0.3,
+    "top_p": 1.0,
+    "top_k": None,
+    "min_p": None,
+    "frequency_penalty": None,
+    "presence_penalty": None,
+}
 
-REASONING_EFFORT = None # Default is None, used with OpenAI models low, medium, or high
-THINKING_BUDGET = None # Anrhropic thinking budget, e.g. 4096
+# ---------------------------------------------------------------------------
+# Per-model configuration – edit ONLY these two dicts for experiments
+# ---------------------------------------------------------------------------
+WHITE_MODEL_HYPERPARAMS = {
+    "hyperparams": DEFAULT_HYPERPARAMS.copy(),  # <-- override here per need
+    # "reasoning_effort": "high",
+    # "thinking_budget": 4096,
+}
 
-LLM_CONFIG_WHITE, LLM_CONFIG_BLACK = get_llms_autogen(
-    HYPERPARAMS,
-    REASONING_EFFORT,
-    THINKING_BUDGET)
+BLACK_MODEL_HYPERPARAMS = {
+    "hyperparams": DEFAULT_HYPERPARAMS.copy(),  # <-- override here per need
+    # "reasoning_effort": "low",
+}
 
-# reasoning_effort_white = "high"
-# reasoning_effort_black = "low"
-# LLM_CONFIG_WHITE["config_list"][0]["reasoning_effort"] = reasoning_effort_white
-# LLM_CONFIG_BLACK["config_list"][0]["reasoning_effort"] = reasoning_effort_black
-# llm_chess.white_player_type = llm_chess.PlayerType.LLM_WHITE
+
+LLM_CONFIG_WHITE, LLM_CONFIG_BLACK = get_llms_autogen_per_model(
+    white_config=WHITE_MODEL_HYPERPARAMS,
+    black_config=BLACK_MODEL_HYPERPARAMS,
+)
+
 
 model_name_white = LLM_CONFIG_WHITE["config_list"][0]["model"]
 model_name_black = LLM_CONFIG_BLACK["config_list"][0]["model"]

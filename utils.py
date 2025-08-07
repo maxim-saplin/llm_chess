@@ -13,6 +13,160 @@ import io
 import numpy as np
 from moviepy.editor import ImageSequenceClip
 import chess.svg
+from typing import Optional, Dict, Tuple
+
+# Global default hyperparameters used as baseline for all providers
+DEFAULT_HYPERPARAMS = {
+    "temperature": 0.3,
+    "top_p": 1.0,
+    "top_k": None,
+    "min_p": None,
+    "frequency_penalty": None,
+    "presence_penalty": None,
+}
+
+# Capability mapping for model-specific features
+PROVIDER_CAPABILITIES = {
+    "openai": {"reasoning_effort", "frequency_penalty", "presence_penalty"},
+    "azure": {"reasoning_effort", "frequency_penalty", "presence_penalty"},
+    "xai": {"reasoning_effort", "frequency_penalty", "presence_penalty"},
+    "anthropic": {"thinking_budget", "max_tokens"},
+    "google": {"top_k"},
+    "local": set(),
+    "mistral": set(),
+}
+
+
+def _merge_hyperparams(model_config: Optional[Dict]) -> Dict:
+    """Merge model-specific hyperparams with global defaults."""
+    merged = DEFAULT_HYPERPARAMS.copy()
+    if model_config and "hyperparams" in model_config:
+        merged.update(model_config["hyperparams"])
+    return merged
+
+
+def validate_model_config(model_config: Dict, provider_type: str):
+    """Validate that the provided configuration is compatible with the provider."""
+    if not model_config:
+        return
+    capabilities = PROVIDER_CAPABILITIES.get(provider_type, set())
+    if "reasoning_effort" in model_config and "reasoning_effort" not in capabilities:
+        raise ValueError(f"reasoning_effort not supported by {provider_type}")
+    if "thinking_budget" in model_config and "thinking_budget" not in capabilities:
+        raise ValueError(f"thinking_budget not supported by {provider_type}")
+
+
+def _apply_model_specific_config(config: Dict, model_config: Dict, provider_type: str):
+    """Apply merged hyperparameters and provider-specific features."""
+    merged_hyperparams = _merge_hyperparams(model_config)
+
+    # Provider-specific features
+    if provider_type in ("openai", "azure", "xai"):
+        if model_config and "reasoning_effort" in model_config:
+            config["reasoning_effort"] = model_config["reasoning_effort"]
+            # Remove temp / top_p when reasoning_effort is used
+            merged_hyperparams.pop("temperature", None)
+            merged_hyperparams.pop("top_p", None)
+    elif provider_type == "anthropic":
+        if model_config and "thinking_budget" in model_config:
+            config["thinking"] = {
+                "type": "enabled",
+                "budget_tokens": model_config["thinking_budget"],
+            }
+            # Remove top_p in thinking mode
+            merged_hyperparams.pop("top_p", None)
+
+    # Apply final hyperparams
+    for param, value in merged_hyperparams.items():
+        if value is not None:
+            config[param] = value
+    return config
+
+
+def get_llms_autogen_per_model(
+    white_config: Optional[Dict] = None,
+    black_config: Optional[Dict] = None,
+    timeout: int = 600,
+) -> Tuple[Dict, Dict]:
+    """Create LLM configurations with per-model parameters."""
+    load_dotenv()
+    white_config = white_config or {}
+    black_config = black_config or {}
+
+    model_kinds = [
+        os.environ.get("MODEL_KIND_W", "google"),
+        os.environ.get("MODEL_KIND_B", "google"),
+    ]
+
+    def _provider_base_config(kind: str, key: str) -> Dict:
+        if kind == "azure":
+            return {
+                "api_type": "azure",
+                "model": os.environ[f"AZURE_OPENAI_DEPLOYMENT_{key}"],
+                "api_key": os.environ[f"AZURE_OPENAI_KEY_{key}"],
+                "base_url": os.environ[f"AZURE_OPENAI_ENDPOINT_{key}"],
+                "api_version": os.environ[f"AZURE_OPENAI_VERSION_{key}"],
+            }
+        elif kind == "local":
+            return {
+                "model": os.environ[f"LOCAL_MODEL_NAME_{key}"],
+                "base_url": os.environ[f"LOCAL_BASE_URL_{key}"],
+                "api_key": os.environ.get(f"LOCAL_API_KEY_{key}", "any"),
+                "default_headers": {"Api-Key": os.environ.get(f"LOCAL_API_KEY_{key}", "any")},
+            }
+        elif kind == "google":
+            return {
+                "model": os.environ[f"GEMINI_MODEL_NAME_{key}"],
+                "api_key": os.environ[f"GEMINI_API_KEY_{key}"],
+                "api_type": "google",
+            }
+        elif kind == "openai":
+            return {
+                "model": os.environ[f"OPENAI_MODEL_NAME_{key}"],
+                "api_key": os.environ[f"OPENAI_API_KEY_{key}"],
+                "api_type": "openai",
+            }
+        elif kind == "xai":
+            return {
+                "model": os.environ[f"XAI_MODEL_NAME_{key}"],
+                "api_key": os.environ[f"XAI_API_KEY_{key}"],
+                "base_url": "https://api.x.ai/v1",
+            }
+        elif kind == "anthropic":
+            return {
+                "model": os.environ[f"ANTHROPIC_MODEL_NAME_{key}"],
+                "api_key": os.environ[f"ANTHROPIC_API_KEY_{key}"],
+                "api_type": "anthropic",
+                "max_tokens": 32768,
+                "timeout": timeout,
+            }
+        elif kind == "mistral":
+            return {
+                "model": os.environ[f"MISTRAL_MODEL_NAME_{key}"],
+                "api_key": os.environ[f"MISTRAL_API_KEY_{key}"],
+                "api_type": "mistral",
+            }
+        else:
+            raise ValueError(f"Unsupported provider type '{kind}'")
+
+    def _build_config(kind: str, key: str, model_config: Dict) -> Dict:
+        provider_conf = _provider_base_config(kind, key)
+        # Apply provider overrides if any
+        if model_config and "provider_overrides" in model_config:
+            provider_conf.update(model_config["provider_overrides"])
+
+        config = {
+            "config_list": [provider_conf],
+            "timeout": timeout,
+            "cache_seed": None,
+        }
+
+        validate_model_config(model_config, kind)
+        return _apply_model_specific_config(config, model_config, kind)
+
+    config_white = _build_config(model_kinds[0], "W", white_config)
+    config_black = _build_config(model_kinds[1], "B", black_config)
+    return config_white, config_black
 
 
 # Material values: pawn = 1, knight = 3, bishop = 3, rook = 5, queen = 9
