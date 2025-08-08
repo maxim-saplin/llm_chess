@@ -9,6 +9,7 @@ from utils import get_llms
 from get_run_metadata import collect_run_metadata, write_run_metadata
 
 from unittest.mock import patch
+from .helper import _MockServerTestCaseBase
 
 
 def _dummy_llm_config(model: str):
@@ -127,7 +128,7 @@ def _prepare_env(kind_w="local", kind_b="local"):
             env_updates[tmpl.format(key_suffix)] = f"model-{key_suffix.lower()}"
     return patch.dict(os.environ, env_updates, clear=False)
 
-class TestRunScenarios(unittest.TestCase):
+class TestRunScenarios(_MockServerTestCaseBase):
     max_moves_for_tests = 2  # keep tests fast
 
     def setUp(self):
@@ -136,6 +137,16 @@ class TestRunScenarios(unittest.TestCase):
         llm_chess.throttle_delay = 0
         llm_chess.dialog_turn_delay = 0
         llm_chess.max_game_moves = self.max_moves_for_tests
+        # Disable API retries for these tests to avoid noisy retry logs
+        self._orig_max_api_retries = llm_chess.max_api_retries
+        self._orig_api_retry_delay = llm_chess.api_retry_delay
+        llm_chess.max_api_retries = 0
+        llm_chess.api_retry_delay = 0
+
+    def tearDown(self):
+        # Restore original retry config
+        llm_chess.max_api_retries = self._orig_max_api_retries
+        llm_chess.api_retry_delay = self._orig_api_retry_delay
 
     # ---------------------------------------------------------------------
     # LLM vs Random Player
