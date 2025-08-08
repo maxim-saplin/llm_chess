@@ -1,0 +1,558 @@
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move e2e4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_boardget_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ♙ ♙ ♙ ⭘ ♙ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h6,g8f6,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,d7d6,c7c6,b7b6,a7a6,h7h5,g7g5,f7f5,e7e5,d7d5,c7c5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move e7e5
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (e8646f47-8022-4d2f-ab05-923312c807ff): Termination message condition on agent 'Player_Black' met
+MADE MOVE 2
+Material Count - White: 39, Black: 39
+Prompt Tokens: 979
+Completion Tokens: 92
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,g1e2,f1a6,f1b5,f1c4,f1d3,f1e2,e1e2,d1h5,d1g4,d1f3,d1e2,b1c3,b1a3,h2h3,g2g3,f2f3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move h2h3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 3
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+***** Suggested tool call (eab94b773): repo_browser_get_current_board *****
+Arguments: 
+{}
+***************************************************************************
+
+--------------------------------------------------------------------------------
+Execution was halted due to error.
+Exception details: 'NoneType' object has no attribute 'lower'
+Traceback (most recent call last):
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 475, in run
+    chat_result = proxy_agent.initiate_chat(
+        recipient=player,
+    ...<2 lines>...
+        cache=None
+    )
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/autogen/agentchat/conversable_agent.py", line 1470, in initiate_chat
+    msg2send = self.generate_reply(messages=self.chat_messages[recipient], sender=recipient)
+  File "/Users/admin/src/llm_chess/custom_agents.py", line 259, in generate_reply
+    if self._is_termination_msg(messages[-1]):
+       ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 275, in is_termination_message
+    return any(
+        term_msg == msg["content"].lower().strip()
+        for term_msg in termination_conditions
+    )
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 276, in <genexpr>
+    term_msg == msg["content"].lower().strip()
+                ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'lower'
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 3
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 2.071
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.08.08"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. e4 e5 2. h3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move h2h3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+We need to call get_current_board.get_current_board[get_current_board]
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙
+♙ ♙ ♙ ♙ ♙ ♙ ♙ ⭘
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+[get_legal_moves]make_move e7e5
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h6,g8f6,b8c6,b8a6,h7h6,g7g6,f7f6,e7e6,d7d6,c7c6,b7b6,a7a6,h7h5,g7g5,f7f5,e7e5,d7d5,c7c5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move e7e5
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (81de7e2c-91ba-4ddc-997c-6cedb7c4c85f): Termination message condition on agent 'Player_Black' met
+MADE MOVE 2
+Material Count - White: 39, Black: 39
+Prompt Tokens: 1002
+Completion Tokens: 108
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+h1h2,g1f3,b1c3,b1a3,h3h4,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move d2d3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 3
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+We need to call get_current_board.
+***** Suggested tool call (11ea6f57a): repo_browser_print_tree *****
+Arguments: 
+{"path": ""}
+********************************************************************
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ♟ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♙
+♙ ♙ ♙ ⭘ ♙ ♙ ♙ ⭘
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
+--------------------------------------------------------------------------------
+Non-retryable error for Player_Black: Error code: 400 - {'message': "An assistant message with 'tool_calls' must be followed by tool messages responding to each 'tool_call_id'. The following tool_call_ids did not have response messages: 11ea6f57a.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'wrong_api_format'}
+Execution was halted due to error.
+Exception details: Error code: 400 - {'message': "An assistant message with 'tool_calls' must be followed by tool messages responding to each 'tool_call_id'. The following tool_call_ids did not have response messages: 11ea6f57a.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'wrong_api_format'}
+Traceback (most recent call last):
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 475, in run
+    chat_result = proxy_agent.initiate_chat(
+        recipient=player,
+    ...<2 lines>...
+        cache=None
+    )
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/autogen/agentchat/conversable_agent.py", line 1473, in initiate_chat
+    self.send(msg2send, recipient, request_reply=True, silent=silent)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/autogen/agentchat/conversable_agent.py", line 1163, in send
+    recipient.receive(message, self, request_reply, silent)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/autogen/agentchat/conversable_agent.py", line 1271, in receive
+    reply = self.generate_reply(messages=self.chat_messages[sender], sender=sender)
+  File "/Users/admin/src/llm_chess/custom_agents.py", line 137, in generate_reply
+    raise e
+  File "/Users/admin/src/llm_chess/custom_agents.py", line 115, in generate_reply
+    reply = super().generate_reply(messages, sender, **kwargs)
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/autogen/agentchat/conversable_agent.py", line 2836, in generate_reply
+    final, reply = reply_func(self, messages=messages, sender=sender, config=reply_func_tuple["config"])
+                   ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/autogen/agentchat/conversable_agent.py", line 2163, in generate_oai_reply
+    extracted_response = self._generate_oai_reply_from_client(
+        client, self._oai_system_message + messages, self.client_cache
+    )
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/autogen/agentchat/conversable_agent.py", line 2182, in _generate_oai_reply_from_client
+    response = llm_client.create(
+        context=messages[-1].pop("context", None),
+    ...<2 lines>...
+        agent=self,
+    )
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/autogen/oai/client.py", line 1193, in create
+    response = client.create(params)
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/autogen/oai/client.py", line 664, in create
+    response = create_or_parse(**params)
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/autogen/oai/client.py", line 487, in wrapper
+    raise e
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/autogen/oai/client.py", line 470, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/openai/_utils/_utils.py", line 287, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/openai/resources/chat/completions/completions.py", line 1135, in create
+    return self._post(
+           ~~~~~~~~~~^
+        "/chat/completions",
+        ^^^^^^^^^^^^^^^^^^^^
+    ...<45 lines>...
+        stream_cls=Stream[ChatCompletionChunk],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/openai/_base_client.py", line 1259, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/openai/_base_client.py", line 1047, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'message': "An assistant message with 'tool_calls' must be followed by tool messages responding to each 'tool_call_id'. The following tool_call_ids did not have response messages: 11ea6f57a.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'wrong_api_format'}
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 3
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 2.417
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.08.08"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. h3 e5 2. d3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move f2f4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+***** Suggested tool call (ced3d5039): repo_browser_print_tree *****
+Arguments: 
+{"path": "", "depth": 2}
+
+********************************************************************
+
+--------------------------------------------------------------------------------
+Execution was halted due to error.
+Exception details: 'NoneType' object has no attribute 'lower'
+Traceback (most recent call last):
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 475, in run
+    chat_result = proxy_agent.initiate_chat(
+        recipient=player,
+    ...<2 lines>...
+        cache=None
+    )
+  File "/Users/admin/src/llm_chess/.venv/lib/python3.13/site-packages/autogen/agentchat/conversable_agent.py", line 1470, in initiate_chat
+    msg2send = self.generate_reply(messages=self.chat_messages[recipient], sender=recipient)
+  File "/Users/admin/src/llm_chess/custom_agents.py", line 259, in generate_reply
+    if self._is_termination_msg(messages[-1]):
+       ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 275, in is_termination_message
+    return any(
+        term_msg == msg["content"].lower().strip()
+        for term_msg in termination_conditions
+    )
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 276, in <genexpr>
+    term_msg == msg["content"].lower().strip()
+                ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'lower'
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.614
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.08.08"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. f4  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move a2a4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------

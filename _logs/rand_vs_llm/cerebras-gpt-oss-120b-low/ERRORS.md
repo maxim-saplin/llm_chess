@@ -1,0 +1,1 @@
+The models tens to issue a tool call instead of a textual response, since the bot doesn't respond with a message which is a tool call result API error occurs
