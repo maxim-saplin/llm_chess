@@ -70,10 +70,12 @@ def _apply_model_specific_config(config: Dict, model_config: Dict, provider_type
             merged_hyperparams.pop("temperature", None)
     elif provider_type == "anthropic":
         if model_config and "thinking_budget" in model_config:
-            config["thinking"] = {
-                "type": "enabled",
-                "budget_tokens": model_config["thinking_budget"],
-            }
+            # Store thinking configuration inside the provider-specific entry to comply with AutoGen's schema
+            if config.get("config_list"):
+                config["config_list"][0]["thinking"] = {
+                    "type": "enabled",
+                    "budget_tokens": model_config["thinking_budget"],
+                }
             # Remove top_p in thinking mode
             merged_hyperparams.pop("top_p", None)
             # Remove temperature in thinking mode to match get_llms_autogen behavior
@@ -86,7 +88,7 @@ def _apply_model_specific_config(config: Dict, model_config: Dict, provider_type
     return config
 
 
-def get_llms_autogen_per_model(
+def get_llms(
     white_config: Optional[Dict] = None,
     black_config: Optional[Dict] = None,
     timeout: int = 600,
@@ -198,184 +200,6 @@ def calculate_material_count(board):
 
 
 load_dotenv()
-
-
-def get_llms_autogen(hyperparams=None, reasoning_effort=None, thinking_budget=None, timeout=600):
-    """
-    Retrieve the configuration for LLMs (Large Language Models) with optional hyperparameters and thinking settings.
-
-    Note:
-    If the Azure type is used, Autogen removes dots from the model name.
-    If this is an issue (e.g., you are using an LLM gateway that works like Azure but accepts model names with dots),
-    you should disable this behavior in the Autogen source code 'oia/client.py'.
-
-    Example of disabling in source code:
-    if openai_config["azure_deployment"] is not None:
-        openai_config["azure_deployment"] = openai_config["azure_deployment"].replace(".", "")
-
-    Args:
-        hyperparams (dict, optional): Dictionary of hyperparameters to override defaults. 
-                                    Supported keys: temperature, top_p, top_k, min_p, frequency_penalty, presence_penalty
-                                    Use None values to exclude parameters entirely.
-        reasoning_effort (str, optional): Reasoning effort level for OpenAI models. Defaults to None.
-        thinking_budget (int, optional): Token budget for thinking with Anthropic models. Defaults to None.
-        timeout (int): Request timeout in seconds. Defaults to 600.
-
-    Returns:
-        tuple: A tuple containing two configuration dictionaries for the models.
-    """
-    # Default hyperparameters
-    default_hyperparams = {
-        "temperature": 0.3,
-        "top_p": 1.0,
-        "top_k": None,  # Not supported by all providers
-        "min_p": None,  # Not supported by all providers
-        "frequency_penalty": None,  # Disabled by default due to AG2 validation issues
-        "presence_penalty": None,   # Disabled by default due to AG2 validation issues
-    }
-    
-    # Merge with provided hyperparams
-    if hyperparams is None:
-        hyperparams = {}
-    
-    final_hyperparams = {**default_hyperparams, **hyperparams}
-    
-    model_kinds = [
-        os.environ.get("MODEL_KIND_W", "google"),
-        os.environ.get("MODEL_KIND_B", "google"),
-    ]
-
-    def azure_config(key):
-        config = {
-            "api_type": "azure",
-            "model": os.environ[f"AZURE_OPENAI_DEPLOYMENT_{key}"],
-            "api_key": os.environ[f"AZURE_OPENAI_KEY_{key}"],
-            "base_url": os.environ[f"AZURE_OPENAI_ENDPOINT_{key}"],
-            "api_version": os.environ[f"AZURE_OPENAI_VERSION_{key}"],
-        }
-    
-        if reasoning_effort is not None:
-            config["reasoning_effort"] = reasoning_effort
-
-        return config
-
-    def local_config(key):
-        config = {
-            "model": os.environ[f"LOCAL_MODEL_NAME_{key}"],
-            "base_url": os.environ[f"LOCAL_BASE_URL_{key}"],
-            "api_key": os.environ.get(f"LOCAL_API_KEY_{key}", "any"),
-            # For some providers that might work
-            "default_headers": {
-                "Api-Key": os.environ[f"LOCAL_API_KEY_{key}"]
-            }
-        }
-    
-        if reasoning_effort is not None:
-            config["reasoning_effort"] = reasoning_effort
-        
-        return config
-
-    def gemini_config(key):
-        return {
-            "model": os.environ[f"GEMINI_MODEL_NAME_{key}"],
-            "api_key": os.environ[f"GEMINI_API_KEY_{key}"],
-            "api_type": "google",
-        }
-
-    def openai_config(key):
-        config = {
-            "model": os.environ[f"OPENAI_MODEL_NAME_{key}"],
-            "api_key": os.environ[f"OPENAI_API_KEY_{key}"],
-            "api_type": "openai",
-        }
-    
-        if reasoning_effort is not None:
-            config["reasoning_effort"] = reasoning_effort
-
-        return config
-
-    def xai_config(key):
-        config = {
-            "model": os.environ[f"XAI_MODEL_NAME_{key}"],
-            "api_key": os.environ[f"XAI_API_KEY_{key}"],
-            # "api_type": "xai",
-            "base_url": "https://api.x.ai/v1",
-        }
-        
-        # Add reasoning_effort if it is not None (just like OpenAI)
-        if reasoning_effort is not None:
-            config["reasoning_effort"] = reasoning_effort
-            
-        return config
-
-    def anthropic_config(key):
-        config = {
-            "model": os.environ[f"ANTHROPIC_MODEL_NAME_{key}"],
-            "api_key": os.environ[f"ANTHROPIC_API_KEY_{key}"],
-            "api_type": "anthropic",
-            "max_tokens": 32768, # AG2 sets this value to some oddly small numbers for some providers (e.g.Anthropic)
-            "timeout": timeout
-        }
-        
-        # Add thinking configuration if thinking_budget is set
-        if thinking_budget is not None:
-            config["thinking"] = {"type": "enabled", "budget_tokens": thinking_budget}
-            
-        return config
-
-    def mistral_config(key):
-        config = {
-            "model": os.environ[f"MISTRAL_MODEL_NAME_{key}"],
-            "api_key": os.environ[f"MISTRAL_API_KEY_{key}"],
-            "api_type": "mistral",
-        }
-            
-        return config
-
-    def create_config(config_list):
-        config = {
-            "config_list": config_list,
-            "timeout": timeout,
-        }
-
-        # Add hyperparameters only if they are not None
-        for param, value in final_hyperparams.items():
-            if value is not None:
-                config[param] = value
-
-        # If thinking_budget is provided, remove top_p as it's not compatible with thinking mode in Anthropic
-        if thinking_budget is not None:
-            if "top_p" in config:
-                del config["top_p"]
-
-        if thinking_budget is not None or reasoning_effort is not None:
-            if "temperature" in config:
-                del config["temperature"]
-
-        return config
-
-    configs = []
-    for kind, key in zip(model_kinds, ["W", "B"]):
-        if kind == "azure":
-            configs.append(create_config([azure_config(key)]))
-        elif kind == "local":
-            configs.append(create_config([local_config(key)]))
-        elif kind == "google":
-            configs.append(create_config([gemini_config(key)]))
-        elif kind == "openai":
-            configs.append(create_config([openai_config(key)]))
-        elif kind == "xai":
-            configs.append(create_config([xai_config(key)]))
-        elif kind == "anthropic":
-            configs.append(create_config([anthropic_config(key)]))
-        elif kind == "mistral":
-            configs.append(create_config([mistral_config(key)]))
-
-    for config in configs:
-        config["cache_seed"] = None
-
-    return configs[0], configs[1]
-
 
 def generate_game_stats(
     time_started: str,

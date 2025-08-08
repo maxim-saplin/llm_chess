@@ -1,10 +1,12 @@
+import os
 import requests
+from unittest.mock import patch
 
 from .helper import _MockServerTestCaseBase
 
 # Importing after env vars are set
 import llm_chess
-from utils import get_llms_autogen
+from utils import get_llms
 
 class TestConfigurationPropagation(_MockServerTestCaseBase):
     """Test that configuration parameters from run_multiple_games.py globals are properly propagated."""
@@ -29,10 +31,10 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         """Test that custom hyperparameters are properly applied to LLM configs."""
 
         custom_hyperparams = {"temperature": 0.7, "top_p": 0.8}
-        llm_config_white, llm_config_black = get_llms_autogen(
-            hyperparams=custom_hyperparams,
-            reasoning_effort=None,
-            thinking_budget=None
+        black_config = {"hyperparams": custom_hyperparams}
+        llm_config_white, llm_config_black = get_llms(
+            white_config=None,
+            black_config=black_config
         )
 
         game_stats, _, player_black = llm_chess.run(
@@ -58,10 +60,10 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         llm_chess.black_player_type = llm_chess.PlayerType.RANDOM_PLAYER
 
         custom_hyperparams = {"temperature": 0.7, "top_p": 0.8}
-        llm_config_white, llm_config_black = get_llms_autogen(
-            hyperparams=custom_hyperparams,
-            reasoning_effort=None,
-            thinking_budget=None
+        white_config = {"hyperparams": custom_hyperparams}
+        llm_config_white, llm_config_black = get_llms(
+            white_config=white_config,
+            black_config=None
         )
 
         game_stats, player_white, _ = llm_chess.run(
@@ -86,10 +88,10 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         reasoning_effort = "high"
 
         # Get LLM configs with reasoning effort
-        llm_config_white, llm_config_black = get_llms_autogen(
-            hyperparams=llm_chess.default_hyperparams,
-            reasoning_effort=reasoning_effort,
-            thinking_budget=None
+        black_config = {"reasoning_effort": reasoning_effort}
+        llm_config_white, llm_config_black = get_llms(
+            white_config=None,
+            black_config=black_config
         )
 
         # Run game with reasoning effort config
@@ -113,11 +115,17 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         """Test that thinking_budget parameter is properly applied."""
 
         thinking_budget = 5000
-        llm_config_white, llm_config_black = get_llms_autogen(
-            hyperparams=llm_chess.default_hyperparams,
-            reasoning_effort=None,
-            thinking_budget=thinking_budget
-        )
+        black_config = {"thinking_budget": thinking_budget}
+        env_patch = {
+            "MODEL_KIND_B": "anthropic",
+            "ANTHROPIC_MODEL_NAME_B": "anthropic-test",
+            "ANTHROPIC_API_KEY_B": "dummy"
+        }
+        with patch.dict(os.environ, env_patch, clear=False):
+            llm_config_white, llm_config_black = get_llms(
+                white_config=None,
+                black_config=black_config
+            )
 
         game_stats, _, player_black = llm_chess.run(
             log_dir=None,
@@ -138,15 +146,23 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         """Test that all configuration parameters work together."""
 
         custom_hyperparams = {"temperature": 0.9, "top_p": 0.95}
-        reasoning_effort = "medium"
         thinking_budget = 8000
-        llm_config_white, llm_config_black = get_llms_autogen(
-            hyperparams=custom_hyperparams,
-            reasoning_effort=reasoning_effort,
-            thinking_budget=thinking_budget
-        )
+        black_config = {
+            "hyperparams": custom_hyperparams,
+            "thinking_budget": thinking_budget
+        }
+        env_patch = {
+            "MODEL_KIND_B": "anthropic",
+            "ANTHROPIC_MODEL_NAME_B": "anthropic-test",
+            "ANTHROPIC_API_KEY_B": "dummy"
+        }
+        with patch.dict(os.environ, env_patch, clear=False):
+            llm_config_white, llm_config_black = get_llms(
+                white_config=None,
+                black_config=black_config
+            )
 
-        game_stats, player_white, player_black = llm_chess.run(
+        game_stats, _, player_black = llm_chess.run(
             log_dir=None,
             llm_config_white=llm_config_white,
             llm_config_black=llm_config_black
@@ -165,12 +181,13 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
     def test_default_vs_custom_hyperparams_difference(self):
         """Test difference between default and custom hyperparameters."""
 
-        default_cfg_white, default_cfg_black = get_llms_autogen(
-            llm_chess.default_hyperparams, None, None
+        _, default_cfg_black = get_llms(
+            white_config=None, black_config=None
         )
         custom_hyperparams = {"temperature": 0.9, "top_p": 0.7}
-        custom_cfg_white, custom_cfg_black = get_llms_autogen(
-            custom_hyperparams, None, None
+        black_config = {"hyperparams": custom_hyperparams}
+        _, custom_cfg_black = get_llms(
+            white_config=None, black_config=black_config
         )
 
         default_temp = default_cfg_black.get("temperature")
@@ -187,12 +204,13 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         """Test that configurations persist throughout game execution."""
 
         test_hyperparams = {"temperature": 0.42, "top_p": 0.88}
-        llm_config_white, llm_config_black = get_llms_autogen(
-            test_hyperparams, None, None
+        black_config = {"hyperparams": test_hyperparams}
+        llm_config_white, llm_config_black = get_llms(
+            white_config=None, black_config=black_config
         )
 
         llm_chess.max_game_moves = 4
-        game_stats, player_white, player_black = llm_chess.run(
+        game_stats, _, player_black = llm_chess.run(
             log_dir=self.temp_dir,
             llm_config_white=llm_config_white,
             llm_config_black=llm_config_black

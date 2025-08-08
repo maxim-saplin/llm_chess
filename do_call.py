@@ -1,14 +1,13 @@
 from autogen import ConversableAgent
 
-from utils import get_llms_autogen, get_llms_autogen_per_model
+from utils import  get_llms
 
 
-_, llm_config_black = get_llms_autogen(reasoning_effort="high")
-_, llm_config_black2 = get_llms_autogen_per_model(black_config={"reasoning_effort": "high"})
+_, llm_config_black = get_llms(black_config={"reasoning_effort": "high"})
 
 agent = ConversableAgent(
     name="test",
-    llm_config=llm_config_black2,
+    llm_config=llm_config_black,
     max_consecutive_auto_reply=2,
     human_input_mode="NEVER",
 )

@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import patch
 
 import llm_chess
-from utils import get_llms_autogen_per_model
+from utils import get_llms
 from get_run_metadata import collect_run_metadata, write_run_metadata
 from utils import DEFAULT_HYPERPARAMS
 
@@ -146,7 +146,7 @@ class TestRunScenarios(unittest.TestCase):
         llm_chess.black_player_type = llm_chess.PlayerType.RANDOM_PLAYER
 
         with _prepare_env():
-            cfg_w, cfg_b = get_llms_autogen_per_model({}, {})
+            cfg_w, cfg_b = get_llms({}, {})
             stats, _, p_black = llm_chess.run(
                 log_dir=None,
                 llm_config_white=cfg_w,
@@ -170,7 +170,7 @@ class TestRunScenarios(unittest.TestCase):
         llm_chess.black_player_type = llm_chess.PlayerType.CHESS_ENGINE_STOCKFISH
 
         with _prepare_env():
-            cfg_w, cfg_b = get_llms_autogen_per_model({}, {})
+            cfg_w, cfg_b = get_llms({}, {})
             stats, _, p_black = llm_chess.run(
                 log_dir=None,
                 llm_config_white=cfg_w,

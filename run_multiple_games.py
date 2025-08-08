@@ -2,7 +2,7 @@ import datetime
 import os
 import json
 import statistics  # Import the statistics module
-from utils import setup_console_logging, get_llms_autogen_per_model
+from utils import setup_console_logging, get_llms
 from get_run_metadata import collect_run_metadata, write_run_metadata
 import llm_chess
 
@@ -33,7 +33,7 @@ BLACK_MODEL_HYPERPARAMS = {
 }
 
 
-LLM_CONFIG_WHITE, LLM_CONFIG_BLACK = get_llms_autogen_per_model(
+LLM_CONFIG_WHITE, LLM_CONFIG_BLACK = get_llms(
     white_config=WHITE_MODEL_HYPERPARAMS,
     black_config=BLACK_MODEL_HYPERPARAMS,
 )

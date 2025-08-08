@@ -5,7 +5,7 @@ import chess.svg
 from typing import Any, Dict, Tuple
 from enum import Enum
 from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent, ChessEngineDragonAgent, NonGameAgent
-from utils import calculate_material_count, generate_game_stats, get_llms_autogen_per_model, display_board, display_store_game_video_and_stats
+from utils import calculate_material_count, generate_game_stats, get_llms, display_board, display_store_game_video_and_stats
 
 class BoardRepresentation(Enum):
     FEN_ONLY = 1
@@ -188,7 +188,7 @@ def run(
             **({"thinking_budget": thinking_budget} if thinking_budget else {}),
         }
         BLACK_MODEL_CONFIG = WHITE_MODEL_CONFIG.copy()
-        _llm_config_white, _llm_config_black = get_llms_autogen_per_model(
+        _llm_config_white, _llm_config_black = get_llms(
             white_config=WHITE_MODEL_CONFIG,
             black_config=BLACK_MODEL_CONFIG,
         )
