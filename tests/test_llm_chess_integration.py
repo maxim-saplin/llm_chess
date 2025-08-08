@@ -726,29 +726,12 @@ class TestAggregateResults(_MockServerTestCaseBase):
 
     def test_aggregate_file_created(self):
         """Run run_multiple_games with 2 reps and verify _aggregate_results.json."""
-        # Inject dummy get_un_metadata to satisfy run_multiple_games import if missing
-        if "get_un_metadata" not in sys.modules:
-            dummy_mod = types.ModuleType("get_un_metadata")
-            def _collect(**kwargs):
-                return {"dummy": True}
-            def _write(metadata, path):
-                import json, os
-                os.makedirs(os.path.dirname(path), exist_ok=True)
-                with open(path, "w", encoding="utf-8") as f:
-                    json.dump(metadata, f)
-            dummy_mod.collect_run_metadata = _collect
-            dummy_mod.write_run_metadata = _write
-            sys.modules["get_un_metadata"] = dummy_mod
-
         # Patch repetition count and log folder
         rmg.NUM_REPETITIONS = 2
         rmg.LOG_FOLDER = self.temp_dir
+        rmg.STORE_INDIVIDUAL_LOGS = False
         # Ensure fast games inside module as well
         llm_chess.max_game_moves = 2
-        # Reload to propagate CONSTANT changes in module scope if any were evaluated earlier
-        importlib.reload(rmg)
-        rmg.NUM_REPETITIONS = 2
-        rmg.LOG_FOLDER = self.temp_dir
         # Run games
         rmg.run_games()
 
