@@ -15,16 +15,6 @@ from moviepy.editor import ImageSequenceClip
 import chess.svg
 from typing import Optional, Dict, Tuple
 
-# Global default hyperparameters used as baseline for all providers
-DEFAULT_HYPERPARAMS = {
-    "temperature": 0.3,
-    "top_p": 1.0,
-    "top_k": None,
-    "min_p": None,
-    "frequency_penalty": None,
-    "presence_penalty": None,
-}
-
 # Capability mapping for model-specific features
 PROVIDER_CAPABILITIES = {
     "openai": {"reasoning_effort", "frequency_penalty", "presence_penalty"},
@@ -36,12 +26,11 @@ PROVIDER_CAPABILITIES = {
     "mistral": set(),
 }
 
-
-def _merge_hyperparams(model_config: Optional[Dict]) -> Dict:
-    """Merge model-specific hyperparams with global defaults."""
-    merged = DEFAULT_HYPERPARAMS.copy()
-    if model_config and "hyperparams" in model_config:
-        merged.update(model_config["hyperparams"])
+def _merge_hyperparams(model_params: Optional[Dict]) -> Dict:
+    """Return a copy of per-model hyperparams (no defaults here by design)."""
+    merged: Dict = {}
+    if model_params and "hyperparams" in model_params:
+        merged.update(model_params["hyperparams"])  # shallow copy of provided hyperparams
     return merged
 
 
@@ -56,25 +45,25 @@ def validate_model_config(model_config: Dict, provider_type: str):
         raise ValueError(f"thinking_budget not supported by {provider_type}")
 
 
-def _apply_model_specific_config(config: Dict, model_config: Dict, provider_type: str):
+def _apply_model_specific_config(config: Dict, model_params: Dict, provider_type: str):
     """Apply merged hyperparameters and provider-specific features."""
-    merged_hyperparams = _merge_hyperparams(model_config)
+    merged_hyperparams = _merge_hyperparams(model_params)
 
     # Provider-specific features
     if provider_type in ("openai", "azure", "xai", "local"):
-        if model_config and "reasoning_effort" in model_config:
+        if model_params and "reasoning_effort" in model_params:
             # Store reasoning_effort inside the provider-specific entry (matches get_llms_autogen)
             if config.get("config_list"):
-                config["config_list"][0]["reasoning_effort"] = model_config["reasoning_effort"]
+                config["config_list"][0]["reasoning_effort"] = model_params["reasoning_effort"]
             # Remove temperature when reasoning_effort is used (top_p is kept just like in get_llms_autogen)
             merged_hyperparams.pop("temperature", None)
     elif provider_type == "anthropic":
-        if model_config and "thinking_budget" in model_config:
+        if model_params and "thinking_budget" in model_params:
             # Store thinking configuration inside the provider-specific entry to comply with AutoGen's schema
             if config.get("config_list"):
                 config["config_list"][0]["thinking"] = {
                     "type": "enabled",
-                    "budget_tokens": model_config["thinking_budget"],
+                    "budget_tokens": model_params["thinking_budget"],
                 }
             # Remove top_p in thinking mode
             merged_hyperparams.pop("top_p", None)
@@ -89,14 +78,19 @@ def _apply_model_specific_config(config: Dict, model_config: Dict, provider_type
 
 
 def get_llms(
-    white_config: Optional[Dict] = None,
-    black_config: Optional[Dict] = None,
+    white_hyperparams: Optional[Dict] = None,
+    black_hyperparams: Optional[Dict] = None,
     timeout: int = 600,
 ) -> Tuple[Dict, Dict]:
-    """Create LLM configurations with per-model parameters."""
+    """Create LLM configurations from environment + per-model hyperparameter settings.
+
+    Note: This function is intentionally "dumb" about defaults. Provide defaults
+    via the caller (e.g., from llm_chess.default_hyperparams) inside the
+    `{"hyperparams": {...}}` dicts passed in.
+    """
     load_dotenv()
-    white_config = white_config or {}
-    black_config = black_config or {}
+    white_hyperparams = white_hyperparams or {}
+    black_hyperparams = black_hyperparams or {}
 
     model_kinds = [
         os.environ.get("MODEL_KIND_W", "google"),
@@ -154,11 +148,11 @@ def get_llms(
         else:
             raise ValueError(f"Unsupported provider type '{kind}'")
 
-    def _build_config(kind: str, key: str, model_config: Dict) -> Dict:
+    def _build_config(kind: str, key: str, model_params: Dict) -> Dict:
         provider_conf = _provider_base_config(kind, key)
         # Apply provider overrides if any
-        if model_config and "provider_overrides" in model_config:
-            provider_conf.update(model_config["provider_overrides"])
+        if model_params and "provider_overrides" in model_params:
+            provider_conf.update(model_params["provider_overrides"])
 
         config = {
             "config_list": [provider_conf],
@@ -166,11 +160,11 @@ def get_llms(
             "cache_seed": None,
         }
 
-        validate_model_config(model_config, kind)
-        return _apply_model_specific_config(config, model_config, kind)
+        validate_model_config(model_params, kind)
+        return _apply_model_specific_config(config, model_params, kind)
 
-    config_white = _build_config(model_kinds[0], "W", white_config)
-    config_black = _build_config(model_kinds[1], "B", black_config)
+    config_white = _build_config(model_kinds[0], "W", white_hyperparams)
+    config_black = _build_config(model_kinds[1], "B", black_hyperparams)
     return config_white, config_black
 
 

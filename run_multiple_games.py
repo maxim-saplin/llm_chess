@@ -7,9 +7,43 @@ from get_run_metadata import collect_run_metadata, write_run_metadata
 import llm_chess
 
 # ---------------------------------------------------------------------------
-# Explicit baseline hyper-parameters
+# Hyperparameter schema and provider quirks
 # ---------------------------------------------------------------------------
-DEFAULT_HYPERPARAMS = {
+# Per-side settings passed to get_llms are DICTs with this shape:
+# {
+#   "hyperparams": {                 # Optional. None values are ignored.
+#       "temperature": float | None,
+#       "top_p": float | None,
+#       "top_k": int | None,
+#       "min_p": float | None,
+#       "frequency_penalty": float | None,
+#       "presence_penalty": float | None,
+#   },
+#   "reasoning_effort": str,         # Optional (openai/azure/xai/local only): "low" | "medium" | "high".
+#   "thinking_budget": int,          # Optional (anthropic only). Enables thinking mode with given budget tokens.
+#   "provider_overrides": { ... },   # Optional. Merged into config_list[0] (e.g., base_url, api_version, etc.).
+# }
+#
+# Provider-specific quirks applied by get_llms:
+# - If reasoning_effort is set for provider in (openai, azure, xai, local):
+#   - config["config_list"][0]["reasoning_effort"] = value
+#   - top-level temperature is REMOVED (top_p is kept)
+#
+# - If thinking_budget is set for provider == anthropic:
+#   - config["config_list"][0]["thinking"] = {"type": "enabled", "budget_tokens": thinking_budget}
+#   - top-level temperature and top_p are REMOVED
+#
+# Notes:
+# - Environment variables determine provider base config (model, keys, api_type, etc.).
+# - None-valued hyperparams are skipped and not included in the final config.
+# - White and Black are independent; overrides on one side do not affect the other.
+# - Canonical defaults live in llm_chess.default_hyperparams. We duplicate them below
+#   as experiment-local defaults for clarity and easier tweaking per run.
+
+# ---------------------------------------------------------------------------
+# Experiment-local default hyper-parameters (duplicated for clarity)
+# ---------------------------------------------------------------------------
+EXPERIMENT_DEFAULT_HYPERPARAMS = {
     "temperature": 0.3,
     "top_p": 1.0,
     "top_k": None,
@@ -21,21 +55,23 @@ DEFAULT_HYPERPARAMS = {
 # ---------------------------------------------------------------------------
 # Per-model configuration – edit ONLY these two dicts for experiments
 # ---------------------------------------------------------------------------
-WHITE_MODEL_HYPERPARAMS = {
-    "hyperparams": DEFAULT_HYPERPARAMS.copy(),  # <-- override here per need
+WHITE_HYPERPARAMS = {
+    # Start from experiment defaults; adjust as needed per run
+    "hyperparams": EXPERIMENT_DEFAULT_HYPERPARAMS.copy(),
     # "reasoning_effort": "high",
     # "thinking_budget": 4096,
 }
 
-BLACK_MODEL_HYPERPARAMS = {
-    "hyperparams": DEFAULT_HYPERPARAMS.copy(),  # <-- override here per need
+BLACK_HYPERPARAMS = {
+    # Start from experiment defaults; adjust as needed per run
+    "hyperparams": EXPERIMENT_DEFAULT_HYPERPARAMS.copy(),
     "reasoning_effort": "low",
 }
 
 
 LLM_CONFIG_WHITE, LLM_CONFIG_BLACK = get_llms(
-    white_config=WHITE_MODEL_HYPERPARAMS,
-    black_config=BLACK_MODEL_HYPERPARAMS,
+    white_hyperparams=WHITE_HYPERPARAMS,
+    black_hyperparams=BLACK_HYPERPARAMS,
 )
 
 

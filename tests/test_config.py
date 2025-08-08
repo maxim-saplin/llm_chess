@@ -33,8 +33,8 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         custom_hyperparams = {"temperature": 0.7, "top_p": 0.8}
         black_config = {"hyperparams": custom_hyperparams}
         llm_config_white, llm_config_black = get_llms(
-            white_config=None,
-            black_config=black_config
+            white_hyperparams={},
+            black_hyperparams=black_config
         )
 
         game_stats, _, player_black = llm_chess.run(
@@ -62,8 +62,8 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         custom_hyperparams = {"temperature": 0.7, "top_p": 0.8}
         white_config = {"hyperparams": custom_hyperparams}
         llm_config_white, llm_config_black = get_llms(
-            white_config=white_config,
-            black_config=None
+            white_hyperparams=white_config,
+            black_hyperparams={}
         )
 
         game_stats, player_white, _ = llm_chess.run(
@@ -90,8 +90,8 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         # Get LLM configs with reasoning effort
         black_config = {"reasoning_effort": reasoning_effort}
         llm_config_white, llm_config_black = get_llms(
-            white_config=None,
-            black_config=black_config
+            white_hyperparams={},
+            black_hyperparams=black_config
         )
 
         # Run game with reasoning effort config
@@ -123,8 +123,8 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         }
         with patch.dict(os.environ, env_patch, clear=False):
             llm_config_white, llm_config_black = get_llms(
-                white_config=None,
-                black_config=black_config
+                white_hyperparams={},
+                black_hyperparams=black_config
             )
 
         game_stats, _, player_black = llm_chess.run(
@@ -158,8 +158,8 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         }
         with patch.dict(os.environ, env_patch, clear=False):
             llm_config_white, llm_config_black = get_llms(
-                white_config=None,
-                black_config=black_config
+                white_hyperparams={},
+                black_hyperparams=black_config
             )
 
         game_stats, _, player_black = llm_chess.run(
@@ -182,12 +182,12 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         """Test difference between default and custom hyperparameters."""
 
         _, default_cfg_black = get_llms(
-            white_config=None, black_config=None
+            white_hyperparams={}, black_hyperparams={}
         )
         custom_hyperparams = {"temperature": 0.9, "top_p": 0.7}
         black_config = {"hyperparams": custom_hyperparams}
         _, custom_cfg_black = get_llms(
-            white_config=None, black_config=black_config
+            white_hyperparams={}, black_hyperparams=black_config
         )
 
         default_temp = default_cfg_black.get("temperature")
@@ -206,7 +206,7 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         test_hyperparams = {"temperature": 0.42, "top_p": 0.88}
         black_config = {"hyperparams": test_hyperparams}
         llm_config_white, llm_config_black = get_llms(
-            white_config=None, black_config=black_config
+            white_hyperparams={}, black_hyperparams=black_config
         )
 
         llm_chess.max_game_moves = 4

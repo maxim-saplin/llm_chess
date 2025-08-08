@@ -7,7 +7,6 @@ from unittest.mock import patch
 import llm_chess
 from utils import get_llms
 from get_run_metadata import collect_run_metadata, write_run_metadata
-from utils import DEFAULT_HYPERPARAMS
 
 from unittest.mock import patch
 
@@ -195,7 +194,7 @@ class TestRunJsonGolden(unittest.TestCase):
                 }
             ],
             "timeout": 600,
-            **({"top_p": DEFAULT_HYPERPARAMS["top_p"]} if not thinking_budget else {}),
+            **({"top_p": llm_chess.default_hyperparams["top_p"]} if not thinking_budget else {}),
         }
         if reasoning_effort:
             cfg["config_list"][0]["reasoning_effort"] = reasoning_effort
@@ -253,7 +252,7 @@ class TestRunJsonGolden(unittest.TestCase):
                     "api_key": "REDACTED",
                     "timeout": 600,
                     "reasoning_effort": "high",
-                    "top_p": DEFAULT_HYPERPARAMS["top_p"],
+                    "top_p": llm_chess.default_hyperparams["top_p"],
                 }
             },
         }
@@ -292,7 +291,7 @@ class TestRunJsonGolden(unittest.TestCase):
                     "api_key": "REDACTED",
                     "timeout": 600,
                     "reasoning_effort": "low",
-                    "top_p": DEFAULT_HYPERPARAMS["top_p"],
+                    "top_p": llm_chess.default_hyperparams["top_p"],
                 },
                 "black": {
                     "model": "gpt-b",
@@ -338,7 +337,7 @@ class TestRunJsonGolden(unittest.TestCase):
                     "api_type": "openai",
                     "api_key": "REDACTED",
                     "timeout": 600,
-                    "top_p": DEFAULT_HYPERPARAMS["top_p"],
+                    "top_p": llm_chess.default_hyperparams["top_p"],
                 }
             },
         }

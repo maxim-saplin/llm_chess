@@ -2,7 +2,8 @@ import os
 import unittest
 from unittest.mock import patch
 
-from utils import DEFAULT_HYPERPARAMS, get_llms
+import llm_chess
+from utils import get_llms
 
 # ---------------------------------------------------------------------------
 # Helper utilities for environment setup
@@ -45,19 +46,19 @@ class TestPerModelConfig(unittest.TestCase):
 
     def test_default_hyperparams_are_applied(self):
         with _prepare_env("local", "local"):
-            cfg_w, cfg_b = get_llms(white_config={}, black_config={})
-        self.assertEqual(cfg_w["temperature"], DEFAULT_HYPERPARAMS["temperature"])
-        self.assertEqual(cfg_b["top_p"], DEFAULT_HYPERPARAMS["top_p"])
+            cfg_w, cfg_b = get_llms(white_hyperparams={"hyperparams": llm_chess.default_hyperparams}, black_hyperparams={"hyperparams": llm_chess.default_hyperparams})
+        self.assertEqual(cfg_w["temperature"], llm_chess.default_hyperparams["temperature"])
+        self.assertEqual(cfg_b["top_p"], llm_chess.default_hyperparams["top_p"])
 
     def test_white_override_does_not_touch_black(self):
         with _prepare_env("local", "local"):
-            cfg_w, cfg_b = get_llms(white_config={"hyperparams": {"temperature": 0.75}}, black_config={})
+            cfg_w, cfg_b = get_llms(white_hyperparams={"hyperparams": {"temperature": 0.75}}, black_hyperparams={"hyperparams": llm_chess.default_hyperparams})
         self.assertEqual(cfg_w["temperature"], 0.75)
-        self.assertEqual(cfg_b["temperature"], DEFAULT_HYPERPARAMS["temperature"])
+        self.assertEqual(cfg_b["temperature"], llm_chess.default_hyperparams["temperature"])
 
     def test_reasoning_effort_strips_temp_and_top_p(self):
         with _prepare_env("openai", "openai"):
-            cfg_w, cfg_b = get_llms(white_config={"reasoning_effort": "high"}, black_config={"reasoning_effort": "low"})
+            cfg_w, cfg_b = get_llms(white_hyperparams={"reasoning_effort": "high", "hyperparams": llm_chess.default_hyperparams}, black_hyperparams={"reasoning_effort": "low", "hyperparams": llm_chess.default_hyperparams})
         # reasoning_effort should be placed inside the provider-specific dict
         self.assertIn("reasoning_effort", cfg_w["config_list"][0])
         # temperature must be removed, but top_p should remain (matches ground-truth function)
@@ -67,7 +68,7 @@ class TestPerModelConfig(unittest.TestCase):
 
     def test_thinking_budget_sets_thinking_and_strips_top_p(self):
         with _prepare_env("openai", "anthropic"):
-            cfg_w, cfg_b = get_llms(white_config={}, black_config={"thinking_budget": 4096})
+            cfg_w, cfg_b = get_llms(white_hyperparams={"hyperparams": llm_chess.default_hyperparams}, black_hyperparams={"thinking_budget": 4096, "hyperparams": llm_chess.default_hyperparams})
         self.assertIn("temperature", cfg_w)
         self.assertIn("thinking", cfg_b["config_list"][0])
         self.assertEqual(cfg_b["config_list"][0]["thinking"]["budget_tokens"], 4096)

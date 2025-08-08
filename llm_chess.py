@@ -34,7 +34,7 @@ class PlayerType(Enum):
     CHESS_ENGINE_DRAGON = 6  # Add this new entry for Dragon engine
     LLM_NON = 7  # Represents a mixture of agents player using multiple LLMs
 
-# Hyper params such as temperature are defined in `utils.py`
+
 white_player_type = PlayerType.RANDOM_PLAYER
 black_player_type = PlayerType.LLM_BLACK
 enable_reflection = False  # Whether to offer the LLM time to think and evaluate moves
@@ -189,8 +189,8 @@ def run(
         }
         BLACK_MODEL_CONFIG = WHITE_MODEL_CONFIG.copy()
         _llm_config_white, _llm_config_black = get_llms(
-            white_config=WHITE_MODEL_CONFIG,
-            black_config=BLACK_MODEL_CONFIG,
+            white_hyperparams=WHITE_MODEL_CONFIG,
+            black_hyperparams=BLACK_MODEL_CONFIG,
         )
         if llm_config_white is None:
             llm_config_white = _llm_config_white
