@@ -50,7 +50,6 @@ def run_games():
     # - Canonical defaults live in llm_chess.default_hyperparams. We duplicate them below
     #   as experiment-local defaults for clarity and easier tweaking per run.
 
-
     # ---------------------------------------------------------------------------
     # Experiment-local default hyper-parameters (duplicated for clarity)
     # ---------------------------------------------------------------------------
@@ -78,7 +77,6 @@ def run_games():
         "hyperparams": EXPERIMENT_DEFAULT_HYPERPARAMS.copy(),
         # "reasoning_effort": "low",
     }
-
 
     LLM_CONFIG_WHITE, LLM_CONFIG_BLACK = get_llms(
         white_hyperparams=WHITE_HYPERPARAMS,
@@ -291,9 +289,11 @@ def run_games():
 
     print("\n\n\033[92m" + json.dumps(aggregate_data, indent=4) + "\033[0m")
 
+
 # ---------------------------------------------------------------------------
 # Log folder construction helpers (moved here from log_paths.py)
 # ---------------------------------------------------------------------------
+
 
 def _slugify(name: str) -> str:
     """Replace disallowed characters with '-'; allow A-Z a-z 0-9 . _ -.
@@ -392,16 +392,19 @@ def build_log_folder(
     """
     ts = _now_timestamp()
 
-    white_engine = _engine_id_and_level(white_player_type, stockfish_level, dragon_level)
-    black_engine = _engine_id_and_level(black_player_type, stockfish_level, dragon_level)
+    white_engine = _engine_id_and_level(
+        white_player_type, stockfish_level, dragon_level
+    )
+    black_engine = _engine_id_and_level(
+        black_player_type, stockfish_level, dragon_level
+    )
 
     white_is_llm = _is_llm(white_player_type)
     black_is_llm = _is_llm(black_player_type)
 
     # 1) rand_vs_llm
-    if (
-        (white_player_type == llm_chess.PlayerType.RANDOM_PLAYER and black_is_llm)
-        or (black_player_type == llm_chess.PlayerType.RANDOM_PLAYER and white_is_llm)
+    if (white_player_type == llm_chess.PlayerType.RANDOM_PLAYER and black_is_llm) or (
+        black_player_type == llm_chess.PlayerType.RANDOM_PLAYER and white_is_llm
     ):
         llm_cfg = llm_config_black if black_is_llm else llm_config_white
         llm_name = _extract_llm_model_and_suffix(llm_cfg)
@@ -428,6 +431,7 @@ def build_log_folder(
 
     # 5) misc (engine_vs_random, random_vs_random, or anything else)
     return f"_logs/misc/{ts}"
+
 
 if __name__ == "__main__":
     run_games()

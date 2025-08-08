@@ -23,7 +23,7 @@ PROVIDER_CAPABILITIES = {
     "anthropic": {"thinking_budget", "max_tokens"},
     "google": {"top_k"},
     "local": {"reasoning_effort"},
-    "qroq": {"reasoning_effort"},
+    "groq": {"reasoning_effort"},
     "cerebras": {"reasoning_effort"},
     "mistral": set(),
 }
@@ -52,7 +52,7 @@ def _apply_model_specific_config(config: Dict, model_params: Dict, provider_type
     merged_hyperparams = _merge_hyperparams(model_params)
 
     # Provider-specific features
-    if provider_type in ("openai", "azure", "xai", "local", "qroq", "cerebras"):
+    if provider_type in ("openai", "azure", "xai", "local", "groq", "cerebras"):
         if model_params and "reasoning_effort" in model_params:
             # Store reasoning_effort inside the provider-specific entry (matches get_llms_autogen)
             if config.get("config_list"):
@@ -115,12 +115,12 @@ def get_llms(
                 "api_key": os.environ.get(f"LOCAL_API_KEY_{key}", "any"),
                 "default_headers": {"Api-Key": os.environ.get(f"LOCAL_API_KEY_{key}", "any")},
             }
-        elif kind == "qroq":
+        elif kind == "groq":
             return {
-                "model": os.environ[f"QROQ_MODEL_NAME_{key}"],
-                "base_url": os.environ[f"QROQ_BASE_URL_{key}"],
-                "api_key": os.environ.get(f"QROQ_API_KEY_{key}", "any"),
-                "default_headers": {"Api-Key": os.environ.get(f"QROQ_API_KEY_{key}", "any")},
+                "model": os.environ[f"GROQ_MODEL_NAME_{key}"],
+                "base_url": os.environ[f"GROQ_BASE_URL_{key}"],
+                "api_key": os.environ.get(f"GROQ_API_KEY_{key}", "any"),
+                "default_headers": {"Api-Key": os.environ.get(f"GROQ_API_KEY_{key}", "any")},
             }
         elif kind == "cerebras":
             return {
