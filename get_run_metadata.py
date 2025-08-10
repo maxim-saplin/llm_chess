@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional
 from enum import Enum
 
 import llm_chess
+from utils import infer_api_type_for_metadata
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -52,31 +53,23 @@ def _simplify_llm_config(config: Dict[str, Any]) -> Dict[str, Any]:
     provider_conf = config.get("config_list", [{}])[0]
     provider_conf = _sanitize_config_list_entry(provider_conf)
 
-    # Best-effort infer api_type for providers that omit it in runtime configs (e.g., groq/cerebras)
-    inferred_api_type: Optional[str] = None
-    try:
-        base_url = str(provider_conf.get("base_url", "")).lower()
-        if not provider_conf.get("api_type"):
-            if "groq" in base_url:
-                inferred_api_type = "groq"
-            elif "cerebras" in base_url:
-                inferred_api_type = "cerebras"
-            # Intentionally do not infer others to avoid accidental misclassification
-    except Exception:
-        # If any unexpected structure, skip inference silently
-        pass
+    # Inject inferred api_type into a local copy for metadata if missing
+    provider_conf_for_meta = dict(provider_conf)
+    if "api_type" not in provider_conf_for_meta or not provider_conf_for_meta.get("api_type"):
+        inferred = infer_api_type_for_metadata(provider_conf_for_meta)
+        if inferred:
+            provider_conf_for_meta["api_type"] = inferred
 
     for key in _PROVIDER_KEYS:
         if key in provider_conf and provider_conf[key] is not None:
             simplified[key] = provider_conf[key]
+        elif key in provider_conf_for_meta and provider_conf_for_meta[key] is not None:
+            # Use inferred api_type only when the original did not specify it
+            simplified[key] = provider_conf_for_meta[key]
 
     # Always include api_key redacted if present
     if "api_key" in provider_conf:
         simplified["api_key"] = provider_conf["api_key"]
-
-    # Add inferred api_type if missing from provider and we recognized it
-    if "api_type" not in simplified and inferred_api_type is not None:
-        simplified["api_type"] = inferred_api_type
 
     # Timing / misc top-level keys
     if "timeout" in config and config["timeout"] is not None:

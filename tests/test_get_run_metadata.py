@@ -109,6 +109,52 @@ class TestRunMetadata(unittest.TestCase):
         # Ensure redaction still active
         self.assertEqual(md["llm_configs"]["white"]["api_key"], "REDACTED")
 
+    def test_api_type_inference_from_base_url(self):
+        # Ensure both sides treated as LLMs so llm_configs is populated
+        llm_chess.white_player_type = llm_chess.PlayerType.LLM_WHITE
+        llm_chess.black_player_type = llm_chess.PlayerType.LLM_BLACK
+
+        def cfg_with_base_url(url: str):
+            return {
+                "config_list": [
+                    {
+                        "model": "dummy",
+                        "api_key": "SECRET",
+                        "base_url": url,
+                        # Note: api_type intentionally omitted to test inference
+                    }
+                ],
+                "timeout": 600,
+            }
+
+        cases = [
+            ("http://localhost:1234/v1", "local"),
+            ("http://127.0.0.1:1234/v1", "local"),
+            ("https://api.deepseek.com", "deepseek"),
+            ("https://api.hunyuan.cloud.tencent.com/v1", "tencent"),
+            ("https://api.x.ai/v1", "xai"),
+            ("https://dashscope-intl.aliyuncs.com/compatible-mode/v1", "dashscope"),
+            ("https://openrouter.ai/api/v1", "openrouter"),
+            ("https://api.inceptionlabs.ai/v1", "inceptionlabs"),
+            ("https://api.cerebras.ai/v1", "cerebras"),
+            ("https://api.groq.com/openai/v1", "groq"),
+            ("https://some.custom.host/v1", "oai_comp_endpoint"),
+        ]
+
+        for base_url, expected_api_type in cases:
+            with self.subTest(base_url=base_url):
+                md = collect_run_metadata(
+                    log_folder_relative=self.log_folder,
+                    num_repetitions=1,
+                    store_individual_logs=False,
+                    llm_config_white=cfg_with_base_url(base_url),
+                    llm_config_black=None,
+                )
+                self.assertIn("llm_configs", md)
+                self.assertIn("white", md["llm_configs"])
+                self.assertEqual(md["llm_configs"]["white"]["api_type"], expected_api_type)
+                self.assertEqual(md["llm_configs"]["white"]["api_key"], "REDACTED")
+
 # Copy of helper from test_per_model_config (kept local to avoid import cycles)
 _ENV_TEMPLATES = {
     "local": [
