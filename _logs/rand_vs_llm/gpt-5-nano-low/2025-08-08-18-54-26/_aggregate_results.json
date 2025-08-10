@@ -1,0 +1,76 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.08.08_18:54",
+            "log_folder_relative": "_logs/rand_vs_llm/gpt-5-nano-low/2025-08-08-18-54-26",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 0,
+            "dialog_turn_delay": 1,
+            "max_api_retries": 3,
+            "api_retry_delay": 2.0,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "<think>.*?</think>"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "gpt-5-nano",
+                "api_type": "azure",
+                "api_version": "2025-04-01-preview",
+                "api_key": "REDACTED",
+                "timeout": 600,
+                "reasoning_effort": "low",
+                "top_p": 1.0
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 11,
+    "black_wins": 15,
+    "draws": 7,
+    "total_moves": 3134,
+    "reasons": {
+        "Checkmate": 15,
+        "Max turns in single dialog": 11,
+        "Max moves reached": 4,
+        "Stalemate": 3
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 288,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 8.727272727272727,
+        "std_dev_material": 11.73475800579396
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "gpt-5-nano",
+        "total_material": 798,
+        "wrong_moves": 142,
+        "wrong_actions": 103,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 24.181818181818183,
+        "std_dev_material": 10.309142015265339
+    },
+    "average_moves": 94.96969696969697,
+    "std_dev_moves": 61.927621486944766
+}

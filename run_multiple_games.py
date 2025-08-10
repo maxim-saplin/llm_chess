@@ -76,7 +76,7 @@ def run_games():
     BLACK_HYPERPARAMS = {
         # Start from experiment defaults; adjust as needed per run
         "hyperparams": EXPERIMENT_DEFAULT_HYPERPARAMS.copy(),
-        # "reasoning_effort": "low",
+        "reasoning_effort": "medium",
     }
 
 
