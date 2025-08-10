@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import ClassVar, Dict, Any, List, Union
 from statistics import mean, stdev
 import os.path
+from functools import lru_cache
 
 # Try direct import first
 try:
@@ -54,6 +55,62 @@ MODEL_OVERRIDES = {
     "2025-02-10_o3-mini-2025-01-31-high-again_timeouts": "ignore",
     "2025-02-10_o1-mini-2024-09-12_plenty_connection_errors": "ignore",
 }
+
+
+def _compose_model_label(base_model: str, reasoning_effort: str | None, thinking_budget: int | None) -> str:
+    """Return model label with suffixes per run settings.
+
+    - Add '-<reasoning_effort>' if provided (low|medium|high)
+    - Add '-tb_<budget>' if provided and > 0
+    Order: reasoning first, then tb
+    """
+    suffix: list[str] = []
+    if isinstance(reasoning_effort, str) and reasoning_effort:
+        suffix.append(reasoning_effort)
+    if isinstance(thinking_budget, int) and thinking_budget > 0:
+        suffix.append(f"tb_{thinking_budget}")
+    return f"{base_model}-{'-'.join(suffix)}" if suffix else base_model
+
+
+@lru_cache(maxsize=4096)
+def _model_label_from_run_json(run_dir: str) -> str | None:
+    """Derive model label for a run folder using its `_run.json`.
+
+    Expects the simplified schema written by `get_run_metadata.collect_run_metadata`.
+    Returns None if the metadata file is missing or malformed.
+    """
+    try:
+        run_json_path = os.path.join(run_dir, "_run.json")
+        if not os.path.exists(run_json_path):
+            return None
+        with open(run_json_path, "r", encoding="utf-8") as f:
+            md = json.load(f)
+
+        player_types = md.get("player_types") or {}
+        llm_configs = md.get("llm_configs") or {}
+
+        # Prefer black if it's an LLM (rand_vs_llm case handled by this module)
+        side_key = None
+        if player_types.get("black_player_type") in ("LLM_BLACK", "LLM_NON"):
+            side_key = "black"
+        elif player_types.get("white_player_type") in ("LLM_WHITE", "LLM_NON"):
+            side_key = "white"
+        else:
+            # Fallback to black side when unknown
+            side_key = "black"
+
+        side_cfg = llm_configs.get(side_key)
+        if not isinstance(side_cfg, dict):
+            return None
+
+        base_model = side_cfg.get("model")
+        reasoning = side_cfg.get("reasoning_effort")
+        thinking_budget = side_cfg.get("thinking_budget")
+        if not base_model:
+            return None
+        return _compose_model_label(base_model, reasoning, thinking_budget)
+    except Exception:
+        return None
 
 
 @dataclass
@@ -125,7 +182,7 @@ class GameLog:
 
 
 def load_game_log(file_path: str) -> GameLog:
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
         white_usage_keys = list(data["usage_stats"]["white"])
         black_usage_keys = list(data["usage_stats"]["black"])
@@ -199,19 +256,37 @@ def load_game_logs(logs_dirs: Union[str, List[Union[str, Dict[str, str]]]], mode
 
         for root, _, files in os.walk(logs_dir):
             for file in files:
-                if file.endswith(".json") and not file.endswith(
-                    "_aggregate_results.json"
+                # Only include per-game logs; skip run-level metadata and aggregates
+                if (
+                    file.endswith(".json")
+                    and not file.endswith("_aggregate_results.json")
+                    and file != "_run.json"
                 ):
                     file_path = os.path.join(root, file)
                     try:
                         game_log = load_game_log(file_path)
                         
+                        # Validate roles: LLM must be black, opponent must be Random_Player
+                        if game_log.player_white.name != "Random_Player":
+                            print(
+                                f"Skipping {file_path}: Opponent is not Random Player (white='{game_log.player_white.name}')."
+                            )
+                            continue
+                        if game_log.player_black.name != "Player_Black":
+                            print(
+                                f"Skipping {file_path}: LLM is not playing as black (black='{game_log.player_black.name}')."
+                            )
+                            continue
+                        
                         # Apply directory alias if one exists
                         if logs_dir in directory_aliases:
                             model_name = directory_aliases[logs_dir]
                         else:
-                            # Use model ID from log, override if specified
-                            model_name = game_log.player_black.model
+                            # Prefer run-level metadata to construct suffixed model name
+                            run_dir = os.path.dirname(file_path)
+                            label_from_run = _model_label_from_run_json(run_dir)
+                            # Fallback to model ID from the log if run metadata missing
+                            model_name = label_from_run or game_log.player_black.model
                             if model_overrides:
                                 key = next(
                                     (
@@ -247,7 +322,7 @@ def load_model_prices(metadata_file_path):
     model_prices = {}
 
     try:
-        with open(metadata_file_path, "r") as f:
+        with open(metadata_file_path, "r", encoding="utf-8") as f:
             reader = csv.reader(f)
             # Skip header row if present
             next(reader, None)
@@ -925,7 +1000,7 @@ def aggregate_models_to_csv(
 
     # Sort the data by model name and write to CSV
     csv_data.sort(key=lambda x: x[0])  # Sort by model_name
-    with open(output_csv, "w", newline="") as csvfile:
+    with open(output_csv, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(headers)
         writer.writerows(csv_data)
