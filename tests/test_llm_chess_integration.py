@@ -3,7 +3,6 @@ import unittest
 import json
 import os
 import requests
-import importlib, sys, types
 import run_multiple_games as rmg
 
 from .helper import _MockServerTestCaseBase
