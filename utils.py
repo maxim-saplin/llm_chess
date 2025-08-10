@@ -28,6 +28,51 @@ PROVIDER_CAPABILITIES = {
     "mistral": set(),
 }
 
+def infer_api_type_for_metadata(provider_conf: Dict[str, Any]) -> Optional[str]:
+    """Infer a provider api_type from a runtime provider config for metadata only.
+
+    Rules:
+    - If provider_conf already declares api_type, return it.
+    - If base_url points to localhost/127.0.0.1 → "local".
+    - Recognize common OpenAI-compatible hosts and return their short ids.
+    - Otherwise return "oai_comp_endpoint" to denote a generic OpenAI-compatible endpoint.
+    """
+    try:
+        declared = provider_conf.get("api_type")
+        if isinstance(declared, str) and declared:
+            return declared
+
+        base_url = str(provider_conf.get("base_url", "")).strip().lower()
+        if not base_url:
+            return None
+
+        # Explicit local endpoints
+        if base_url.startswith("http://localhost") or base_url.startswith("https://localhost") or "127.0.0.1" in base_url:
+            return "local"
+
+        # Known hosted OpenAI-compatible providers
+        if "api.groq.com" in base_url or "groq" in base_url:
+            return "groq"
+        if "api.cerebras.ai" in base_url or "cerebras" in base_url:
+            return "cerebras"
+        if "api.deepseek.com" in base_url or "deepseek" in base_url:
+            return "deepseek"
+        if "hunyuan" in base_url or "tencent" in base_url:
+            return "tencent"
+        if "dashscope" in base_url or "aliyuncs.com" in base_url:
+            return "dashscope"
+        if "openrouter.ai" in base_url:
+            return "openrouter"
+        if "inceptionlabs" in base_url:
+            return "inceptionlabs"
+        if "x.ai" in base_url:
+            return "xai"
+
+        # Default for unknown remote OpenAI-compatible endpoints
+        return "oai_comp_endpoint"
+    except Exception:
+        return None
+
 def _merge_hyperparams(model_params: Optional[Dict]) -> Dict:
     """Return a copy of per-model hyperparams (no defaults here by design)."""
     merged: Dict = {}
