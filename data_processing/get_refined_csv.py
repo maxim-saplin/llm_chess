@@ -122,6 +122,8 @@ REFINED_HEADERS = [
     "moe_average_game_cost",
     "price_per_1000_moves",
     "moe_price_per_1000_moves",
+    "average_time_per_game_seconds",
+    "moe_average_time_per_game_seconds",
 ]
 
 
@@ -215,6 +217,8 @@ def convert_aggregate_to_refined(
                 moe_average_game_cost = float(row.get("moe_average_game_cost", 0))
                 price_per_1000_moves = float(row.get("price_per_1000_moves", 0))
                 moe_price_per_1000_moves = float(row.get("moe_price_per_1000_moves", 0))
+                average_time_per_game_seconds = float(row.get("average_time_per_game_seconds", 0))
+                moe_average_time_per_game_seconds = float(row.get("moe_average_time_per_game_seconds", 0))
 
                 # Append the row to the list of rows to write
                 rows_to_write.append(
@@ -260,6 +264,8 @@ def convert_aggregate_to_refined(
                         "moe_average_game_cost": round(moe_average_game_cost, 5),
                         "price_per_1000_moves": round(price_per_1000_moves, 5),
                         "moe_price_per_1000_moves": round(moe_price_per_1000_moves, 5),
+                        "average_time_per_game_seconds": round(average_time_per_game_seconds, 3),
+                        "moe_average_time_per_game_seconds": round(moe_average_time_per_game_seconds, 3),
                     }
                 )
 
@@ -380,6 +386,8 @@ def convert_aggregate_to_refined_rows(
             moe_average_game_cost = float(row.get("moe_average_game_cost", 0))
             price_per_1000_moves = float(row.get("price_per_1000_moves", 0))
             moe_price_per_1000_moves = float(row.get("moe_price_per_1000_moves", 0))
+            average_time_per_game_seconds = float(row.get("average_time_per_game_seconds", 0))
+            moe_average_time_per_game_seconds = float(row.get("moe_average_time_per_game_seconds", 0))
 
             refined_rows.append({
                 "Player": model_name,
@@ -423,6 +431,8 @@ def convert_aggregate_to_refined_rows(
                 "moe_average_game_cost": round(moe_average_game_cost, 5),
                 "price_per_1000_moves": round(price_per_1000_moves, 5),
                 "moe_price_per_1000_moves": round(moe_price_per_1000_moves, 5),
+                "average_time_per_game_seconds": round(average_time_per_game_seconds, 3),
+                "moe_average_time_per_game_seconds": round(moe_average_time_per_game_seconds, 3),
             })
     return refined_rows
 
@@ -512,21 +522,20 @@ def print_leaderboard(csv_file, top_n=None):
         total_cost_str = f"${total_cost:.2f}"
         total_cost_all_models += total_cost
         
-        # Calculate estimated time per game - simplified approach
-        avg_moves = float(row['average_moves'])
-        tokens_per_game = tokens * avg_moves
-        # Multiply by 1.05 to account for input processing time
-        adjusted_tokens = tokens_per_game * 1.05
-        # Assume 100 tokens/second processing speed
-        total_time = adjusted_tokens / 100  # seconds
-        
-        # Format time based on duration
-        if total_time < 60:
-            time_str = f"{total_time:.1f}s"
-        elif total_time < 3600:
-            time_str = f"{total_time/60:.1f}m"
+        # Prefer measured average time per game if available; otherwise N/A
+        try:
+            measured_time = float(row.get('average_time_per_game_seconds', 0) or 0)
+        except (ValueError, TypeError):
+            measured_time = 0.0
+        if measured_time > 0:
+            if measured_time < 60:
+                time_str = f"{measured_time:.1f}s"
+            elif measured_time < 3600:
+                time_str = f"{measured_time/60:.1f}m"
+            else:
+                time_str = f"{measured_time/3600:.2f}h"
         else:
-            time_str = f"{total_time/3600:.2f}h"
+            time_str = "N/A"
         
         rows.append([
             rank,
@@ -575,7 +584,7 @@ def main():
     print("- Game Duration: Percentage of maximum possible game length completed (0-100%). Higher indicates better instruction following.")
     print("- Tokens: Number of tokens generated per move. Shows model verbosity/efficiency.")
     print("- Cost/Game: Average cost per game with margin of error. Lower is more economical.")
-    print("- Time/Game: Estimated time per game (output at 100 tok/s + 5% input processing time).")
+    print("- Time/Game: Measured average time per game from logs; N/A if unavailable.")
     print("- Total Cost: Total cost across all games for this model.")
 
 

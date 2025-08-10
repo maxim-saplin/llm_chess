@@ -237,6 +237,24 @@ class TestAggrToRefined(unittest.TestCase):
             self.assertIsNotNone(row["average_game_cost"])
             self.assertIsNotNone(row["moe_average_game_cost"])
 
+    def test_time_metrics_propagation(self):
+        """Tests that measured time metrics are propagated to refined CSV."""
+        aggregate_models_to_csv(
+            self.mock_logs_dir, self.mock_aggregate_csv, MODEL_OVERRIDES
+        )
+
+        convert_aggregate_to_refined(
+            self.mock_aggregate_csv, self.mock_refined_csv, filter_out_below_n=0
+        )
+
+        with open(self.mock_refined_csv, "r") as ref_file:
+            reader = csv.DictReader(ref_file)
+            rows = list(reader)
+
+        for row in rows:
+            self.assertIn("average_time_per_game_seconds", row)
+            self.assertIn("moe_average_time_per_game_seconds", row)
+
 
 if __name__ == "__main__":
     unittest.main() 

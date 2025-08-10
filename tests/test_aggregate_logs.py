@@ -453,6 +453,9 @@ class TestAggregateMetrics(unittest.TestCase):
             "moe_average_game_cost",
             "price_per_1000_moves",
             "moe_price_per_1000_moves",
+            "average_time_per_game_seconds",
+            "std_dev_time_per_game_seconds",
+            "moe_average_time_per_game_seconds",
         ]
 
         # Verify that all expected fields are present in the aggregated CSV

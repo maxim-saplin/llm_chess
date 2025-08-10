@@ -4,4 +4,4 @@ globs:
 alwaysApply: false
 ---
 
-The solution uses venv. The tests can be started via `uv run -m unittest discover -s ./tests -p "test_*.py" -t .` command
+The solution uses venv. The tests can be started via `uv run -m unittest discover -s ./tests -p "test_*.py" -t . |& tee >(tail -n 30) >/dev/null` command - note it only displays teh last 30 lines in order not to overwhelm the context with verbose logs produced during tests run, after the first run you can isolate failing tests and only run those to get a more succinct ouput to process.

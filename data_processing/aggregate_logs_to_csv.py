@@ -462,6 +462,9 @@ def aggregate_models_to_csv(
         "moe_average_game_cost",
         "price_per_1000_moves",
         "moe_price_per_1000_moves",
+        "average_time_per_game_seconds",
+        "std_dev_time_per_game_seconds",
+        "moe_average_time_per_game_seconds",
     ]
 
     csv_data = []
@@ -910,6 +913,29 @@ def aggregate_models_to_csv(
         moe_price_per_1000_moves = 1.96 * (std_dev_price_per_1000_moves / math.sqrt(total_games)) if total_games > 1 else 0
         price_per_1000_moves = average_price_per_1000_moves
 
+        # Time/Game metrics (measured). Use only games with positive time values to avoid counting missing data defaults.
+        per_game_time_seconds = [
+            float(log.player_black.accumulated_reply_time_seconds)
+            for log in model_logs
+            if hasattr(log.player_black, "accumulated_reply_time_seconds")
+            and isinstance(log.player_black.accumulated_reply_time_seconds, (int, float))
+            and log.player_black.accumulated_reply_time_seconds > 0
+        ]
+        if per_game_time_seconds:
+            average_time_per_game_seconds = mean(per_game_time_seconds)
+            std_dev_time_per_game_seconds = (
+                stdev(per_game_time_seconds) if len(per_game_time_seconds) > 1 else 0
+            )
+            moe_average_time_per_game_seconds = (
+                1.96 * (std_dev_time_per_game_seconds / math.sqrt(len(per_game_time_seconds)))
+                if len(per_game_time_seconds) > 1
+                else 0
+            )
+        else:
+            average_time_per_game_seconds = 0.0
+            std_dev_time_per_game_seconds = 0.0
+            moe_average_time_per_game_seconds = 0.0
+
         # Append the calculated data to the CSV data list
         csv_data.append(
             [
@@ -995,6 +1021,9 @@ def aggregate_models_to_csv(
                 moe_average_game_cost,
                 price_per_1000_moves,
                 moe_price_per_1000_moves,
+                average_time_per_game_seconds,
+                std_dev_time_per_game_seconds,
+                moe_average_time_per_game_seconds,
             ]
         )
 
