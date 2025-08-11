@@ -9,7 +9,7 @@ from utils import get_llms
 from get_run_metadata import collect_run_metadata, write_run_metadata
 
 from unittest.mock import patch
-from .helper import _MockServerTestCaseBase
+from .helper import _MockServerTestCaseBase, get_mock_base_url
 
 
 def _dummy_llm_config(model: str):

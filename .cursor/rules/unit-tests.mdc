@@ -1,7 +1,11 @@
 ---
-description: propper way to run unti tests
+description: proper way to run unit tests (parallel by default)
 globs:
 alwaysApply: false
 ---
 
-The solution uses venv. The tests can be started via `uv run -m unittest discover -s ./tests -p "test_*.py" -t . |& tee >(tail -n 30) >/dev/null` command - note it only displays teh last 30 lines in order not to overwhelm the context with verbose logs produced during tests run, after the first run you can isolate failing tests and only run those to get a more succinct ouput to process.
+Preferred runner is pytest with xdist for parallel execution. Use the project venv via uv.
+
+- Parallel run (default): `uv run pytest -q -n auto tests |& tee >(tail -n 30) >/dev/null`
+- Filter to specific tests: `uv run pytest -q -n auto -k "substring_or_expr" tests`
+- Serial fallback (rare): `uv run -m unittest -v -s ./tests -p "test_*.py" -t . |& tee >(tail -n 30) >/dev/null`

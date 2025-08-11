@@ -5,7 +5,7 @@ import os
 import requests
 import run_multiple_games as rmg
 
-from .helper import _MockServerTestCaseBase
+from .helper import _MockServerTestCaseBase, get_mock_base_url
 
 # Importing after env vars are set
 import llm_chess
@@ -62,7 +62,8 @@ class TestLLMvsRandomGame(_MockServerTestCaseBase):
     def setUp(self):
         # Reset the mock OpenAI server state before each test
         try:
-            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "default", "useThinking": False}, timeout=10) 
+            base_url = get_mock_base_url()
+            response = requests.post(f"{base_url}/reset", json={"scenarioType": "default", "useThinking": False}, timeout=10) 
             response.raise_for_status() 
             print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:
@@ -110,8 +111,8 @@ class TestLLMvsRandomGame(_MockServerTestCaseBase):
 
     def test_remove_text_removes_think_tags(self):
         """Test that remove_text properly removes think tags during game."""
-
-        requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "default", "useThinking": True})
+        base_url = get_mock_base_url()
+        requests.post(f"{base_url}/reset", json={"scenarioType": "default", "useThinking": True})
         
         # Configure game with remove_text
 
@@ -131,7 +132,8 @@ class TestLLMvsRandomGame(_MockServerTestCaseBase):
     def test_preserve_think_tags_when_remove_text_disabled(self):
         """Test that think tags are preserved when remove_text is disabled."""
         
-        requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "default", "useThinking": True})
+        base_url = get_mock_base_url()
+        requests.post(f"{base_url}/reset", json={"scenarioType": "default", "useThinking": True})
         
         # Configure game without remove_text
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
@@ -252,7 +254,8 @@ class TestLLMvsRandomGame(_MockServerTestCaseBase):
         """
 
         llm_chess.max_game_moves = 2
-        requests.post("http://localhost:8080/v1/reset", json={"useNegative": False, "useThinking": False})
+        base_url = get_mock_base_url()
+        requests.post(f"{base_url}/reset", json={"useNegative": False, "useThinking": False})
 
         _, _, black_player = run(log_dir=None)
 
@@ -285,7 +288,8 @@ class TestLLMvsRandomGame(_MockServerTestCaseBase):
 
         llm_chess.max_game_moves = 2
         # Reset the server with the invalid_action scenario
-        requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "invalid_action", "useThinking": False})
+        base_url = get_mock_base_url()
+        requests.post(f"{base_url}/reset", json={"scenarioType": "invalid_action", "useThinking": False})
 
         # Make sure we're using the default values for these parameters
         llm_chess.max_failed_attempts = 3
@@ -325,7 +329,8 @@ class TestLLMvsRandomGame(_MockServerTestCaseBase):
         llm_chess.max_game_moves = 100  # Set higher to ensure we hit wrong actions first
         llm_chess.max_failed_attempts = 3
         llm_chess.max_llm_turns = 20  # Set higher to ensure we hit wrong actions first
-        requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "wrong_actions"})
+        base_url = get_mock_base_url()
+        requests.post(f"{base_url}/reset", json={"scenarioType": "wrong_actions"})
 
         game_stats, _, black_player = run(log_dir=None)
 
@@ -341,7 +346,8 @@ class TestLLMvsRandomGame(_MockServerTestCaseBase):
         """
         llm_chess.max_game_moves = 100  # Set higher to ensure we hit max turns first
         llm_chess.max_llm_turns = 5  # Set a low value to trigger quickly
-        requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "max_turns"})
+        base_url = get_mock_base_url()
+        requests.post(f"{base_url}/reset", json={"scenarioType": "max_turns"})
 
         game_stats, _, _ = run(log_dir=None)
 
@@ -354,7 +360,8 @@ class TestLLMvsRandomGame(_MockServerTestCaseBase):
         Test that the game ends with MAX_MOVES when the maximum number of moves is reached.
         """
         llm_chess.max_game_moves = 4 
-        requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "max_moves"})
+        base_url = get_mock_base_url()
+        requests.post(f"{base_url}/reset", json={"scenarioType": "max_moves"})
 
         game_stats, _, _ = run(log_dir=None)
         self.assertEqual(game_stats["reason"], TerminationReason.MAX_MOVES.value)
@@ -463,7 +470,8 @@ class TestRandomVsNonGame(_MockServerTestCaseBase):
     """
     def setUp(self):
         try:
-            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "non", "useThinking": False}, timeout=5)
+            base_url = get_mock_base_url()
+            response = requests.post(f"{base_url}/reset", json={"scenarioType": "non", "useThinking": False}, timeout=5)
             response.raise_for_status()
             print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:
@@ -504,7 +512,8 @@ class TestRandomVsNonGame(_MockServerTestCaseBase):
         without making a move, hitting the max_llm_turns limit.
         """
         try:
-            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "non_max_turns", "useThinking": False}, timeout=5)
+            base_url = get_mock_base_url()
+            response = requests.post(f"{base_url}/reset", json={"scenarioType": "non_max_turns", "useThinking": False}, timeout=5)
             response.raise_for_status()
             print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:
@@ -533,7 +542,8 @@ class TestRandomVsNonGame(_MockServerTestCaseBase):
         with the NoN agent.
         """
         try:
-            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "non_max_moves", "useThinking": False}, timeout=5)
+            base_url = get_mock_base_url()
+            response = requests.post(f"{base_url}/reset", json={"scenarioType": "non_max_moves", "useThinking": False}, timeout=5)
             response.raise_for_status()
             print(f"DEBUG: Reset response: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:

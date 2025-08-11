@@ -2,7 +2,7 @@ import os
 import requests
 from unittest.mock import patch
 
-from .helper import _MockServerTestCaseBase
+from .helper import _MockServerTestCaseBase, get_mock_base_url
 
 # Importing after env vars are set
 import llm_chess
@@ -13,7 +13,8 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
     
     def setUp(self):
         try:
-            response = requests.post("http://localhost:8080/v1/reset", json={"scenarioType": "default", "useThinking": False}, timeout=10)
+            base_url = get_mock_base_url()
+            response = requests.post(f"{base_url}/reset", json={"scenarioType": "default", "useThinking": False}, timeout=10)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             self.fail(f"Failed to reset mock server: {e}")
