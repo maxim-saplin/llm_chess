@@ -136,8 +136,6 @@ class TestRunMetadata(unittest.TestCase):
             ("https://dashscope-intl.aliyuncs.com/compatible-mode/v1", "dashscope"),
             ("https://openrouter.ai/api/v1", "openrouter"),
             ("https://api.inceptionlabs.ai/v1", "inceptionlabs"),
-            ("https://api.cerebras.ai/v1", "cerebras"),
-            ("https://api.groq.com/openai/v1", "groq"),
             ("https://some.custom.host/v1", "oai_comp_endpoint"),
         ]
 

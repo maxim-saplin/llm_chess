@@ -51,10 +51,6 @@ def infer_api_type_for_metadata(provider_conf: Dict[str, Any]) -> Optional[str]:
             return "local"
 
         # Known hosted OpenAI-compatible providers
-        if "api.groq.com" in base_url or "groq" in base_url:
-            return "groq"
-        if "api.cerebras.ai" in base_url or "cerebras" in base_url:
-            return "cerebras"
         if "api.deepseek.com" in base_url or "deepseek" in base_url:
             return "deepseek"
         if "hunyuan" in base_url or "tencent" in base_url:
@@ -163,16 +159,14 @@ def get_llms(
         elif kind == "groq":
             return {
                 "model": os.environ[f"GROQ_MODEL_NAME_{key}"],
-                "base_url": os.environ[f"GROQ_BASE_URL_{key}"],
                 "api_key": os.environ.get(f"GROQ_API_KEY_{key}", "any"),
-                "default_headers": {"Api-Key": os.environ.get(f"GROQ_API_KEY_{key}", "any")},
+                "api_type": "groq",
             }
         elif kind == "cerebras":
             return {
                 "model": os.environ[f"CEREBRAS_MODEL_NAME_{key}"],
-                "base_url": os.environ[f"CEREBRAS_BASE_URL_{key}"],
                 "api_key": os.environ.get(f"CEREBRAS_API_KEY_{key}", "any"),
-                "default_headers": {"Api-Key": os.environ.get(f"CEREBRAS_API_KEY_{key}", "any")},
+                "api_type": "cerebras",
             }
         elif kind == "google":
             return {
