@@ -1,0 +1,1 @@
+Used more aggressive isolation of reasoning section (including maformatted), Cerebras 1 mil daily quota was only sufficient for 87 moves in one game (whihch didn't complete)
