@@ -75,7 +75,7 @@ def run_games():
     BLACK_HYPERPARAMS = {
         # Start from experiment defaults; adjust as needed per run
         "hyperparams": EXPERIMENT_DEFAULT_HYPERPARAMS.copy(),
-        "reasoning_effort": "medium",
+        # "reasoning_effort": "low",
     }
 
     LLM_CONFIG_WHITE, LLM_CONFIG_BLACK = get_llms(
@@ -91,10 +91,8 @@ def run_games():
     # llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
     # llm_chess.rotate_board_for_white = True
 
-    ## r"<think>.*?</think>" - Deepseek R1 Distil, Phi-4, Qwen 3 thinking
-    ## r"◁think▷.*?◁/think▷ - Kimi 1.5
-    ## r"<reasoning>.*?</reasoning>" - Reka Flash
-    llm_chess.remove_text = r"<think>.*?</think>"
+    ## Regex pattern for removing reasoning sections, such as <think></think>
+    llm_chess.remove_text = llm_chess.DEFAULT_REMOVE_TEXT_REGEX
 
     # llm_chess.dragon_path = "dragon/dragon-linux"
     # llm_chess.dragon_level = 10

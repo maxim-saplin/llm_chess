@@ -1,4 +1,5 @@
 import unittest
+import llm_chess
 import chess
 from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent
 from utils import generate_game_stats
@@ -186,6 +187,9 @@ class TestAutoReplyAgent(unittest.TestCase):
         self.mock_sender = GameAgent(
             name="MockPlayer"
         )
+        # Initialize reflection counters used by AutoReplyAgent
+        self.mock_sender.reflections_used = 0
+        self.mock_sender.reflections_used_before_board = 0
         
         self.agent = AutoReplyAgent(
             name="TestAutoReply",
@@ -282,6 +286,43 @@ class TestAutoReplyAgent(unittest.TestCase):
         # Check that messages were not modified
         self.assertEqual(messages[0]["content"], original_messages[0]["content"])
         self.assertEqual(messages[1]["content"], original_messages[1]["content"])
+
+    def test_default_remove_text_regex_covers_known_cases(self):
+        """Default remove regex should strip everything up to known closing tags.
+        Covers: </think>, ◁/think▷, </reasoning>, and no-op when no tags."""
+        agent = AutoReplyAgent(
+            name="TestAutoReplyDefaultRegex",
+            get_current_board=self.get_current_board,
+            get_legal_moves=self.get_legal_moves,
+            make_move=self.make_move,
+            move_was_made_message="Move made",
+            invalid_action_message="Invalid action",
+            too_many_failed_actions_message="Too many failed actions",
+            max_failed_attempts=3,
+            get_current_board_action="get_current_board",
+            get_legal_moves_action="get_legal_moves",
+            reflect_action="reflect",
+            make_move_action="make_move",
+            reflect_prompt="Reflecting...",
+            reflection_followup_prompt="Follow-up reflection",
+            remove_text=llm_chess.DEFAULT_REMOVE_TEXT_REGEX,
+        )
+
+        scenarios = [
+            {"inp": "<think>some internal\nstuff</think>\nmake_move e2e4", "exp": "make_move e2e4"},
+            {"inp": "garbage preface\n</think>\nget_current_board", "exp": "get_current_board"},
+            {"inp": "◁think▷ tokens ... ◁/think▷\nget_legal_moves", "exp": "get_legal_moves"},
+            {"inp": "random preface\n◁/think▷\nreflect", "exp": "reflect"},
+            {"inp": "<reasoning>analysis...</reasoning>\nmake_move a2a4", "exp": "make_move a2a4"},
+            {"inp": "No tags here\nget_legal_moves", "exp": "No tags here\nget_legal_moves"},
+        ]
+
+        for case in scenarios:
+            with self.subTest(inp=case["inp"]):
+                msgs = [{"content": case["inp"]}]
+                # Trigger cleaning
+                _ = agent.generate_reply(messages=msgs, sender=self.mock_sender)
+                self.assertEqual(msgs[0]["content"], case["exp"])
 
     def test_make_move_valid(self):
         """Test making a valid move."""

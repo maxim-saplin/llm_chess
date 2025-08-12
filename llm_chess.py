@@ -77,6 +77,15 @@ thinking_budget = None # Default is None, if set will enable extended thinking w
 # r"◁think▷.*?◁/think▷ - Kimi 1.5
 # r"<reasoning>.*?</reasoning>" - Reka Flash
 # Default None
+
+# Unified default: remove everything from start up to and including any known
+# closing tag used by thinking/reasoning models, plus trailing whitespace.
+# Covers:
+# - </think>          (DeepSeek/Qwen/Phi-4 thinking tokens)
+# - ◁/think▷          (Kimi 1.5 thinking tokens)
+# - </reasoning>      (Reka Flash reasoning tokens)
+DEFAULT_REMOVE_TEXT_REGEX: str = r"^.*?(?:</think>|◁/think▷|</reasoning>)\s*"
+
 # Per-player regex for stripping text from message history
 remove_text_white: str | None = None  # e.g. r"<think>.*?</think>"
 remove_text_black: str | None = None
