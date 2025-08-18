@@ -46,7 +46,8 @@ def is_retryable_error(exception) -> bool:
         "connection error",
         "temporarily unavailable",
         "try again later",
-        "internal server error"
+        "internal server error", 
+        "is currently over capacity" # Groq
     ]
     
     return any(msg in error_message for msg in retryable_messages)
