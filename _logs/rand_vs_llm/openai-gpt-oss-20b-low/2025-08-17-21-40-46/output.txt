@@ -1,0 +1,647 @@
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move a2a3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+***** Suggested tool call (fc_264732f2-1089-48b4-939f-9dc31d6fa846): tool_get_current_board *****
+Arguments: 
+{}
+*************************************************************************************************
+
+--------------------------------------------------------------------------------
+Execution was halted due to error.
+Exception details: 'NoneType' object has no attribute 'lower'
+Traceback (most recent call last):
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 484, in run
+    chat_result = proxy_agent.initiate_chat(
+        recipient=player,
+    ...<2 lines>...
+        cache=None
+    )
+  File "/Users/admin/src/ag2/autogen/agentchat/conversable_agent.py", line 1493, in initiate_chat
+    msg2send = self.generate_reply(messages=self.chat_messages[recipient], sender=recipient)
+  File "/Users/admin/src/llm_chess/custom_agents.py", line 260, in generate_reply
+    if self._is_termination_msg(messages[-1]):
+       ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 284, in is_termination_message
+    return any(
+        term_msg == msg["content"].lower().strip()
+        for term_msg in termination_conditions
+    )
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 285, in <genexpr>
+    term_msg == msg["content"].lower().strip()
+                ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'lower'
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.482
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.08.17"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. a3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move g2g4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+***** Suggested tool call (fc_78dde8be-9f34-45d3-b181-d0670aaf24c1): tool_get_current_board *****
+Arguments: 
+{}
+*************************************************************************************************
+
+--------------------------------------------------------------------------------
+Execution was halted due to error.
+Exception details: 'NoneType' object has no attribute 'lower'
+Traceback (most recent call last):
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 484, in run
+    chat_result = proxy_agent.initiate_chat(
+        recipient=player,
+    ...<2 lines>...
+        cache=None
+    )
+  File "/Users/admin/src/ag2/autogen/agentchat/conversable_agent.py", line 1493, in initiate_chat
+    msg2send = self.generate_reply(messages=self.chat_messages[recipient], sender=recipient)
+  File "/Users/admin/src/llm_chess/custom_agents.py", line 260, in generate_reply
+    if self._is_termination_msg(messages[-1]):
+       ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 284, in is_termination_message
+    return any(
+        term_msg == msg["content"].lower().strip()
+        for term_msg in termination_conditions
+    )
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 285, in <genexpr>
+    term_msg == msg["content"].lower().strip()
+                ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'lower'
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.338
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.08.17"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. g4  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move c2c3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+***** Suggested tool call (fc_194a54ab-39b2-4dc8-b4ee-54524974d0e7): tool_get_current_board *****
+Arguments: 
+{}
+*************************************************************************************************
+
+--------------------------------------------------------------------------------
+Execution was halted due to error.
+Exception details: 'NoneType' object has no attribute 'lower'
+Traceback (most recent call last):
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 484, in run
+    chat_result = proxy_agent.initiate_chat(
+        recipient=player,
+    ...<2 lines>...
+        cache=None
+    )
+  File "/Users/admin/src/ag2/autogen/agentchat/conversable_agent.py", line 1493, in initiate_chat
+    msg2send = self.generate_reply(messages=self.chat_messages[recipient], sender=recipient)
+  File "/Users/admin/src/llm_chess/custom_agents.py", line 260, in generate_reply
+    if self._is_termination_msg(messages[-1]):
+       ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 284, in is_termination_message
+    return any(
+        term_msg == msg["content"].lower().strip()
+        for term_msg in termination_conditions
+    )
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 285, in <genexpr>
+    term_msg == msg["content"].lower().strip()
+                ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'lower'
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.359
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.08.17"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. c3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move a2a3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+***** Suggested tool call (fc_9a6f4aed-d0bc-41af-86c5-6a2a338af4b0): tool_get_current_board *****
+Arguments: 
+{}
+*************************************************************************************************
+
+--------------------------------------------------------------------------------
+Execution was halted due to error.
+Exception details: 'NoneType' object has no attribute 'lower'
+Traceback (most recent call last):
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 484, in run
+    chat_result = proxy_agent.initiate_chat(
+        recipient=player,
+    ...<2 lines>...
+        cache=None
+    )
+  File "/Users/admin/src/ag2/autogen/agentchat/conversable_agent.py", line 1493, in initiate_chat
+    msg2send = self.generate_reply(messages=self.chat_messages[recipient], sender=recipient)
+  File "/Users/admin/src/llm_chess/custom_agents.py", line 260, in generate_reply
+    if self._is_termination_msg(messages[-1]):
+       ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 284, in is_termination_message
+    return any(
+        term_msg == msg["content"].lower().strip()
+        for term_msg in termination_conditions
+    )
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 285, in <genexpr>
+    term_msg == msg["content"].lower().strip()
+                ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'lower'
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.333
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.08.17"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. a3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move d2d3
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+***** Suggested tool call (fc_f4627c9f-5ba0-459f-b3de-21c17e649f2c): tool_get_current_board *****
+Arguments: 
+{}
+*************************************************************************************************
+
+--------------------------------------------------------------------------------
+Execution was halted due to error.
+Exception details: 'NoneType' object has no attribute 'lower'
+Traceback (most recent call last):
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 484, in run
+    chat_result = proxy_agent.initiate_chat(
+        recipient=player,
+    ...<2 lines>...
+        cache=None
+    )
+  File "/Users/admin/src/ag2/autogen/agentchat/conversable_agent.py", line 1493, in initiate_chat
+    msg2send = self.generate_reply(messages=self.chat_messages[recipient], sender=recipient)
+  File "/Users/admin/src/llm_chess/custom_agents.py", line 260, in generate_reply
+    if self._is_termination_msg(messages[-1]):
+       ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 284, in is_termination_message
+    return any(
+        term_msg == msg["content"].lower().strip()
+        for term_msg in termination_conditions
+    )
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 285, in <genexpr>
+    term_msg == msg["content"].lower().strip()
+                ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'lower'
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.340
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.08.17"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. d3  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move d2d4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+***** Suggested tool call (fc_b68f6dfd-eebe-495d-9ca1-e839130412cb): tool_get_current_board *****
+Arguments: 
+{}
+*************************************************************************************************
+
+--------------------------------------------------------------------------------
+Execution was halted due to error.
+Exception details: 'NoneType' object has no attribute 'lower'
+Traceback (most recent call last):
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 484, in run
+    chat_result = proxy_agent.initiate_chat(
+        recipient=player,
+    ...<2 lines>...
+        cache=None
+    )
+  File "/Users/admin/src/ag2/autogen/agentchat/conversable_agent.py", line 1493, in initiate_chat
+    msg2send = self.generate_reply(messages=self.chat_messages[recipient], sender=recipient)
+  File "/Users/admin/src/llm_chess/custom_agents.py", line 260, in generate_reply
+    if self._is_termination_msg(messages[-1]):
+       ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 284, in is_termination_message
+    return any(
+        term_msg == msg["content"].lower().strip()
+        for term_msg in termination_conditions
+    )
+  File "/Users/admin/src/llm_chess/llm_chess.py", line 285, in <genexpr>
+    term_msg == msg["content"].lower().strip()
+                ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'lower'
+
+GAME OVER
+
+NONE wins due to ERROR OCCURED.
+Number of moves made: 1
+
+Wrong Moves (LLM asked to make illegal/impossible move):
+Player White: 0
+Player Black: 0
+
+Wrong Actions (LLM responded with non parseable message):
+Player White: 0
+Player Black: 0
+
+Material Count:
+Player White: 39
+Player Black: 39
+
+Accumulated Reply Time (seconds):
+Player White: 0.000
+Player Black: 0.285
+
+Game PGN:
+[Event "Chess Game"]
+[Date "2025.08.17"]
+[White "Player White"]
+[Black "Player Black"]
+[Result "1/2-1/2"]
+
+1. d4  1/2-1/2
+
+Costs per agent (white and black):
+
+{'total_cost': 0}
+{'total_cost': 0}
+Proxy (to Random_Player):
+
+You are a random chess player.
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+g1h3,g1f3,b1c3,b1a3,h2h3,g2g3,f2f3,e2e3,d2d3,c2c3,b2b3,a2a3,h2h4,g2g4,f2f4,e2e4,d2d4,c2c4,b2b4,a2a4
+
+--------------------------------------------------------------------------------
+Random_Player (to Proxy):
+
+make_move h2h4
+
+--------------------------------------------------------------------------------
+Proxy (to Random_Player):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 1
+Material Count - White: 39, Black: 39
+Prompt Tokens: 0
+Completion Tokens: 0
