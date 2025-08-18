@@ -1,0 +1,73 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.08.13_16:52",
+            "log_folder_relative": "_logs/rand_vs_llm/gpt-5-mini-high/2025-08-13-16-52-37",
+            "num_repetitions": 11,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 0,
+            "dialog_turn_delay": 0,
+            "max_api_retries": 3,
+            "api_retry_delay": 2.0,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "gpt-5-mini",
+                "api_type": "azure",
+                "api_version": "2025-04-01-preview",
+                "api_key": "REDACTED",
+                "timeout": 600,
+                "reasoning_effort": "high"
+            }
+        }
+    },
+    "total_games": 11,
+    "white_wins": 0,
+    "black_wins": 10,
+    "draws": 1,
+    "total_moves": 772,
+    "reasons": {
+        "Checkmate": 10,
+        "Stalemate": 1
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 43,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 3.909090909090909,
+        "std_dev_material": 5.735059641443068
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "gpt-5-mini",
+        "total_material": 357,
+        "wrong_moves": 7,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 32.45454545454545,
+        "std_dev_material": 12.25857770186767
+    },
+    "average_moves": 70.18181818181819,
+    "std_dev_moves": 36.18236637318842
+}
