@@ -1,10 +1,17 @@
 import time
 import traceback
 import chess
-import chess.svg
 from typing import Any, Dict, Tuple
 from enum import Enum
-from custom_agents import GameAgent, RandomPlayerAgent, AutoReplyAgent, ChessEngineStockfishAgent, ChessEngineDragonAgent, NonGameAgent
+from custom_agents import (
+    GameAgent,
+    RandomPlayerAgent,
+    AutoReplyAgent,
+    ChessEngineStockfishAgent,
+    ChessEngineDragonAgent,
+    NonGameAgent,
+    build_termination_predicate,
+)
 from utils import calculate_material_count, generate_game_stats, get_llms, display_board, display_store_game_video_and_stats
 
 class BoardRepresentation(Enum):
@@ -279,12 +286,8 @@ def run(
         f", {make_move_action} <UCI formatted move>"
     )
 
-    # Spend hours debuging circular loops in termination message and prompt and figuring out None is not good for system message
-    def is_termination_message(msg: Dict[str, Any]) -> bool:
-        return any(
-            term_msg == msg["content"].lower().strip()
-            for term_msg in termination_conditions
-        )
+    # Spent hours debuging circular loops in termination message and prompt and figuring out None is not good for system message
+    is_termination_message = build_termination_predicate(termination_conditions)
 
     llm_white = GameAgent(
         name="Player_White",

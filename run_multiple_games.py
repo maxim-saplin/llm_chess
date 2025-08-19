@@ -2,7 +2,7 @@ import os
 import json
 import re
 import datetime
-import statistics  # Import the statistics module
+import statistics
 from typing import Optional, Dict, Tuple
 from utils import setup_console_logging, get_llms
 from get_run_metadata import collect_run_metadata, write_run_metadata
@@ -173,6 +173,22 @@ def run_games():
 
     moves_list = []  # List to track moves for each game
 
+    def _update_player_side(agg: Dict, side_key: str, player, game_stats: Dict):
+        # name and model
+        agg[side_key]["name"] = player.name
+        agg[side_key]["model"] = (
+            player.llm_config["config_list"][0]["model"] if getattr(player, "llm_config", None) else ""
+        )
+        # material
+        side_material = game_stats["material_count"]["white" if side_key == "player_white" else "black"]
+        agg[side_key]["total_material"] += side_material
+        agg[side_key]["material_list"].append(side_material)
+        # errors and reflections
+        agg[side_key]["wrong_moves"] += game_stats[side_key]["wrong_moves"]
+        agg[side_key]["wrong_actions"] += game_stats[side_key]["wrong_actions"]
+        agg[side_key]["reflections_used"] += game_stats[side_key].get("reflections_used", 0)
+        agg[side_key]["reflections_used_before_board"] += game_stats[side_key].get("reflections_used_before_board", 0)
+
     for _ in range(NUM_REPETITIONS):
         # Call the run function and get the game stats
         game_stats, player_white, player_black = llm_chess.run(
@@ -200,58 +216,9 @@ def run_games():
         else:
             aggregate_data["reasons"][reason] = 1
 
-        # Update player-specific data
-        aggregate_data["player_white"]["name"] = player_white.name
-        aggregate_data["player_white"]["model"] = (
-            player_white.llm_config["config_list"][0]["model"]
-            if player_white.llm_config
-            else ""
-        )
-        aggregate_data["player_white"]["total_material"] += game_stats[
-            "material_count"
-        ]["white"]
-        aggregate_data["player_white"]["material_list"].append(
-            game_stats["material_count"]["white"]
-        )
-        aggregate_data["player_white"]["wrong_moves"] += game_stats["player_white"][
-            "wrong_moves"
-        ]
-        aggregate_data["player_white"]["wrong_actions"] += game_stats["player_white"][
-            "wrong_actions"
-        ]
-
-        aggregate_data["player_black"]["name"] = player_black.name
-        aggregate_data["player_black"]["model"] = (
-            player_black.llm_config["config_list"][0]["model"]
-            if player_black.llm_config
-            else ""
-        )
-        aggregate_data["player_black"]["total_material"] += game_stats[
-            "material_count"
-        ]["black"]
-        aggregate_data["player_black"]["material_list"].append(
-            game_stats["material_count"]["black"]
-        )
-        aggregate_data["player_black"]["wrong_moves"] += game_stats["player_black"][
-            "wrong_moves"
-        ]
-        aggregate_data["player_white"]["reflections_used"] += game_stats[
-            "player_white"
-        ]["reflections_used"]
-        aggregate_data["player_white"]["reflections_used_before_board"] += game_stats[
-            "player_white"
-        ]["reflections_used_before_board"]
-
-        aggregate_data["player_black"]["reflections_used"] += game_stats[
-            "player_black"
-        ]["reflections_used"]
-        aggregate_data["player_black"]["reflections_used_before_board"] += game_stats[
-            "player_black"
-        ]["reflections_used_before_board"]
-
-        aggregate_data["player_black"]["wrong_actions"] += game_stats["player_black"][
-            "wrong_actions"
-        ]
+        # Update player-specific data via helper
+        _update_player_side(aggregate_data, "player_white", player_white, game_stats)
+        _update_player_side(aggregate_data, "player_black", player_black, game_stats)
 
     # Calculate average moves
     aggregate_data["average_moves"] = (
