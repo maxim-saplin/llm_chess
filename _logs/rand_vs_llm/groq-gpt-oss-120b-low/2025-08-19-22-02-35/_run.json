@@ -1,0 +1,37 @@
+{
+    "metadata": {
+        "time_started_formatted": "2025.08.19_22:02",
+        "log_folder_relative": "_logs/rand_vs_llm/openai-gpt-oss-120b-low/2025-08-19-22-02-35",
+        "num_repetitions": 33,
+        "store_individual_logs": true,
+        "python_version": "3.13.5"
+    },
+    "player_types": {
+        "white_player_type": "RANDOM_PLAYER",
+        "black_player_type": "LLM_BLACK"
+    },
+    "config": {
+        "enable_reflection": false,
+        "board_representation_mode": "UNICODE_ONLY",
+        "rotate_board_for_white": false,
+        "max_game_moves": 200,
+        "max_llm_turns": 10,
+        "max_failed_attempts": 3,
+        "throttle_delay": 0,
+        "dialog_turn_delay": 1,
+        "max_api_retries": 3,
+        "api_retry_delay": 2.0,
+        "random_print_board": false,
+        "visualize_board": false,
+        "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+    },
+    "llm_configs": {
+        "black": {
+            "model": "gpt-oss-120b",
+            "api_type": "groq",
+            "api_key": "REDACTED",
+            "timeout": 600,
+            "reasoning_effort": "low"
+        }
+    }
+}
