@@ -6,7 +6,7 @@ import chess
 import chess.engine
 
 from autogen import ConversableAgent
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Callable
 
 # Define retryable exceptions
 RETRYABLE_EXCEPTIONS = (
@@ -46,7 +46,8 @@ def is_retryable_error(exception) -> bool:
         "connection error",
         "temporarily unavailable",
         "try again later",
-        "internal server error"
+        "internal server error", 
+        "is currently over capacity" # Groq
     ]
     
     return any(msg in error_message for msg in retryable_messages)
@@ -142,6 +143,95 @@ class GameAgent(ConversableAgent):
         return None
 
 
+    # ---------- Common helpers for subclasses ----------
+    def normalize_last_message(self, messages: Optional[List[Dict[str, Any]]]) -> Dict[str, Any]:
+        """Return a normalized copy of the last message with string content.
+
+        Ensures msg["content"] is a string derived via extract_message_text, even when provider returns tool calls.
+        """
+        last = messages[-1] if messages else {"content": ""}
+        normalized = dict(last)
+        normalized["content"] = extract_message_text(last)
+        return normalized
+
+    def last_message_text(self, messages: Optional[List[Dict[str, Any]]]) -> str:
+        """Return the textual content of the last message (handles tool-only messages)."""
+        last = messages[-1] if messages else {"content": ""}
+        text = extract_message_text(last)
+        return text if isinstance(text, str) else ""
+
+    def should_terminate(self, messages: Optional[List[Dict[str, Any]]]) -> bool:
+        """Check termination against the normalized last message."""
+        try:
+            return self._is_termination_msg(self.normalize_last_message(messages))
+        except Exception:
+            return False
+
+
+def extract_message_text(msg: Dict[str, Any]) -> str:
+    """
+    Convert an OpenAI/Autogen message dict to a text string.
+    - If content is a string, return it.
+    - If content is None but tool/function calls are present, return the tool/function name(s).
+    - Fallback to an empty string.
+    """
+    if not isinstance(msg, dict):
+        return ""
+
+    content = msg.get("content")
+    if isinstance(content, str):
+        return content
+
+    # OpenAI tool calls format
+    tool_calls = msg.get("tool_calls")
+    if isinstance(tool_calls, list) and tool_calls:
+        names: List[str] = []
+        for tc in tool_calls:
+            if isinstance(tc, dict):
+                fn = tc.get("function")
+                if isinstance(fn, dict):
+                    name = fn.get("name")
+                    if name:
+                        names.append(str(name))
+                        continue
+                # Fallbacks
+                alt = tc.get("name") or tc.get("type")
+                if alt:
+                    names.append(str(alt))
+        if names:
+            return " ".join(names)
+
+    # Legacy function_call field
+    function_call = msg.get("function_call")
+    if isinstance(function_call, dict):
+        name = function_call.get("name")
+        if name:
+            return str(name)
+
+    return ""
+
+
+def build_termination_predicate(termination_conditions: List[str]) -> Callable[[Dict[str, Any]], bool]:
+    """Return a predicate that checks if a message matches any termination condition.
+
+    The predicate normalizes both the conditions and the message content (including tool calls).
+    """
+    normalized_terms = [
+        t.lower().strip() for t in termination_conditions if isinstance(t, str)
+    ]
+
+    def _predicate(msg: Dict[str, Any]) -> bool:
+        try:
+            text = extract_message_text(msg)
+            if not isinstance(text, str):
+                return False
+            return text.lower().strip() in normalized_terms
+        except Exception:
+            return False
+
+    return _predicate
+
+
 class RandomPlayerAgent(GameAgent):
     """
     A random chess player agent that selects moves randomly from legal options.
@@ -172,10 +262,10 @@ class RandomPlayerAgent(GameAgent):
         sender: Optional[ConversableAgent] = None,
         **kwargs: Any,
     ) -> Union[str, Dict, None]:
-        if self._is_termination_msg(messages[-1]):
+        if self.should_terminate(messages):
             return None
 
-        last_message = messages[-1]["content"].strip()
+        last_message = self.last_message_text(messages).strip()
 
         try:
             legal_moves = last_message.split(",")
@@ -256,29 +346,30 @@ class AutoReplyAgent(GameAgent):
         sender: Optional[ConversableAgent] = None,
         **kwargs: Any,
     ) -> Union[str, Dict, None]:
-        if self._is_termination_msg(messages[-1]):
+        if self.should_terminate(messages):
             return None
 
         # Apply remove_text regex to modify message history
         if self.remove_text:
             # Clean all messages in the current conversation
             for msg in messages:
-                msg["content"] = re.sub(self.remove_text, "", msg["content"], flags=re.DOTALL)
+                if isinstance(msg, dict) and isinstance(msg.get("content"), str):
+                    msg["content"] = re.sub(self.remove_text, "", msg["content"], flags=re.DOTALL)
             
             # Clean internal message histories
             if sender and hasattr(sender, '_oai_messages'):
                 for msgs in sender._oai_messages.values():
                     for msg in msgs:
-                        if "content" in msg:  # Make sure content exists
+                        if "content" in msg and isinstance(msg.get("content"), str):  # Make sure content exists
                             msg["content"] = re.sub(self.remove_text, "", msg["content"], flags=re.DOTALL)
             
             if hasattr(self, '_oai_messages'):
                 for msgs in self._oai_messages.values():
                     for msg in msgs:
-                        if "content" in msg:  # Make sure content exists
+                        if "content" in msg and isinstance(msg.get("content"), str):  # Make sure content exists
                             msg["content"] = re.sub(self.remove_text, "", msg["content"], flags=re.DOTALL)
 
-        action_choice = messages[-1]["content"].lower().strip()
+        action_choice = self.last_message_text(messages).lower().strip()
         reply = ""
 
         if self.get_current_board_action in action_choice:
@@ -361,7 +452,7 @@ class ChessEngineStockfishAgent(GameAgent):
         sender: Optional[ConversableAgent] = None,
         **kwargs: Any,
     ) -> Union[str, Dict, None]:
-        if self._is_termination_msg(messages[-1]):
+        if self.should_terminate(messages):
             return None
 
         try:
@@ -420,7 +511,7 @@ class ChessEngineDragonAgent(GameAgent):
         sender: Optional[ConversableAgent] = None,
         **kwargs: Any,
     ) -> Union[str, Dict, None]:
-        if self._is_termination_msg(messages[-1]):
+        if self.should_terminate(messages):
             return None
 
         try:
@@ -511,10 +602,10 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
         sender: Optional[ConversableAgent] = None,
         **kwargs: Any,
     ) -> Union[str, Dict, None]:
-        if self._is_termination_msg(messages[-1]):
+        if self.should_terminate(messages):
             return None
 
-        user_query = messages[-1]["content"]
+        user_query = self.last_message_text(messages)
         responses = []
         usage_stats = []
         

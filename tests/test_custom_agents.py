@@ -707,5 +707,98 @@ class TestRetryLogic(unittest.TestCase):
                 self.assertLess(self.agent.accumulated_reply_time_seconds, 1.0)
 
 
+class TestToolCallHandling(unittest.TestCase):
+    def test_extract_message_text_from_tool_call(self):
+        from custom_agents import extract_message_text
+        msg = {
+            "role": "assistant",
+            "content": None,
+            "tool_calls": [
+                {
+                    "id": "fc_123",
+                    "type": "function",
+                    "function": {"name": "get_legal_moves", "arguments": "{}"},
+                }
+            ],
+        }
+        self.assertEqual(extract_message_text(msg), "get_legal_moves")
+
+    def test_auto_reply_handles_tool_call_action(self):
+        # Minimal AutoReplyAgent setup
+        get_current_board = lambda: "board_state"
+        get_legal_moves = lambda: "e2e4,d2d4,g1f3"
+        def make_move(move):
+            return None
+        agent = AutoReplyAgent(
+            name="ProxyTest",
+            get_current_board=get_current_board,
+            get_legal_moves=get_legal_moves,
+            make_move=make_move,
+            move_was_made_message="Move made",
+            invalid_action_message="Invalid action",
+            too_many_failed_actions_message="Too many failed actions",
+            max_failed_attempts=3,
+            get_current_board_action="get_current_board",
+            get_legal_moves_action="get_legal_moves",
+            reflect_action="reflect",
+            make_move_action="make_move",
+            reflect_prompt="Reflecting...",
+            reflection_followup_prompt="Follow-up reflection",
+            remove_text=None,
+        )
+        sender = GameAgent(name="MockPlayer")
+        sender.reflections_used = 0
+        sender.reflections_used_before_board = 0
+
+        # Last message is a tool call with no textual content
+        messages = [
+            {"content": "You are a random chess player."},
+            {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [
+                    {
+                        "id": "fc_1",
+                        "type": "function",
+                        "function": {"name": "get_legal_moves", "arguments": "{}"},
+                    }
+                ],
+            },
+        ]
+        reply = agent.generate_reply(messages=messages, sender=sender)
+        self.assertEqual(reply, get_legal_moves())
+
+    def test_termination_check_handles_tool_call_without_content(self):
+        from custom_agents import extract_message_text
+        # Termination when tool name equals "move made"
+        def is_term(msg):
+            return extract_message_text(msg).lower().strip() == "move made"
+
+        agent = RandomPlayerAgent(
+            name="RandomTerminator",
+            make_move_action="make_move",
+            get_legal_moves_action="get_legal_moves",
+            get_current_board_action="get_current_board",
+            is_termination_msg=is_term,
+        )
+
+        messages = [
+            {"content": "prev"},
+            {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [
+                    {
+                        "id": "fc_2",
+                        "type": "function",
+                        "function": {"name": "move made", "arguments": "{}"},
+                    }
+                ],
+            },
+        ]
+
+        self.assertIsNone(agent.generate_reply(messages=messages))
+
+
 if __name__ == '__main__':
     unittest.main()

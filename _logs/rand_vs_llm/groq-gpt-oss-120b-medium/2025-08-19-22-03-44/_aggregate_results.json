@@ -1,0 +1,72 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.08.19_22:03",
+            "log_folder_relative": "_logs/rand_vs_llm/openai-gpt-oss-120b-medium/2025-08-19-22-03-44",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.13.5"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 0,
+            "dialog_turn_delay": 1,
+            "max_api_retries": 3,
+            "api_retry_delay": 2.0,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "gpt-oss-120b",
+                "api_type": "groq",
+                "api_key": "REDACTED",
+                "timeout": 600,
+                "reasoning_effort": "medium"
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 25,
+    "black_wins": 8,
+    "draws": 0,
+    "total_moves": 1572,
+    "reasons": {
+        "Too many wrong actions": 25,
+        "Checkmate": 8
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 619,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 18.757575757575758,
+        "std_dev_material": 14.46986157291748
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "gpt-oss-120b",
+        "total_material": 1021,
+        "wrong_moves": 116,
+        "wrong_actions": 471,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 30.939393939393938,
+        "std_dev_material": 9.403920040132844
+    },
+    "average_moves": 47.63636363636363,
+    "std_dev_moves": 40.51991653944559
+}
