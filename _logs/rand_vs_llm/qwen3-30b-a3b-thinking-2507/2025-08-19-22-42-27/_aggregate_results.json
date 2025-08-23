@@ -1,0 +1,74 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.08.19_22:42",
+            "log_folder_relative": "_logs/rand_vs_llm/qwen3-30b-a3b-thinking-2507/2025-08-19-22-42-27",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 0,
+            "dialog_turn_delay": 0,
+            "max_api_retries": 3,
+            "api_retry_delay": 2.0,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "qwen3-30b-a3b-thinking-2507@q4_k_m",
+                "api_type": "local",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 4,
+    "black_wins": 10,
+    "draws": 19,
+    "total_moves": 4936,
+    "reasons": {
+        "Max moves reached": 10,
+        "Checkmate": 11,
+        "Stalemate": 6,
+        "Insufficient material": 3,
+        "Too many wrong actions": 3
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 139,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 4.212121212121212,
+        "std_dev_material": 10.129651942927184
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "qwen3-30b-a3b-thinking-2507@q4_k_m",
+        "total_material": 606,
+        "wrong_moves": 209,
+        "wrong_actions": 124,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 18.363636363636363,
+        "std_dev_material": 10.844982082218317
+    },
+    "average_moves": 149.57575757575756,
+    "std_dev_moves": 58.110363911606974
+}
