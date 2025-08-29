@@ -136,8 +136,8 @@ def get_llms(
     black_hyperparams = black_hyperparams or {}
 
     model_kinds = [
-        os.environ.get("MODEL_KIND_W", "google"),
-        os.environ.get("MODEL_KIND_B", "google"),
+        os.environ.get("MODEL_KIND_W", "none"),
+        os.environ.get("MODEL_KIND_B", "none"),
     ]
 
     def _provider_base_config(kind: str, key: str) -> Dict:
