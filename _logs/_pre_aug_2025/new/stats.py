@@ -4,7 +4,8 @@ from prettytable import PrettyTable
 
 # Import the required functions from the codebase
 sys.path.insert(0, os.path.abspath("."))
-from data_processing.aggregate_logs_to_csv import load_game_log, TerminationReason
+from data_processing.get_refined_csv import load_game_log
+from llm_chess import TerminationReason
 
 # Define the root directory where logs are stored
 root_dir = "./_logs/new"

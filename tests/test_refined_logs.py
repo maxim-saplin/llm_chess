@@ -1,19 +1,21 @@
 import unittest
 import os
 import csv
-from data_processing.get_refined_csv import convert_aggregate_to_refined
-from data_processing.aggregate_logs_to_csv import (
-    aggregate_models_to_csv,
-    MODEL_OVERRIDES,
+import tempfile
+import shutil
+from data_processing.get_refined_csv import (
+    build_refined_rows_from_logs,
+    write_refined_csv,
 )
 
 
 class TestAggrToRefined(unittest.TestCase):
     def setUp(self):
-        # Create mock log files and output CSV paths
-        self.mock_logs_dir = "_mock_logs"
-        self.mock_aggregate_csv = "mock_aggregate.csv"
-        self.mock_refined_csv = "mock_refined.csv"
+        # Create isolated temp directory and paths to avoid parallel conflicts
+        self._tmp_dir = tempfile.mkdtemp(prefix="refined_logs_test_")
+        self.mock_logs_dir = os.path.join(self._tmp_dir, "mock_logs")
+        self.mock_aggregate_csv = os.path.join(self._tmp_dir, "mock_aggregate.csv")
+        self.mock_refined_csv = os.path.join(self._tmp_dir, "mock_refined.csv")
 
         # Create mock logs directory and files
         os.makedirs(self.mock_logs_dir, exist_ok=True)
@@ -125,26 +127,14 @@ class TestAggrToRefined(unittest.TestCase):
                 log_file.write(log["content"])
 
     def tearDown(self):
-        # Clean up mock files and directories
-        if os.path.exists(self.mock_logs_dir):
-            for file in os.listdir(self.mock_logs_dir):
-                os.remove(os.path.join(self.mock_logs_dir, file))
-            os.rmdir(self.mock_logs_dir)
-        if os.path.exists(self.mock_aggregate_csv):
-            os.remove(self.mock_aggregate_csv)
-        if os.path.exists(self.mock_refined_csv):
-            os.remove(self.mock_refined_csv)
+        # Clean up temp directory recursively
+        if os.path.isdir(self._tmp_dir):
+            shutil.rmtree(self._tmp_dir, ignore_errors=True)
 
     def test_propagation_to_refined_csv(self):
-        # Generate aggregate CSV from mock logs
-        aggregate_models_to_csv(
-            self.mock_logs_dir, self.mock_aggregate_csv, MODEL_OVERRIDES
-        )
-
-        # Convert aggregate CSV to refined CSV
-        convert_aggregate_to_refined(
-            self.mock_aggregate_csv, self.mock_refined_csv, filter_out_below_n=0
-        )
+        # Build refined rows directly from logs and write CSV
+        rows = build_refined_rows_from_logs(self.mock_logs_dir, filter_out_below_n=0)
+        write_refined_csv(rows, self.mock_refined_csv)
 
         # Read the refined CSV and validate the contents
         with open(self.mock_refined_csv, "r") as ref_file:
@@ -154,33 +144,27 @@ class TestAggrToRefined(unittest.TestCase):
         # Ensure two rows are written (one for each mock log)
         self.assertEqual(len(rows), 2)
 
-        # Validate the propagated values for the first row
-        row_1 = rows[0]
-        self.assertEqual(row_1["Player"], "internlm3-8b-instruct")
+        # Order-independent checks
+        by_player = {r["Player"]: r for r in rows}
+        self.assertIn("internlm3-8b-instruct", by_player)
+        self.assertIn("llama3-8b", by_player)
+
+        row_1 = by_player["internlm3-8b-instruct"]
         self.assertEqual(int(row_1["total_games"]), 1)
         self.assertEqual(int(row_1["player_wins"]), 0)
         self.assertEqual(int(row_1["opponent_wins"]), 1)
         self.assertEqual(int(row_1["draws"]), 0)
 
-        # Validate the propagated values for the second row
-        row_2 = rows[1]
-        self.assertEqual(row_2["Player"], "llama3-8b")
+        row_2 = by_player["llama3-8b"]
         self.assertEqual(int(row_2["total_games"]), 1)
         self.assertEqual(int(row_2["player_wins"]), 0)
         self.assertEqual(int(row_2["opponent_wins"]), 1)
         self.assertEqual(int(row_2["draws"]), 0)
 
     def test_win_loss_non_interrupted_propagation(self):
-        """Tests that the new metrics are correctly propagated from aggregate to refined CSV."""
-        # Generate aggregate CSV from mock logs
-        aggregate_models_to_csv(
-            self.mock_logs_dir, self.mock_aggregate_csv, MODEL_OVERRIDES
-        )
-
-        # Convert aggregate CSV to refined CSV
-        convert_aggregate_to_refined(
-            self.mock_aggregate_csv, self.mock_refined_csv, filter_out_below_n=0
-        )
+        """Tests that the new metrics are correctly present in refined CSV."""
+        rows = build_refined_rows_from_logs(self.mock_logs_dir, filter_out_below_n=0)
+        write_refined_csv(rows, self.mock_refined_csv)
 
         # Read the refined CSV and validate the presence of new metrics
         with open(self.mock_refined_csv, "r") as ref_file:
@@ -212,16 +196,9 @@ class TestAggrToRefined(unittest.TestCase):
             self.assertEqual(float(row["win_loss_non_interrupted"]), 0.5)
 
     def test_cost_metrics_propagation(self):
-        """Tests that cost metrics are correctly propagated from aggregate to refined CSV."""
-        # Generate aggregate CSV from mock logs
-        aggregate_models_to_csv(
-            self.mock_logs_dir, self.mock_aggregate_csv, MODEL_OVERRIDES
-        )
-
-        # Convert aggregate CSV to refined CSV
-        convert_aggregate_to_refined(
-            self.mock_aggregate_csv, self.mock_refined_csv, filter_out_below_n=0
-        )
+        """Tests that cost metrics are present in refined CSV."""
+        rows = build_refined_rows_from_logs(self.mock_logs_dir, filter_out_below_n=0)
+        write_refined_csv(rows, self.mock_refined_csv)
 
         # Read the refined CSV and validate the presence of cost metrics
         with open(self.mock_refined_csv, "r") as ref_file:
@@ -238,14 +215,9 @@ class TestAggrToRefined(unittest.TestCase):
             self.assertIsNotNone(row["moe_average_game_cost"])
 
     def test_time_metrics_propagation(self):
-        """Tests that measured time metrics are propagated to refined CSV."""
-        aggregate_models_to_csv(
-            self.mock_logs_dir, self.mock_aggregate_csv, MODEL_OVERRIDES
-        )
-
-        convert_aggregate_to_refined(
-            self.mock_aggregate_csv, self.mock_refined_csv, filter_out_below_n=0
-        )
+        """Tests that measured time metrics are present in refined CSV."""
+        rows = build_refined_rows_from_logs(self.mock_logs_dir, filter_out_below_n=0)
+        write_refined_csv(rows, self.mock_refined_csv)
 
         with open(self.mock_refined_csv, "r") as ref_file:
             reader = csv.DictReader(ref_file)
@@ -254,6 +226,22 @@ class TestAggrToRefined(unittest.TestCase):
         for row in rows:
             self.assertIn("average_time_per_game_seconds", row)
             self.assertIn("moe_average_time_per_game_seconds", row)
+
+    def test_win_loss_normalized_bounds(self):
+        """win_loss must be normalized to [0,1] and not negative."""
+        rows = build_refined_rows_from_logs(self.mock_logs_dir, filter_out_below_n=0)
+        # Write and read back via CSV to mimic end-to-end
+        write_refined_csv(rows, self.mock_refined_csv)
+        with open(self.mock_refined_csv, "r") as ref_file:
+            reader = csv.DictReader(ref_file)
+            loaded = list(reader)
+
+        for row in loaded:
+            wl = float(row["win_loss"])  # normalized
+            self.assertGreaterEqual(wl, 0.0)
+            self.assertLessEqual(wl, 1.0)
+            # In these mocks, all games are losses for black
+            self.assertEqual(wl, 0.0)
 
 
 if __name__ == "__main__":
