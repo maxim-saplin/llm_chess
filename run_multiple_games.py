@@ -54,8 +54,8 @@ def run_games():
     # Experiment-local default hyper-parameters (duplicated for clarity)
     # ---------------------------------------------------------------------------
     EXPERIMENT_DEFAULT_HYPERPARAMS = {
-        "temperature": 0.3,
-        "top_p": 1.0,
+        # "temperature": 0.3,
+        # "top_p": 1.0,
         "top_k": None,
         "min_p": None,
         "frequency_penalty": None,
@@ -75,7 +75,7 @@ def run_games():
     BLACK_HYPERPARAMS = {
         # Start from experiment defaults; adjust as needed per run
         "hyperparams": EXPERIMENT_DEFAULT_HYPERPARAMS.copy(),
-        # "reasoning_effort": "low",
+        "reasoning_effort": "high",
     }
 
     LLM_CONFIG_WHITE, LLM_CONFIG_BLACK = get_llms(
@@ -94,10 +94,10 @@ def run_games():
     ## Regex pattern for removing reasoning sections, such as <think></think>
     llm_chess.remove_text = llm_chess.DEFAULT_REMOVE_TEXT_REGEX
 
-    # llm_chess.dragon_path = "dragon/dragon-linux"
-    # llm_chess.dragon_level = 10
+    llm_chess.dragon_path = "dragon/dragon-linux"
+    llm_chess.dragon_level = 5
 
-    # llm_chess.white_player_type = llm_chess.PlayerType.CHESS_ENGINE_DRAGON
+    llm_chess.white_player_type = llm_chess.PlayerType.CHESS_ENGINE_DRAGON
     # llm_chess.black_player_type = llm_chess.PlayerType.LLM_NON
 
     # Determine LOG_FOLDER lazily to respect external overrides in tests
