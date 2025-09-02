@@ -994,16 +994,42 @@ def print_leaderboard(csv_file, top_n=None):
         reader = csv.DictReader(f)
         data = list(reader)
     
-    # Sort data using the same logic as in the web version:
-    # Win/Loss DESC, then Game Duration DESC, then Tokens ASC
-    sorted_data = sorted(
-        data, 
-        key=lambda x: (
-            -float(x['win_loss']),  # DESC
-            -float(x['game_duration']),  # DESC
-            float(x['completion_tokens_black_per_move'])  # ASC
+    # Sorting
+    has_opponent = any('white_oponent' in r for r in data)
+    if has_opponent:
+        # Opponent-level ASC, then Win Rate DESC, then Win/Loss DESC
+        import re
+        def parse_level(op):
+            if not op:
+                return 999
+            m = re.search(r"dragon-lvl-(\d+)", op.lower()) or re.search(r"lvl-(\d+)", op.lower())
+            try:
+                return int(m.group(1)) if m else 999
+            except Exception:
+                return 999
+        def sf(v):
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return 0.0
+        sorted_data = sorted(
+            data,
+            key=lambda x: (
+                parse_level(x.get('white_oponent', '')),
+                -sf(x.get('player_wins_percent', 0)),
+                -sf(x.get('win_loss', 0)),
+            ),
         )
-    )
+    else:
+        # Default: Win/Loss DESC, then Game Duration DESC, then Tokens ASC
+        sorted_data = sorted(
+            data,
+            key=lambda x: (
+                -float(x['win_loss']),
+                -float(x['game_duration']),
+                float(x['completion_tokens_black_per_move'])
+            )
+        )
     
     # Limit to top N if specified
     if top_n:
@@ -1083,7 +1109,7 @@ def print_leaderboard(csv_file, top_n=None):
             ])
     
     # Print the table with headers
-    headers = ['#', 'Player', 'Opponent', 'Win Rate', 'Win/Loss', 'Game Duration', 'Tokens', 'Cost/Game', 'Time/Game', 'Games', 'Total Cost'] if any('white_oponent' in r for r in data) else ['#', 'Player', 'Win Rate', 'Win/Loss', 'Game Duration', 'Tokens', 'Cost/Game', 'Time/Game', 'Games', 'Total Cost']
+    headers = ['#', 'Player', 'Opponent', 'Win Rate', 'Win/Loss', 'Game Duration', 'Tokens', 'Cost/Game', 'Time/Game', 'Games', 'Total Cost'] if has_opponent else ['#', 'Player', 'Win Rate', 'Win/Loss', 'Game Duration', 'Tokens', 'Cost/Game', 'Time/Game', 'Games', 'Total Cost']
     print(tabulate(rows, headers=headers, tablefmt='grid'))
     print(f"\nTotal cost across all models: ${total_cost_all_models:.2f}")
 
