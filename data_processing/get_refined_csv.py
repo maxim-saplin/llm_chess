@@ -1,12 +1,58 @@
 """
-Convert aggregated chess game statistics
-from a CSV file into a refined format used for Web publishing.
-The refined format includes calculated
-percentages and differences that are useful for analyzing player performance
-over multiple games.
+Refine per-game chess logs into a compact, analysis-friendly CSV (and console leaderboard).
 
-Usage:
-    Set constants to path and run as script OR call build_refined_rows_from_logs()
+What this module does
+- Reads raw game JSON logs directly from disk and computes per-model metrics such as win rate,
+  normalized win/loss, draws, instruction-following (game duration), mistakes per 1000 moves,
+  token and cost efficiency, and observed time per game.
+- Supports two ingestion modes via GameMode:
+  - RANDOM_VS_LLM (default historical pipeline): White is a random opponent, Black is the LLM.
+  - DRAGON_VS_LLM (engine pipeline): White is a chess engine (Dragon), Black is the LLM.
+
+Data sources
+- RANDOM_VS_LLM: Scans LOGS_DIRS (default: "_logs/rand_vs_llm"). Expects per-game JSON files
+  with the current structure where white is "Random_Player" and black is "Player_Black".
+- DRAGON_VS_LLM: Scans these roots and walks all subfolders:
+  - New-format: "_logs/engine_vs_llm" — each run directory contains a "_run.json" and per-game JSONs.
+    The file "_run.json" is used to infer the black model label (model + reasoning/thinking suffixes)
+    and engine details (e.g., Dragon level). Missing or malformed metadata emits warnings.
+  - Legacy-format: "_logs/_pre_aug_2025/dragon_vs_llm" — no _run.json is expected. The model label is
+    inferred from path segments (e.g., "lvl-3_vs_MODEL/..."), and the opponent is inferred from the
+    engine level inside directory names (e.g., "dragon-lvl-3" or "lvl-3").
+
+Labeling and grouping
+- Player (CSV column) always refers to the black-side LLM model label.
+  - For new-format runs, this label is composed from _run.json using _compose_model_label(base_model,
+    reasoning_effort, thinking_budget), e.g., "model-low-tb_2048".
+  - For legacy-format runs, the label is parsed from folder names (e.g., after "lvl-N_vs_").
+- DRAGON_VS_LLM adds a white_oponent column (e.g., "dragon-lvl-3").
+  - Grouping is by (Player, white_oponent) so different engine levels remain separate.
+  - In RANDOM_VS_LLM, grouping is by Player only.
+
+Outputs
+- RANDOM_VS_LLM path:
+  - Builds refined rows and merges with a historical refined CSV (PREV_REFINED_CSV) to produce
+    data_processing/refined.csv (insert-only; prefer new rows on conflicts).
+- DRAGON_VS_LLM path:
+  - Builds refined rows (with white_oponent) and writes data_processing/dragon_refined.csv.
+
+Sorting for console leaderboard
+- RANDOM_VS_LLM: Win/Loss DESC, then Game Duration DESC, then Tokens ASC.
+- DRAGON_VS_LLM: Opponent level ASC (e.g., dragon-lvl-1, 2, 3, ...), then Win Rate DESC,
+  then Win/Loss DESC.
+
+Pricing and tokens
+- Model pricing is loaded from data_processing/models_metadata.csv as (prompt_price, completion_price)
+  per 1M tokens. If an exact model name is not found, a longest substring match is attempted.
+  If usage details are missing in a game, the price- and token-based metrics fall back to 0 for that game.
+
+Programmatic usage
+- Use build_refined_rows_from_logs(logs_dirs, ..., mode=GameMode.RANDOM_VS_LLM|DRAGON_VS_LLM) to obtain
+  refined rows in memory, then write_refined_csv(rows, path) to persist them.
+
+Script usage
+- Run this module directly to generate CSVs and print a leaderboard according to the configured GAME_MODE.
+  You may switch modes by editing the GAME_MODE constant or by calling the builder directly with a mode.
 """
 
 import os
