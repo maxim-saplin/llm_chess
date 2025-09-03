@@ -1,12 +1,58 @@
 """
-Convert aggregated chess game statistics
-from a CSV file into a refined format used for Web publishing.
-The refined format includes calculated
-percentages and differences that are useful for analyzing player performance
-over multiple games.
+Refine per-game chess logs into a compact, analysis-friendly CSV (and console leaderboard).
 
-Usage:
-    Set constants to path and run as script OR call build_refined_rows_from_logs()
+What this module does
+- Reads raw game JSON logs directly from disk and computes per-model metrics such as win rate,
+  normalized win/loss, draws, instruction-following (game duration), mistakes per 1000 moves,
+  token and cost efficiency, and observed time per game.
+- Supports two ingestion modes via GameMode:
+  - RANDOM_VS_LLM (default historical pipeline): White is a random opponent, Black is the LLM.
+  - DRAGON_VS_LLM (engine pipeline): White is a chess engine (Dragon), Black is the LLM.
+
+Data sources
+- RANDOM_VS_LLM: Scans LOGS_DIRS (default: "_logs/rand_vs_llm"). Expects per-game JSON files
+  with the current structure where white is "Random_Player" and black is "Player_Black".
+- DRAGON_VS_LLM: Scans these roots and walks all subfolders:
+  - New-format: "_logs/engine_vs_llm" — each run directory contains a "_run.json" and per-game JSONs.
+    The file "_run.json" is used to infer the black model label (model + reasoning/thinking suffixes)
+    and engine details (e.g., Dragon level). Missing or malformed metadata emits warnings.
+  - Legacy-format: "_logs/_pre_aug_2025/dragon_vs_llm" — no _run.json is expected. The model label is
+    inferred from path segments (e.g., "lvl-3_vs_MODEL/..."), and the opponent is inferred from the
+    engine level inside directory names (e.g., "dragon-lvl-3" or "lvl-3").
+
+Labeling and grouping
+- Player (CSV column) always refers to the black-side LLM model label.
+  - For new-format runs, this label is composed from _run.json using _compose_model_label(base_model,
+    reasoning_effort, thinking_budget), e.g., "model-low-tb_2048".
+  - For legacy-format runs, the label is parsed from folder names (e.g., after "lvl-N_vs_").
+- DRAGON_VS_LLM adds a white_oponent column (e.g., "dragon-lvl-3").
+  - Grouping is by (Player, white_oponent) so different engine levels remain separate.
+  - In RANDOM_VS_LLM, grouping is by Player only.
+
+Outputs
+- RANDOM_VS_LLM path:
+  - Builds refined rows and merges with a historical refined CSV (PREV_REFINED_CSV) to produce
+    data_processing/refined.csv (insert-only; prefer new rows on conflicts).
+- DRAGON_VS_LLM path:
+  - Builds refined rows (with white_oponent) and writes data_processing/dragon_refined.csv.
+
+Sorting for console leaderboard
+- RANDOM_VS_LLM: Win/Loss DESC, then Game Duration DESC, then Tokens ASC.
+- DRAGON_VS_LLM: Opponent level ASC (e.g., dragon-lvl-1, 2, 3, ...), then Win Rate DESC,
+  then Win/Loss DESC.
+
+Pricing and tokens
+- Model pricing is loaded from data_processing/models_metadata.csv as (prompt_price, completion_price)
+  per 1M tokens. If an exact model name is not found, a longest substring match is attempted.
+  If usage details are missing in a game, the price- and token-based metrics fall back to 0 for that game.
+
+Programmatic usage
+- Use build_refined_rows_from_logs(logs_dirs, ..., mode=GameMode.RANDOM_VS_LLM|DRAGON_VS_LLM) to obtain
+  refined rows in memory, then write_refined_csv(rows, path) to persist them.
+
+Script usage
+- Run this module directly to generate CSVs and print a leaderboard according to the configured GAME_MODE.
+  You may switch modes by editing the GAME_MODE constant or by calling the builder directly with a mode.
 """
 
 import os
@@ -15,6 +61,7 @@ import csv
 import json
 import math
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import ClassVar, Dict, Any, List, Union
 from statistics import mean, stdev
 from functools import lru_cache
@@ -34,10 +81,25 @@ except ImportError:
         # Now try the direct import again
         from llm_chess import TerminationReason
 
-# Define a list of log directories to process
-# Restrict to rand_vs_llm per current requirement
+# Define a list of log directories to process (default for Random vs LLM)
 LOGS_DIRS = [
     "_logs/rand_vs_llm",
+]
+
+# New mode for Dragon (engine) vs LLM
+class GameMode(Enum):
+    RANDOM_VS_LLM = "random_vs_llm"
+    DRAGON_VS_LLM = "dragon_vs_llm"
+
+# Global switch 
+GAME_MODE: GameMode = GameMode.RANDOM_VS_LLM
+
+# Engine-vs-LLM log locations
+ENGINE_LOGS_DIRS_NEW = [
+    "_logs/engine_vs_llm",
+]
+ENGINE_LOGS_DIRS_LEGACY = [
+    "_logs/_pre_aug_2025/dragon_vs_llm",
 ]
 
 FILTER_OUT_BELOW_N = 30 # 0
@@ -114,6 +176,8 @@ class GameLog:
     material_count: Dict[str, int]
     usage_stats_white: UsageStats
     usage_stats_black: UsageStats
+    # For engine-vs-LLM mode; opponent descriptor e.g., "dragon-lvl-3"
+    white_oponent: str = ""
 
     max_moves_in_game: ClassVar[int] = 200
 
@@ -175,6 +239,85 @@ def _model_label_from_run_json(run_dir: str) -> str | None:
         return None
 
 
+@lru_cache(maxsize=4096)
+def _white_oponent_from_run_dir(run_dir: str) -> str | None:
+    """Infer white opponent label for engine-vs-LLM runs.
+
+    Priority:
+    1) Read from _run.json → chess_engines.dragon.level → "dragon-lvl-{level}"
+    2) Infer from path segment: any "dragon-lvl-{N}" or "lvl-{N}" → "dragon-lvl-{N}"
+    """
+    try:
+        run_json_path = os.path.join(run_dir, "_run.json")
+        if os.path.exists(run_json_path):
+            with open(run_json_path, "r", encoding="utf-8") as f:
+                md = json.load(f)
+            engines = md.get("chess_engines") or {}
+            dragon = engines.get("dragon") if isinstance(engines, dict) else None
+            if isinstance(dragon, dict) and "level" in dragon:
+                level = dragon.get("level")
+                try:
+                    level_int = int(level)
+                    return f"dragon-lvl-{level_int}"
+                except Exception:
+                    print(f"WARNING: Invalid dragon level in _run.json at {run_dir}: {level}")
+            else:
+                print(f"WARNING: No dragon engine section in _run.json at {run_dir}")
+        # Path-based fallback
+        path_lower = run_dir.lower()
+        import re
+        m = re.search(r"dragon-lvl-(\d+)", path_lower)
+        if m:
+            return f"dragon-lvl-{int(m.group(1))}"
+        m2 = re.search(r"lvl-(\d+)", path_lower)
+        if m2:
+            return f"dragon-lvl-{int(m2.group(1))}"
+        return None
+    except Exception:
+        return None
+
+
+@lru_cache(maxsize=4096)
+def _model_label_from_legacy_path(run_dir: str) -> str | None:
+    """Best-effort model label inference from legacy folder path when _run.json is absent.
+
+    Primary pattern under _logs/_pre_aug_2025/dragon_vs_llm:
+    - Segments like: "lvl-{N}_vs_{model_label}"
+      → return {model_label}
+
+    Also supports older pattern:
+    - .../dragon-lvl-{N}/{model_label}/.../timestamp
+      → return next segment after engine segment
+    """
+    try:
+        parts = [p for p in run_dir.split(os.sep) if p]
+        import re
+        # 1) lvl-N_vs_MODEL
+        for seg in parts:
+            m = re.match(r"^(?:dragon-)?lvl-(\d+)_vs_(.+)$", seg, flags=re.IGNORECASE)
+            if m:
+                model_segment = m.group(2)
+                # Avoid obvious timestamps like 2025-05-02-00-02
+                if re.match(r"^\d{4}-\d{2}-\d{2}-", model_segment):
+                    continue
+                return model_segment
+        # 2) dragon-lvl-N / {model_label}
+        for i, seg in enumerate(parts):
+            seg_lower = seg.lower()
+            if seg_lower.startswith("dragon-lvl-") or seg_lower.startswith("lvl-"):
+                if i + 1 < len(parts):
+                    candidate = parts[i + 1]
+                    if not re.match(r"^\d{4}-\d{2}-\d{2}-", candidate):
+                        return candidate
+        # Fallback: try to find a segment that looks like a model name
+        probable_prefixes = ("gpt-", "grok-", "claude-", "gemini", "o3-", "o4-")
+        for seg in parts:
+            if any(seg.startswith(pref) for pref in probable_prefixes):
+                return seg
+        return None
+    except Exception:
+        return None
+
 def load_game_log(file_path: str) -> GameLog:
     with open(file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -199,7 +342,11 @@ def load_game_log(file_path: str) -> GameLog:
         )
 
 
-def load_game_logs(logs_dirs: Union[str, List[Union[str, Dict[str, str]]]], model_overrides: dict | None = None) -> List[GameLog]:
+def load_game_logs(
+    logs_dirs: Union[str, List[Union[str, Dict[str, str]]]],
+    model_overrides: dict | None = None,
+    mode: GameMode = GAME_MODE,
+) -> List[GameLog]:
     logs: list[GameLog] = []
     directory_aliases: dict[str, str] = {}
 
@@ -226,26 +373,77 @@ def load_game_logs(logs_dirs: Union[str, List[Union[str, Dict[str, str]]]], mode
                     file_path = os.path.join(root, file)
                     try:
                         game_log = load_game_log(file_path)
+                        run_dir = os.path.dirname(file_path)
 
-                        # Ensure opponent and black roles are expected
-                        if game_log.player_white.name != "Random_Player":
-                            continue
-                        if game_log.player_black.name != "Player_Black":
-                            continue
+                        if mode == GameMode.RANDOM_VS_LLM:
+                            # Ensure opponent and black roles are expected
+                            if game_log.player_white.name != "Random_Player":
+                                continue
+                            if game_log.player_black.name != "Player_Black":
+                                continue
 
-                        if logs_dir in directory_aliases:
-                            model_name = directory_aliases[logs_dir]
-                        else:
-                            run_dir = os.path.dirname(file_path)
+                            if logs_dir in directory_aliases:
+                                model_name = directory_aliases[logs_dir]
+                            else:
+                                label_from_run = _model_label_from_run_json(run_dir)
+                                model_name = label_from_run or game_log.player_black.model
+                                if model_overrides:
+                                    key = next((k for k in model_overrides if os.path.dirname(file_path).endswith(k)), None)
+                                    if key:
+                                        model_name = model_overrides[key]
+
+                            game_log.player_black.model = model_name
+                            logs.append(game_log)
+
+                        elif mode == GameMode.DRAGON_VS_LLM:
+                            # Require LLM on black
+                            if game_log.player_black.name != "Player_Black":
+                                continue
+
+                            # New-format strictness: require _run.json under engine_vs_llm base
+                            is_new_format_base = os.path.normpath(logs_dir).endswith(os.path.normpath("_logs/engine_vs_llm"))
+
+                            # Resolve model label
                             label_from_run = _model_label_from_run_json(run_dir)
+                            if label_from_run is None:
+                                if is_new_format_base:
+                                    print(f"WARNING: Missing or invalid _run.json for run at {run_dir}; skipping (engine_vs_llm new format)")
+                                    continue
+                                else:
+                                    label_from_run = _model_label_from_legacy_path(run_dir)
+
                             model_name = label_from_run or game_log.player_black.model
                             if model_overrides:
                                 key = next((k for k in model_overrides if os.path.dirname(file_path).endswith(k)), None)
                                 if key:
                                     model_name = model_overrides[key]
 
-                        game_log.player_black.model = model_name
-                        logs.append(game_log)
+                            # Resolve white opponent (engine descriptor)
+                            white_op = _white_oponent_from_run_dir(run_dir)
+                            if white_op is None:
+                                if is_new_format_base:
+                                    print(f"WARNING: Could not infer dragon engine level for run at {run_dir}; skipping")
+                                    continue
+                                else:
+                                    # Legacy path without clear level — skip conservatively
+                                    print(f"WARNING: Legacy path without parseable dragon level at {run_dir}; skipping")
+                                    continue
+
+                            # Clean up obviously wrong legacy labels like timestamps
+                            # If model looks like a timestamp (YYYY-MM-DD-..), try to salvage from another path segment
+                            import re
+                            if re.match(r"^\d{4}-\d{2}-\d{2}-", model_name):
+                                recovered = _model_label_from_legacy_path(run_dir)
+                                if recovered:
+                                    model_name = recovered
+
+                            game_log.player_black.model = model_name
+                            game_log.white_oponent = white_op
+                            logs.append(game_log)
+
+                        else:
+                            # Unknown mode; skip
+                            continue
                     except Exception:
                         # Skip invalid JSON files
                         continue
@@ -280,44 +478,60 @@ def build_refined_rows_from_logs(
     filter_out_models: list[str] | None = None,
     model_aliases: dict[str, str] | None = None,
     models_metadata_csv: str = MODELS_METADATA_CSV,
+    mode: GameMode = GAME_MODE,
 ) -> list[dict[str, Any]]:
     if filter_out_models is None:
         filter_out_models = []
     if model_aliases is None:
         model_aliases = {}
 
-    logs = load_game_logs(logs_dirs, model_overrides)
+    logs = load_game_logs(logs_dirs, model_overrides, mode=mode)
     if only_after_date:
         logs = [log for log in logs if log.time_started >= only_after_date]
 
-    # Group by model name
-    model_groups: dict[str, list[GameLog]] = {}
-    for log in logs:
-        model_name = log.player_black.model
-        model_name = model_aliases.get(model_name, model_name)
-        if model_name in filter_out_models:
-            continue
-        model_groups.setdefault(model_name, []).append(log)
+    # Group by model (and by white_oponent in dragon mode)
+    if mode == GameMode.DRAGON_VS_LLM:
+        model_groups: dict[tuple[str, str], list[GameLog]] = {}
+        for log in logs:
+            model_name = log.player_black.model
+            model_name = model_aliases.get(model_name, model_name)
+            if model_name in filter_out_models:
+                continue
+            opponent_label = log.white_oponent or "dragon-lvl-?"
+            model_groups.setdefault((model_name, opponent_label), []).append(log)
+    else:
+        model_groups: dict[str, list[GameLog]] = {}
+        for log in logs:
+            model_name = log.player_black.model
+            model_name = model_aliases.get(model_name, model_name)
+            if model_name in filter_out_models:
+                continue
+            model_groups.setdefault(model_name, []).append(log)
 
     model_prices = load_model_prices(models_metadata_csv)
 
     refined_rows: list[dict[str, Any]] = []
-    for model_name, model_logs in model_groups.items():
+    for group_key, model_logs in model_groups.items():
+        if mode == GameMode.DRAGON_VS_LLM:
+            model_name, opponent_label = group_key
+        else:
+            model_name = group_key
+            opponent_label = ""
         total_games = len(model_logs)
         if total_games < filter_out_below_n:
             continue
 
         black_llm_wins = sum(1 for log in model_logs if log.winner in ("Player_Black", "NoN_Synthesizer"))
-        white_rand_wins = sum(1 for log in model_logs if log.winner == "Random_Player")
-        draws = total_games - black_llm_wins - white_rand_wins
+        opponent_wins = sum(1 for log in model_logs if log.winner == log.player_white.name)
+        draws = total_games - black_llm_wins - opponent_wins
 
         player_wins_percent = (black_llm_wins / total_games) * 100 if total_games > 0 else 0
         player_draws_percent = (draws / total_games) * 100 if total_games > 0 else 0
 
         # Normalized win_loss in [0,1]
-        win_loss = (((black_llm_wins - white_rand_wins) / total_games) / 2 + 0.5) if total_games > 0 else 0.5
+        win_loss = (((black_llm_wins - opponent_wins) / total_games) / 2 + 0.5) if total_games > 0 else 0.5
         per_game_win_loss = [
-            (1 / 2 + 0.5) if log.winner in ("Player_Black", "NoN_Synthesizer") else (-1 / 2 + 0.5) if log.winner == "Random_Player" else 0.5
+            (1 / 2 + 0.5) if log.winner in ("Player_Black", "NoN_Synthesizer") else (-1 / 2 + 0.5) if log.winner == log.player_white.name else 0.5
             for log in model_logs
         ]
         std_dev_win_loss = stdev(per_game_win_loss) if total_games > 1 else 0
@@ -344,10 +558,10 @@ def build_refined_rows_from_logs(
         non_interrupted_games = len(non_interrupted_logs)
         if non_interrupted_games > 0:
             black_llm_wins_ni = sum(1 for log in non_interrupted_logs if log.winner in ("Player_Black", "NoN_Synthesizer"))
-            white_rand_wins_ni = sum(1 for log in non_interrupted_logs if log.winner == "Random_Player")
-            win_loss_non_interrupted = ((black_llm_wins_ni - white_rand_wins_ni) / non_interrupted_games) / 2 + 0.5
+            opponent_wins_ni = sum(1 for log in non_interrupted_logs if log.winner == log.player_white.name)
+            win_loss_non_interrupted = ((black_llm_wins_ni - opponent_wins_ni) / non_interrupted_games) / 2 + 0.5
             per_game_win_loss_ni = [
-                (1 / 2 + 0.5) if log.winner in ("Player_Black", "NoN_Synthesizer") else (-1 / 2 + 0.5) if log.winner == "Random_Player" else 0.5
+                (1 / 2 + 0.5) if log.winner in ("Player_Black", "NoN_Synthesizer") else (-1 / 2 + 0.5) if log.winner == log.player_white.name else 0.5
                 for log in non_interrupted_logs
             ]
             std_dev_win_loss_non_interrupted = stdev(per_game_win_loss_ni) if non_interrupted_games > 1 else 0
@@ -455,11 +669,11 @@ def build_refined_rows_from_logs(
             average_time_per_game_seconds = 0.0
             moe_average_time_per_game_seconds = 0.0
 
-        refined_rows.append({
+        row = {
             "Player": model_name,
             "total_games": total_games,
             "player_wins": black_llm_wins,
-            "opponent_wins": white_rand_wins,
+            "opponent_wins": opponent_wins,
             "draws": draws,
             "player_wins_percent": round(player_wins_percent, 3),
             "player_draws_percent": round(player_draws_percent, 3),
@@ -480,7 +694,7 @@ def build_refined_rows_from_logs(
             "moe_completion_tokens_black_per_move": round(moe_completion_tokens_black_per_move, 3),
             "moe_black_llm_win_rate": round((1.96 * math.sqrt(((black_llm_wins/total_games) * (1 - (black_llm_wins/total_games))) / total_games)) if total_games > 1 else 0, 3) if total_games else 0,
             "moe_draw_rate": round((1.96 * math.sqrt(((draws/total_games) * (1 - (draws/total_games))) / total_games)) if total_games > 1 else 0, 3) if total_games else 0,
-            "moe_black_llm_loss_rate": round((1.96 * math.sqrt(((white_rand_wins/total_games) * (1 - (white_rand_wins/total_games))) / total_games)) if total_games > 1 else 0, 3) if total_games else 0,
+            "moe_black_llm_loss_rate": round((1.96 * math.sqrt(((opponent_wins/total_games) * (1 - (opponent_wins/total_games))) / total_games)) if total_games > 1 else 0, 3) if total_games else 0,
             "win_loss": round(win_loss, 3),
             "moe_win_loss": round(moe_win_loss, 3),
             "win_loss_non_interrupted": round(win_loss_non_interrupted, 3),
@@ -499,7 +713,10 @@ def build_refined_rows_from_logs(
             "moe_price_per_1000_moves": round(moe_price_per_1000_moves, 5),
             "average_time_per_game_seconds": round(average_time_per_game_seconds, 3),
             "moe_average_time_per_game_seconds": round(moe_average_time_per_game_seconds, 3),
-        })
+        }
+        if mode == GameMode.DRAGON_VS_LLM:
+            row["white_oponent"] = opponent_label
+        refined_rows.append(row)
 
     return refined_rows
 
@@ -550,6 +767,11 @@ REFINED_HEADERS = [
     "moe_average_time_per_game_seconds",
 ]
 
+# Dragon-vs-LLM refined CSV headers (adds white_oponent field)
+DRAGON_REFINED_HEADERS = REFINED_HEADERS + [
+    "white_oponent",
+]
+
 
 def collapse_refined_rows_by_player(rows):
     """Collapse duplicate Player rows by merging counts and weighted averages.
@@ -586,12 +808,14 @@ def collapse_refined_rows_by_player(rows):
         if not player:
             # Skip rows without Player name
             continue
-        if player not in grouped:
-            # Make a shallow copy to avoid mutating the original
-            grouped[player] = dict(row)
+        # Keep dragon-vs-LLM rows separated by opponent label
+        opponent_label = row.get("white_oponent", "")
+        group_key = (player, opponent_label)
+        if group_key not in grouped:
+            grouped[group_key] = dict(row)
             continue
 
-        g = grouped[player]
+        g = grouped[group_key]
 
         # Preserve previous weights before updating totals
         tg_prev = to_int(g.get("total_games"))
@@ -665,7 +889,7 @@ def collapse_refined_rows_by_player(rows):
 
     # Recompute derived metrics from merged totals
     out = []
-    for player, g in grouped.items():
+    for (player, _opponent_label), g in grouped.items():
         tg = to_int(g.get("total_games"))
         tm = to_int(g.get("total_moves"))
         wins = to_int(g.get("player_wins"))
@@ -797,9 +1021,16 @@ def merge_refined_rows_and_old(new_rows, old_refined_file):
 
 def write_refined_csv(rows, output_file):
     with open(output_file, "w", newline="", encoding="utf-8") as f_out:
-        writer = csv.DictWriter(f_out, fieldnames=REFINED_HEADERS)
+        # Choose headers based on presence of white_oponent in rows
+        has_opponent = any("white_oponent" in r for r in rows)
+        headers = DRAGON_REFINED_HEADERS if has_opponent else REFINED_HEADERS
+        writer = csv.DictWriter(f_out, fieldnames=headers)
         writer.writeheader()
-        writer.writerows(rows)
+        for r in rows:
+            # Normalize: ensure all headers present
+            out_row = {k: r.get(k, "0") for k in headers}
+            out_row["Player"] = r.get("Player", "")
+            writer.writerow(out_row)
 
 def print_leaderboard(csv_file, top_n=None):
     """Print a formatted leaderboard to the console with the same metrics as the web version."""
@@ -809,16 +1040,42 @@ def print_leaderboard(csv_file, top_n=None):
         reader = csv.DictReader(f)
         data = list(reader)
     
-    # Sort data using the same logic as in the web version:
-    # Win/Loss DESC, then Game Duration DESC, then Tokens ASC
-    sorted_data = sorted(
-        data, 
-        key=lambda x: (
-            -float(x['win_loss']),  # DESC
-            -float(x['game_duration']),  # DESC
-            float(x['completion_tokens_black_per_move'])  # ASC
+    # Sorting
+    has_opponent = any('white_oponent' in r for r in data)
+    if has_opponent:
+        # Opponent-level ASC, then Win Rate DESC, then Win/Loss DESC
+        import re
+        def parse_level(op):
+            if not op:
+                return 999
+            m = re.search(r"dragon-lvl-(\d+)", op.lower()) or re.search(r"lvl-(\d+)", op.lower())
+            try:
+                return int(m.group(1)) if m else 999
+            except Exception:
+                return 999
+        def sf(v):
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return 0.0
+        sorted_data = sorted(
+            data,
+            key=lambda x: (
+                parse_level(x.get('white_oponent', '')),
+                -sf(x.get('player_wins_percent', 0)),
+                -sf(x.get('win_loss', 0)),
+            ),
         )
-    )
+    else:
+        # Default: Win/Loss DESC, then Game Duration DESC, then Tokens ASC
+        sorted_data = sorted(
+            data,
+            key=lambda x: (
+                -float(x['win_loss']),
+                -float(x['game_duration']),
+                float(x['completion_tokens_black_per_move'])
+            )
+        )
     
     # Limit to top N if specified
     if top_n:
@@ -828,6 +1085,7 @@ def print_leaderboard(csv_file, top_n=None):
     total_cost_all_models = 0.0
     for rank, row in enumerate(sorted_data, 1):
         player_name = row['Player']
+        white_op = row.get('white_oponent', '')
         
         # Format the metrics like in the web version
         win_loss = f"{float(row['win_loss']) * 100:.2f}%"
@@ -861,54 +1119,100 @@ def print_leaderboard(csv_file, top_n=None):
         else:
             time_str = "N/A"
         
-        rows.append([
-            rank,
-            player_name,
-            win_loss,
-            game_duration,
-            tokens_str,
-            cost_str,
-            time_str,
-            total_games,
-            total_cost_str
-        ])
+        # Win Rate column (player_wins_percent)
+        try:
+            win_rate_col = f"{float(row.get('player_wins_percent', 0)):.2f}%"
+        except (ValueError, TypeError):
+            win_rate_col = "0.00%"
+
+        # Include opponent column if present
+        if white_op:
+            rows.append([
+                rank,
+                player_name,
+                white_op,
+                win_rate_col,
+                win_loss,
+                game_duration,
+                tokens_str,
+                cost_str,
+                time_str,
+                total_games,
+                total_cost_str
+            ])
+        else:
+            rows.append([
+                rank,
+                player_name,
+                win_rate_col,
+                win_loss,
+                game_duration,
+                tokens_str,
+                cost_str,
+                time_str,
+                total_games,
+                total_cost_str
+            ])
     
     # Print the table with headers
-    headers = ['#', 'Player', 'Win/Loss', 'Game Duration', 'Tokens', 'Cost/Game', 'Time/Game', 'Games', 'Total Cost']
+    headers = ['#', 'Player', 'Opponent', 'Win Rate', 'Win/Loss', 'Game Duration', 'Tokens', 'Cost/Game', 'Time/Game', 'Games', 'Total Cost'] if has_opponent else ['#', 'Player', 'Win Rate', 'Win/Loss', 'Game Duration', 'Tokens', 'Cost/Game', 'Time/Game', 'Games', 'Total Cost']
     print(tabulate(rows, headers=headers, tablefmt='grid'))
     print(f"\nTotal cost across all models: ${total_cost_all_models:.2f}")
 
 
 def main():
-    print(f"Building refined rows directly from logs: {LOGS_DIRS}")
-    new_rows = build_refined_rows_from_logs(
-        LOGS_DIRS,
-        model_overrides=MODEL_OVERRIDES,
-        only_after_date=DATE_AFTER,
-        filter_out_below_n=FILTER_OUT_BELOW_N,
-        filter_out_models=FILTER_OUT_MODELS,
-        model_aliases=ALIASES,
-        models_metadata_csv=MODELS_METADATA_CSV,
-    )
-    # Collapse duplicates (e.g., aliased models)
-    new_rows = collapse_refined_rows_by_player(new_rows)
-    print(f"Computed refined rows in memory: {len(new_rows)}")
+    if GAME_MODE == GameMode.DRAGON_VS_LLM:
+        print(f"Building DRAGON_VS_LLM refined rows from: {ENGINE_LOGS_DIRS_NEW + ENGINE_LOGS_DIRS_LEGACY}")
+        logs_dirs = ENGINE_LOGS_DIRS_NEW + ENGINE_LOGS_DIRS_LEGACY
+        new_rows = build_refined_rows_from_logs(
+            logs_dirs,
+            model_overrides=MODEL_OVERRIDES,
+            only_after_date=DATE_AFTER,
+            filter_out_below_n=FILTER_OUT_BELOW_N,
+            filter_out_models=FILTER_OUT_MODELS,
+            model_aliases=ALIASES,
+            models_metadata_csv=MODELS_METADATA_CSV,
+            mode=GameMode.DRAGON_VS_LLM,
+        )
+        # Collapse duplicates while preserving opponent separation
+        new_rows = collapse_refined_rows_by_player(new_rows)
+        output_csv = os.path.join(OUTPUT_DIR, "dragon_refined.csv")
+        write_refined_csv(new_rows, output_csv)
+        print(f"Wrote dragon refined CSV: {output_csv}")
 
-    # Merge with historical refined CSV (insert-only; prefer new on conflict)
-    merged_rows = merge_refined_rows_and_old(new_rows, PREV_REFINED_CSV)
-    write_refined_csv(merged_rows, REFINED_CSV)
-    print(f"Wrote merged refined CSV: {REFINED_CSV}")
+        print("\n=== DRAGON vs LLM LEADERBOARD ===\n")
+        print_leaderboard(output_csv)
+    else:
+        print(f"Building refined rows directly from logs: {LOGS_DIRS}")
+        new_rows = build_refined_rows_from_logs(
+            LOGS_DIRS,
+            model_overrides=MODEL_OVERRIDES,
+            only_after_date=DATE_AFTER,
+            filter_out_below_n=FILTER_OUT_BELOW_N,
+            filter_out_models=FILTER_OUT_MODELS,
+            model_aliases=ALIASES,
+            models_metadata_csv=MODELS_METADATA_CSV,
+            mode=GameMode.RANDOM_VS_LLM,
+        )
+        # Collapse duplicates (e.g., aliased models)
+        new_rows = collapse_refined_rows_by_player(new_rows)
+        print(f"Computed refined rows in memory: {len(new_rows)}")
 
-    # Leaderboard
-    print("\n=== LLM CHESS LEADERBOARD (Merged) ===\n")
-    print_leaderboard(REFINED_CSV)
-    print("\nMETRICS EXPLANATION:")
-    print("- Win/Loss: Difference between wins and losses as a percentage (0-100%). Higher is better.")
-    print("- Game Duration: Percentage of maximum possible game length completed (0-100%). Higher indicates better instruction following.")
-    print("- Tokens: Number of tokens generated per move. Shows model verbosity/efficiency.")
-    print("- Cost/Game: Average cost per game with margin of error. Lower is more economical.")
-    print("- Time/Game: Measured average time per game from logs; N/A if unavailable.")
-    print("- Total Cost: Total cost across all games for this model.")
+        # Merge with historical refined CSV (insert-only; prefer new on conflict)
+        merged_rows = merge_refined_rows_and_old(new_rows, PREV_REFINED_CSV)
+        write_refined_csv(merged_rows, REFINED_CSV)
+        print(f"Wrote merged refined CSV: {REFINED_CSV}")
+
+        # Leaderboard
+        print("\n=== LLM CHESS LEADERBOARD (Merged) ===\n")
+        print_leaderboard(REFINED_CSV)
+        print("\nMETRICS EXPLANATION:")
+        print("- Win/Loss: Difference between wins and losses as a percentage (0-100%). Higher is better.")
+        print("- Game Duration: Percentage of maximum possible game length completed (0-100%). Higher indicates better instruction following.")
+        print("- Tokens: Number of tokens generated per move. Shows model verbosity/efficiency.")
+        print("- Cost/Game: Average cost per game with margin of error. Lower is more economical.")
+        print("- Time/Game: Measured average time per game from logs; N/A if unavailable.")
+        print("- Total Cost: Total cost across all games for this model.")
 
 
 if __name__ == "__main__":
