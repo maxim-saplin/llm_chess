@@ -25,8 +25,8 @@ Labeling and grouping
   - For new-format runs, this label is composed from _run.json using _compose_model_label(base_model,
     reasoning_effort, thinking_budget), e.g., "model-low-tb_2048".
   - For legacy-format runs, the label is parsed from folder names (e.g., after "lvl-N_vs_").
-- DRAGON_VS_LLM adds a white_oponent column (e.g., "dragon-lvl-3").
-  - Grouping is by (Player, white_oponent) so different engine levels remain separate.
+- DRAGON_VS_LLM adds a white_opponent column (e.g., "dragon-lvl-3").
+  - Grouping is by (Player, white_opponent) so different engine levels remain separate.
   - In RANDOM_VS_LLM, grouping is by Player only.
 
 Outputs
@@ -34,7 +34,7 @@ Outputs
   - Builds refined rows and merges with a historical refined CSV (PREV_REFINED_CSV) to produce
     data_processing/refined.csv (insert-only; prefer new rows on conflicts).
 - DRAGON_VS_LLM path:
-  - Builds refined rows (with white_oponent) and writes data_processing/dragon_refined.csv.
+  - Builds refined rows (with white_opponent) and writes data_processing/dragon_refined.csv.
 
 Sorting for console leaderboard
 - RANDOM_VS_LLM: Win/Loss DESC, then Game Duration DESC, then Tokens ASC.
@@ -177,7 +177,7 @@ class GameLog:
     usage_stats_white: UsageStats
     usage_stats_black: UsageStats
     # For engine-vs-LLM mode; opponent descriptor e.g., "dragon-lvl-3"
-    white_oponent: str = ""
+    white_opponent: str = ""
 
     max_moves_in_game: ClassVar[int] = 200
 
@@ -240,7 +240,7 @@ def _model_label_from_run_json(run_dir: str) -> str | None:
 
 
 @lru_cache(maxsize=4096)
-def _white_oponent_from_run_dir(run_dir: str) -> str | None:
+def _white_opponent_from_run_dir(run_dir: str) -> str | None:
     """Infer white opponent label for engine-vs-LLM runs.
 
     Priority:
@@ -419,7 +419,7 @@ def load_game_logs(
                                     model_name = model_overrides[key]
 
                             # Resolve white opponent (engine descriptor)
-                            white_op = _white_oponent_from_run_dir(run_dir)
+                            white_op = _white_opponent_from_run_dir(run_dir)
                             if white_op is None:
                                 if is_new_format_base:
                                     print(f"WARNING: Could not infer dragon engine level for run at {run_dir}; skipping")
@@ -438,7 +438,7 @@ def load_game_logs(
                                     model_name = recovered
 
                             game_log.player_black.model = model_name
-                            game_log.white_oponent = white_op
+                            game_log.white_opponent = white_op
                             logs.append(game_log)
 
                         else:
@@ -489,7 +489,7 @@ def build_refined_rows_from_logs(
     if only_after_date:
         logs = [log for log in logs if log.time_started >= only_after_date]
 
-    # Group by model (and by white_oponent in dragon mode)
+    # Group by model (and by white_opponent in dragon mode)
     if mode == GameMode.DRAGON_VS_LLM:
         model_groups: dict[tuple[str, str], list[GameLog]] = {}
         for log in logs:
@@ -497,7 +497,7 @@ def build_refined_rows_from_logs(
             model_name = model_aliases.get(model_name, model_name)
             if model_name in filter_out_models:
                 continue
-            opponent_label = log.white_oponent or "dragon-lvl-?"
+            opponent_label = log.white_opponent or "dragon-lvl-?"
             model_groups.setdefault((model_name, opponent_label), []).append(log)
     else:
         model_groups: dict[str, list[GameLog]] = {}
@@ -715,7 +715,7 @@ def build_refined_rows_from_logs(
             "moe_average_time_per_game_seconds": round(moe_average_time_per_game_seconds, 3),
         }
         if mode == GameMode.DRAGON_VS_LLM:
-            row["white_oponent"] = opponent_label
+            row["white_opponent"] = opponent_label
         refined_rows.append(row)
 
     return refined_rows
@@ -767,9 +767,9 @@ REFINED_HEADERS = [
     "moe_average_time_per_game_seconds",
 ]
 
-# Dragon-vs-LLM refined CSV headers (adds white_oponent field)
+# Dragon-vs-LLM refined CSV headers (adds white_opponent field)
 DRAGON_REFINED_HEADERS = REFINED_HEADERS + [
-    "white_oponent",
+    "white_opponent",
 ]
 
 
@@ -809,7 +809,7 @@ def collapse_refined_rows_by_player(rows):
             # Skip rows without Player name
             continue
         # Keep dragon-vs-LLM rows separated by opponent label
-        opponent_label = row.get("white_oponent", "")
+        opponent_label = row.get("white_opponent", "")
         group_key = (player, opponent_label)
         if group_key not in grouped:
             grouped[group_key] = dict(row)
@@ -1021,8 +1021,8 @@ def merge_refined_rows_and_old(new_rows, old_refined_file):
 
 def write_refined_csv(rows, output_file):
     with open(output_file, "w", newline="", encoding="utf-8") as f_out:
-        # Choose headers based on presence of white_oponent in rows
-        has_opponent = any("white_oponent" in r for r in rows)
+        # Choose headers based on presence of white_opponent in rows
+        has_opponent = any("white_opponent" in r for r in rows)
         headers = DRAGON_REFINED_HEADERS if has_opponent else REFINED_HEADERS
         writer = csv.DictWriter(f_out, fieldnames=headers)
         writer.writeheader()
@@ -1041,7 +1041,7 @@ def print_leaderboard(csv_file, top_n=None):
         data = list(reader)
     
     # Sorting
-    has_opponent = any('white_oponent' in r for r in data)
+    has_opponent = any('white_opponent' in r for r in data)
     if has_opponent:
         # Opponent-level ASC, then Win Rate DESC, then Win/Loss DESC
         import re
@@ -1061,7 +1061,7 @@ def print_leaderboard(csv_file, top_n=None):
         sorted_data = sorted(
             data,
             key=lambda x: (
-                parse_level(x.get('white_oponent', '')),
+                parse_level(x.get('white_opponent', '')),
                 -sf(x.get('player_wins_percent', 0)),
                 -sf(x.get('win_loss', 0)),
             ),
@@ -1085,7 +1085,7 @@ def print_leaderboard(csv_file, top_n=None):
     total_cost_all_models = 0.0
     for rank, row in enumerate(sorted_data, 1):
         player_name = row['Player']
-        white_op = row.get('white_oponent', '')
+        white_op = row.get('white_opponent', '')
         
         # Format the metrics like in the web version
         win_loss = f"{float(row['win_loss']) * 100:.2f}%"
