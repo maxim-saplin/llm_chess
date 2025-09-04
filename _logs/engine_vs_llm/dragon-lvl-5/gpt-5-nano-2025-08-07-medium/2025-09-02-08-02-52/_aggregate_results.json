@@ -1,0 +1,89 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.09.02_08:02",
+            "log_folder_relative": "_logs/engine_vs_llm/dragon-lvl-5/gpt-5-nano-2025-08-07-medium/2025-09-02-08-02-52",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "CHESS_ENGINE_DRAGON",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 0,
+            "dialog_turn_delay": 1,
+            "max_api_retries": 3,
+            "api_retry_delay": 2.0,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "chess_engines": {
+            "stockfish": {
+                "path": "/opt/homebrew/bin/stockfish",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            },
+            "dragon": {
+                "path": "dragon/dragon-linux",
+                "reset_history": true,
+                "level": 5,
+                "time_per_move": 0.1
+            }
+        },
+        "llm_configs": {
+            "black": {
+                "model": "gpt-5-nano-2025-08-07",
+                "api_type": "openai",
+                "api_key": "REDACTED",
+                "timeout": 600,
+                "reasoning_effort": "medium"
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 23,
+    "black_wins": 4,
+    "draws": 6,
+    "total_moves": 3644,
+    "reasons": {
+        "Checkmate": 13,
+        "Max turns in single dialog": 13,
+        "Max moves reached": 5,
+        "Insufficient material": 1,
+        "Too many wrong actions": 1
+    },
+    "player_white": {
+        "name": "Chess_Engine_Dragon_White",
+        "model": "",
+        "total_material": 471,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 14.272727272727273,
+        "std_dev_material": 12.69909624558163
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "gpt-5-nano-2025-08-07",
+        "total_material": 462,
+        "wrong_moves": 64,
+        "wrong_actions": 30,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 14.0,
+        "std_dev_material": 10.796411440844592
+    },
+    "average_moves": 110.42424242424242,
+    "std_dev_moves": 63.9277083426224
+}
