@@ -314,7 +314,7 @@ class TestDragonVsLLMRefined(unittest.TestCase):
         # Player should be composed from _run.json model + reasoning suffix
         self.assertEqual(row["Player"], "gpt-5-nano-2025-08-07-low")
         # Opponent from _run.json dragon level
-        self.assertEqual(row.get("white_oponent"), "dragon-lvl-3")
+        self.assertEqual(row.get("white_opponent"), "dragon-lvl-3")
         # 2 games, one win for black, one for white
         self.assertEqual(int(row["total_games"]), 2)
         self.assertEqual(int(row["player_wins"]), 1)
@@ -347,7 +347,7 @@ class TestDragonVsLLMRefined(unittest.TestCase):
         # Player should be parsed from path segment after lvl-N_vs_
         self.assertEqual(row["Player"], "gpt-5-nano-2025-08-07-low")
         # Opponent should be inferred from "lvl-3" → dragon-lvl-3
-        self.assertEqual(row.get("white_oponent"), "dragon-lvl-3")
+        self.assertEqual(row.get("white_opponent"), "dragon-lvl-3")
         self.assertEqual(int(row["total_games"]), 1)
         self.assertEqual(int(row["player_wins"]), 0)
         self.assertEqual(int(row["opponent_wins"]), 1)
