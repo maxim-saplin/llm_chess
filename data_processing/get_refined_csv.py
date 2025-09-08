@@ -1,58 +1,38 @@
 """
-Refine per-game chess logs into a compact, analysis-friendly CSV (and console leaderboard).
+Refine per-game chess logs and print leaderboards.
 
-What this module does
-- Reads raw game JSON logs directly from disk and computes per-model metrics such as win rate,
-  normalized win/loss, draws, instruction-following (game duration), mistakes per 1000 moves,
-  token and cost efficiency, and observed time per game.
-- Supports two ingestion modes via GameMode:
-  - RANDOM_VS_LLM (default historical pipeline): White is a random opponent, Black is the LLM.
-  - DRAGON_VS_LLM (engine pipeline): White is a chess engine (Dragon), Black is the LLM.
-
-Data sources
-- RANDOM_VS_LLM: Scans LOGS_DIRS (default: "_logs/rand_vs_llm"). Expects per-game JSON files
-  with the current structure where white is "Random_Player" and black is "Player_Black".
-- DRAGON_VS_LLM: Scans these roots and walks all subfolders:
-  - New-format: "_logs/engine_vs_llm" — each run directory contains a "_run.json" and per-game JSONs.
-    The file "_run.json" is used to infer the black model label (model + reasoning/thinking suffixes)
-    and engine details (e.g., Dragon level). Missing or malformed metadata emits warnings.
-  - Legacy-format: "_logs/_pre_aug_2025/dragon_vs_llm" — no _run.json is expected. The model label is
-    inferred from path segments (e.g., "lvl-3_vs_MODEL/..."), and the opponent is inferred from the
-    engine level inside directory names (e.g., "dragon-lvl-3" or "lvl-3").
-
-Labeling and grouping
-- Player (CSV column) always refers to the black-side LLM model label.
-  - For new-format runs, this label is composed from _run.json using _compose_model_label(base_model,
-    reasoning_effort, thinking_budget), e.g., "model-low-tb_2048".
-  - For legacy-format runs, the label is parsed from folder names (e.g., after "lvl-N_vs_").
-- DRAGON_VS_LLM adds a white_opponent column (e.g., "dragon-lvl-3").
-  - Grouping is by (Player, white_opponent) so different engine levels remain separate.
-  - In RANDOM_VS_LLM, grouping is by Player only.
-
-Outputs
-- RANDOM_VS_LLM path:
-  - Builds refined rows and merges with a historical refined CSV (PREV_REFINED_CSV) to produce
-    data_processing/refined.csv (insert-only; prefer new rows on conflicts).
-- DRAGON_VS_LLM path:
-  - Builds refined rows (with white_opponent) and writes data_processing/dragon_refined.csv.
-
-Sorting for console leaderboard
-- RANDOM_VS_LLM: Win/Loss DESC, then Game Duration DESC, then Tokens ASC.
-- DRAGON_VS_LLM: Opponent level ASC (e.g., dragon-lvl-1, 2, 3, ...), then Win Rate DESC,
+Modes (GameMode):
+- RANDOM_VS_LLM: White=random, Black=LLM. Groups by Player. Writes data_processing/refined.csv.
+  Leaderboard: Win/Loss DESC, then Game Duration DESC, then Tokens ASC.
+- DRAGON_VS_LLM: White=Dragon, Black=LLM. Groups by (Player, white_opponent). Writes
+  data_processing/dragon_refined.csv. Leaderboard: Dragon level ASC, then Win Rate DESC,
   then Win/Loss DESC.
+- ELO: Combines Random-vs-LLM and Dragon-vs-LLM to estimate Elo per Player and prints an Elo
+  leaderboard. Writes data_processing/elo_refined.csv.
 
-Pricing and tokens
-- Model pricing is loaded from data_processing/models_metadata.csv as (prompt_price, completion_price)
-  per 1M tokens. If an exact model name is not found, a longest substring match is attempted.
-  If usage details are missing in a game, the price- and token-based metrics fall back to 0 for that game.
+Elo (brief):
+- Anchors: Dragon level ℓ → Elo = 125(ℓ+1). Random is calibrated vs Dragon using misc/dragon
+  aggregates. Color advantage γ=35: models play Black, so we adjust by +γ (equivalently shift
+  the opponent Elo).
+- Estimation: For each Player, collect blocks (opponent Elo, wins, draws, losses) across
+  Random (if calibrated) and Dragon. If ELO_DRAGON_ONLY_MIN_GAMES>0 and a Player meets it,
+  Elo uses dragon-only; 0 means always mix. Solve Σ n_k (s_k − E_k(R)) = 0 via Brent; 95% CI
+  from Fisher information. Columns added: elo, elo_moe_95, games_vs_random, games_vs_dragon.
+- Empty Elo: left blank if no anchored-opponent games exist, or if all outcomes vs anchored
+  opponents are 100% wins or 100% losses (MLE diverges).
 
-Programmatic usage
-- Use build_refined_rows_from_logs(logs_dirs, ..., mode=GameMode.RANDOM_VS_LLM|DRAGON_VS_LLM) to obtain
-  refined rows in memory, then write_refined_csv(rows, path) to persist them.
+Data sources:
+- Random logs: _logs/rand_vs_llm (+ optional merge with _logs/_pre_aug_2025/refined.csv to expand coverage).
+- Dragon logs: _logs/engine_vs_llm and _logs/_pre_aug_2025/dragon_vs_llm.
+- Random calibration: _logs/misc/dragon and _logs/_pre_aug_2025/misc/dragon.
 
-Script usage
-- Run this module directly to generate CSVs and print a leaderboard according to the configured GAME_MODE.
-  You may switch modes by editing the GAME_MODE constant or by calling the builder directly with a mode.
+Usage:
+- Programmatic: build_refined_rows_from_logs(..., mode=GameMode.*) then write_* CSV.
+- CLI: run this module with GAME_MODE set. Elo leaderboard sorts by Elo DESC, then Win Rate,
+  then Win/Loss.
+
+Pricing & tokens: model prices from data_processing/models_metadata.csv (per 1M tokens). If
+usage missing, cost/token metrics fall back to 0 for that game.
 """
 
 import os
@@ -62,10 +42,11 @@ import json
 import math
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import ClassVar, Dict, Any, List, Union
+from typing import ClassVar, Dict, Any, List, Union, Tuple
 from statistics import mean, stdev
 from functools import lru_cache
 from tabulate import tabulate  # Add this import for the print_leaderboard function
+from scipy.optimize import root_scalar
 # Try direct import first
 try:
     from llm_chess import TerminationReason
@@ -90,6 +71,7 @@ LOGS_DIRS = [
 class GameMode(Enum):
     RANDOM_VS_LLM = "random_vs_llm"
     DRAGON_VS_LLM = "dragon_vs_llm"
+    ELO = "elo"
 
 # Global switch 
 GAME_MODE: GameMode = GameMode.RANDOM_VS_LLM
@@ -110,6 +92,19 @@ OUTPUT_DIR = "data_processing"
 REFINED_CSV = os.path.join(OUTPUT_DIR, "refined.csv")
 # Historical refined CSV to ingest/merge
 PREV_REFINED_CSV = os.path.join("_logs", "_pre_aug_2025", "refined.csv")
+
+# Elo mode constants and outputs
+ELO_REFINED_CSV = os.path.join(OUTPUT_DIR, "elo_refined.csv")
+ELO_WHITE_ADVANTAGE = 35.0
+# If >0 and a model has at least this many Dragon games, compute Elo from Dragon-only blocks.
+# If set to 0, always mix Random and Dragon blocks when Random is calibrated.
+ELO_DRAGON_ONLY_MIN_GAMES = 0
+
+# Directories with engine aggregate records for Random/Stockfish vs Dragon
+MISC_DRAGON_DIRS = [
+    "_logs/misc/dragon",
+    "_logs/_pre_aug_2025/misc/dragon",
+]
 
 FILTER_OUT_MODELS = [
     "llama-4-scout-17b-16e-instruct",
@@ -773,6 +768,15 @@ DRAGON_REFINED_HEADERS = REFINED_HEADERS + [
 ]
 
 
+# Elo-refined headers (union metrics + Elo & per-opponent game breakdown)
+ELO_REFINED_HEADERS = REFINED_HEADERS + [
+    "elo",
+    "elo_moe_95",
+    "games_vs_random",
+    "games_vs_dragon",
+]
+
+
 def collapse_refined_rows_by_player(rows):
     """Collapse duplicate Player rows by merging counts and weighted averages.
 
@@ -1032,6 +1036,163 @@ def write_refined_csv(rows, output_file):
             out_row["Player"] = r.get("Player", "")
             writer.writerow(out_row)
 
+
+def write_elo_refined_csv(rows, output_file):
+    with open(output_file, "w", newline="", encoding="utf-8") as f_out:
+        writer = csv.DictWriter(f_out, fieldnames=ELO_REFINED_HEADERS)
+        writer.writeheader()
+        for r in rows:
+            out_row = {k: r.get(k, "0") for k in ELO_REFINED_HEADERS}
+            out_row["Player"] = r.get("Player", "")
+            writer.writerow(out_row)
+
+
+# --------------------- Elo helpers ---------------------
+
+def lvl_to_elo(level: int) -> float:
+    try:
+        return float((level + 1) * 125)
+    except Exception:
+        return float("nan")
+
+
+def _expected_score(R: float, opp_elos: List[float]) -> List[float]:
+    # E = 1 / (1 + 10^((R_opp - R)/400))
+    es: List[float] = []
+    for opp in opp_elos:
+        es.append(1.0 / (1.0 + 10.0 ** ((opp - R) / 400.0)))
+    return es
+
+
+def estimate_elo_from_blocks(blocks: List[Tuple[float, int, int, int]], white_advantage: float = ELO_WHITE_ADVANTAGE) -> Tuple[float, float]:
+    """
+    Estimate Elo from aggregated blocks where the model is always Black.
+
+    blocks: list of (opponent_elo, wins, draws, losses)
+    white_advantage: Elo points to add after solving the Black-only MLE.
+
+    Returns: (R_true, se_true) — where R_true includes white_advantage.
+    """
+    if not blocks:
+        return float("nan"), float("nan")
+
+    opp_elos: List[float] = []
+    Ns: List[int] = []
+    Ss: List[float] = []
+    for opp_elo, wins, draws, losses in blocks:
+        N = int(wins) + int(draws) + int(losses)
+        if N <= 0 or not isinstance(opp_elo, (int, float)):
+            continue
+        S = (int(wins) + 0.5 * int(draws)) / N
+        opp_elos.append(float(opp_elo))
+        Ns.append(N)
+        Ss.append(S)
+
+    if not opp_elos:
+        return float("nan"), float("nan")
+
+    # Define f(R) = Σ N_k (S_k - E_k(R))
+    def f(R: float) -> float:
+        total = 0.0
+        for opp, N, S in zip(opp_elos, Ns, Ss):
+            E = 1.0 / (1.0 + 10.0 ** ((opp - R) / 400.0))
+            total += N * (S - E)
+        return total
+
+    # Bracket the root around the opponent Elo range
+    a = min(opp_elos) - 800.0
+    b = max(opp_elos) + 800.0
+    fa = f(a)
+    fb = f(b)
+    if fa * fb > 0:
+        width = 800.0
+        for _ in range(6):
+            a -= width
+            b += width
+            fa = f(a)
+            fb = f(b)
+            if fa * fb <= 0:
+                break
+            width *= 2.0
+    if fa * fb > 0:
+        return float("nan"), float("nan")
+
+    root = root_scalar(f, bracket=(a, b), method="brentq").root
+
+    # Fisher information at root
+    info = 0.0
+    for opp, N in zip(opp_elos, Ns):
+        E = 1.0 / (1.0 + 10.0 ** ((opp - root) / 400.0))
+        info += N * E * (1.0 - E)
+    info *= (math.log(10.0) / 400.0) ** 2
+    se_black = (1.0 / math.sqrt(info)) if info > 0 else float("nan")
+
+    R_true = root + white_advantage
+    return float(R_true), float(se_black)
+
+
+def _parse_dragon_level(opponent_label: str) -> int | None:
+    try:
+        import re
+        m = re.search(r"dragon-lvl-(\d+)", (opponent_label or "").lower())
+        if m:
+            return int(m.group(1))
+        m2 = re.search(r"lvl-(\d+)", (opponent_label or "").lower())
+        if m2:
+            return int(m2.group(1))
+        return None
+    except Exception:
+        return None
+
+
+def _calibrate_random_elo_from_misc(dirs: List[str]) -> Tuple[float, float, int]:
+    """
+    Scan aggregate JSONs under misc/dragon to calibrate Random vs Dragon levels.
+    Returns (R_random, se_random, total_games). If not found, returns (nan, nan, 0).
+    """
+    pattern = r"^random.*_vs_dragon-lvl-(\d+)\.json$"
+    import re
+    records: List[Tuple[float, int, int, int]] = []
+
+    for base in dirs:
+        if not os.path.isdir(base):
+            continue
+        for root, _dirs, files in os.walk(base):
+            for fn in files:
+                if not fn.endswith(".json"):
+                    continue
+                m = re.match(pattern, fn)
+                if not m:
+                    continue
+                try:
+                    lvl = int(m.group(1))
+                except Exception:
+                    continue
+                opp_elo = lvl_to_elo(lvl)
+                try:
+                    with open(os.path.join(root, fn), "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                except Exception:
+                    continue
+                # In these aggregates, the calibrated player (Random) is White.
+                white_wins = int(data.get("white_wins", 0))
+                draws = int(data.get("draws", 0))
+                black_wins = int(data.get("black_wins", 0))
+                N = white_wins + draws + black_wins
+                if N <= 0:
+                    continue
+                records.append((opp_elo, white_wins, draws, black_wins))
+
+    if not records:
+        return float("nan"), float("nan"), 0
+
+    # Random is White in these logs; adjust post-solve by -γ
+    # Implement a variant that just flips color by using negative white advantage
+    R_true, se = estimate_elo_from_blocks(records, white_advantage=-ELO_WHITE_ADVANTAGE)
+    total_games = sum(w + d + losses for _opp, w, d, losses in records)
+    return R_true, se, total_games
+
+
 def print_leaderboard(csv_file, top_n=None):
     """Print a formatted leaderboard to the console with the same metrics as the web version."""
     rows = []
@@ -1160,6 +1321,114 @@ def print_leaderboard(csv_file, top_n=None):
     print(f"\nTotal cost across all models: ${total_cost_all_models:.2f}")
 
 
+def print_elo_leaderboard(csv_file, top_n=None):
+    """Print a leaderboard for Elo-refined CSV, with Elo as the first column.
+
+    Sorting: Elo DESC (non-NaN first), then Player ASC. Models without Elo go last.
+    Columns mirror the non-opponent leaderboard with Elo prepended.
+    """
+    with open(csv_file, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        data = list(reader)
+
+    def sf(v, default=0.0):
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return float(default)
+
+    # Split into non-NaN Elo and NaN Elo
+    with_elo = [r for r in data if r.get('elo') not in (None, '', 'nan')]
+    without_elo = [r for r in data if r.get('elo') in (None, '', 'nan')]
+
+    # Sort
+    def sort_key_with_elo(r):
+        elo = sf(r.get('elo'))
+        win_rate = sf(r.get('player_wins_percent'))  # percent
+        win_loss = sf(r.get('win_loss'))             # [0,1]
+        # Sort DESC by elo, then win_rate, then win_loss
+        return (-elo, -win_rate, -win_loss)
+
+    def sort_key_without_elo(r):
+        win_rate = sf(r.get('player_wins_percent'))
+        win_loss = sf(r.get('win_loss'))
+        return (-win_rate, -win_loss, (r.get('Player') or ''))
+
+    with_elo_sorted = sorted(with_elo, key=sort_key_with_elo)
+    without_elo_sorted = sorted(without_elo, key=sort_key_without_elo)
+
+    sorted_data = with_elo_sorted + without_elo_sorted
+    if top_n:
+        sorted_data = sorted_data[:top_n]
+
+    total_cost_all_models = 0.0
+    table_rows = []
+    for rank, row in enumerate(sorted_data, 1):
+        player_name = row.get('Player', '')
+        elo_str = row.get('elo') or ''
+        elo_moe = row.get('elo_moe_95') or ''
+
+        # Reuse formatting from non-opponent leaderboard
+        try:
+            win_loss = f"{float(row.get('win_loss', 0)) * 100:.2f}%"
+        except (TypeError, ValueError):
+            win_loss = "0.00%"
+        try:
+            game_duration = f"{float(row.get('game_duration', 0)) * 100:.2f}%"
+        except (TypeError, ValueError):
+            game_duration = "0.00%"
+
+        tokens = sf(row.get('completion_tokens_black_per_move'))
+        tokens_str = f"{tokens:.1f}" if tokens > 1000 else f"{tokens:.2f}"
+
+        cost = sf(row.get('average_game_cost'))
+        moe = sf(row.get('moe_average_game_cost'))
+        cost_str = f"${cost:.4f}±{moe:.4f}"
+
+        total_games = int(sf(row.get('total_games'), 0))
+        total_cost = cost * total_games
+        total_cost_all_models += total_cost
+        total_cost_str = f"${total_cost:.2f}"
+
+        try:
+            measured_time = float(row.get('average_time_per_game_seconds', 0) or 0)
+        except (TypeError, ValueError):
+            measured_time = 0.0
+        if measured_time > 0:
+            if measured_time < 60:
+                time_str = f"{measured_time:.1f}s"
+            elif measured_time < 3600:
+                time_str = f"{measured_time/60:.1f}m"
+            else:
+                time_str = f"{measured_time/3600:.2f}h"
+        else:
+            time_str = "N/A"
+
+        # Win Rate column (player_wins_percent)
+        try:
+            win_rate_col = f"{float(row.get('player_wins_percent', 0)):.2f}%"
+        except (TypeError, ValueError):
+            win_rate_col = "0.00%"
+
+        elo_display = elo_str if not elo_moe else f"{elo_str}±{elo_moe}"
+        table_rows.append([
+            rank,
+            player_name,
+            elo_display,
+            win_rate_col,
+            win_loss,
+            game_duration,
+            tokens_str,
+            cost_str,
+            time_str,
+            total_games,
+            total_cost_str,
+        ])
+
+    headers = ['#', 'Player', 'Elo', 'Win Rate', 'Win/Loss', 'Game Duration', 'Tokens', 'Cost/Game', 'Time/Game', 'Games', 'Total Cost']
+    print(tabulate(table_rows, headers=headers, tablefmt='grid'))
+    print(f"\nTotal cost across all models: ${total_cost_all_models:.2f}")
+
 def main():
     if GAME_MODE == GameMode.DRAGON_VS_LLM:
         print(f"Building DRAGON_VS_LLM refined rows from: {ENGINE_LOGS_DIRS_NEW + ENGINE_LOGS_DIRS_LEGACY}")
@@ -1182,6 +1451,130 @@ def main():
 
         print("\n=== DRAGON vs LLM LEADERBOARD ===\n")
         print_leaderboard(output_csv)
+    elif GAME_MODE == GameMode.ELO:
+        print("Building ELO-refined rows (combining Random and Dragon logs)")
+
+        # 0) Calibrate Random Elo vs Dragon
+        random_elo, random_se, random_n = _calibrate_random_elo_from_misc(MISC_DRAGON_DIRS)
+        if not isinstance(random_elo, float) or math.isnan(random_elo):
+            print("WARNING: Could not calibrate Random Elo from misc/dragon; random-only models will not get Elo.")
+        else:
+            print(f"Calibrated Random Elo: {random_elo:.1f} ± {1.96 * random_se:.1f} (n={random_n})")
+
+        # 1) Load and aggregate rows from Random-vs-LLM (Black is LLM)
+        rows_random = build_refined_rows_from_logs(
+            LOGS_DIRS,
+            model_overrides=MODEL_OVERRIDES,
+            only_after_date=DATE_AFTER,
+            filter_out_below_n=FILTER_OUT_BELOW_N,
+            filter_out_models=FILTER_OUT_MODELS,
+            model_aliases=ALIASES,
+            models_metadata_csv=MODELS_METADATA_CSV,
+            mode=GameMode.RANDOM_VS_LLM,
+        )
+        # Merge with historical refined.csv to expand coverage (random-only players)
+        try:
+            if os.path.exists(PREV_REFINED_CSV):
+                rows_random = merge_refined_rows_and_old(rows_random, PREV_REFINED_CSV)
+        except Exception:
+            # If merge fails, continue with current rows
+            pass
+
+        # 2) Load and aggregate rows from Dragon-vs-LLM (per opponent)
+        rows_dragon = build_refined_rows_from_logs(
+            ENGINE_LOGS_DIRS_NEW + ENGINE_LOGS_DIRS_LEGACY,
+            model_overrides=MODEL_OVERRIDES,
+            only_after_date=DATE_AFTER,
+            filter_out_below_n=FILTER_OUT_BELOW_N,
+            filter_out_models=FILTER_OUT_MODELS,
+            model_aliases=ALIASES,
+            models_metadata_csv=MODELS_METADATA_CSV,
+            mode=GameMode.DRAGON_VS_LLM,
+        )
+        # Ensure per-(player, opponent) collapse inside Dragon mode
+        rows_dragon = collapse_refined_rows_by_player(rows_dragon)
+
+        # 3) Compute breakdown counts per player
+        games_vs_random: Dict[str, int] = {}
+        blocks_random_by_player: Dict[str, Tuple[int, int, int]] = {}
+        for r in rows_random:
+            name = r.get("Player")
+            if not name:
+                continue
+            total = int(float(r.get("total_games", 0) or 0))
+            games_vs_random[name] = games_vs_random.get(name, 0) + total
+            wins = int(float(r.get("player_wins", 0) or 0))
+            draws = int(float(r.get("draws", 0) or 0))
+            losses = int(float(r.get("opponent_wins", 0) or 0))
+            blocks_random_by_player[name] = (
+                blocks_random_by_player.get(name, (0, 0, 0))[0] + wins,
+                blocks_random_by_player.get(name, (0, 0, 0))[1] + draws,
+                blocks_random_by_player.get(name, (0, 0, 0))[2] + losses,
+            )
+
+        games_vs_dragon: Dict[str, int] = {}
+        blocks_dragon_by_player: Dict[str, List[Tuple[float, int, int, int]]] = {}
+        for r in rows_dragon:
+            name = r.get("Player")
+            if not name:
+                continue
+            lvl = _parse_dragon_level(r.get("white_opponent", ""))
+            if lvl is None:
+                continue
+            opp_elo = lvl_to_elo(lvl)
+            wins = int(float(r.get("player_wins", 0) or 0))
+            draws = int(float(r.get("draws", 0) or 0))
+            losses = int(float(r.get("opponent_wins", 0) or 0))
+            total = wins + draws + losses
+            games_vs_dragon[name] = games_vs_dragon.get(name, 0) + total
+            blocks_dragon_by_player.setdefault(name, []).append((opp_elo, wins, draws, losses))
+
+        # 4) Build combined metrics rows by merging Random and Dragon rows
+        # Force Dragon rows to have empty opponent label for union collapse
+        dragon_rows_union = []
+        for r in rows_dragon:
+            rc = dict(r)
+            rc["white_opponent"] = ""
+            dragon_rows_union.append(rc)
+        combined_rows = collapse_refined_rows_by_player(rows_random + dragon_rows_union)
+
+        # 5) Compute Elo per model
+        out_rows: List[Dict[str, Any]] = []
+        for row in combined_rows:
+            name = row.get("Player")
+            if not name:
+                continue
+
+            # Choose blocks based on threshold policy
+            dragon_blocks = blocks_dragon_by_player.get(name, [])
+            total_dragon_games = games_vs_dragon.get(name, 0)
+
+            use_dragon_only = False
+            if ELO_DRAGON_ONLY_MIN_GAMES and total_dragon_games >= ELO_DRAGON_ONLY_MIN_GAMES:
+                use_dragon_only = True
+
+            blocks: List[Tuple[float, int, int, int]] = []
+            if use_dragon_only:
+                blocks = dragon_blocks
+            else:
+                blocks.extend(dragon_blocks)
+                # Add random block if calibrated
+                if isinstance(random_elo, float) and not math.isnan(random_elo):
+                    rw, rd, rl = blocks_random_by_player.get(name, (0, 0, 0))
+                    if (rw + rd + rl) > 0:
+                        blocks.append((float(random_elo), int(rw), int(rd), int(rl)))
+
+            R, se = estimate_elo_from_blocks(blocks, white_advantage=ELO_WHITE_ADVANTAGE)
+            row["elo"] = (f"{R:.3f}" if isinstance(R, float) and not math.isnan(R) else "")
+            row["elo_moe_95"] = (f"{(1.96 * se):.3f}" if isinstance(se, float) and not math.isnan(se) else "")
+            row["games_vs_random"] = str(games_vs_random.get(name, 0))
+            row["games_vs_dragon"] = str(games_vs_dragon.get(name, 0))
+            out_rows.append(row)
+
+        write_elo_refined_csv(out_rows, ELO_REFINED_CSV)
+        print(f"Wrote ELO refined CSV: {ELO_REFINED_CSV}")
+        print("\n=== ELO LEADERBOARD ===\n")
+        print_elo_leaderboard(ELO_REFINED_CSV)
     else:
         print(f"Building refined rows directly from logs: {LOGS_DIRS}")
         new_rows = build_refined_rows_from_logs(
