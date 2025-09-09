@@ -1,3 +1,25 @@
+# September 9, 2025: Leaderboard Overhaul — Elo as the primary metric
+
+We’ve overhauled the leaderboard. The original benchmark pitted LLMs against a chaos monkey baseline — a Random Player that selects any legal move. By late 2024, reasoning models began producing meaningful games, and in April 2025 OpenAI’s o3 effectively saturated the random-based leaderboard. Today, Elo becomes the primary ranking signal, anchored to the Komodo Dragon Chess Engine and calibrated against a rated player pool on chess.com.
+
+What changed
+
+- Elo-first ranking: Rows are sorted by Elo (DESC), then Win/Loss (DESC), Game Duration (DESC), Tokens (ASC).
+- Anchors: Dragon skill level \(\ell\) maps to Elo = 125(\ell+1). We first calibrate Random vs Dragon; then any model’s games vs Random/Dragon can be combined into a single 1D MLE estimate with a 95% CI.
+- Marking: Models that have played vs Dragon are highlighted with a superscript asterisk on their rank.
+- Coverage: Random-only models remain supported via the Random calibration, but Dragon games raise the ceiling and tighten confidence intervals.
+
+Why the change
+
+- With reasoning models (o1-preview) appearing at the end of 2024, and o3 saturating the random benchmark in April 2025, Random stopped being sufficiently discriminative at the top. Even small reasoning models (e.g., gpt-5-nano) became strong against Random while still showing instruction-following quirks. Dragon extends difficulty to keep the task informative as a reasoning testbed.
+
+References (as of Sep 2025)
+
+- chess.com Rapid leaderboard (Elo pool): https://www.chess.com/leaderboard/live/rapid
+- Magnus Carlsen stats: https://www.chess.com/member/magnuscarlsen/stats
+- Elo explanation and player classes: https://www.chess.com/terms/chess-rating
+
+
 # May 26, 2025: Saturated Benchmark, Model Tiers, and New Additions
 
 A lot has happened over the past month. **o4-mini** and **o3** have effectively saturated the benchmark, reaching over 90% scores. These models would likely achieve 100% if not for timeout errors at higher reasoning efforts. Specifically, o4-mini (and o3-mini) at "high" reasoning effort, as well as o3 at "medium," occasionally fail to return a response within the 10-minute client-side timeout limit. Increasing this limit to 20 or 30 minutes didn't solve the issue. Assuming these failure modes will be fixed in future releases, it's time to swap the random player with a chess engine. We've already started testing top reasoning models against the **Komodo Dragon** chess engine (Elo-rated against chess.com; Dragon Skill level 1 is 250 Elo). Stay tuned for an extended leaderboard featuring data from games versus a stronger-than-random player.

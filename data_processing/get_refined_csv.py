@@ -108,6 +108,10 @@ MISC_DRAGON_DIRS = [
 
 FILTER_OUT_MODELS = [
     "llama-4-scout-17b-16e-instruct",
+    "N/A",
+    "o4-mini-2025-04-16-high_timeout-60m",
+    "o4-mini-2025-04-16-high_timeout-20m",
+    "o3-2025-04-16-medium_timeout-60m",
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
 ]
 

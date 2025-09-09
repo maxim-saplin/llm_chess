@@ -296,8 +296,8 @@ p, pre {
 
 table {
     margin-bottom: 40px;
-    min-width: 720px;
-    width: calc(100% - 8px);
+    margin-left: -60px;
+    margin-right: -60px;
     border-collapse: separate;
     border-spacing: 0;
     border: 0;
@@ -345,7 +345,7 @@ td:nth-child(2n+3) {
 /* Setting column widths */
 th:nth-child(n+3),
 td:nth-child(n+3) {
-    width: 85px;
+    width: 72px;
     overflow: hidden;
 }
 
@@ -353,12 +353,6 @@ th:nth-child(1),
 td:nth-child(1) {
     width: 10px;
     overflow: hidden;
-}
-
-table tbody tr:nth-last-child(-n+3) td {
-    color: greenyellow !important;
-    background-color: transparent;
-    box-shadow: 0 0;
 }
 
 /* Add styles for fixed rows */
@@ -379,6 +373,21 @@ tr.fixed td:first-child {
 tr.fixed td:nth-child(3), 
 tr.fixed td:nth-child(5) {
     background-color: #005588;
+    color: yellow;
+}
+
+/* Benchmark rows styled same as fixed (not pinned) */
+
+tr.benchmark td {
+    color: yellow;
+}
+
+tr.benchmark td:nth-child(3), 
+tr.benchmark td:nth-child(5) {
+    color: black;
+}
+
+td sup {
     color: yellow;
 }
 

@@ -65,6 +65,20 @@ const navConfig = {
             title: 'Notes',
             elementId: 'considerations',
             onShow: function() {
+                // Inject a short blog-style update before rendering markdown
+                const el = document.getElementById(this.elementId);
+                if (el && !el.__elo_injected) {
+                    const intro = document.createElement('div');
+                    intro.innerHTML = `
+<p><strong>May 2025: Leaderboard overhaul — Elo as the primary metric</strong><br>
+We started with a Random Player (<em>chaos monkey</em>) which was surprisingly hard for models to beat. By late 2024, reasoning models began to produce
+meaningful games; in April 2025 OpenAI's o3 effectively saturated the original benchmark. We now anchor the leaderboard with Komodo
+Dragon (chess engine) skill levels and compute model Elo from combined Random+Dragon games. Random is calibrated vs Dragon first to place random-only
+models onto the same scale. Chess remains a test bed for reasoning; Dragon extends the difficulty beyond random. Models that played vs Dragon are marked
+with a superscript asterisk in the leaderboard.</p>`;
+                    el.prepend(intro);
+                    el.__elo_injected = true;
+                }
                 MinimalMD.render(this.elementId);
             }
         }
@@ -90,6 +104,11 @@ let parsedCsvData = {
     specialRows: [],  // Special rows like Stockfish, Random Players
     normalRows: []    // Regular model rows
 };
+function headerIndex(name) {
+    if (!parsedCsvData || !Array.isArray(parsedCsvData.headers)) return -1;
+    return parsedCsvData.headers.indexOf(name);
+}
+
 
 const Screen = {
     LEADERBOARD_NEW: 'leaderboard_new',
@@ -99,11 +118,8 @@ const Screen = {
     NOTES: 'notes'
 };
 
-const SPECIAL_ROWS = {
-    STOCKFISH: "Stockfish chess engine (as Black)",
-    RANDOM_WHITE: "Random Player (as White)",
-    RANDOM_BLACK: "Random Player (as Black)"
-};
+// Special rows removed from display
+const SPECIAL_ROWS = {};
 
 let sortOrderState = {
     [Screen.LEADERBOARD_NEW]: {},
@@ -152,7 +168,11 @@ const csvIndices = {
     games_not_interrupted_percent: 35,
     moe_games_not_interrupted: 36,
     average_game_cost: 37,
-    moe_average_game_cost: 38
+    moe_average_game_cost: 38,
+    elo: 39,
+    elo_moe_95: 40,
+    games_vs_random: 41,
+    games_vs_dragon: 42
 };
 
 let nextPrimarySortValue = 0; // Track the next available primarySort value
@@ -184,17 +204,32 @@ function parseCSVData() {
     parsedCsvData.headers = lines[0].split(',');
     
     // Parse rows
-    const rowObjects = lines.slice(1).map((line, i) => {
+    let rowObjects = lines.slice(1).map((line, i) => {
         const cols = line.split(',');
         return { originalIndex: i, cols };
     });
     
     // Separate special rows and normal rows
+    // Inject benchmark rows with Elo only (placed based on Elo)
+    const headers = parsedCsvData.headers;
+    const eIdx = headers.indexOf('elo');
+    if (eIdx >= 0) {
+        function makeRow(name, eloStr) {
+            const cols = new Array(headers.length).fill('');
+            cols[0] = name;
+            cols[eIdx] = eloStr;
+            return { originalIndex: -1, cols, isBenchmark: true };
+        }
+        rowObjects = rowObjects.concat([
+            makeRow('Magnus Carlsen', '2941.0'),
+            makeRow('Class C player', '1500.0'),
+            makeRow('Average chess.com player', '618.7')
+        ]);
+    }
+
     parsedCsvData.rows = rowObjects;
-    parsedCsvData.specialRows = rowObjects.filter(row => 
-        Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]));
-    parsedCsvData.normalRows = rowObjects.filter(row => 
-        !Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]));
+    parsedCsvData.specialRows = [];
+    parsedCsvData.normalRows = rowObjects;
     
     console.log('CSV data parsed successfully');
 }
@@ -217,6 +252,29 @@ const columnDefinitions = {
         getValue: (cols) => cols[csvIndices.player],
         isNumeric: false,
         compareFn: (a, b) => a.cols[csvIndices.player].localeCompare(b.cols[csvIndices.player])
+    },
+    elo: {
+        id: 'elo',
+        title: 'Elo',
+        tooltip: 'Estimated Elo with 95% margin (if available).',
+        isNumeric: true,
+        getValue: (cols) => {
+            const eIdx = headerIndex('elo');
+            if (eIdx < 0) return '';
+            const e = parseFloat(cols[eIdx]);
+            if (isNaN(e)) return '';
+            return e.toFixed(1);
+        },
+        compareFn: (a, b) => {
+            const eIdx = headerIndex('elo');
+            if (eIdx < 0) return 0;
+            const aVal = parseFloat(a.cols[eIdx]);
+            const bVal = parseFloat(b.cols[eIdx]);
+            if (isNaN(aVal) && isNaN(bVal)) return 0;
+            if (isNaN(aVal)) return -1; // NaN last for DESC
+            if (isNaN(bVal)) return 1;
+            return aVal - bVal;
+        }
     },
     winLoss: {
         id: 'winLoss',
@@ -390,8 +448,8 @@ const columnDefinitions = {
 
 // Define default columns for each table
 const tableColumnSets = {
-    [Screen.LEADERBOARD_NEW]: ['rank', 'player', 'winLoss', 'gameDuration', 'tokens'],
-    [Screen.LEADERBOARD_EXT]: ['rank', 'player', 'winLoss', 'gameDuration', 'tokens', 'costPerGame', 'avgMoves']
+    [Screen.LEADERBOARD_NEW]: ['rank', 'player', 'elo', 'winLoss', 'gameDuration', 'tokens'],
+    [Screen.LEADERBOARD_EXT]: ['rank', 'player', 'elo', 'winLoss', 'gameDuration', 'tokens', 'costPerGame', 'avgMoves']
 };
 
 // Define column preferences for extended table (will be loaded from localStorage)
@@ -404,13 +462,21 @@ let extendedColumnPreferences = {
 // Default sort functions
 const defaultSortFunctions = {
     [Screen.LEADERBOARD_NEW]: (colsA, colsB) => {
+        const eIdx = headerIndex('elo');
+        const eloA = eIdx >= 0 ? parseFloat(colsA[eIdx]) : NaN;
+        const eloB = eIdx >= 0 ? parseFloat(colsB[eIdx]) : NaN;
         const wlA = parseFloat(colsA[csvIndices.win_loss]) || 0;
         const wlB = parseFloat(colsB[csvIndices.win_loss]) || 0;
         const gdA = parseFloat(colsA[csvIndices.game_duration]) || 0;
         const gdB = parseFloat(colsB[csvIndices.game_duration]) || 0;
         const tokA = parseFloat(colsA[csvIndices.completion_tokens_black_per_move]) || 0;
         const tokB = parseFloat(colsB[csvIndices.completion_tokens_black_per_move]) || 0;
-        // Sort by Win/Loss DESC, then Game Duration DESC, then Tokens ASC
+        // Primary: Elo DESC (NaNs last). Then Win/Loss DESC, Game Duration DESC, Tokens ASC
+        if (eIdx >= 0 && (!isNaN(eloA) || !isNaN(eloB))) {
+            if (isNaN(eloA)) return 1;
+            if (isNaN(eloB)) return -1;
+            if (eloB !== eloA) return eloB - eloA;
+        }
         return (wlB - wlA) || (gdB - gdA) || (tokA - tokB);
     },
     [Screen.LEADERBOARD_EXT]: (colsA, colsB) => {
@@ -598,6 +664,18 @@ function showPlayerDetailsPopup(row, columns) {
 
     document.getElementById('total-games').innerHTML = 
         `<span>Games:</span> ${parseInt(totalGames)}`;
+    // Elo in popup (robust to missing columns)
+    const eIdx = headerIndex('elo');
+    const mIdx = headerIndex('elo_moe_95');
+    const rIdx = headerIndex('games_vs_random');
+    const dIdx = headerIndex('games_vs_dragon');
+    const elo = eIdx >= 0 ? parseFloat(columns[eIdx]) : NaN;
+    const eloMoe = mIdx >= 0 ? parseFloat(columns[mIdx]) : NaN;
+    const eloDisplay = isNaN(elo) ? 'N/A' : elo.toFixed(1);
+    const gvr = rIdx >= 0 ? (columns[rIdx] || '0') : '0';
+    const gvd = dIdx >= 0 ? (columns[dIdx] || '0') : '0';
+    const moeDisplay = (!isNaN(eloMoe) && eloMoe > 0) ? ` ± ${eloMoe.toFixed(1)}` : '';
+    document.getElementById('elo').innerHTML = `<span>Elo:</span> ${eloDisplay}${moeDisplay} <span style="opacity:.7">(vsR ${gvr}, vsD ${gvd})</span>`;
     document.getElementById('win_loss').innerHTML = 
         `<span>Win/Loss:</span> ${parseFloat(winLoss)} ± ${parseFloat(moeWinLoss)}`;
     document.getElementById('game-duration').innerHTML = 
@@ -769,8 +847,8 @@ function sortTable(columnIndex = null, newOrder = null) {
         sortOrderObj[columnIndex] = newOrder;
     }
     
-    // Separate special rows
-    const bottomRows = parsedCsvData.specialRows;
+    // Remove special rows (Random/Stockfish) from display
+    const bottomRows = [];
     
     // Filter out special rows and separate fixed vs unfixed
     const normalRows = allRows.filter(row => {
@@ -809,8 +887,8 @@ function sortTable(columnIndex = null, newOrder = null) {
     // Sort fixed rows by primarySort
     fixedRows.sort((a, b) => a.primarySort - b.primarySort);
     
-    // Combine fixed, unfixed and special rows in the right order
-    allRows = [...fixedRows, ...unfixedRows, ...bottomRows];
+    // Combine fixed and unfixed rows (no special rows)
+    allRows = [...fixedRows, ...unfixedRows];
     
     // Render the table
     renderTable();
@@ -836,11 +914,16 @@ function renderTable() {
 
     allRows.forEach((row, idx) => {
         const tr = document.createElement('tr');
-        const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
+        const isBottomRow = false;
 
         // Add 'fixed' class to rows with primarySort < 9999
         if (row.primarySort !== undefined && row.primarySort < 9999) {
             tr.classList.add('fixed');
+        }
+
+        // Benchmarks styled differently
+        if (row.isBenchmark) {
+            tr.classList.add('benchmark');
         }
 
         activeColumns.forEach((col) => {
@@ -849,7 +932,15 @@ function renderTable() {
                 cellValue = '';
             } else if (col.id === 'rank') {
                 // Always use the original rank (assigned once during buildFreshTable)
-                cellValue = row.rank || '';
+                const base = row.rank || '';
+                // Superscript star for models that have Dragon games
+                const gvdIdx = headerIndex('games_vs_dragon');
+                const gvd = gvdIdx >= 0 ? parseInt(row.cols[gvdIdx] || '0') : (parseInt((row.cols[csvIndices.games_vs_dragon] || '0')) || 0);
+                const label = (!isNaN(gvd) && gvd > 0) ? `${base}<sup>*</sup>` : `${base}`;
+                const td = document.createElement('td');
+                td.innerHTML = label;
+                tr.appendChild(td);
+                return;
             } else {
                 cellValue = col.getValue(row.cols, idx);
             }
@@ -874,7 +965,7 @@ function renderTable() {
 }
 
 function toggleRowFixed(row) {
-    const isBottomRow = Object.values(SPECIAL_ROWS).includes(row.cols[csvIndices.player]);
+    const isBottomRow = false;
     
     // Skip special rows
     if (isBottomRow) return;
@@ -1567,15 +1658,9 @@ function buildFreshTable() {
     const rowObjects = parsedCsvData.rows;
     
     // Separate regular and special rows
-    const normalRows = rowObjects.filter(row => {
-        const playerName = row.cols[csvIndices.player];
-        return !Object.values(SPECIAL_ROWS).includes(playerName);
-    });
+    const normalRows = rowObjects;
     
-    const specialRows = rowObjects.filter(row => {
-        const playerName = row.cols[csvIndices.player];
-        return Object.values(SPECIAL_ROWS).includes(playerName);
-    });
+    const specialRows = [];
     
     // Sort normal rows by default criteria first
     normalRows.sort((a, b) => defaultSortFunctions[currentScreen](a.cols, b.cols));
