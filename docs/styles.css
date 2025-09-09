@@ -66,7 +66,7 @@ h1 {
 p.intro {
     display: block;
     margin:auto;
-    text-align: justify;
+    text-align: left; /* prevent spacing stretch that misaligns squares */
 }
 
 .button-container {
@@ -211,15 +211,15 @@ pre.title-narrow {
 
 pre.board {
     font-family: 'Chess';
-    font-size: 32px;
+    font-size: 31px;
     width: 295px;
     height: 298px;
-    background-color: black;
-    text-align: justify;
+    background: transparent;
+    text-align: center;
     opacity: 0.85;
     line-height: 37px;
     margin: 0;
-    padding-left: 5px;
+    padding-left: 2px;
     padding-top: 2px;
 }
 
@@ -246,6 +246,13 @@ div.board {
     margin-left: auto;
     margin-right: auto;
     position: relative;
+    /* 8x8 checkerboard aligned to pre.board padding and line-height */
+    background-image: 
+        conic-gradient(#202020 25%, #0e0e0e 0 50%, #202020 0 75%, #0e0e0e 0);
+    background-size: 74px 74px; /* conic-gradient tile = 2 squares → 2×37px */
+    background-position: 2px 2px; /* align with pre padding */
+    background-origin: content-box;
+    background-clip: content-box;
 }
 
 .game-over {
