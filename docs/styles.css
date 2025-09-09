@@ -345,7 +345,7 @@ td:nth-child(2n+3) {
 /* Setting column widths */
 th:nth-child(n+3),
 td:nth-child(n+3) {
-    width: 72px;
+    width: 74px;
     overflow: hidden;
 }
 
@@ -508,6 +508,27 @@ td sup {
 
     #player-matrix {
         min-width: 680px;
+    }
+
+    /* Make leaderboard horizontally scrollable on mobile */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-left: 0 !important; /* override inline JS margins in extended view */
+        margin-right: 0 !important; /* override inline JS margins in extended view */
+        padding-bottom: 8px; /* space for scrollbar */
+    }
+
+    /* Neutralize negative table margins and ensure a scrollable width */
+    table {
+        margin-left: 0;
+        margin-right: 0;
+        min-width: 720px; /* ensure content exceeds viewport to enable scroll */
+    }
+
+    /* Extended leaderboard typically has more columns */
+    .extended-table table {
+        min-width: 980px;
     }
 }
 
