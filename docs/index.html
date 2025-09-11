@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LLM Chess Leaderboard comparing LLMs in simulated chess vs Random and Komodo Dragon. Rankings by Elo, win/loss, game duration, and tokens.">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
@@ -118,7 +119,7 @@
                 <strong>- Game Duration:</strong> Share of maximum game length completed (0-100%); measures instruction-following stability across many moves.<br>
                 <strong>- Tokens:</strong> Completion tokens per move; verbosity/efficiency signal.
                 <br><br>
-                <strong>Arrangement & sources:</strong><br>
+                <strong>ARRANGEMENT & SOURCES:</strong><br>
                 - Primary sorting: Elo (DESC), then Win/Loss (DESC), Game Duration (DESC), Tokens (ASC).<br>
                 - Data sources mix Random-vs-LLM and Dragon-vs-LLM games. Dragon levels map to Elo and provide the anchor; Random is first calibrated vs Dragon and then used as an opponent for many models.<br>
                 - Chess.com references used for context (as of Sep 2025): <a href="https://www.chess.com/leaderboard/live/rapid" target="_blank">Rapid Leaderboard (Elo pool)</a>, <a href="https://www.chess.com/member/magnuscarlsen/stats" target="_blank">Magnus Carlsen stats</a>, and <a href="https://www.chess.com/terms/chess-ratings" target="_blank">Elo explanation & player classes</a>.
