@@ -262,7 +262,7 @@ const columnDefinitions = {
             const eIdx = headerIndex('elo');
             if (eIdx < 0) return '';
             const e = parseFloat(cols[eIdx]);
-            if (isNaN(e)) return '';
+            if (isNaN(e)) return 'N/A';
             return e.toFixed(1);
         },
         compareFn: (a, b) => {

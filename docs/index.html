@@ -119,9 +119,10 @@
                 <strong>- Game Duration:</strong> Share of maximum game length completed (0-100%); measures instruction-following stability across many moves.<br>
                 <strong>- Tokens:</strong> Completion tokens per move; verbosity/efficiency signal.
                 <br><br>
-                <strong>ARRANGEMENT & SOURCES:</strong><br>
+                <strong>ARRANGEMENT & SOURCES:</strong><br><br>
                 - Primary sorting: Elo (DESC), then Win/Loss (DESC), Game Duration (DESC), Tokens (ASC).<br>
                 - Data sources mix Random-vs-LLM and Dragon-vs-LLM games. Dragon levels map to Elo and provide the anchor; Random is first calibrated vs Dragon and then used as an opponent for many models.<br>
+                - Elo ratings are not comparable across player pools, i.e. you can not compare chess.com Elo to FIDE Elo<br>
                 - Chess.com references used for context (as of Sep 2025): <a href="https://www.chess.com/leaderboard/live/rapid" target="_blank">Rapid Leaderboard (Elo pool)</a>, <a href="https://www.chess.com/member/magnuscarlsen/stats" target="_blank">Magnus Carlsen stats</a>, and <a href="https://www.chess.com/terms/chess-ratings" target="_blank">Elo explanation & player classes</a>.
             </p>
         </div>
