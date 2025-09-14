@@ -117,6 +117,7 @@ FILTER_OUT_MODELS = [
 
 ALIASES = {
     # "llama-4-scout-17b-16e-instruct": "llama-4-scout-cerebras"
+    "grok-3-mini-fast-beta-high":"grok-3-mini-beta-high",
 }
 
 # Metadata CSV for pricing
