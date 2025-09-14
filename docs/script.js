@@ -282,8 +282,8 @@ const columnDefinitions = {
         tooltip: 'Difference between wins and losses as a percentage of total games (0-100%). This is the primary ranking metric that measures BOTH chess skill AND instruction following ability. A model needs to understand chess strategy AND follow game instructions correctly to score well. 50% represents equal wins/losses, higher scores mean more wins than losses.',
         isNumeric: true,
         getValue: (cols) => {
-            const val = parseFloat(cols[csvIndices.win_loss]) || 0;
-            return (val * 100).toFixed(2) + '%';
+            const val = parseFloat(cols[csvIndices.win_loss]);
+            return isNaN(val) ? "N/A" : (val * 100).toFixed(2) + '%';
         },
         compareFn: (a, b) => {
             const aVal = parseFloat(a.cols[csvIndices.win_loss]) || 0;
@@ -297,8 +297,8 @@ const columnDefinitions = {
         tooltip: 'Percentage of maximum possible game length completed before termination (0-100%). This specifically measures instruction following reliability across many moves. 100% indicates the model either reached a natural conclusion (checkmate, stalemate) or the maximum 200 moves without protocol violations. Lower scores show the model struggled to maintain correct communication as the game progressed.',
         isNumeric: true,
         getValue: (cols) => {
-            const val = parseFloat(cols[csvIndices.game_duration]) || 0;
-            return (val * 100).toFixed(2) + '%';
+            const val = parseFloat(cols[csvIndices.game_duration]);
+            return isNaN(val) ? "N/A" : (val * 100).toFixed(2) + '%';
         },
         compareFn: (a, b) => {
             const aVal = parseFloat(a.cols[csvIndices.game_duration]) || 0;
@@ -311,7 +311,8 @@ const columnDefinitions = {
         title: 'Tokens',
         tooltip: 'Number of completion tokens generated per move. Demonstrates the model\'s verbosity. Lower token counts may indicate efficiency, while higher counts may show more detailed reasoning OR more garbage generation (depending on the overall rank, reasoning models generate more tokens and score better, weak models can also be verbose yet show poor performance).',
         getValue: (cols) => {
-            const value = parseFloat(cols[csvIndices.completion_tokens_black_per_move]) || 0;
+            const value = parseFloat(cols[csvIndices.completion_tokens_black_per_move]);
+            if (isNaN(value)) return 'N/A';
             return value > 1000 ? value.toFixed(1) : value.toFixed(2);
         },
         isNumeric: true,
