@@ -66,7 +66,7 @@ h1 {
 p.intro {
     display: block;
     margin:auto;
-    text-align: justify;
+    text-align: left; /* prevent spacing stretch that misaligns squares */
 }
 
 .button-container {
@@ -211,15 +211,15 @@ pre.title-narrow {
 
 pre.board {
     font-family: 'Chess';
-    font-size: 32px;
+    font-size: 31px;
     width: 295px;
     height: 298px;
-    background-color: black;
-    text-align: justify;
+    background: transparent;
+    text-align: center;
     opacity: 0.85;
     line-height: 37px;
     margin: 0;
-    padding-left: 5px;
+    padding-left: 2px;
     padding-top: 2px;
 }
 
@@ -246,6 +246,13 @@ div.board {
     margin-left: auto;
     margin-right: auto;
     position: relative;
+    /* 8x8 checkerboard aligned to pre.board padding and line-height */
+    background-image: 
+        conic-gradient(#202020 25%, #0e0e0e 0 50%, #202020 0 75%, #0e0e0e 0);
+    background-size: 74px 74px; /* conic-gradient tile = 2 squares → 2×37px */
+    background-position: 2px 2px; /* align with pre padding */
+    background-origin: content-box;
+    background-clip: content-box;
 }
 
 .game-over {
@@ -296,8 +303,8 @@ p, pre {
 
 table {
     margin-bottom: 40px;
-    min-width: 720px;
-    width: calc(100% - 8px);
+    margin-left: -60px;
+    margin-right: -60px;
     border-collapse: separate;
     border-spacing: 0;
     border: 0;
@@ -345,7 +352,7 @@ td:nth-child(2n+3) {
 /* Setting column widths */
 th:nth-child(n+3),
 td:nth-child(n+3) {
-    width: 85px;
+    width: 74px;
     overflow: hidden;
 }
 
@@ -353,12 +360,6 @@ th:nth-child(1),
 td:nth-child(1) {
     width: 10px;
     overflow: hidden;
-}
-
-table tbody tr:nth-last-child(-n+3) td {
-    color: greenyellow !important;
-    background-color: transparent;
-    box-shadow: 0 0;
 }
 
 /* Add styles for fixed rows */
@@ -379,6 +380,21 @@ tr.fixed td:first-child {
 tr.fixed td:nth-child(3), 
 tr.fixed td:nth-child(5) {
     background-color: #005588;
+    color: yellow;
+}
+
+/* Benchmark rows styled same as fixed (not pinned) */
+
+tr.benchmark td {
+    color: yellow;
+}
+
+tr.benchmark td:nth-child(3), 
+tr.benchmark td:nth-child(5) {
+    color: black;
+}
+
+td sup {
     color: yellow;
 }
 
@@ -499,6 +515,27 @@ tr.fixed td:nth-child(5) {
 
     #player-matrix {
         min-width: 680px;
+    }
+
+    /* Make leaderboard horizontally scrollable on mobile */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-left: 0 !important; /* override inline JS margins in extended view */
+        margin-right: 0 !important; /* override inline JS margins in extended view */
+        padding-bottom: 8px; /* space for scrollbar */
+    }
+
+    /* Neutralize negative table margins and ensure a scrollable width */
+    table {
+        margin-left: 0;
+        margin-right: 0;
+        min-width: 720px; /* ensure content exceeds viewport to enable scroll */
+    }
+
+    /* Extended leaderboard typically has more columns */
+    .extended-table table {
+        min-width: 980px;
     }
 }
 

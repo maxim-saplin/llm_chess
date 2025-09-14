@@ -8,6 +8,7 @@ from data_processing.get_refined_csv import (
     write_refined_csv,
     GameMode,
 )
+from data_processing import get_refined_csv as grc
 
 
 class TestAggrToRefined(unittest.TestCase):
@@ -17,6 +18,8 @@ class TestAggrToRefined(unittest.TestCase):
         self.mock_logs_dir = os.path.join(self._tmp_dir, "mock_logs")
         self.mock_aggregate_csv = os.path.join(self._tmp_dir, "mock_aggregate.csv")
         self.mock_refined_csv = os.path.join(self._tmp_dir, "mock_refined.csv")
+        self.mock_engine_dir = os.path.join(self._tmp_dir, "engine_vs_llm")
+        self.mock_misc_dir = os.path.join(self._tmp_dir, "misc_dragon")
 
         # Create mock logs directory and files
         os.makedirs(self.mock_logs_dir, exist_ok=True)
@@ -126,6 +129,31 @@ class TestAggrToRefined(unittest.TestCase):
                 os.path.join(self.mock_logs_dir, log["filename"]), "w"
             ) as log_file:
                 log_file.write(log["content"])
+
+        # Also create minimal engine_vs_llm and misc/dragon structures for Elo test
+        os.makedirs(os.path.join(self.mock_engine_dir, "dragon-lvl-1", "llama3-8b", "2025-09-01-00-00"), exist_ok=True)
+        game_dragon = """{
+            "time_started": "2025.09.01_00:00",
+            "winner": "CHESS_ENGINE_DRAGON",
+            "reason": "OK",
+            "number_of_moves": 10,
+            "player_white": {"name": "CHESS_ENGINE_DRAGON", "wrong_moves": 0, "wrong_actions": 0, "reflections_used": 0, "reflections_used_before_board": 0, "get_board_count": 0, "get_legal_moves_count": 0, "make_move_count": 0, "model": "N/A"},
+            "material_count": {"white": 39, "black": 39},
+            "player_black": {"name": "Player_Black", "wrong_moves": 0, "wrong_actions": 0, "reflections_used": 0, "reflections_used_before_board": 0, "get_board_count": 0, "get_legal_moves_count": 0, "make_move_count": 0, "model": "llama3-8b"},
+            "usage_stats": {"white": {"total_cost": 0}, "black": {"total_cost": 0, "llama3-8b": {"cost": 0, "prompt_tokens": 10, "completion_tokens": 20, "total_tokens": 30}}}
+        }"""
+        with open(os.path.join(self.mock_engine_dir, "dragon-lvl-1", "llama3-8b", "2025-09-01-00-00", "game.json"), "w") as f:
+            f.write(game_dragon)
+
+        # misc/dragon aggregated json for Random calibration
+        os.makedirs(self.mock_misc_dir, exist_ok=True)
+        misc_aggr = """{
+          "white_wins": 5,
+          "draws": 2,
+          "black_wins": 3
+        }"""
+        with open(os.path.join(self.mock_misc_dir, "random_vs_dragon-lvl-1.json"), "w") as f:
+            f.write(misc_aggr)
 
     def tearDown(self):
         # Clean up temp directory recursively
@@ -243,6 +271,34 @@ class TestAggrToRefined(unittest.TestCase):
             self.assertLessEqual(wl, 1.0)
             # In these mocks, all games are losses for black
             self.assertEqual(wl, 0.0)
+
+    def test_elo_mode_produces_csv(self):
+        # Configure Elo mode to use our temp dirs
+        grc.GAME_MODE = GameMode.ELO
+        grc.LOGS_DIRS = [self.mock_logs_dir]
+        grc.ENGINE_LOGS_DIRS_NEW = [self.mock_engine_dir]
+        grc.ENGINE_LOGS_DIRS_LEGACY = []
+        grc.MISC_DRAGON_DIRS = [self.mock_misc_dir]
+        grc.FILTER_OUT_BELOW_N = 0
+        grc.ELO_DRAGON_ONLY_MIN_GAMES = 0
+
+        # Run main to generate CSV
+        grc.main()
+
+        # Verify output exists and has expected columns
+        out_csv = os.path.join("data_processing", "elo_refined.csv")
+        self.assertTrue(os.path.exists(out_csv))
+        with open(out_csv, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            rows = list(reader)
+        # At least llama3-8b should be present (has both random and dragon entries)
+        self.assertTrue(any(r.get("Player") == "llama3-8b" for r in rows))
+        # New Elo fields present
+        sample = rows[0]
+        self.assertIn("elo", sample)
+        self.assertIn("elo_moe_95", sample)
+        self.assertIn("games_vs_random", sample)
+        self.assertIn("games_vs_dragon", sample)
 
 
 if __name__ == "__main__":
