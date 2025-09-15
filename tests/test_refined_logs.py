@@ -155,6 +155,16 @@ class TestAggrToRefined(unittest.TestCase):
         with open(os.path.join(self.mock_misc_dir, "random_vs_dragon-lvl-1.json"), "w") as f:
             f.write(misc_aggr)
 
+        # Create a temp Elo output file for tests and patch module constant
+        self._orig_elo_refined = grc.ELO_REFINED_CSV
+        tmp_elo_fd, tmp_elo_path = tempfile.mkstemp(prefix="test_elo_", suffix=".csv")
+        os.close(tmp_elo_fd)
+        self._tmp_elo_path = tmp_elo_path
+        grc.ELO_REFINED_CSV = self._tmp_elo_path
+        # Ensure cleanup/restoration even if a test fails
+        self.addCleanup(lambda: (os.path.exists(self._tmp_elo_path) and os.remove(self._tmp_elo_path)))
+        self.addCleanup(lambda: setattr(grc, "ELO_REFINED_CSV", self._orig_elo_refined))
+
     def tearDown(self):
         # Clean up temp directory recursively
         if os.path.isdir(self._tmp_dir):
@@ -281,12 +291,11 @@ class TestAggrToRefined(unittest.TestCase):
         grc.MISC_DRAGON_DIRS = [self.mock_misc_dir]
         grc.FILTER_OUT_BELOW_N = 0
         grc.ELO_DRAGON_ONLY_MIN_GAMES = 0
-
         # Run main to generate CSV
         grc.main()
 
         # Verify output exists and has expected columns
-        out_csv = os.path.join("data_processing", "elo_refined.csv")
+        out_csv = self._tmp_elo_path
         self.assertTrue(os.path.exists(out_csv))
         with open(out_csv, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
@@ -299,10 +308,7 @@ class TestAggrToRefined(unittest.TestCase):
         self.assertIn("elo_moe_95", sample)
         self.assertIn("games_vs_random", sample)
         self.assertIn("games_vs_dragon", sample)
-
-
-if __name__ == "__main__":
-    unittest.main() 
+        # temp file will be cleaned up by addCleanup in setUp
 
 
 class TestDragonVsLLMRefined(unittest.TestCase):
@@ -407,3 +413,7 @@ class TestDragonVsLLMRefined(unittest.TestCase):
         self.assertEqual(int(row["total_games"]), 1)
         self.assertEqual(int(row["player_wins"]), 0)
         self.assertEqual(int(row["opponent_wins"]), 1)
+
+
+if __name__ == "__main__":
+    unittest.main() 

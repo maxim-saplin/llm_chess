@@ -309,11 +309,11 @@ def _model_label_from_legacy_path(run_dir: str) -> str | None:
                     candidate = parts[i + 1]
                     if not re.match(r"^\d{4}-\d{2}-\d{2}-", candidate):
                         return candidate
-        # Fallback: try to find a segment that looks like a model name
-        probable_prefixes = ("gpt-", "grok-", "claude-", "gemini", "o3-", "o4-")
-        for seg in parts:
-            if any(seg.startswith(pref) for pref in probable_prefixes):
-                return seg
+        # # Fallback: try to find a segment that looks like a model name
+        # probable_prefixes = ("gpt-", "grok-", "claude-", "gemini", "o3-", "o4-")
+        # for seg in parts:
+        #     if any(seg.startswith(pref) for pref in probable_prefixes):
+        #         return seg
         return None
     except Exception:
         return None
