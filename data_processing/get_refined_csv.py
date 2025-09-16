@@ -117,7 +117,11 @@ FILTER_OUT_MODELS = [
 
 ALIASES = {
     # "llama-4-scout-17b-16e-instruct": "llama-4-scout-cerebras"
+    "grok-3-mini-fast-beta-high":"grok-3-mini-beta-high",
 }
+
+# Models whose tokens and price metrics should be zeroed
+ZERO_TOKENS: set[str] = {"grok-3-mini-beta-low", "grok-3-mini-beta-high"} # Grok-3 reasoning logs have wrong token usage due tp different reporting by API (https://dev.to/maximsaplin/grok-3-api-reasoning-tokens-are-counted-differently-197)
 
 # Metadata CSV for pricing
 MODELS_METADATA_CSV = "data_processing/models_metadata.csv"
@@ -308,11 +312,11 @@ def _model_label_from_legacy_path(run_dir: str) -> str | None:
                     candidate = parts[i + 1]
                     if not re.match(r"^\d{4}-\d{2}-\d{2}-", candidate):
                         return candidate
-        # Fallback: try to find a segment that looks like a model name
-        probable_prefixes = ("gpt-", "grok-", "claude-", "gemini", "o3-", "o4-")
-        for seg in parts:
-            if any(seg.startswith(pref) for pref in probable_prefixes):
-                return seg
+        # # Fallback: try to find a segment that looks like a model name
+        # probable_prefixes = ("gpt-", "grok-", "claude-", "gemini", "o3-", "o4-")
+        # for seg in parts:
+        #     if any(seg.startswith(pref) for pref in probable_prefixes):
+        #         return seg
         return None
     except Exception:
         return None
@@ -930,6 +934,15 @@ def collapse_refined_rows_by_player(rows):
         # Keep percents in 0–100
         g["games_interrupted_percent"] = round(((gi / tg) * 100), 3) if tg else 0
         g["games_not_interrupted_percent"] = round(((gni / tg) * 100), 3) if tg else 0
+
+        # Zero tokens and price metrics for selected canonical IDs after alias merge
+        if player in ZERO_TOKENS:
+            g["completion_tokens_black_per_move"] = 0.0
+            g["moe_completion_tokens_black_per_move"] = 0.0
+            g["average_game_cost"] = 0.0
+            g["moe_average_game_cost"] = 0.0
+            g["price_per_1000_moves"] = 0.0
+            g["moe_price_per_1000_moves"] = 0.0
 
         out.append(g)
 
