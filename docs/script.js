@@ -663,8 +663,6 @@ function showPlayerDetailsPopup(row, columns) {
     const averageGameCost = columns[csvIndices.average_game_cost];
     const moeAverageGameCost = columns[csvIndices.moe_average_game_cost];
 
-    document.getElementById('total-games').innerHTML = 
-        `<span>Games:</span> ${parseInt(totalGames)}`;
     // Elo in popup (robust to missing columns)
     const eIdx = headerIndex('elo');
     const mIdx = headerIndex('elo_moe_95');
@@ -676,13 +674,16 @@ function showPlayerDetailsPopup(row, columns) {
     const gvr = rIdx >= 0 ? (columns[rIdx] || '0') : '0';
     const gvd = dIdx >= 0 ? (columns[dIdx] || '0') : '0';
     const moeDisplay = (!isNaN(eloMoe) && eloMoe > 0) ? ` ± ${eloMoe.toFixed(1)}` : '';
-    document.getElementById('elo').innerHTML = `<span>Elo:</span> ${eloDisplay}${moeDisplay} <span style="opacity:.7">(vsR ${gvr}, vsD ${gvd})</span>`;
+
+    document.getElementById('total-games').innerHTML = `<span>Games:</span> ${parseInt(totalGames)} (vsR ${gvr}, vsD ${gvd})`;
+    
+    document.getElementById('elo').innerHTML = `<span>Elo:</span> ${eloDisplay}${moeDisplay}`;
     document.getElementById('win_loss').innerHTML = 
         `<span>Win/Loss:</span> ${parseFloat(winLoss)} ± ${parseFloat(moeWinLoss)}`;
     document.getElementById('game-duration').innerHTML = 
-        `<span>Game Duration:</span> ${parseFloat(gameDuration)} ± ${parseFloat(moeGameDuration)}`;
+        `<span>Game Duration:</span> ${parseFloat(gameDuration).toFixed(3)} ± ${parseFloat(moeGameDuration).toFixed(3)}`;
     document.getElementById('games-interrupted').innerHTML = 
-        `<span>Games Interrupted:</span> ${parseInt(gamesInterrupted)} (${parseFloat(gamesInterruptedPercent/100).toFixed(3)} ± ${parseFloat(moeGamesInterrupted).toFixed(3)})`;
+        `<span>Games Intptd:</span> ${parseInt(gamesInterrupted)} (${parseFloat(gamesInterruptedPercent/100).toFixed(3)} ± ${parseFloat(moeGamesInterrupted).toFixed(3)})`;
     document.getElementById('wins').innerHTML =
         `<span>Wins:</span> ${parseInt(wins)} (` +
         `${((parseInt(wins) / parseInt(totalGames))).toFixed(3)} ± ${parseFloat(moeWins).toFixed(3)})`;
