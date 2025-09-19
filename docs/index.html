@@ -76,13 +76,20 @@
             <span style="color: yellow;">GPT-4o Mini (Black)</span>
         </div>
         <p class="intro">
-            Can Large Language Models play chess effectively? This leaderboard evaluates both chess skill and instruction following ability.
+            Can Large Language Models play chess? <span style="color: white;">Let's find out ツ</span>
+            <br><br>This leaderboard evaluates <span style="color: white;">chess skill</span> and <span style="color: white;">instruction following</span>
+            in an agentic setting:
+            LLMs engage in multi-turn dialogs where they are presented with a choice of actions (e.g., "get board" or "make move") when playing against
+            an opponent (Random Player or Chess Engine).
             <br><br>
-            Prompt an LLM to move based on the board state, hint it with legal moves, and it can make moves (though many struggle with strict instruction following) and even explain its tactics.
+            In 2024, we began with a <em>chaos monkey</em> baseline — a Random Player that chooses legal moves at random.
+            At the time, most models could barely compete and lost either due to an inability to follow game instructions 
+            (i.e., hallucinating illegal moves or taking incorrect actions) or by dragging the game to the 200-move limit because they 
+            couldn't win.
             <br><br>
-            We began with a <em>chaos monkey</em> baseline — a Random Player that picks any legal move. Later, to anchor results on a real rating scale, we added the <strong>Komodo Dragon</strong> Chess Engine (skill levels) as a rated opponent reference.
-            <br><br>
-            Let's find out ツ
+            In 2025, more capable reasoning models nailed both instruction following and chess skill.
+            We've added the <strong>Komodo Dragon</strong> Chess Engine as a more capable opponent, which is also Elo-rated on
+            chess.com. This allowed us to anchor the results to a real-world rating scale and compute an Elo rating for each model.
         </p>
         <div class="button-container">
             <!-- Navigation will be dynamically generated here -->
