@@ -1,0 +1,89 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.09.13_09:34",
+            "log_folder_relative": "_logs/engine_vs_llm/dragon-lvl-5/o4-mini-2025-04-16-high/2025-09-13-09-34-29",
+            "num_repetitions": 22,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "CHESS_ENGINE_DRAGON",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 5,
+            "dialog_turn_delay": 5,
+            "max_api_retries": 3,
+            "api_retry_delay": 14400,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "chess_engines": {
+            "stockfish": {
+                "path": "/opt/homebrew/bin/stockfish",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            },
+            "dragon": {
+                "path": "dragon/dragon-linux",
+                "reset_history": true,
+                "level": 5,
+                "time_per_move": 0.1
+            }
+        },
+        "llm_configs": {
+            "black": {
+                "model": "o4-mini-2025-04-16",
+                "api_type": "azure",
+                "api_version": "2025-04-01-preview",
+                "api_key": "REDACTED",
+                "timeout": 600,
+                "reasoning_effort": "high"
+            }
+        }
+    },
+    "total_games": 22,
+    "white_wins": 9,
+    "black_wins": 2,
+    "draws": 11,
+    "total_moves": 2990,
+    "reasons": {
+        "Insufficient material": 5,
+        "Checkmate": 11,
+        "Stalemate": 3,
+        "Max moves reached": 3
+    },
+    "player_white": {
+        "name": "Chess_Engine_Dragon_White",
+        "model": "",
+        "total_material": 239,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 10.863636363636363,
+        "std_dev_material": 12.888885778971611
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "o4-mini-2025-04-16",
+        "total_material": 177,
+        "wrong_moves": 11,
+        "wrong_actions": 94,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 8.045454545454545,
+        "std_dev_material": 7.699581143383696
+    },
+    "average_moves": 135.9090909090909,
+    "std_dev_moves": 51.58710533873205
+}
