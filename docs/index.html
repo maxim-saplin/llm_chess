@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="LLM Chess Leaderboard comparing LLMs in simulated chess vs Random and Komodo Dragon. Rankings by Elo, win/loss, game duration, and tokens.">
+    <meta name="description"
+        content="LLM Chess Leaderboard comparing LLMs in simulated chess vs Random and Komodo Dragon. Rankings by Elo, win/loss, game duration, and tokens.">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
@@ -13,20 +15,22 @@
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-4SS6VHS4QF"></script>
     <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-4SS6VHS4QF');
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-4SS6VHS4QF');
     </script>
     <script src="data.js"></script>
     <script src="script.js"></script>
     <script src="md.js"></script>
 </head>
+
 <body>
     <p style="display: none;">
         LLM Chess Leaderboard
         <br>
-        Simulating chess games between a Random Player and an LLM. Evaluating Chat Models' (1) chess proficiency and (2) instruction following abilities
+        Simulating chess games between a Random Player and an LLM. Evaluating Chat Models' (1) chess proficiency and (2)
+        instruction following abilities
     </p>
     <div class="center">
         <pre class="title">
@@ -54,7 +58,7 @@
         <div class="game">
             <span style="color: yellow;">Random Player (White)</span>
             <div class="board">
-<pre class="board">
+                <pre class="board">
 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
 · · · · · · · ·
@@ -77,19 +81,26 @@
         </div>
         <p class="intro">
             Can Large Language Models play chess? <span style="color: white;">Let's find out ツ</span>
-            <br><br>This leaderboard evaluates <span style="color: white;">chess skill</span> and <span style="color: white;">instruction following</span>
+            <br><br>This leaderboard evaluates <span style="color: white;">chess skill</span> and <span
+                style="color: white;">instruction following</span>
             in an agentic setting:
-            LLMs engage in multi-turn dialogs where they are presented with a choice of actions (e.g., "get board" or "make move") when playing against
+            LLMs engage in multi-turn dialogs where they are presented with a choice of actions (e.g., "get board" or
+            "make move") when playing against
             an opponent (Random Player or Chess Engine).
             <br><br>
-            In 2024, we began with a <em>chaos monkey</em> baseline — a Random Player that chooses legal moves at random.
-            At the time, most models could barely compete and lost either due to an inability to follow game instructions 
-            (i.e., hallucinating illegal moves or taking incorrect actions) or by dragging the game to the 200-move limit because they 
+            In 2024, we began with a <em>chaos monkey</em> baseline — a Random Player that chooses legal moves at
+            random.
+            At the time, most models could barely compete and lost either due to an inability to follow game
+            instructions
+            (i.e., hallucinating illegal moves or taking incorrect actions) or by dragging the game to the 200-move
+            limit because they
             couldn't win.
             <br><br>
             In 2025, more capable reasoning models nailed both instruction following and chess skill.
-            We've added the <strong>Komodo Dragon</strong> Chess Engine as a more capable opponent, which is also Elo-rated on
-            chess.com. This allowed us to anchor the results to a real-world rating scale and compute an Elo rating for each model.
+            We've added the <strong>Komodo Dragon</strong> Chess Engine as a more capable opponent, which is also
+            Elo-rated on
+            chess.com. This allowed us to anchor the results to a real-world rating scale and compute an Elo rating for
+            each model.
         </p>
         <div class="button-container">
             <!-- Navigation will be dynamically generated here -->
@@ -120,20 +131,32 @@
             </div>
             <p class="descriptions">
                 <strong>METRICS:</strong><br><br>
-                <strong>- Player:</strong> Model name (playing as Black). Models that also played vs Dragon are marked with an asterisk in superscript (e.g., 3*).<br>
-                <strong>- Elo:</strong> Estimated Elo anchored by Dragon skill levels and calibrated Random. We solve a 1D MLE over aggregated blocks (opponent Elo, wins, draws, losses) and report ±95% CI. When both Random and Dragon data exist, they are combined Empty Elo appears for extreme 100% win/loss or no anchored games.<br>
-                <strong>- Win/Loss:</strong> Difference between wins and losses as a percentage of total games (0-100%); reflects BOTH chess skill and instruction following. 50% ≈ equal wins/losses.<br>
-                <strong>- Game Duration:</strong> Share of maximum game length completed (0-100%); measures instruction-following stability across many moves.<br>
+                <strong>- Player:</strong> Model name (playing as Black). Models that also played vs Dragon are marked
+                with an asterisk in superscript (e.g., 3*).<br>
+                <strong>- Elo:</strong> Estimated Elo anchored by Dragon skill levels and calibrated Random. We solve a
+                1D MLE over aggregated blocks (opponent Elo, wins, draws, losses) and report ±95% CI. When both Random
+                and Dragon data exist, they are combined Empty Elo appears for extreme 100% win/loss or no anchored
+                games.<br>
+                <strong>- Win/Loss:</strong> Difference between wins and losses as a percentage of total games (0-100%);
+                reflects BOTH chess skill and instruction following. 50% ≈ equal wins/losses.<br>
+                <strong>- Game Duration:</strong> Share of maximum game length completed (0-100%); measures
+                instruction-following stability across many moves.<br>
                 <strong>- Tokens:</strong> Completion tokens per move; verbosity/efficiency signal.
                 <br><br>
                 <strong>ARRANGEMENT & SOURCES:</strong><br><br>
                 - Primary sorting: Elo (DESC), then Win/Loss (DESC), Game Duration (DESC), Tokens (ASC).<br>
-                - Data sources mix Random-vs-LLM and Dragon-vs-LLM games. Dragon levels map to Elo and provide the anchor; Random is first calibrated vs Dragon and then used as an opponent for many models.<br>
-                - Elo ratings are not comparable across player pools, i.e. you can not compare chess.com Elo to FIDE Elo<br>
-                - Chess.com references used for context (as of Sep 2025): <a href="https://www.chess.com/leaderboard/live/rapid" target="_blank">Rapid Leaderboard (Elo pool)</a>, <a href="https://www.chess.com/member/magnuscarlsen/stats" target="_blank">Magnus Carlsen stats</a>, and <a href="https://www.chess.com/terms/chess-ratings" target="_blank">Elo explanation & player classes</a>.
+                - Data sources mix Random-vs-LLM and Dragon-vs-LLM games. Dragon levels map to Elo and provide the
+                anchor; Random is first calibrated vs Dragon and then used as an opponent for many models.<br>
+                - Elo ratings are not comparable across player pools, i.e. you can not compare chess.com Elo to FIDE
+                Elo<br>
+                - Chess.com references used for context (as of Sep 2025): <a
+                    href="https://www.chess.com/leaderboard/live/rapid" target="_blank">Rapid Leaderboard (Elo
+                    pool)</a>, <a href="https://www.chess.com/member/magnuscarlsen/stats" target="_blank">Magnus Carlsen
+                    stats</a>, and <a href="https://www.chess.com/terms/chess-ratings" target="_blank">Elo explanation &
+                    player classes</a>.
             </p>
         </div>
-        
+
         <!-- ############################ -->
         <!-- MATRIX VIEW                  -->
         <!-- ############################ -->
@@ -144,13 +167,18 @@
             <p class="descriptions">
                 <strong>MATRIX VISUALIZATION:</strong><br><br>
                 This plots shows LLM chess players based on two key metrics:<br><br>
-                <strong>- X-Axis:</strong> Game Duration (0-100%) - Shows how well models maintain correct communication protocols throughout the game. Higher values indicate better instruction following ability.<br><br>
-                <strong>- Y-Axis:</strong> Win Rate (0-100%) - The metric is less strict than Win/Loss (Non-Interrupted) used in the leaderboard as it ignores technichal losses due to poor instruction following. Higher values indicate better chess strategy and decision making.<br><br>
+                <strong>- X-Axis:</strong> Game Duration (0-100%) - Shows how well models maintain correct communication
+                protocols throughout the game. Higher values indicate better instruction following ability.<br><br>
+                <strong>- Y-Axis:</strong> Win Rate (0-100%) - The metric is less strict than Win/Loss (Non-Interrupted)
+                used in the leaderboard as it ignores technichal losses due to poor instruction following. Higher values
+                indicate better chess strategy and decision making.<br><br>
                 <strong>INTERPRETATION:</strong><br><br>
                 - <strong>Top-Right:</strong> Models with both excellent chess skill and instruction following.<br>
-                - <strong>Top-Left:</strong> Models with good chess skill but struggle to maintain communication protocol.<br>
+                - <strong>Top-Left:</strong> Models with good chess skill but struggle to maintain communication
+                protocol.<br>
                 - <strong>Bottom-Right:</strong> Models that follow instructions well but make poor chess moves.<br>
-                - <strong>Bottom-Left:</strong> Models that struggle with both chess strategy and following instructions.<br><br>
+                - <strong>Bottom-Left:</strong> Models that struggle with both chess strategy and following
+                instructions.<br><br>
             </p>
         </div>
         <!-- ############ -->
@@ -159,20 +187,30 @@
         <div id="how-it-works" class="pane" style="display: none;">
             <p class="descriptions">
                 <strong>Libraries and Dependencies Used:</strong><br><br>
-                - <strong>chess:</strong> A Python library for handling chess game rules and basic operations, including board representation, legal move evaluation, and game state evaluation. This is not a chess engine running the actual calculation of the best move.<br>
-                - <strong>AG2 (aka Autogen)</strong> is used as a backbone for LLM communication. It also implements the interaction between a Chess Board and custom agents like GameAgent, RandomPlayerAgent, AutoReplyAgent, and others for simulating different player types.<br>
-                - <strong>Stockfish</strong> - the chess engine doing the actual best move calculation, used as a reference to demonstrate what a real chess player's performance is.<br>
+                - <strong>chess:</strong> A Python library for handling chess game rules and basic operations, including
+                board representation, legal move evaluation, and game state evaluation. This is not a chess engine
+                running the actual calculation of the best move.<br>
+                - <strong>AG2 (aka Autogen)</strong> is used as a backbone for LLM communication. It also implements the
+                interaction between a Chess Board and custom agents like GameAgent, RandomPlayerAgent, AutoReplyAgent,
+                and others for simulating different player types.<br>
+                - <strong>Stockfish</strong> - the chess engine doing the actual best move calculation, used as a
+                reference to demonstrate what a real chess player's performance is.<br>
                 <br>
                 <strong>Workflow:</strong><br><br>
-                1. The game is initialized with a chess board and two players: a Random Player (as white) and an LLM (as black).<br>
-                2. The game loop runs until a termination condition is met, such as checkmate, stalemate, or reaching the maximum number of moves.<br>
-                3. Each player takes turns making a move. The Random Player selects a move randomly from the list of legal moves.<br>
-                4. The LLM is prompted to make a move using a structured dialog, which includes actions like getting the current board state, retrieving legal moves, and making a move.<br>
+                1. The game is initialized with a chess board and two players: a Random Player (as white) and an LLM (as
+                black).<br>
+                2. The game loop runs until a termination condition is met, such as checkmate, stalemate, or reaching
+                the maximum number of moves.<br>
+                3. Each player takes turns making a move. The Random Player selects a move randomly from the list of
+                legal moves.<br>
+                4. The LLM is prompted to make a move using a structured dialog, which includes actions like getting the
+                current board state, retrieving legal moves, and making a move.<br>
                 5. The game state is updated after each move, and the board is visualized if enabled.<br>
                 6. Game statistics are generated and stored at the end of the game.<br>
                 <br>
                 <strong>Dialog:</strong><br><br>
-                Here is an example of a dialog that prompts a model to make a move. UCI format refers to Universal Chess Interface notation, which uses source and destination squares (e.g., e2e4 means move from e2 to e4):<br>
+                Here is an example of a dialog that prompts a model to make a move. UCI format refers to Universal Chess
+                Interface notation, which uses source and destination squares (e.g., e2e4 means move from e2 to e4):<br>
             </p>
             <pre class="snippet">
 <span style="color:green">Proxy (to Player_Black):</span>
@@ -209,9 +247,12 @@ make_move e7e5
 Move made, switching player
             </pre>
             <p class="descriptions">
-                1 move = 1 dialog. The dialog is limited to 10 turns (10 pairs of Proxy/Agent Request/Response messages). A maximum of 3 mistakes (not conforming to 
-                communication notation, picking wrong action or wrong move) are allowed per dialog. 
-                The game is terminated and LLM is given a loss if the max turns OR number of LLM mistakes is reached in the given dialog. Models that excel at both chess strategy and following instructions precisely will perform best.
+                1 move = 1 dialog. The dialog is limited to 10 turns (10 pairs of Proxy/Agent Request/Response
+                messages). A maximum of 3 mistakes (not conforming to
+                communication notation, picking wrong action or wrong move) are allowed per dialog.
+                The game is terminated and LLM is given a loss if the max turns OR number of LLM mistakes is reached in
+                the given dialog. Models that excel at both chess strategy and following instructions precisely will
+                perform best.
             </p>
         </div>
         <!-- ############ -->
@@ -221,11 +262,18 @@ Move made, switching player
         </div>
         <a class="gh" href="https://github.com/maxim-saplin/llm_chess/" target="_blank">
             <img src="icons/gh.png" alt="GitHub Icon">
-            Project's GitHub
+            GitHub
+
         </a>
-    <p id="mistakes"></p>
-    <p id="completion-tokens"></p>
-</div>
+        <a class="gh"
+            href="LLM%20CHESS%2C%20Benchmarking%20Reasoning%20and%20Instruction-Following%20in%20LLMs%20through%20Chess%20-%20NeurIPS%20FoRLM%202025.pdf"
+            target="_blank">
+            <img src="icons/paper.png" alt="Paper Icon">
+            Paper
+        </a>
+        <p id="mistakes"></p>
+        <p id="completion-tokens"></p>
+    </div>
     <div id="popup" style="display: none;">
         <p id="total-games"></p>
         <p id="elo"></p>
@@ -234,7 +282,7 @@ Move made, switching player
         <p id="games-interrupted"></p>
         <p id="wins"></p>
         <p id="losses"></p>
-        <p id="draws"></p> 
+        <p id="draws"></p>
         <p id="average-moves"></p>
         <p id="material-diff"></p>
         <p id="mistakes-per-1000moves"></p>
@@ -242,4 +290,5 @@ Move made, switching player
         <p id="cost-per-game"></p>
     </div>
 </body>
+
 </html>
