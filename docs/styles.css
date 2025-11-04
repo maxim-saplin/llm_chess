@@ -14,7 +14,8 @@
 }
 
 :root {
-    --global-button-width: 185px; /* Define the global variable */
+    --global-button-width: 185px;
+    /* Define the global variable */
 }
 
 body {
@@ -44,19 +45,21 @@ div.center {
 
 a {
     color: greenyellow;
-    text-decoration: none; 
+    text-decoration: none;
 }
 
-.gh {
+a.gh {
     color: yellowgreen;
+    padding-right: 20px;
 }
 
 .gh img {
-    vertical-align: middle;
+    vertical-align: top;
     width: 20px;
     height: 20px;
     margin-right: 5px;
     filter: invert(100%);
+    margin-top: 1px;
 }
 
 h1 {
@@ -65,8 +68,9 @@ h1 {
 
 p.intro {
     display: block;
-    margin:auto;
-    text-align: left; /* prevent spacing stretch that misaligns squares */
+    margin: auto;
+    text-align: left;
+    /* prevent spacing stretch that misaligns squares */
 }
 
 .button-container {
@@ -100,7 +104,8 @@ button::after {
     z-index: -1;
 }
 
-button.selected, .dropbtn.selected {
+button.selected,
+.dropbtn.selected {
     background-color: green;
     color: #FFFFFF;
     top: 1px;
@@ -247,10 +252,12 @@ div.board {
     margin-right: auto;
     position: relative;
     /* 8x8 checkerboard aligned to pre.board padding and line-height */
-    background-image: 
+    background-image:
         conic-gradient(#202020 25%, #0e0e0e 0 50%, #202020 0 75%, #0e0e0e 0);
-    background-size: 74px 74px; /* conic-gradient tile = 2 squares → 2×37px */
-    background-position: 2px 2px; /* align with pre padding */
+    background-size: 74px 74px;
+    /* conic-gradient tile = 2 squares → 2×37px */
+    background-position: 2px 2px;
+    /* align with pre padding */
     background-origin: content-box;
     background-clip: content-box;
 }
@@ -271,9 +278,11 @@ div.board {
     0% {
         opacity: 1;
     }
+
     100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0;
     }
@@ -291,7 +300,8 @@ div.board {
     display: inline-flex;
 }
 
-p, pre {
+p,
+pre {
     color: lightgray;
 }
 
@@ -312,7 +322,8 @@ table {
     line-height: 1.0;
 }
 
-td, th {
+td,
+th {
     padding: 10px 18px 10px 8px;
     font-weight: lighter;
     text-align: left;
@@ -328,11 +339,12 @@ th:hover {
     color: yellowgreen;
 }
 
-tr:hover td{
+tr:hover td {
     color: yellowgreen;
 }
 
-tr:hover td:nth-child(3), tr:hover td:nth-child(5) {
+tr:hover td:nth-child(3),
+tr:hover td:nth-child(5) {
     color: darkgreen;
 }
 
@@ -342,7 +354,7 @@ td {
     color: lightgray;
 }
 
-th:nth-child(2n+3), 
+th:nth-child(2n+3),
 td:nth-child(2n+3) {
     background-color: lightgray;
     color: black;
@@ -374,10 +386,11 @@ tr.fixed td {
 }
 
 tr.fixed td:first-child {
-    color: gold; /* Star and rank number color */
+    color: gold;
+    /* Star and rank number color */
 }
 
-tr.fixed td:nth-child(3), 
+tr.fixed td:nth-child(3),
 tr.fixed td:nth-child(5) {
     background-color: #005588;
     color: yellow;
@@ -389,7 +402,7 @@ tr.benchmark td {
     color: yellow;
 }
 
-tr.benchmark td:nth-child(3), 
+tr.benchmark td:nth-child(3),
 tr.benchmark td:nth-child(5) {
     color: black;
 }
@@ -495,7 +508,8 @@ td sup {
         font-weight: 900;
     }
 
-    td, th {
+    td,
+    th {
         padding: 8px;
     }
 
@@ -521,16 +535,20 @@ td sup {
     .table-container {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        margin-left: 0 !important; /* override inline JS margins in extended view */
-        margin-right: 0 !important; /* override inline JS margins in extended view */
-        padding-bottom: 8px; /* space for scrollbar */
+        margin-left: 0 !important;
+        /* override inline JS margins in extended view */
+        margin-right: 0 !important;
+        /* override inline JS margins in extended view */
+        padding-bottom: 8px;
+        /* space for scrollbar */
     }
 
     /* Neutralize negative table margins and ensure a scrollable width */
     table {
         margin-left: 0;
         margin-right: 0;
-        min-width: 720px; /* ensure content exceeds viewport to enable scroll */
+        min-width: 720px;
+        /* ensure content exceeds viewport to enable scroll */
     }
 
     /* Extended leaderboard typically has more columns */
@@ -609,7 +627,7 @@ td sup {
     height: 16px;
 }
 
-.column-option input:disabled + label {
+.column-option input:disabled+label {
     color: #808080;
 }
 
