@@ -1,0 +1,74 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.10.01_09:34",
+            "log_folder_relative": "_logs/rand_vs_llm/anthropic.claude-sonnet-4-5-20250929-v1-0/2025-10-01-09-34-44",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 5,
+            "dialog_turn_delay": 5,
+            "max_api_retries": 3,
+            "api_retry_delay": 14400,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "claude-sonnet-4-5-20250929",
+                "api_type": "oai_comp_endpoint",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 1,
+    "black_wins": 8,
+    "draws": 24,
+    "total_moves": 5379,
+    "reasons": {
+        "Max moves reached": 20,
+        "Checkmate": 8,
+        "ERROR OCCURED": 2,
+        "Insufficient material": 2,
+        "Too many wrong actions": 1
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 253,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 7.666666666666667,
+        "std_dev_material": 10.30675344939747
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "claude-sonnet-4-5-20250929",
+        "total_material": 440,
+        "wrong_moves": 88,
+        "wrong_actions": 1,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 13.333333333333334,
+        "std_dev_material": 11.933845426628697
+    },
+    "average_moves": 163.0,
+    "std_dev_moves": 60.92669776050562
+}

@@ -1,0 +1,70 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.10.30_09:26",
+            "log_folder_relative": "_logs/rand_vs_llm/ring-mini-2.0-q4_k_m/2025-10-30-09-26-23",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 0,
+            "dialog_turn_delay": 0,
+            "max_api_retries": 0,
+            "api_retry_delay": 0,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "ring-mini-2.0@q4_k_m",
+                "api_type": "local",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 33,
+    "black_wins": 0,
+    "draws": 0,
+    "total_moves": 100,
+    "reasons": {
+        "Max turns in single dialog": 33
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 1287,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 39.0,
+        "std_dev_material": 0.0
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "ring-mini-2.0@q4_k_m",
+        "total_material": 1287,
+        "wrong_moves": 1,
+        "wrong_actions": 3,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 39.0,
+        "std_dev_material": 0.0
+    },
+    "average_moves": 3.0303030303030303,
+    "std_dev_moves": 1.42488702369803
+}

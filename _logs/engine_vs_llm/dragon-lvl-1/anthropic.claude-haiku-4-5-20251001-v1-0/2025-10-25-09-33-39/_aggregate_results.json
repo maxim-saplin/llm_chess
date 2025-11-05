@@ -1,0 +1,86 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.10.25_09:33",
+            "log_folder_relative": "_logs/engine_vs_llm/dragon-lvl-1/anthropic.claude-haiku-4-5-20251001-v1-0/2025-10-25-09-33-39",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "CHESS_ENGINE_DRAGON",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 5,
+            "dialog_turn_delay": 5,
+            "max_api_retries": 3,
+            "api_retry_delay": 14400,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "chess_engines": {
+            "stockfish": {
+                "path": "/opt/homebrew/bin/stockfish",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            },
+            "dragon": {
+                "path": "dragon/dragon-linux",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            }
+        },
+        "llm_configs": {
+            "black": {
+                "model": "claude-haiku-4-5-20251001",
+                "api_type": "oai_comp_endpoint",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 26,
+    "black_wins": 0,
+    "draws": 7,
+    "total_moves": 3630,
+    "reasons": {
+        "Checkmate": 24,
+        "Max moves reached": 7,
+        "Too many wrong actions": 2
+    },
+    "player_white": {
+        "name": "Chess_Engine_Dragon_White",
+        "model": "",
+        "total_material": 776,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 23.515151515151516,
+        "std_dev_material": 10.099879987285778
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "claude-haiku-4-5-20251001",
+        "total_material": 336,
+        "wrong_moves": 73,
+        "wrong_actions": 1,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 10.181818181818182,
+        "std_dev_material": 9.96071830195539
+    },
+    "average_moves": 110.0,
+    "std_dev_moves": 57.832732945971
+}

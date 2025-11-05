@@ -3,7 +3,9 @@ from autogen import ConversableAgent
 from utils import  get_llms
 
 
-_, llm_config_black = get_llms(black_hyperparams={"reasoning_effort": "high"})
+_, llm_config_black = get_llms(
+    #black_hyperparams={"reasoning_effort": "high"}
+    )
 
 agent = ConversableAgent(
     name="test",

@@ -47,7 +47,8 @@ def is_retryable_error(exception) -> bool:
         "temporarily unavailable",
         "try again later",
         "internal server error", 
-        "is currently over capacity" # Groq
+        "is currently over capacity", # Groq
+        "limit exceeded", # Cerebras
     ]
     
     return any(msg in error_message for msg in retryable_messages)

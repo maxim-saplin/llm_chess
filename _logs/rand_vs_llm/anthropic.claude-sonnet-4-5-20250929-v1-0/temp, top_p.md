@@ -1,0 +1,1 @@
+openai.BadRequestError: Error code: 400 - {'error': {'message': '`temperature` and `top_p` cannot both be specified for this model. Please use only one.', 'type': 'invalid_request_error', 'code': '400'}}

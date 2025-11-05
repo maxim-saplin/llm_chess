@@ -1,0 +1,72 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.10.25_09:37",
+            "log_folder_relative": "_logs/rand_vs_llm/anthropic.claude-haiku-4-5-20251001-v1-0-with-thinking/2025-10-25-09-37-03",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 5,
+            "dialog_turn_delay": 5,
+            "max_api_retries": 3,
+            "api_retry_delay": 14400,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "claude-haiku-4-5-20251001_thinking_16000",
+                "api_type": "oai_comp_endpoint",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 0,
+    "black_wins": 10,
+    "draws": 23,
+    "total_moves": 4818,
+    "reasons": {
+        "Insufficient material": 17,
+        "Max moves reached": 6,
+        "Checkmate": 10
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 106,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 3.212121212121212,
+        "std_dev_material": 7.482302351873285
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "claude-haiku-4-5-20251001_thinking_16000",
+        "total_material": 350,
+        "wrong_moves": 4,
+        "wrong_actions": 3,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 10.606060606060606,
+        "std_dev_material": 14.508487589036017
+    },
+    "average_moves": 146.0,
+    "std_dev_moves": 57.91588728492381
+}

@@ -1,0 +1,87 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.10.06_14:42",
+            "log_folder_relative": "_logs/engine_vs_llm/dragon-lvl-1/anthropic.claude-sonnet-4-5-20250929-v1-0-with-thinking/2025-10-06-14-42-13",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "CHESS_ENGINE_DRAGON",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 5,
+            "dialog_turn_delay": 5,
+            "max_api_retries": 3,
+            "api_retry_delay": 14400,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "chess_engines": {
+            "stockfish": {
+                "path": "/opt/homebrew/bin/stockfish",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            },
+            "dragon": {
+                "path": "dragon/dragon-linux",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            }
+        },
+        "llm_configs": {
+            "black": {
+                "model": "claude-sonnet-4-5-20250929_thinking_16000",
+                "api_type": "oai_comp_endpoint",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 6,
+    "black_wins": 1,
+    "draws": 26,
+    "total_moves": 4647,
+    "reasons": {
+        "ERROR OCCURED": 5,
+        "Checkmate": 7,
+        "Insufficient material": 9,
+        "Max moves reached": 12
+    },
+    "player_white": {
+        "name": "Chess_Engine_Dragon_White",
+        "model": "",
+        "total_material": 305,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 9.242424242424242,
+        "std_dev_material": 13.071988905265867
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "claude-sonnet-4-5-20250929_thinking_16000",
+        "total_material": 272,
+        "wrong_moves": 1,
+        "wrong_actions": 2,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 8.242424242424242,
+        "std_dev_material": 10.994402845966393
+    },
+    "average_moves": 140.8181818181818,
+    "std_dev_moves": 68.24150796319574
+}

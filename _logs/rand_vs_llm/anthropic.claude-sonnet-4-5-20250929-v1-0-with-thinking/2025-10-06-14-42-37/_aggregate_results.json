@@ -1,0 +1,73 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.10.06_14:42",
+            "log_folder_relative": "_logs/rand_vs_llm/anthropic.claude-sonnet-4-5-20250929-v1-0-with-thinking/2025-10-06-14-42-37",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 5,
+            "dialog_turn_delay": 5,
+            "max_api_retries": 3,
+            "api_retry_delay": 14400,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "claude-sonnet-4-5-20250929_thinking_16000",
+                "api_type": "oai_comp_endpoint",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 0,
+    "black_wins": 12,
+    "draws": 21,
+    "total_moves": 4899,
+    "reasons": {
+        "Checkmate": 12,
+        "Max moves reached": 7,
+        "Stalemate": 4,
+        "Insufficient material": 10
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 104,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 3.1515151515151514,
+        "std_dev_material": 9.321082327582767
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "claude-sonnet-4-5-20250929_thinking_16000",
+        "total_material": 403,
+        "wrong_moves": 10,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 12.212121212121213,
+        "std_dev_material": 12.170038968090797
+    },
+    "average_moves": 148.45454545454547,
+    "std_dev_moves": 54.956284279581546
+}
