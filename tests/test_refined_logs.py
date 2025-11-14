@@ -283,6 +283,16 @@ class TestAggrToRefined(unittest.TestCase):
             self.assertEqual(wl, 0.0)
 
     def test_elo_mode_produces_csv(self):
+        # Save original values for restoration
+        orig_game_mode = grc.GAME_MODE
+        orig_logs_dirs = grc.LOGS_DIRS
+        orig_engine_logs_dirs_new = grc.ENGINE_LOGS_DIRS_NEW
+        orig_engine_logs_dirs_legacy = grc.ENGINE_LOGS_DIRS_LEGACY
+        orig_misc_dragon_dirs = grc.MISC_DRAGON_DIRS
+        orig_filter_out_below_n = grc.FILTER_OUT_BELOW_N
+        orig_elo_dragon_only_min_games = grc.ELO_DRAGON_ONLY_MIN_GAMES
+        
+        try:
         # Configure Elo mode to use our temp dirs
         grc.GAME_MODE = GameMode.ELO
         grc.LOGS_DIRS = [self.mock_logs_dir]
@@ -308,7 +318,15 @@ class TestAggrToRefined(unittest.TestCase):
         self.assertIn("elo_moe_95", sample)
         self.assertIn("games_vs_random", sample)
         self.assertIn("games_vs_dragon", sample)
-        # temp file will be cleaned up by addCleanup in setUp
+        finally:
+            # Restore original values
+            grc.GAME_MODE = orig_game_mode
+            grc.LOGS_DIRS = orig_logs_dirs
+            grc.ENGINE_LOGS_DIRS_NEW = orig_engine_logs_dirs_new
+            grc.ENGINE_LOGS_DIRS_LEGACY = orig_engine_logs_dirs_legacy
+            grc.MISC_DRAGON_DIRS = orig_misc_dragon_dirs
+            grc.FILTER_OUT_BELOW_N = orig_filter_out_below_n
+            grc.ELO_DRAGON_ONLY_MIN_GAMES = orig_elo_dragon_only_min_games
 
 
 class TestDragonVsLLMRefined(unittest.TestCase):
