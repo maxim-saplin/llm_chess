@@ -12,6 +12,8 @@ Key insights from the benchmark:
 
 See the [live leaderboard](https://maxim-saplin.github.io/llm_chess/) for rankings and the [NeurIPS FoRLM 2025 paper](docs/LLM%20CHESS%2C%20Benchmarking%20Reasoning%20and%20Instruction-Following%20in%20LLMs%20through%20Chess%20-%20NeurIPS%20FoRLM%202025.pdf) for full details.
 
+<img width="2118" height="1582" alt="image" src="https://github.com/user-attachments/assets/4375a8a8-e226-4ed1-820f-86006d0404e2" />
+
 ## Installation and Setup
 
 1. **Clone the repository**:
