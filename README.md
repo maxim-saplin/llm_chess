@@ -142,13 +142,13 @@ Example with GPT-4o Mini (Black):
 ```
 Proxy (to Player_Black):
 You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
-        - 'get_current_board' to get the schema and current status of the board
-        - 'get_legal_moves' to get a UCI formatted list of available moves
-        - 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
-    Respond with the action.
-    
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+Respond with the action.
+
 Player_Black (to Proxy):
-get_current_board 
+get_current_board
 
 Proxy (to Player_Black):
 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
@@ -159,6 +159,7 @@ Proxy (to Player_Black):
 · · · · · · · ·
 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
 ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+
 
 Player_Black (to Proxy):
 get_legal_moves
