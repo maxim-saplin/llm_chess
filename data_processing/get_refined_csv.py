@@ -30,6 +30,8 @@ Usage:
 - Programmatic: call build_refined_rows_from_logs(..., mode=GameMode.*) then write_* CSV.
 - CLI: run this module with GAME_MODE set; Elo leaderboard sorts by Elo DESC, then Win Rate,
   then Win/Loss.
+- Optional: set INCLUDE_ABNORMAL_FINISH_STATS=True to emit per-reason abnormal termination counts
+  (Too many wrong actions, max turns, unknown issues, runtime errors) in the refined CSV outputs.
 
 Model naming (applies to Dragon mode, Elo, and any consumer of Dragon logs):
 1. Directory aliases: entries inside LOGS_DIRS/ENGINE_LOGS_DIRS can be dicts such as
@@ -183,6 +185,28 @@ ALIASES = {
     # If the incoming name equals the key, replace it with the curated value.
     "grok-3-mini-fast-beta-high": "grok-3-mini-beta-high",
 }
+
+
+# Toggle abnormal-finish instrumentation directly in this module (no CLI flag needed).
+# When enabled, refined CSVs add per-reason counts/percents for early terminations such as
+# too many wrong actions, max turns, unknown issues, or runtime errors.
+INCLUDE_ABNORMAL_FINISH_STATS = False
+ABNORMAL_TERMINATION_REASONS = {
+    "too_many_wrong_actions": TerminationReason.TOO_MANY_WRONG_ACTIONS.value,
+    "max_turns": TerminationReason.MAX_TURNS.value,
+    "unknown_issue": TerminationReason.UNKNOWN_ISSUE.value,
+    "error": TerminationReason.ERROR.value,
+}
+ABNORMAL_TERMINATION_LOOKUP = {v: k for k, v in ABNORMAL_TERMINATION_REASONS.items()}
+ABNORMAL_FINISH_HEADERS: list[str] = []
+if INCLUDE_ABNORMAL_FINISH_STATS:
+    ABNORMAL_FINISH_HEADERS = [
+        "abnormal_finishes_total",
+        "abnormal_finishes_percent",
+    ]
+    for slug in ABNORMAL_TERMINATION_REASONS:
+        ABNORMAL_FINISH_HEADERS.append(f"abnormal_{slug}_count")
+        ABNORMAL_FINISH_HEADERS.append(f"abnormal_{slug}_percent")
 
 
 #
@@ -570,6 +594,15 @@ def build_refined_rows_from_logs(
         std_dev_games_not_interrupted = math.sqrt((p_not_interrupted * (1 - p_not_interrupted)) / total_games) if total_games > 1 else 0
         moe_games_not_interrupted = 1.96 * std_dev_games_not_interrupted if total_games > 1 else 0
 
+        if INCLUDE_ABNORMAL_FINISH_STATS:
+            abnormal_counts = {slug: 0 for slug in ABNORMAL_TERMINATION_REASONS}
+            for log in model_logs:
+                slug = ABNORMAL_TERMINATION_LOOKUP.get(log.reason)
+                if slug:
+                    abnormal_counts[slug] += 1
+            abnormal_total = sum(abnormal_counts.values())
+            row_abnormal_percent = round((abnormal_total / total_games) * 100, 3) if total_games > 0 else 0
+
         # win_loss excluding interrupted games
         non_interrupted_logs = [log for log in model_logs if not log.is_interrupted]
         non_interrupted_games = len(non_interrupted_logs)
@@ -769,6 +802,12 @@ def build_refined_rows_from_logs(
             "average_time_per_game_seconds": round(average_time_per_game_seconds, 3),
             "moe_average_time_per_game_seconds": round(moe_average_time_per_game_seconds, 3),
         }
+        if INCLUDE_ABNORMAL_FINISH_STATS:
+            row["abnormal_finishes_total"] = abnormal_total
+            row["abnormal_finishes_percent"] = row_abnormal_percent
+            for slug, count in abnormal_counts.items():
+                row[f"abnormal_{slug}_count"] = count
+                row[f"abnormal_{slug}_percent"] = round((count / total_games) * 100, 3) if total_games > 0 else 0
         if mode == GameMode.DRAGON_VS_LLM:
             row["white_opponent"] = opponent_label
         refined_rows.append(row)
@@ -777,7 +816,7 @@ def build_refined_rows_from_logs(
 
 
 # Unified refined CSV headers used across functions
-REFINED_HEADERS = [
+BASE_REFINED_HEADERS = [
     "Player",
     "total_games",
     "player_wins",
@@ -822,6 +861,7 @@ REFINED_HEADERS = [
     "average_time_per_game_seconds",
     "moe_average_time_per_game_seconds",
 ]
+REFINED_HEADERS = BASE_REFINED_HEADERS + ABNORMAL_FINISH_HEADERS if INCLUDE_ABNORMAL_FINISH_STATS else BASE_REFINED_HEADERS.copy()
 
 # Dragon-vs-LLM refined CSV headers (adds white_opponent field)
 DRAGON_REFINED_HEADERS = REFINED_HEADERS + [
@@ -893,7 +933,7 @@ def collapse_refined_rows_by_player(rows):
         gni_new = to_int(row.get("games_not_interrupted"))
 
         # Sum integer count fields
-        for key in [
+        count_fields = [
             "total_games",
             "player_wins",
             "opponent_wins",
@@ -903,7 +943,11 @@ def collapse_refined_rows_by_player(rows):
             "player_wrong_moves",
             "games_interrupted",
             "games_not_interrupted",
-        ]:
+        ]
+        if INCLUDE_ABNORMAL_FINISH_STATS:
+            count_fields.append("abnormal_finishes_total")
+            count_fields.extend([f"abnormal_{slug}_count" for slug in ABNORMAL_TERMINATION_REASONS])
+        for key in count_fields:
             g[key] = to_int(g.get(key)) + to_int(row.get(key))
 
         # Weighted by games
@@ -978,6 +1022,12 @@ def collapse_refined_rows_by_player(rows):
         # Keep percents in 0–100
         g["games_interrupted_percent"] = round(((gi / tg) * 100), 3) if tg else 0
         g["games_not_interrupted_percent"] = round(((gni / tg) * 100), 3) if tg else 0
+        if INCLUDE_ABNORMAL_FINISH_STATS:
+            abnormal_total = to_int(g.get("abnormal_finishes_total"))
+            g["abnormal_finishes_percent"] = round(((abnormal_total / tg) * 100), 3) if tg else 0
+            for slug in ABNORMAL_TERMINATION_REASONS:
+                count = to_int(g.get(f"abnormal_{slug}_count"))
+                g[f"abnormal_{slug}_percent"] = round(((count / tg) * 100), 3) if tg else 0
 
         # Zero tokens and price metrics for selected canonical IDs after alias merge
         if player in ZERO_TOKENS:
