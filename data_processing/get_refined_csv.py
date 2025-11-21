@@ -22,7 +22,7 @@ Elo (brief):
   opponents are 100% wins or 100% losses (MLE diverges).
 
 Data sources:
-- Random logs: _logs/rand_vs_llm.
+- Random logs: _logs/rand_vs_llm, _logs/_pre_aug_2025/new, _logs/_pre_aug_2025/no_reflection.
 - Dragon logs: _logs/engine_vs_llm and _logs/_pre_aug_2025/dragon_vs_llm.
 - Random calibration: _logs/misc/dragon and _logs/_pre_aug_2025/misc/dragon.
 
@@ -84,7 +84,7 @@ except ImportError:
 LOGS_DIRS = [
     "_logs/rand_vs_llm",
     "_logs/_pre_aug_2025/new",
-    "_logs/_pre_aug_2025/no_reflection",
+    "_logs/_pre_aug_2025/no_reflection",  # 16.03.2025 - wrong actions and wrong moves stats has been wrongly collected (underreporting) in all prior logs, the mistakes metric for all prior logs in invalid
 ]
 
 
