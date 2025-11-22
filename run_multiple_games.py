@@ -86,10 +86,10 @@ def run_games():
     # Pull module-level overrides (NUM_REPETITIONS, STORE_INDIVIDUAL_LOGS)
     global NUM_REPETITIONS, STORE_INDIVIDUAL_LOGS
 
-    llm_chess.throttle_delay = 7
-    llm_chess.dialog_turn_delay = 7
-    llm_chess.max_api_retries = 3
-    llm_chess.api_retry_delay = 4*60*60 # retry in 4, 8, 16 hours, workaround for daily rate limiting
+    llm_chess.throttle_delay = 0 #7
+    llm_chess.dialog_turn_delay = 0 #7
+    llm_chess.max_api_retries = 0 #3
+    llm_chess.api_retry_delay = 0# 4*60*60 # retry in 4, 8, 16 hours, workaround for daily rate limiting
     # llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
     # llm_chess.rotate_board_for_white = True
 
@@ -97,10 +97,10 @@ def run_games():
     llm_chess.remove_text = llm_chess.DEFAULT_REMOVE_TEXT_REGEX
 
     llm_chess.dragon_path = "dragon/dragon-linux"
-    llm_chess.dragon_level = 1
+    llm_chess.dragon_level = 5
 
-    llm_chess.white_player_type = llm_chess.PlayerType.CHESS_ENGINE_DRAGON
-    # llm_chess.black_player_type = llm_chess.PlayerType.LLM_NON
+    llm_chess.white_player_type = llm_chess.PlayerType.RANDOM_PLAYER
+    llm_chess.black_player_type = llm_chess.PlayerType.LLM_BLACK
 
     # Determine LOG_FOLDER lazily to respect external overrides in tests
     global LOG_FOLDER
@@ -114,13 +114,23 @@ def run_games():
             dragon_level=llm_chess.dragon_level,
         )
 
+    # NoN (Network-of-Networks, aka MoA, aka Mixture-of-Agents) setup:
+    # - The main `LLM_CONFIG_*` objects act as the synthesizer/orchestrator models.
+    # - The `NON_LLM_CONFIGS_*` lists hold the worker models that brainstorm moves; each
+    #   entry is a full AutoGen config dict (same schema as `LLM_CONFIG_*`), so you can
+    #   duplicate the base config with different temps or swap in entirely different
+    #   providers/models.
+    # When `llm_chess.<color>_player_type` is set to `PlayerType.LLM_NON`, the engine
+    # passes both the synthesizer config and worker list to `NonGameAgent`, enabling the
+    # Random-vs-NoN (or NoN-vs-NoN) experiments.
     NON_LLM_CONFIGS_WHITE = [
         {**LLM_CONFIG_WHITE, "temperature": 0.0},
         {**LLM_CONFIG_WHITE, "temperature": 1.0},
     ]
     NON_LLM_CONFIGS_BLACK = [
+        {**LLM_CONFIG_WHITE},
         {**LLM_CONFIG_BLACK, "temperature": 0.0},
-        {**LLM_CONFIG_BLACK, "temperature": 1.0},
+        {**LLM_CONFIG_BLACK, "temperature": 0.3},
     ]
 
     setup_console_logging(LOG_FOLDER)  # save raw console output to output.txt

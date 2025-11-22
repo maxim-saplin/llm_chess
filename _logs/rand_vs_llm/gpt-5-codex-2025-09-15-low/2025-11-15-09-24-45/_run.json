@@ -1,0 +1,37 @@
+{
+    "metadata": {
+        "time_started_formatted": "2025.11.15_09:24",
+        "log_folder_relative": "_logs/rand_vs_llm/gpt-5-codex-2025-09-15-low/2025-11-15-09-24-45",
+        "num_repetitions": 33,
+        "store_individual_logs": true,
+        "python_version": "3.12.3"
+    },
+    "player_types": {
+        "white_player_type": "RANDOM_PLAYER",
+        "black_player_type": "LLM_BLACK"
+    },
+    "config": {
+        "enable_reflection": false,
+        "board_representation_mode": "UNICODE_ONLY",
+        "rotate_board_for_white": false,
+        "max_game_moves": 200,
+        "max_llm_turns": 10,
+        "max_failed_attempts": 3,
+        "throttle_delay": 7,
+        "dialog_turn_delay": 7,
+        "max_api_retries": 3,
+        "api_retry_delay": 14400,
+        "random_print_board": false,
+        "visualize_board": false,
+        "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+    },
+    "llm_configs": {
+        "black": {
+            "model": "gpt-5-codex-2025-09-15",
+            "api_type": "oai_comp_endpoint",
+            "api_key": "REDACTED",
+            "timeout": 600,
+            "reasoning_effort": "low"
+        }
+    }
+}
