@@ -125,9 +125,7 @@ class TestAggrToRefined(unittest.TestCase):
         ]
 
         for log in self.mock_log_files:
-            with open(
-                os.path.join(self.mock_logs_dir, log["filename"]), "w"
-            ) as log_file:
+            with open(os.path.join(self.mock_logs_dir, log["filename"]), "w") as log_file:
                 log_file.write(log["content"])
 
         # Also create minimal engine_vs_llm and misc/dragon structures for Elo test
@@ -215,21 +213,21 @@ class TestAggrToRefined(unittest.TestCase):
             # Check win_loss_non_interrupted and related fields
             self.assertIn("win_loss_non_interrupted", row)
             self.assertIn("moe_win_loss_non_interrupted", row)
-            
+
             # These metrics should all be present and have values
             self.assertIsNotNone(row["win_loss_non_interrupted"])
             self.assertIsNotNone(row["moe_win_loss_non_interrupted"])
-            
+
             # Check games_not_interrupted and related fields
             self.assertIn("games_not_interrupted", row)
             self.assertIn("games_not_interrupted_percent", row)
             self.assertIn("moe_games_not_interrupted", row)
-            
+
             # Since all mock logs are interrupted (reason = Too many wrong actions),
             # games_not_interrupted should be 0 and games_not_interrupted_percent should be 0
             self.assertEqual(int(row["games_not_interrupted"]), 0)
             self.assertEqual(float(row["games_not_interrupted_percent"]), 0.0)
-            
+
             # Similarly, since all games are interrupted, win_loss_non_interrupted should be 0.5
             # (no wins or losses among non-interrupted games, just the default value)
             self.assertEqual(float(row["win_loss_non_interrupted"]), 0.5)
@@ -248,10 +246,25 @@ class TestAggrToRefined(unittest.TestCase):
         for row in rows:
             self.assertIn("average_game_cost", row)
             self.assertIn("moe_average_game_cost", row)
-            
+
             # These metrics should be present with default values
             self.assertIsNotNone(row["average_game_cost"])
             self.assertIsNotNone(row["moe_average_game_cost"])
+
+    def test_token_extraction_correctness(self):
+        """Tests that tokens are correctly extracted from nested usage_stats."""
+        rows = build_refined_rows_from_logs(self.mock_logs_dir, filter_out_below_n=0, mode=GameMode.RANDOM_VS_LLM)
+
+        # We have 2 logs.
+        # Log 1: internlm3-8b-instruct, moves=6, completion_tokens=3489 -> per_move = 581.5
+        # Log 2: llama3-8b, moves=6, completion_tokens=3489 -> per_move = 581.5
+
+        for row in rows:
+            tokens_per_move = float(row["completion_tokens_black_per_move"])
+            self.assertAlmostEqual(tokens_per_move, 581.5, places=1)
+
+            # Also verify total_moves matches
+            self.assertEqual(int(row["total_moves"]), 6)
 
     def test_time_metrics_propagation(self):
         """Tests that measured time metrics are present in refined CSV."""
@@ -289,35 +302,37 @@ class TestAggrToRefined(unittest.TestCase):
         orig_engine_logs_dirs_new = grc.ENGINE_LOGS_DIRS_NEW
         orig_engine_logs_dirs_legacy = grc.ENGINE_LOGS_DIRS_LEGACY
         orig_misc_dragon_dirs = grc.MISC_DRAGON_DIRS
-        orig_filter_out_below_n = grc.FILTER_OUT_BELOW_N
+        orig_filter_out_below_n_random = grc.FILTER_OUT_BELOW_N_RANDOM
+        orig_filter_out_below_n_misc = grc.FILTER_OUT_BELOW_N_MISC
         orig_elo_dragon_only_min_games = grc.ELO_DRAGON_ONLY_MIN_GAMES
-        
-        try:
-        # Configure Elo mode to use our temp dirs
-        grc.GAME_MODE = GameMode.ELO
-        grc.LOGS_DIRS = [self.mock_logs_dir]
-        grc.ENGINE_LOGS_DIRS_NEW = [self.mock_engine_dir]
-        grc.ENGINE_LOGS_DIRS_LEGACY = []
-        grc.MISC_DRAGON_DIRS = [self.mock_misc_dir]
-        grc.FILTER_OUT_BELOW_N = 0
-        grc.ELO_DRAGON_ONLY_MIN_GAMES = 0
-        # Run main to generate CSV
-        grc.main()
 
-        # Verify output exists and has expected columns
-        out_csv = self._tmp_elo_path
-        self.assertTrue(os.path.exists(out_csv))
-        with open(out_csv, "r", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            rows = list(reader)
-        # At least llama3-8b should be present (has both random and dragon entries)
-        self.assertTrue(any(r.get("Player") == "llama3-8b" for r in rows))
-        # New Elo fields present
-        sample = rows[0]
-        self.assertIn("elo", sample)
-        self.assertIn("elo_moe_95", sample)
-        self.assertIn("games_vs_random", sample)
-        self.assertIn("games_vs_dragon", sample)
+        try:
+            # Configure Elo mode to use our temp dirs
+            grc.GAME_MODE = GameMode.ELO
+            grc.LOGS_DIRS = [self.mock_logs_dir]
+            grc.ENGINE_LOGS_DIRS_NEW = [self.mock_engine_dir]
+            grc.ENGINE_LOGS_DIRS_LEGACY = []
+            grc.MISC_DRAGON_DIRS = [self.mock_misc_dir]
+            grc.FILTER_OUT_BELOW_N_RANDOM = 0
+            grc.FILTER_OUT_BELOW_N_MISC = 0
+            grc.ELO_DRAGON_ONLY_MIN_GAMES = 0
+            # Run main to generate CSV
+            grc.main()
+
+            # Verify output exists and has expected columns
+            out_csv = self._tmp_elo_path
+            self.assertTrue(os.path.exists(out_csv))
+            with open(out_csv, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+            # At least llama3-8b should be present (has both random and dragon entries)
+            self.assertTrue(any(r.get("Player") == "llama3-8b" for r in rows))
+            # New Elo fields present
+            sample = rows[0]
+            self.assertIn("elo", sample)
+            self.assertIn("elo_moe_95", sample)
+            self.assertIn("games_vs_random", sample)
+            self.assertIn("games_vs_dragon", sample)
         finally:
             # Restore original values
             grc.GAME_MODE = orig_game_mode
@@ -325,7 +340,8 @@ class TestAggrToRefined(unittest.TestCase):
             grc.ENGINE_LOGS_DIRS_NEW = orig_engine_logs_dirs_new
             grc.ENGINE_LOGS_DIRS_LEGACY = orig_engine_logs_dirs_legacy
             grc.MISC_DRAGON_DIRS = orig_misc_dragon_dirs
-            grc.FILTER_OUT_BELOW_N = orig_filter_out_below_n
+            grc.FILTER_OUT_BELOW_N_RANDOM = orig_filter_out_below_n_random
+            grc.FILTER_OUT_BELOW_N_MISC = orig_filter_out_below_n_misc
             grc.ELO_DRAGON_ONLY_MIN_GAMES = orig_elo_dragon_only_min_games
 
 
@@ -400,10 +416,11 @@ class TestDragonVsLLMRefined(unittest.TestCase):
         self.assertEqual(int(row["player_wins"]), 1)
         self.assertEqual(int(row["opponent_wins"]), 1)
 
-    def test_engine_legacy_path_parsing(self):
+    def test_model_recovery_from_usage_stats(self):
         # Create legacy layout: lvl-3_vs_MODEL/<timestamp>/game.json
         legacy_base = os.path.join(self._tmp_dir, "dragon_vs_llm")
-        run_dir = os.path.join(legacy_base, "lvl-3_vs_gpt-5-nano-2025-08-07-low", "2025-05-02-00-02")
+        # NOTE: Path has a "misleading" model name to ensure we don't use it
+        run_dir = os.path.join(legacy_base, "lvl-3_vs_WRONG_MODEL_NAME", "2025-05-02-00-02")
 
         game = """{
             "time_started": "2025.05.02_00:02",
@@ -412,8 +429,8 @@ class TestDragonVsLLMRefined(unittest.TestCase):
             "number_of_moves": 12,
             "player_white": {"name": "CHESS_ENGINE_DRAGON", "wrong_moves": 0, "wrong_actions": 0, "reflections_used": 0, "reflections_used_before_board": 0, "get_board_count": 0, "get_legal_moves_count": 0, "make_move_count": 0, "model": "N/A"},
             "material_count": {"white": 39, "black": 39},
-            "player_black": {"name": "Player_Black", "wrong_moves": 0, "wrong_actions": 0, "reflections_used": 0, "reflections_used_before_board": 0, "get_board_count": 0, "get_legal_moves_count": 0, "make_move_count": 0, "model": "placeholder"},
-            "usage_stats": {"white": {"total_cost": 0}, "black": {"total_cost": 0, "gpt-5-nano-2025-08-07-low": {"cost": 0, "prompt_tokens": 10, "completion_tokens": 20, "total_tokens": 30}}}
+            "player_black": {"name": "Player_Black", "wrong_moves": 0, "wrong_actions": 0, "reflections_used": 0, "reflections_used_before_board": 0, "get_board_count": 0, "get_legal_moves_count": 0, "make_move_count": 0, "model": "N/A"},
+            "usage_stats": {"white": {"total_cost": 0}, "black": {"total_cost": 0, "real-model-id-from-usage": {"cost": 0, "prompt_tokens": 10, "completion_tokens": 20, "total_tokens": 30}}}
         }"""
         self._write_file(os.path.join(run_dir, "game_1.json"), game)
 
@@ -424,9 +441,9 @@ class TestDragonVsLLMRefined(unittest.TestCase):
         )
         self.assertEqual(len(rows), 1)
         row = rows[0]
-        # Player should be parsed from path segment after lvl-N_vs_
-        self.assertEqual(row["Player"], "gpt-5-nano-2025-08-07-low")
-        # Opponent should be inferred from "lvl-3" → dragon-lvl-3
+        # Player should be parsed from usage_stats keys, NOT path
+        self.assertEqual(row["Player"], "real-model-id-from-usage")
+        # Opponent should be inferred from "lvl-3" → dragon-lvl-3 (path parsing for opponent is still allowed)
         self.assertEqual(row.get("white_opponent"), "dragon-lvl-3")
         self.assertEqual(int(row["total_games"]), 1)
         self.assertEqual(int(row["player_wins"]), 0)
@@ -434,4 +451,4 @@ class TestDragonVsLLMRefined(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main() 
+    unittest.main()
