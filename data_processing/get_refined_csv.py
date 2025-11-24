@@ -154,6 +154,7 @@ FILTER_OUT_MODELS = [
     "google_gemma-3-27b-it@q4_k_m",
     "google_gemma-3-12b-it@q4_k_m",
     "ring-mini-2.0@q4_k_m",
+    "gpt-5-codex-2025-09-15-low",
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
 ]
 
@@ -465,7 +466,7 @@ def load_game_logs(
 
                             # Resolve model label
                             label_from_run = _model_label_from_run_json(run_dir)
-                            
+
                             model_name = label_from_run or game_log.player_black.model
 
                             if not is_new_format_base and model_name in ("placeholder", "Player_Black", "N/A", ""):
@@ -473,12 +474,16 @@ def load_game_logs(
                                 candidate = None
                                 if game_log.usage_stats_black and game_log.usage_stats_black.details:
                                     candidate = next((k for k in game_log.usage_stats_black.details.keys() if k != "total_cost"), None)
-                                
+
                                 if candidate:
-                                    print(f"WARNING: Recovered model '{candidate}' from usage_stats for log with invalid model '{model_name}' at {file_path}")
+                                    print(
+                                        f"WARNING: Recovered model '{candidate}' from usage_stats for log with invalid model '{model_name}' at {file_path}"
+                                    )
                                     model_name = candidate
                                 else:
-                                    print(f"WARNING: Could not determine model ID for log at {file_path}. Player.model='{model_name}', usage_stats keys={list(game_log.usage_stats_black.details.keys()) if game_log.usage_stats_black.details else 'None'}")
+                                    print(
+                                        f"WARNING: Could not determine model ID for log at {file_path}. Player.model='{model_name}', usage_stats keys={list(game_log.usage_stats_black.details.keys()) if game_log.usage_stats_black.details else 'None'}"
+                                    )
 
                             if label_from_run is None:
                                 if is_new_format_base:
@@ -711,9 +716,7 @@ def build_refined_rows_from_logs(
         completion_tokens_black = sum(log.usage_stats_black.completion_tokens for log in model_logs)
         completion_tokens_black_per_move = (completion_tokens_black / llm_total_moves) if llm_total_moves > 0 else 0
         per_game_completion_tokens_black_per_move = [
-            (log.usage_stats_black.completion_tokens / log.number_of_moves)
-            for log in model_logs
-            if log.number_of_moves > 0
+            (log.usage_stats_black.completion_tokens / log.number_of_moves) for log in model_logs if log.number_of_moves > 0
         ]
         std_dev_completion_tokens_black_per_move = (
             stdev(per_game_completion_tokens_black_per_move) if len(per_game_completion_tokens_black_per_move) > 1 else 0
