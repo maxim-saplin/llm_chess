@@ -10,7 +10,7 @@ claude-3-7-sonnet-20250219_thinking_1024, 3, 15, 2025-02,reasoning,
 claude-3-7-sonnet-20250219_thinking_5000, 3, 15, 2025-02,reasoning,
 claude-3-7-sonnet-20250219_thinking_10000, 3, 15, 2025-02,reasoning,
 claude-v3-haiku,0.25,1.25, 2024-03,not_reasoning,
-claude-3-5-haiku-20241022,0.25,1.25, 2024-10,not_reasoning,
+claude-3-5-haiku-20241022,0.8,4, 2024-10,not_reasoning,
 claude-v3-opus,15,75, 2024-03,not_reasoning,
 claude-3-opus,15,75, 2024-03,not_reasoning,
 anthropic.claude-v3-5-haiku, 0.8, 4, 2024-10,not_reasoning,
@@ -20,7 +20,7 @@ claude-v4-sonnet-thinking_16000, 3, 15, 2025-05,reasoning,
 claude-sonnet-4-20250514_thinking_16000, 3, 15, 2025-05,reasoning,
 claude-sonnet-4-5-20250929_thinking_16000, 3, 15, 2025-09,reasoning,
 claude-v4-opus, 15, 75, 2025-05,not_reasoning,
-claude-opus-4-20250514, 15, 75, 2025-05,not_reasoning
+claude-opus-4-20250514, 15, 75, 2025-05,not_reasoning,
 claude-v4-opus-thinking_16000, 15, 75, 2025-05,reasoning,
 claude-opus-4-1-20250805, 15, 75, 2025-08,not_reasoning,
 claude-haiku-4-5-20251001_thinking_16000, 1, 5, 2025-10,reasoning,
@@ -62,12 +62,18 @@ gpt-4.5-preview-2025-02-27, 75, 150, 2025-02,not_reasoning,
 gpt-4.1-nano-2025-04-14, 0.1, 0.4, 2025-04,not_reasoning,
 gpt-4.1-mini-2025-04-14, 0.4, 1.6, 2025-04,not_reasoning,
 gpt-4.1-2025-04-14, 2.9, 8.0, 2025-04,not_reasoning,
-gpt-5, 1.25, 10.00, 2025-08,reasoning,
+gpt-5-2025-08-07-low, 1.25, 10.00, 2025-08,reasoning,
+gpt-5-2025-08-07-medium, 1.25, 10.00, 2025-08,reasoning,
+gpt-5-2025-08-07-high, 1.25, 10.00, 2025-08,reasoning,
 gpt-5-codex-2025-09-15-low, 1.25, 10.00, 2025-09,reasoning,
 gpt-5-codex-2025-09-15-medium, 1.25, 10.00, 2025-09,reasoning,
 gpt-5-codex-2025-09-15-high, 1.25, 10.00, 2025-09,reasoning,
-gpt-5-mini, 0.25, 2.00, 2025-08,reasoning,
-gpt-5-nano, 0.05, 0.40, 2025-08,reasoning,
+gpt-5-mini-2025-08-07-low, 0.25, 2.00, 2025-08,reasoning,
+gpt-5-mini-2025-08-07-medium, 0.25, 2.00, 2025-08,reasoning,
+gpt-5-mini-2025-08-07-high, 0.25, 2.00, 2025-08,reasoning,
+gpt-5-nano-2025-08-07-low, 0.05, 0.40, 2025-08,reasoning,
+gpt-5-nano-2025-08-07-medium, 0.05, 0.40, 2025-08,reasoning,
+gpt-5-nano-2025-08-07-high, 0.05, 0.40, 2025-08,reasoning,
 gpt-5-chat, 1.25, 10.00, 2025-08,not_reasoning,
 o1-preview-2024-09-12, 16.5, 66, 2024-09,reasoning,Azure OpenAI (price is higher than from OpenAI)
 o1-2024-12-17-low, 15, 60, 2024-12,reasoning,
@@ -82,6 +88,9 @@ o3-2025-04-16-medium, 10, 40, 2025-04,reasoning,
 o3-2025-04-16-high, 10, 40, 2025-04,reasoning,
 o3-2025-04-16, 10, 40, 2025-04,reasoning,
 o4-mini-2025-04-16, 1.1, 4.4, 2025-04,reasoning,
+o4-mini-2025-04-16-low, 1.1, 4.4, 2025-04,reasoning,
+o4-mini-2025-04-16-medium, 1.1, 4.4, 2025-04,reasoning,
+o4-mini-2025-04-16-high, 1.1, 4.4, 2025-04,reasoning,
 o1-mini-2025-04-16-low, 1.1, 4.4, 2025-04,reasoning,
 o1-mini-2025-04-16-medium, 1.1, 4.4, 2025-04,reasoning,
 o1-mini-2025-04-16-high, 1.1, 4.4, 2025-04,reasoning,
@@ -95,21 +104,20 @@ qwen3-30b-a3b-thinking-2507@q4_k_m, 0.29, 0.59, 2025-07,reasoning, Assuming pric
 granite-3.1-8b-instruct, 0.20, 0.20, 2024-12,not_reasoning,Assuming price from IBM watsonx.ai
 grok-2-1212, 2, 10, 2024-08,not_reasoning,
 internlm3-8b-instruct, 0.40, 0.60, 2025-01,not_reasoning,Assuming AWS price for llama-3-instruct-8b
-google_gemma-3-12b-it@iq4_xs,,,,not_reasoning, 
-google_gemma-3-12b-it@q8_0,,,,not_reasoning, 
-google_gemma-3-27b-it@iq4_xs,,,,not_reasoning, 
+google_gemma-3-12b-it@iq4_xs,,,2025-03,not_reasoning,Local quantized model
+google_gemma-3-12b-it@q8_0,,,2025-03,not_reasoning,Local quantized model
+google_gemma-3-27b-it@iq4_xs,,,2025-03,not_reasoning,Local quantized model 
 llama-2-7b-chat,0.03,0.06,2023-06,not_reasoning, DeepInfra price for LLama 3
 llama-3-70b-instruct-awq,0.23,0.4,2024-04,not_reasoning, DeepInfra price for LLama 3 70B
 llama-3.1-tulu-3-8b@q8_0,0.03,0.06,2024-11,not_reasoning,  DeepInfra price for LLama 3
 llama-3.3-70b,0.23,0.4,2024-12,not_reasoning, DeepInfra price
 llama3-8b-8192,0.03,0.06,2024-04,not_reasoning, DeepInfra price 
 llama3.1-8b,0.03,0.06,2024-07,not_reasoning, DeepInfra price
-llama-4-scout-17b-16e-instruct, 0.65, 0.85, 2025-04,not_reasoning, Cerebras price
 llama-4-scout-cerebras, 0.65, 0.85, 2025-04,not_reasoning, Cerebras price
 qwen3-32b-cerebras, 0.4, 0.8, 2025-04,reasoning, Cerebras price
-ministral-8b-instruct-2410,,,2024-10,not_reasoning, 
-mistral-nemo-12b-instruct-2407,,,2024-07,not_reasoning, 
-mistral-small-24b-instruct-2501@q4_k_m,,,,not_reasoning, 
+ministral-8b-instruct-2410,0.1,0.1,2024-10,not_reasoning,Assuming Mistral API pricing
+mistral-nemo-12b-instruct-2407,0.15,0.15,2024-07,not_reasoning,Assuming Mistral API pricing
+mistral-small-24b-instruct-2501@q4_k_m,,,2025-01,not_reasoning,Local quantized model 
 mistral-small-instruct-2409,0.03,0.06,2024-09,not_reasoning, DeepInfra price
 phi-4,0.05,0.1,2025-03,not_reasoning, DeepInfra price
 qwen-max-2025-01-25, 1.6, 6.4, 2025-01,not_reasoning, Alibaba Cloud price
@@ -160,4 +168,39 @@ lvl-4_vs_o3-2025-04-16-low, 10, 40, 2025-04,unknown,
 lvl-5_vs_grok-3-mini-beta-high, 0.3, 0.5, 2025-02,unknown,
 lvl-5_vs_grok-3-mini-fast-beta-high, 0.6, 4.0, 2025-02,unknown,
 lvl-5_vs_o3-2025-04-16-low, 10, 40, 2025-04,unknown,
-
+ring-mini-2.0@q8_0,,,2025-08,reasoning,Local quantized model
+gpt-oss-20b-high, 0.1, 0.5, 2025-08,reasoning, Groq price
+gpt-oss-120b-low, 0.15, 0.75, 2025-08,reasoning, Groq price
+gpt-5-chat-2025-08-07, 1.25, 10.00, 2025-08,not_reasoning,
+qwen3-4b-thinking-2507@q8,0.05,0.2,2025-07,reasoning,Assuming low price for small local model
+gpt-oss-120b-medium, 0.15, 0.75, 2025-08,reasoning, Groq price
+gpt-oss-20b-medium, 0.1, 0.5, 2025-08,reasoning, Groq price
+gpt-oss-20b-low, 0.1, 0.5, 2025-08,reasoning, Groq price
+claude-sonnet-4-5-20250929, 3, 15, 2025-09,not_reasoning,
+gpt-oss-120b-high, 0.15, 0.75, 2025-08,reasoning, Groq price
+claude-haiku-4-5-20251001, 1, 5, 2025-10,not_reasoning,
+claude-3-7-sonnet-20250219, 3, 15, 2025-02,not_reasoning,
+gemma-3-4b-it@iq4_qs,0.03,0.06,2025-03,not_reasoning,Local quantized model
+magistral-small-2506, 0.1, 0.3, 2025-06,not_reasoning,Assuming Mistral Small pricing
+claude-3-5-sonnet, 3, 15, 2024-07,not_reasoning,
+gemma-3-4b-it@iq4_qs@PGN,,,2025-03,not_reasoning,Local quantized model
+claude-3-7-sonnet-20250219_thonking_2048, 3, 15, 2025-02,reasoning,
+grok-3-mini-beta-high, 0.3, 0.5, 2025-02,reasoning,
+claude-opus-4-20250514_thinking_16000, 15, 75, 2025-05,reasoning,
+o4-mini-2025-04-16-low@PGN, 1.1, 4.4, 2025-04,reasoning,
+qwen3-14b@iq4_xs-thinking,0.1,0.2,2025-04,reasoning,Assuming low price for local quantized model
+google_gemma-3-4b-it@bf16,,,2025-03,not_reasoning,Local bf16 model
+grok-3-mini-beta-low, 0.3, 0.5, 2025-02,reasoning,
+claude-2, 8, 24, 2023-07,not_reasoning,
+google_gemma-3-4b-it@q8_0,,,2025-03,not_reasoning,Local quantized model
+non-deepseek-r1-t03_mini41-t10_mini41-t03,0.55, 2.19,2025-01,unknown,Custom ensemble configuration
+claude-2-1, 8, 24, 2023-11,not_reasoning,
+non-gemini-25pro-t03_mini41-t00_mini41-t03,0.3, 0.5,2025-04,unknown,Custom ensemble configuration
+qwen-3-32b, 0.4, 0.8, 2025-04,reasoning,Assuming Cerebras price for Qwen3 32B
+claude-3-haiku, 0.25, 1.25, 2024-03,not_reasoning,
+amazon.nova-lite-v1, 0.06, 0.24, 2024-12,not_reasoning,AWS Bedrock price
+deepseek-v3, 0.27, 1.10, 2024-12,not_reasoning,Same as deepseek-chat
+deepseek-r1-distill-qwen-32b@q4_k_m|isol_temp06, 0.05, 0.2, 2025-01,reasoning,Assuming Alibaba Qwen-Turbo price
+amazon.nova-pro-v1, 0.8, 3.2, 2024-12,not_reasoning,AWS Bedrock price
+chat-bison-32k@002,0.5,0.5,2023-10,not_reasoning,Google PaLM deprecated model
+qwen2.5-7b-chess-mmxl@f16,0.01,0.03,2025-06,not_reasoning, Nebius Base price
