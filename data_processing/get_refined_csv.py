@@ -39,13 +39,16 @@ Model naming (applies to Dragon mode, Elo, and any consumer of Dragon logs):
 2. Structured runs: if `_run.json` exists, _model_label_from_run_json() reads llm_configs,
    takes the base model, and appends reasoning_effort plus thinking_budget as
    `model-reasoning-thinking_XXXX`.
-3. Legacy runs without `_run.json`: we fall back to the model identifier already recorded in
-   the per-game JSON (Player_Black.model). Directory names no longer influence the label.
-4. Overrides & ignores: MODEL_OVERRIDES rewrites specific run directory suffixes (or maps them
+3. Legacy runs without `_run.json`: we fall back to the model identifier recorded in
+   the per-game JSON (Player_Black.model).
+4. Usage Stats Fallback: If the model is "N/A", "placeholder", or "Player_Black", we attempt
+   to recover the model ID from `usage_stats.black` keys (ignoring "total_cost").
+   Directory names are NOT used to infer model IDs.
+5. Overrides & ignores: MODEL_OVERRIDES rewrites specific run directory suffixes (or maps them
    to `"ignore"` so the run is dropped) before logs are grouped.
-5. Aliases: after logs are loaded, ALIASES normalizes already-clean labels to preferred display
+6. Aliases: after logs are loaded, ALIASES normalizes already-clean labels to preferred display
    names, letting us merge vendor spelling variants without editing old runs.
-6. Filters: FILTER_OUT_MODELS removes models from leaderboards entirely even if earlier steps
+7. Filters: FILTER_OUT_MODELS removes models from leaderboards entirely even if earlier steps
    produced a label.
 These steps happen once when logs are ingested; the same canonical name drives refined CSVs,
 pricing lookups, win-rate exports, and Elo estimation, so directory hygiene matters.
@@ -109,7 +112,8 @@ ENGINE_LOGS_DIRS_LEGACY = [
     "_logs/_pre_aug_2025/dragon_vs_llm",
 ]
 
-FILTER_OUT_BELOW_N = 30  # 0
+FILTER_OUT_BELOW_N_RANDOM = 30  # 0
+FILTER_OUT_BELOW_N_MISC = 30  # 0
 DATE_AFTER = None  # "2025.04.01_00:00"
 
 # Output files
@@ -150,6 +154,7 @@ FILTER_OUT_MODELS = [
     "google_gemma-3-27b-it@q4_k_m",
     "google_gemma-3-12b-it@q4_k_m",
     "ring-mini-2.0@q4_k_m",
+    "gpt-5-codex-2025-09-15-low",
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
 ]
 
@@ -235,6 +240,8 @@ class PlayerStats:
 @dataclass
 class UsageStats:
     total_cost: float
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
     details: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -360,8 +367,26 @@ def load_game_log(file_path: str) -> GameLog:
     """Load a single per-game JSON into a strongly typed GameLog dataclass."""
     with open(file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
-        white_usage_keys = list(data["usage_stats"]["white"])
-        black_usage_keys = list(data["usage_stats"]["black"])
+
+        def _extract_usage(stats_dict: dict) -> UsageStats:
+            total_cost = stats_dict.get("total_cost", 0)
+            prompt_tokens = 0
+            completion_tokens = 0
+
+            # Find the inner dictionary that holds token counts (keyed by model name)
+            for k, v in stats_dict.items():
+                if k != "total_cost" and isinstance(v, dict):
+                    prompt_tokens = v.get("prompt_tokens", 0)
+                    completion_tokens = v.get("completion_tokens", 0)
+                    break
+
+            return UsageStats(
+                total_cost=total_cost,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                details=stats_dict,
+            )
+
         return GameLog(
             time_started=data["time_started"],
             winner=data["winner"],
@@ -370,14 +395,8 @@ def load_game_log(file_path: str) -> GameLog:
             player_white=PlayerStats(**data["player_white"]),
             player_black=PlayerStats(**data["player_black"]),
             material_count=data["material_count"],
-            usage_stats_white=UsageStats(
-                total_cost=data["usage_stats"]["white"][white_usage_keys[0]],
-                details=(data["usage_stats"]["white"].get(white_usage_keys[1], None) if len(white_usage_keys) > 1 else None),
-            ),
-            usage_stats_black=UsageStats(
-                total_cost=data["usage_stats"]["black"][black_usage_keys[0]],
-                details=(data["usage_stats"]["black"].get(black_usage_keys[1], None) if len(black_usage_keys) > 1 else None),
-            ),
+            usage_stats_white=_extract_usage(data["usage_stats"]["white"]),
+            usage_stats_black=_extract_usage(data["usage_stats"]["black"]),
         )
 
 
@@ -447,6 +466,25 @@ def load_game_logs(
 
                             # Resolve model label
                             label_from_run = _model_label_from_run_json(run_dir)
+
+                            model_name = label_from_run or game_log.player_black.model
+
+                            if not is_new_format_base and model_name in ("placeholder", "Player_Black", "N/A", ""):
+                                # Try to recover from usage_stats keys (ignore total_cost)
+                                candidate = None
+                                if game_log.usage_stats_black and game_log.usage_stats_black.details:
+                                    candidate = next((k for k in game_log.usage_stats_black.details.keys() if k != "total_cost"), None)
+
+                                if candidate:
+                                    print(
+                                        f"WARNING: Recovered model '{candidate}' from usage_stats for log with invalid model '{model_name}' at {file_path}"
+                                    )
+                                    model_name = candidate
+                                else:
+                                    print(
+                                        f"WARNING: Could not determine model ID for log at {file_path}. Player.model='{model_name}', usage_stats keys={list(game_log.usage_stats_black.details.keys()) if game_log.usage_stats_black.details else 'None'}"
+                                    )
+
                             if label_from_run is None:
                                 if is_new_format_base:
                                     print(
@@ -454,7 +492,6 @@ def load_game_logs(
                                     )
                                     continue
 
-                            model_name = label_from_run or game_log.player_black.model
                             if logs_dir in directory_aliases:
                                 # Even Dragon runs can be hard-aliased directory-wide.
                                 model_name = directory_aliases[logs_dir]
@@ -676,14 +713,10 @@ def build_refined_rows_from_logs(
             moe_mistakes_per_1000moves = 0
             moe_avg_moves = 0
 
-        completion_tokens_black = sum(
-            (log.usage_stats_black.details.get("completion_tokens", 0) if log.usage_stats_black.details else 0) for log in model_logs
-        )
+        completion_tokens_black = sum(log.usage_stats_black.completion_tokens for log in model_logs)
         completion_tokens_black_per_move = (completion_tokens_black / llm_total_moves) if llm_total_moves > 0 else 0
         per_game_completion_tokens_black_per_move = [
-            ((log.usage_stats_black.details.get("completion_tokens", 0) if log.usage_stats_black.details else 0) / log.number_of_moves)
-            for log in model_logs
-            if log.number_of_moves > 0
+            (log.usage_stats_black.completion_tokens / log.number_of_moves) for log in model_logs if log.number_of_moves > 0
         ]
         std_dev_completion_tokens_black_per_move = (
             stdev(per_game_completion_tokens_black_per_move) if len(per_game_completion_tokens_black_per_move) > 1 else 0
@@ -706,8 +739,8 @@ def build_refined_rows_from_logs(
         per_game_costs: list[float] = []
         per_game_price_per_1000_moves: list[float] = []
         for log in model_logs:
-            prompt_tokens = log.usage_stats_black.details.get("prompt_tokens", 0) if log.usage_stats_black.details else 0
-            completion_tokens = log.usage_stats_black.details.get("completion_tokens", 0) if log.usage_stats_black.details else 0
+            prompt_tokens = log.usage_stats_black.prompt_tokens
+            completion_tokens = log.usage_stats_black.completion_tokens
             prompt_cost = prompt_tokens * (prompt_price / 1_000_000)
             completion_cost = completion_tokens * (completion_price / 1_000_000)
             game_cost = prompt_cost + completion_cost
@@ -1479,7 +1512,7 @@ def main():
             logs_dirs,
             model_overrides=MODEL_OVERRIDES,
             only_after_date=DATE_AFTER,
-            filter_out_below_n=FILTER_OUT_BELOW_N,
+            filter_out_below_n=FILTER_OUT_BELOW_N_MISC,
             filter_out_models=FILTER_OUT_MODELS,
             model_aliases=ALIASES,
             models_metadata_csv=MODELS_METADATA_CSV,
@@ -1508,7 +1541,7 @@ def main():
             LOGS_DIRS,
             model_overrides=MODEL_OVERRIDES,
             only_after_date=DATE_AFTER,
-            filter_out_below_n=FILTER_OUT_BELOW_N,
+            filter_out_below_n=FILTER_OUT_BELOW_N_RANDOM,
             filter_out_models=FILTER_OUT_MODELS,
             model_aliases=ALIASES,
             models_metadata_csv=MODELS_METADATA_CSV,
@@ -1520,7 +1553,7 @@ def main():
             ENGINE_LOGS_DIRS_NEW + ENGINE_LOGS_DIRS_LEGACY,
             model_overrides=MODEL_OVERRIDES,
             only_after_date=DATE_AFTER,
-            filter_out_below_n=FILTER_OUT_BELOW_N,
+            filter_out_below_n=FILTER_OUT_BELOW_N_MISC,
             filter_out_models=FILTER_OUT_MODELS,
             model_aliases=ALIASES,
             models_metadata_csv=MODELS_METADATA_CSV,
@@ -1616,7 +1649,7 @@ def main():
             LOGS_DIRS,
             model_overrides=MODEL_OVERRIDES,
             only_after_date=DATE_AFTER,
-            filter_out_below_n=FILTER_OUT_BELOW_N,
+            filter_out_below_n=FILTER_OUT_BELOW_N_RANDOM,
             filter_out_models=FILTER_OUT_MODELS,
             model_aliases=ALIASES,
             models_metadata_csv=MODELS_METADATA_CSV,
