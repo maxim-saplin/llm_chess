@@ -1,0 +1,73 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.11.26_22:16",
+            "log_folder_relative": "_logs/rand_vs_llm/anthropic.claude-opus-4-5-20251101-v1-0/2025-11-26-22-16-19",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 7,
+            "dialog_turn_delay": 7,
+            "max_api_retries": 3,
+            "api_retry_delay": 14400,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "claude-opus-4-5-20251101",
+                "api_type": "oai_comp_endpoint",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 0,
+    "black_wins": 8,
+    "draws": 25,
+    "total_moves": 5650,
+    "reasons": {
+        "Checkmate": 8,
+        "Max moves reached": 15,
+        "Stalemate": 2,
+        "Insufficient material": 8
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 87,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 2.6363636363636362,
+        "std_dev_material": 6.107465625252128
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "claude-opus-4-5-20251101",
+        "total_material": 348,
+        "wrong_moves": 12,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 10.545454545454545,
+        "std_dev_material": 10.431595363039243
+    },
+    "average_moves": 171.21212121212122,
+    "std_dev_moves": 47.25050103951119
+}
