@@ -1,7 +1,7 @@
 # LLM Chess: Benchmarking Reasoning and Instruction-Following in LLMs
 
 [![Leaderboard](https://img.shields.io/badge/Live%20Leaderboard-%20🏆-blueviolet)](https://maxim-saplin.github.io/llm_chess/)
-[![Paper](https://img.shields.io/badge/Paper-NeurIPS%20FoRLM%202025-green)](docs/LLM%20CHESS%2C%20Benchmarking%20Reasoning%20and%20Instruction-Following%20in%20LLMs%20through%20Chess%20-%20NeurIPS%20FoRLM%202025.pdf)
+[![Paper](https://img.shields.io/badge/Paper-NeurIPS%20FoRLM%202025-green)](https://arxiv.org/abs/2512.01992)
 
 LLM Chess is a benchmark that evaluates Large Language Models (LLMs) on their reasoning and instruction-following abilities in an agentic setting. LLMs engage in multi-turn dialogs to play chess against opponents like a Random Player or the Komodo Dragon chess engine. This setup tests both strategic reasoning (chess skill) and protocol adherence (sustained interaction without errors).
 
