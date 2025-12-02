@@ -161,6 +161,13 @@ FILTER_OUT_MODELS = [
 # Per-run path filters (skip failed/error batches without touching the filesystem).
 FILTER_OUT_PATH_KEYWORDS = ["errors-", "fails-", "skip-"]
 
+# Paths to suppress "Recovered model from usage_stats" warnings for
+SUPPRESS_MODEL_RECOVERY_WARNINGS = [
+    "lvl-1_vs_claude-3-7-sonnet-20250219-thinking-budget-5000",
+    "lvl-1_vs_o3-mini-2025-01-31-medium",
+    "lvl-1_vs_o4-mini-2025-04-16-medium",
+]
+
 # Models whose tokens and price metrics should be zeroed
 ZERO_TOKENS: set[str] = {
     "grok-3-mini-beta-low",
@@ -476,9 +483,10 @@ def load_game_logs(
                                     candidate = next((k for k in game_log.usage_stats_black.details.keys() if k != "total_cost"), None)
 
                                 if candidate:
-                                    print(
-                                        f"WARNING: Recovered model '{candidate}' from usage_stats for log with invalid model '{model_name}' at {file_path}"
-                                    )
+                                    if not any(s in file_path for s in SUPPRESS_MODEL_RECOVERY_WARNINGS):
+                                        print(
+                                            f"WARNING: Recovered model '{candidate}' from usage_stats for log with invalid model '{model_name}' at {file_path}"
+                                        )
                                     model_name = candidate
                                 else:
                                     print(
