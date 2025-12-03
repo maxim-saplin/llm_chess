@@ -1,3 +1,7 @@
+# December 3, 2025: Paper, NeurIPS'25 FoRLM
+
+In March 2025 LLM Chess took an academic turn with the goal to present a research paper at NeurIPS'25. 9 months later a lot of effort has been put into scrutinizing the eval, many tokens have been burnt doing experiments and ablations, late evening/early morning (depending on the time zone) Sunday calls took place. The effort has truly [reshaped the eval](https://www.linkedin.com/posts/maxim-saplin_llm-chess-benchmarking-reasoning-and-instruction-following-activity-7401889115593515008-Us3H) - introducing Elo and anchoring to human level performance, investigating various factors influencing models performance - as a result we've got a more polished LB, [reviewed paper](https://arxiv.org/abs/2512.01992) and the eval being featured at [NeurIPS'25 FoRLM](https://reasoning-workshop.github.io) reasoning models workshop!
+
 # September 9, 2025: Leaderboard Overhaul — Elo as the primary metric
 
 We’ve overhauled the leaderboard. The original benchmark pitted LLMs against a chaos monkey baseline — a Random Player that selects any legal move. By late 2024, reasoning models began producing meaningful games, and in April 2025 OpenAI’s o3 effectively saturated the random-based leaderboard. Today, Elo becomes the primary ranking signal, anchored to the Komodo Dragon Chess Engine and calibrated against a rated player pool on chess.com.

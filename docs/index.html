@@ -137,14 +137,15 @@
                 1D MLE over aggregated blocks (opponent Elo, wins, draws, losses) and report ±95% CI. When both Random
                 and Dragon data exist, they are combined. Empty Elo appears for extreme 100% win/loss or no anchored
                 games.<br>
-                <strong>- Win/Loss:</strong> Difference between wins and losses as a percentage of total games (0-100%);
-                reflects BOTH chess skill and instruction following. 50% ≈ equal wins/losses.<br>
                 <strong>- Game Duration:</strong> Share of maximum game length completed (0-100%); measures
-                instruction-following stability across many moves.<br>
-                <strong>- Tokens:</strong> Completion tokens per move; verbosity/efficiency signal.
+                instruction-following stability across many moves. 100% means no games were interrupted due to model
+                haluscinating moves or actions. 50% means that on average the model boroke the game loop mid-game
+                (making an average 100 moves out of max 200 allowed)<br>
+                <strong>- Tokens:</strong> Completion tokens per move; verbosity/efficiency signal.<br>
+                <strong>- Cost:</strong> Estimated cost per game based on token usage and model pricing.
                 <br><br>
                 <strong>ARRANGEMENT & SOURCES:</strong><br><br>
-                - Primary sorting: Elo (DESC), then Win/Loss (DESC), Game Duration (DESC), Tokens (ASC).<br>
+                - Primary sorting: Elo (DESC), then Game Duration (DESC), Tokens (ASC).<br>
                 - Data sources mix Random-vs-LLM and Dragon-vs-LLM games. Dragon levels map to Elo and provide the
                 anchor; Random is first calibrated vs Dragon and then used as an opponent for many models.<br>
                 - Elo ratings are not comparable across player pools, i.e. you can not compare chess.com Elo to FIDE
@@ -193,7 +194,7 @@
                 - <strong>AG2 (aka Autogen)</strong> is used as a backbone for LLM communication. It also implements the
                 interaction between a Chess Board and custom agents like GameAgent, RandomPlayerAgent, AutoReplyAgent,
                 and others for simulating different player types.<br>
-                - <strong>Stockfish</strong> - the chess engine doing the actual best move calculation, used as a
+                - <strong>Komodo Dragon</strong> - the chess engine doing the actual best move calculation, used as a
                 reference to demonstrate what a real chess player's performance is.<br>
                 <br>
                 <strong>Workflow:</strong><br><br>
@@ -265,9 +266,7 @@ Move made, switching player
             GitHub
 
         </a>
-        <a class="gh"
-            href="https://arxiv.org/abs/2512.01992"
-            target="_blank">
+        <a class="gh" href="https://arxiv.org/abs/2512.01992" target="_blank">
             <img src="icons/paper.png" alt="Paper Icon">
             Paper
         </a>

@@ -6,12 +6,15 @@ const navConfig = {
             title: 'Leaderboard',
             elementId: 'leaderboard',
             isDefault: true,
-            onShow: function() {
+            onShow: function () {
                 buildFreshTable();
                 // Ensure default styling for standard leaderboard
                 const container = document.getElementById('leaderboard').querySelector('.table-container');
                 if (container) {
                     container.classList.remove('extended-table');
+                    // Reset inline margin styles that may have been set by extended view
+                    container.style.marginLeft = '';
+                    container.style.marginRight = '';
                 }
             }
         },
@@ -20,11 +23,11 @@ const navConfig = {
             id: 'leaderboard_ext',
             title: 'LB (extended)',
             elementId: 'leaderboard', // Reuse the same element
-            onShow: function() {
+            onShow: function () {
                 // If loading for the first time, ensure defaults
                 if (this.firstLoad !== true) {
                     this.firstLoad = true;
-                    
+
                     // Reset to defaults if no localStorage data
                     const saved = localStorage.getItem('columnSelection');
                     if (!saved) {
@@ -36,9 +39,9 @@ const navConfig = {
                         tryLoadColumnSelectionFromStorage();
                     }
                 }
-                
+
                 buildFreshTable();
-                
+
                 const container = document.getElementById('leaderboard').querySelector('.table-container');
                 if (container) {
                     container.classList.add('extended-table');
@@ -51,7 +54,7 @@ const navConfig = {
             id: 'matrix',
             title: 'Matrix',
             elementId: 'matrix-view',
-            onShow: function() {
+            onShow: function () {
                 initializeMatrixView();
             }
         },
@@ -64,7 +67,7 @@ const navConfig = {
             id: 'notes',
             title: 'Notes',
             elementId: 'considerations',
-            onShow: function() {
+            onShow: function () {
                 // Inject a short blog-style update before rendering markdown
                 const el = document.getElementById(this.elementId);
                 if (el && !el.__elo_injected) {
@@ -83,7 +86,7 @@ with a superscript asterisk in the leaderboard.</p>`;
             }
         }
     },
-    
+
     dropdowns: [
         {
             title: 'Leaderboard',
@@ -124,6 +127,12 @@ const SPECIAL_ROWS = {};
 let sortOrderState = {
     [Screen.LEADERBOARD_NEW]: {},
     [Screen.LEADERBOARD_EXT]: {},
+};
+
+// Track current sort column for persistence
+let currentSortState = {
+    [Screen.LEADERBOARD_NEW]: { columnIndex: null, order: null },
+    [Screen.LEADERBOARD_EXT]: { columnIndex: null, order: null },
 };
 
 let currentScreen = null;
@@ -179,10 +188,11 @@ let nextPrimarySortValue = 0; // Track the next available primarySort value
 
 document.addEventListener('DOMContentLoaded', () => {
     parseCSVData();
+    tryLoadSortStateFromStorage();
     createNavigation();
     fetchAndAnimateBoard();
     showDefaultScreen();
-    
+
     // Initialize markdown rendering
     setTimeout(() => {
         MinimalMD.render('considerations');
@@ -197,18 +207,18 @@ function parseCSVData() {
         console.error('CSV data not found. Make sure data.js is loaded before script.js');
         return;
     }
-    
+
     const lines = data.trim().split('\n').filter(line => line.trim() !== '');
-    
+
     // Parse headers
     parsedCsvData.headers = lines[0].split(',');
-    
+
     // Parse rows
     let rowObjects = lines.slice(1).map((line, i) => {
         const cols = line.split(',');
         return { originalIndex: i, cols };
     });
-    
+
     // Separate special rows and normal rows
     // Inject benchmark rows with Elo only (placed based on Elo)
     const headers = parsedCsvData.headers;
@@ -230,7 +240,7 @@ function parseCSVData() {
     parsedCsvData.rows = rowObjects;
     parsedCsvData.specialRows = [];
     parsedCsvData.normalRows = rowObjects;
-    
+
     console.log('CSV data parsed successfully');
 }
 
@@ -449,11 +459,12 @@ const columnDefinitions = {
 
 // Define default columns for each table
 const tableColumnSets = {
-    [Screen.LEADERBOARD_NEW]: ['rank', 'player', 'elo', 'winLoss', 'gameDuration', 'tokens'],
+    [Screen.LEADERBOARD_NEW]: ['rank', 'player', 'elo', 'gameDuration', 'tokens', 'costPerGame'],
     [Screen.LEADERBOARD_EXT]: ['rank', 'player', 'elo', 'winLoss', 'gameDuration', 'tokens', 'costPerGame', 'avgMoves']
 };
 
 // Define column preferences for extended table (will be loaded from localStorage)
+const EXTENDED_LB_VERSION = 'v2';
 let extendedColumnPreferences = {
     available: Object.keys(columnDefinitions).filter(id => id !== 'rank' && id !== 'player'),
     selected: tableColumnSets[Screen.LEADERBOARD_EXT].filter(id => id !== 'rank' && id !== 'player'),
@@ -466,21 +477,22 @@ const defaultSortFunctions = {
         const eIdx = headerIndex('elo');
         const eloA = eIdx >= 0 ? parseFloat(colsA[eIdx]) : NaN;
         const eloB = eIdx >= 0 ? parseFloat(colsB[eIdx]) : NaN;
-        const wlA = parseFloat(colsA[csvIndices.win_loss]) || 0;
-        const wlB = parseFloat(colsB[csvIndices.win_loss]) || 0;
         const gdA = parseFloat(colsA[csvIndices.game_duration]) || 0;
         const gdB = parseFloat(colsB[csvIndices.game_duration]) || 0;
         const tokA = parseFloat(colsA[csvIndices.completion_tokens_black_per_move]) || 0;
         const tokB = parseFloat(colsB[csvIndices.completion_tokens_black_per_move]) || 0;
-        // Primary: Elo DESC (NaNs last). Then Win/Loss DESC, Game Duration DESC, Tokens ASC
+        // Primary: Elo DESC (NaNs last). Then Game Duration DESC, Tokens ASC
         if (eIdx >= 0 && (!isNaN(eloA) || !isNaN(eloB))) {
             if (isNaN(eloA)) return 1;
             if (isNaN(eloB)) return -1;
             if (eloB !== eloA) return eloB - eloA;
         }
-        return (wlB - wlA) || (gdB - gdA) || (tokA - tokB);
+        return (gdB - gdA) || (tokA - tokB);
     },
     [Screen.LEADERBOARD_EXT]: (colsA, colsB) => {
+        const eIdx = headerIndex('elo');
+        const eloA = eIdx >= 0 ? parseFloat(colsA[eIdx]) : NaN;
+        const eloB = eIdx >= 0 ? parseFloat(colsB[eIdx]) : NaN;
         const wlA = parseFloat(colsA[csvIndices.win_loss]) || 0;
         const wlB = parseFloat(colsB[csvIndices.win_loss]) || 0;
         const gdA = parseFloat(colsA[csvIndices.game_duration]) || 0;
@@ -489,7 +501,15 @@ const defaultSortFunctions = {
         const tokB = parseFloat(colsB[csvIndices.completion_tokens_black_per_move]) || 0;
         const costA = parseFloat(colsA[csvIndices.average_game_cost]) || 0;
         const costB = parseFloat(colsB[csvIndices.average_game_cost]) || 0;
-        // Sort by Win/Loss DESC, then Game Duration DESC, then Tokens ASC, then Cost ASC
+
+        // Primary: Elo DESC (NaNs last)
+        if (eIdx >= 0 && (!isNaN(eloA) || !isNaN(eloB))) {
+            if (isNaN(eloA)) return 1;
+            if (isNaN(eloB)) return -1;
+            if (eloB !== eloA) return eloB - eloA;
+        }
+
+        // Then Win/Loss DESC, Game Duration DESC, Tokens ASC, Cost ASC
         return (wlB - wlA) || (gdB - gdA) || (tokA - tokB) || (costA - costB);
     }
 };
@@ -509,19 +529,19 @@ function getActiveColumns() {
 function showPane(screenId) {
     const scrollPos = window.scrollY;
     const screenConfig = Object.values(navConfig.screens).find(s => s.id === screenId);
-    
+
     if (!screenConfig) {
         console.error(`Screen ${screenId} not found in configuration`);
         return;
     }
-    
+
     // Ensure CSV data is parsed if not already done
     if (parsedCsvData.rows.length === 0) {
         parseCSVData();
     }
-    
+
     currentScreen = screenId;
-    
+
     // Hide all panes first to reset state if elementId is reused
     Object.values(navConfig.screens).forEach(screen => {
         const element = document.getElementById(screen.elementId);
@@ -534,26 +554,26 @@ function showPane(screenId) {
             }
         }
     });
-    
+
     // Show the selected pane
     const selectedElement = document.getElementById(screenConfig.elementId);
     if (selectedElement) selectedElement.style.display = 'block';
-    
+
     // Update button states - add null checks
     document.querySelectorAll('.button-container button').forEach(button => {
         if (button) button.classList.remove('selected');
     });
-    
+
     // Find the button/dropdown corresponding to the screenId
-    const parentDropdown = navConfig.dropdowns.find(dropdown => 
-        dropdown.defaultScreen === screenId || 
+    const parentDropdown = navConfig.dropdowns.find(dropdown =>
+        dropdown.defaultScreen === screenId ||
         (dropdown.items && dropdown.items.some(item => item.screen === screenId))
     );
-    
+
     if (parentDropdown) {
         const dropbtn = document.querySelector('.dropbtn');
         if (dropbtn) dropbtn.classList.add('selected');
-        
+
         if (parentDropdown.items && parentDropdown.items.length > 0) {
             const item = parentDropdown.items.find(item => item.screen === screenId);
             if (item) {
@@ -569,18 +589,18 @@ function showPane(screenId) {
             .find(btn => btn && btn.textContent === screenConfig.title);
         if (button) button.classList.add('selected');
     }
-    
+
     // Run onShow handler if defined
     if (screenConfig.onShow && typeof screenConfig.onShow === 'function') {
         screenConfig.onShow.call(screenConfig);
     }
-    
+
     // Setup column selector after pane is shown
     setupColumnSelector();
-    
+
     // Restore scroll position
     window.scrollTo(0, scrollPos);
-    
+
     // Analytics
     if (typeof gtag === 'function') {
         gtag('event', 'page_view', {
@@ -640,7 +660,7 @@ function showPlayerDetailsPopup(row, columns) {
     const moeWinLoss = columns[csvIndices.moe_win_loss];
     const gameDuration = columns[csvIndices.game_duration];
     const moeGameDuration = columns[csvIndices.moe_game_duration];
-    
+
     const gamesInterrupted = columns[csvIndices.games_interrupted];
     const gamesInterruptedPercent = columns[csvIndices.games_interrupted_percent];
     const moeGamesInterrupted = columns[csvIndices.moe_games_interrupted];
@@ -658,7 +678,7 @@ function showPlayerDetailsPopup(row, columns) {
     const moeMaterialDiff = columns[csvIndices.moe_material_diff_llm_minus_rand];
     const moeMistakesPer1000Moves = columns[csvIndices.moe_mistakes_per_1000moves];
     const moeCompletionTokensBlackPerMove = columns[csvIndices.moe_completion_tokens_black_per_move];
-    
+
     // Add cost metrics
     const averageGameCost = columns[csvIndices.average_game_cost];
     const moeAverageGameCost = columns[csvIndices.moe_average_game_cost];
@@ -676,14 +696,14 @@ function showPlayerDetailsPopup(row, columns) {
     const moeDisplay = (!isNaN(eloMoe) && eloMoe > 0) ? ` ± ${eloMoe.toFixed(1)}` : '';
 
     document.getElementById('total-games').innerHTML = `<span>Games:</span> ${parseInt(totalGames)} (vsR ${gvr}, vsD ${gvd})`;
-    
+
     document.getElementById('elo').innerHTML = `<span>Elo:</span> ${eloDisplay}${moeDisplay}`;
-    document.getElementById('win_loss').innerHTML = 
+    document.getElementById('win_loss').innerHTML =
         `<span>Win/Loss:</span> ${parseFloat(winLoss)} ± ${parseFloat(moeWinLoss)}`;
-    document.getElementById('game-duration').innerHTML = 
+    document.getElementById('game-duration').innerHTML =
         `<span>Game Duration:</span> ${parseFloat(gameDuration).toFixed(3)} ± ${parseFloat(moeGameDuration).toFixed(3)}`;
-    document.getElementById('games-interrupted').innerHTML = 
-        `<span>Games Intptd:</span> ${parseInt(gamesInterrupted)} (${parseFloat(gamesInterruptedPercent/100).toFixed(3)} ± ${parseFloat(moeGamesInterrupted).toFixed(3)})`;
+    document.getElementById('games-interrupted').innerHTML =
+        `<span>Games Intptd:</span> ${parseInt(gamesInterrupted)} (${parseFloat(gamesInterruptedPercent / 100).toFixed(3)} ± ${parseFloat(moeGamesInterrupted).toFixed(3)})`;
     document.getElementById('wins').innerHTML =
         `<span>Wins:</span> ${parseInt(wins)} (` +
         `${((parseInt(wins) / parseInt(totalGames))).toFixed(3)} ± ${parseFloat(moeWins).toFixed(3)})`;
@@ -697,7 +717,7 @@ function showPlayerDetailsPopup(row, columns) {
     document.getElementById('material-diff').innerHTML = `<span>Material Diff:</span> ${parseFloat(materialDiff).toFixed(2)} ± ${parseFloat(moeMaterialDiff).toFixed(2)}`;
     document.getElementById('mistakes-per-1000moves').innerHTML = `<span>Mistakes/1k_Moves:</span> ${parseFloat(mistakesPer1000Moves).toFixed(2)} ± ${parseFloat(moeMistakesPer1000Moves).toFixed(2)}`;
     document.getElementById('completion-tokens-black-per-move').innerHTML = `<span>Compl.Toks/Move:</span> ${parseFloat(completionTokensBlackPerMove).toFixed(2)} ± ${parseFloat(moeCompletionTokensBlackPerMove).toFixed(2)}`;
-    
+
     // Add cost information to popup
     document.getElementById('cost-per-game').innerHTML = `<span>Cost/Game:</span> $${parseFloat(averageGameCost).toFixed(4)} ± $${parseFloat(moeAverageGameCost).toFixed(4)}`;
 
@@ -724,33 +744,33 @@ function hidePopup() {
 function createNavigation() {
     const buttonContainer = document.querySelector('.button-container');
     if (!buttonContainer) return;
-    
+
     // Clear existing content
     buttonContainer.innerHTML = '';
-    
+
     // Create dropdowns first to make them appear on the left
     navConfig.dropdowns.forEach(dropdown => {
         const dropdownContainer = document.createElement('div');
         dropdownContainer.className = 'custom-dropdown';
-        
+
         const dropbtn = document.createElement('button');
         dropbtn.className = 'dropbtn';
-        
+
         // If dropdown has items, create dropdown content and add arrow
         if (dropdown.items && dropdown.items.length > 0) {
             dropbtn.innerHTML = `${dropdown.title} <span class="dropdown-arrow">▼</span>`;
             dropbtn.onclick = () => toggleDropdown(dropdownContainer);
-            
+
             const dropdownContent = document.createElement('div');
             dropdownContent.className = 'dropdown-content';
-            
+
             dropdown.items.forEach(item => {
                 const option = document.createElement('div');
                 option.textContent = item.title;
                 option.onclick = () => showPane(item.screen);
                 dropdownContent.appendChild(option);
             });
-            
+
             dropdownContainer.appendChild(dropbtn);
             dropdownContainer.appendChild(dropdownContent);
         } else {
@@ -759,15 +779,15 @@ function createNavigation() {
             dropbtn.onclick = () => showPane(dropdown.defaultScreen);
             dropdownContainer.appendChild(dropbtn);
         }
-        
+
         buttonContainer.appendChild(dropdownContainer);
     });
-    
+
     // Create regular buttons after dropdowns
     Object.values(navConfig.screens).forEach(screen => {
         // Skip screens that should be in dropdowns
         if (isScreenInDropdown(screen.id)) return;
-        
+
         const button = document.createElement('button');
         button.textContent = screen.title;
         button.onclick = () => showPane(screen.id);
@@ -805,8 +825,8 @@ function toggleDropdown(dropdownContainer) {
         const dropdownBtn = dropdownContainer.querySelector('.dropbtn');
         // Extract title text without the arrow
         const buttonText = dropdownBtn ? dropdownBtn.textContent.replace('▼', '').trim() : '';
-        
-        const dropdownConfig = navConfig.dropdowns.find(d => 
+
+        const dropdownConfig = navConfig.dropdowns.find(d =>
             d.title === buttonText);
         if (dropdownConfig) {
             showPane(dropdownConfig.defaultScreen);
@@ -841,28 +861,32 @@ function toggleSnippet(button) {
 function sortTable(columnIndex = null, newOrder = null) {
     const sortOrderObj = sortOrderState[currentScreen];
     const activeColumns = getActiveColumns();
-    
+
     // If columnIndex is provided, handle sort order toggling
     if (columnIndex !== null) {
         const currentOrder = sortOrderObj[columnIndex] || 'asc';
         newOrder = newOrder || (currentOrder === 'asc' ? 'desc' : 'asc');
         sortOrderObj[columnIndex] = newOrder;
+
+        // Save sort state to localStorage
+        currentSortState[currentScreen] = { columnIndex, order: newOrder };
+        saveSortStateToStorage();
     }
-    
+
     // Remove special rows (Random/Stockfish) from display
     const bottomRows = [];
-    
+
     // Filter out special rows and separate fixed vs unfixed
     const normalRows = allRows.filter(row => {
         const playerName = row.cols[csvIndices.player];
         return !Object.values(SPECIAL_ROWS).includes(playerName);
     });
-    
-    const fixedRows = normalRows.filter(row => 
+
+    const fixedRows = normalRows.filter(row =>
         row.primarySort !== undefined && row.primarySort < 9999);
-    const unfixedRows = normalRows.filter(row => 
+    const unfixedRows = normalRows.filter(row =>
         row.primarySort === undefined || row.primarySort === 9999);
-    
+
     // Sort unfixed rows according to current criteria
     unfixedRows.sort((a, b) => {
         if (columnIndex === null) {
@@ -885,23 +909,23 @@ function sortTable(columnIndex = null, newOrder = null) {
             }
         }
     });
-    
+
     // Sort fixed rows by primarySort
     fixedRows.sort((a, b) => a.primarySort - b.primarySort);
-    
+
     // Combine fixed and unfixed rows (no special rows)
     allRows = [...fixedRows, ...unfixedRows];
-    
+
     // Render the table
     renderTable();
-    
+
     // Update sort indicators
     if (columnIndex !== null) {
         document.querySelectorAll('#leaderboard th').forEach(headerCell => {
             const cleanText = headerCell.textContent.replace(/[▲▼]/g, '').trim();
             headerCell.innerHTML = `${cleanText}&nbsp;&nbsp;`;
         });
-        
+
         const sortedHeaderCell = document.querySelectorAll('#leaderboard th')[columnIndex];
         const baseText = sortedHeaderCell.textContent.replace(/[▲▼]/g, '').trim();
         const indicator = sortOrderObj[columnIndex] === 'asc' ? '▲' : '▼';
@@ -968,42 +992,42 @@ function renderTable() {
 
 function toggleRowFixed(row) {
     const isBottomRow = false;
-    
+
     // Skip special rows
     if (isBottomRow) return;
-    
+
     // Function to recalculate primarySort values to ensure they're sequential
     function recalculatePrimarySortValues() {
         // Get all fixed rows
-        const fixedRows = allRows.filter(row => 
+        const fixedRows = allRows.filter(row =>
             row.primarySort !== undefined && row.primarySort < 9999
         ).sort((a, b) => a.primarySort - b.primarySort);
-        
+
         // Reassign primarySort values sequentially
         fixedRows.forEach((row, index) => {
             row.primarySort = index;
         });
-        
+
         // Update nextPrimarySortValue
         nextPrimarySortValue = fixedRows.length;
     }
-    
+
     // If row is already fixed, unfix it
     if (row.primarySort !== undefined && row.primarySort < 9999) {
         row.primarySort = 9999;
-        
+
         // Recalculate all primarySort values to ensure they're sequential
         recalculatePrimarySortValues();
     } else {
         // Fix the row at the top with the next available primarySort value
         row.primarySort = nextPrimarySortValue++;
-        
+
         // Store original rank if not already set
         if (row.originalRank === undefined) {
             row.originalRank = row.rank;
         }
     }
-    
+
     // Use sortTable to re-sort the rows
     sortTable();
 }
@@ -1013,35 +1037,35 @@ function setupColumnSelector() {
     const btn = document.getElementById('column-selector-btn');
     const dropdown = document.getElementById('column-selector-dropdown');
     const optionsContainer = document.getElementById('column-options');
-    
+
     if (!btn || !dropdown || !optionsContainer) return;
-    
+
     // Column selector is shown/hidden via CSS based on .extended-table class now
     if (currentScreen !== Screen.LEADERBOARD_EXT) {
         dropdown.classList.remove('show');
         return;
     }
-    
+
     // Toggle dropdown visibility
-    btn.onclick = function(event) {
+    btn.onclick = function (event) {
         event.stopPropagation();
         dropdown.classList.toggle('show');
-        
+
         // If opening the dropdown, initialize options
         if (dropdown.classList.contains('show')) {
             populateColumnOptions();
         }
     };
-    
+
     // Close dropdown when clicking outside
-    window.addEventListener('click', function(event) {
+    window.addEventListener('click', function (event) {
         if (!dropdown.contains(event.target) && event.target !== btn) {
             dropdown.classList.remove('show');
         }
     });
-    
+
     // Close dropdown with Escape key
-    document.addEventListener('keydown', function(event) {
+    document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape' && dropdown.classList.contains('show')) {
             dropdown.classList.remove('show');
         }
@@ -1051,34 +1075,34 @@ function setupColumnSelector() {
 function populateColumnOptions() {
     const optionsContainer = document.getElementById('column-options');
     if (!optionsContainer) return;
-    
+
     // Clear existing options
     optionsContainer.innerHTML = '';
-    
+
     // Create checkbox for each available column
     extendedColumnPreferences.available.forEach(columnId => {
         const column = columnDefinitions[columnId];
         if (!column) return;
-        
+
         const option = document.createElement('div');
         option.className = 'column-option';
-        
+
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.id = 'col-' + columnId;
         checkbox.checked = extendedColumnPreferences.selected.includes(columnId);
-        checkbox.disabled = !checkbox.checked && 
-                         extendedColumnPreferences.selected.length >= extendedColumnPreferences.maxColumns;
-        
+        checkbox.disabled = !checkbox.checked &&
+            extendedColumnPreferences.selected.length >= extendedColumnPreferences.maxColumns;
+
         const label = document.createElement('label');
         label.htmlFor = 'col-' + columnId;
         label.textContent = column.title;
-        
+
         // Handle checkbox change
-        checkbox.onchange = function() {
+        checkbox.onchange = function () {
             if (this.checked) {
                 // Add column if not already selected and under max limit
-                if (!extendedColumnPreferences.selected.includes(columnId) && 
+                if (!extendedColumnPreferences.selected.includes(columnId) &&
                     extendedColumnPreferences.selected.length < extendedColumnPreferences.maxColumns) {
                     extendedColumnPreferences.selected.push(columnId);
                 }
@@ -1089,20 +1113,20 @@ function populateColumnOptions() {
                     extendedColumnPreferences.selected.splice(index, 1);
                 }
             }
-            
+
             // Update checkbox states based on selection
             updateCheckboxStates();
-            
+
             // Save to localStorage
             saveColumnSelectionToStorage();
-            
+
             // Rebuild table with new column selection
             buildFreshTable();
-            
+
             // Update table width based on selected columns
             updateExtendedTableWidth();
         };
-        
+
         option.appendChild(checkbox);
         option.appendChild(label);
         optionsContainer.appendChild(option);
@@ -1111,7 +1135,7 @@ function populateColumnOptions() {
 
 function updateCheckboxStates() {
     const maxReached = extendedColumnPreferences.selected.length >= extendedColumnPreferences.maxColumns;
-    
+
     // Update all checkboxes
     extendedColumnPreferences.available.forEach(columnId => {
         const checkbox = document.getElementById('col-' + columnId);
@@ -1124,7 +1148,10 @@ function updateCheckboxStates() {
 
 function saveColumnSelectionToStorage() {
     try {
-        localStorage.setItem('columnSelection', JSON.stringify(extendedColumnPreferences.selected));
+        localStorage.setItem('columnSelection', JSON.stringify({
+            version: EXTENDED_LB_VERSION,
+            columns: extendedColumnPreferences.selected
+        }));
     } catch (e) {
         console.error('Failed to save column selection to localStorage:', e);
     }
@@ -1134,13 +1161,25 @@ function tryLoadColumnSelectionFromStorage() {
     try {
         const saved = localStorage.getItem('columnSelection');
         if (saved) {
-            const savedSelection = JSON.parse(saved);
-            
+            const parsed = JSON.parse(saved);
+
+            // Check version - reset to defaults if version mismatch or missing
+            if (!parsed.version || parsed.version !== EXTENDED_LB_VERSION) {
+                console.log('Column selection version mismatch, resetting to defaults');
+                extendedColumnPreferences.selected = tableColumnSets[Screen.LEADERBOARD_EXT]
+                    .filter(id => id !== 'rank' && id !== 'player');
+                saveColumnSelectionToStorage();
+                return;
+            }
+
+            // Handle both old format (array) and new format (object with columns)
+            const savedSelection = Array.isArray(parsed) ? parsed : (parsed.columns || []);
+
             // Validate saved selection
-            const validSelection = savedSelection.filter(id => 
+            const validSelection = savedSelection.filter(id =>
                 extendedColumnPreferences.available.includes(id)
             );
-            
+
             // Only use valid selection if not empty and within limits
             if (validSelection.length > 0 && validSelection.length <= extendedColumnPreferences.maxColumns) {
                 extendedColumnPreferences.selected = validSelection;
@@ -1148,11 +1187,11 @@ function tryLoadColumnSelectionFromStorage() {
                 // If saved selection is invalid, reset to defaults
                 extendedColumnPreferences.selected = tableColumnSets[Screen.LEADERBOARD_EXT]
                     .filter(id => id !== 'rank' && id !== 'player');
-                
+
                 // Save correct defaults back to localStorage
                 saveColumnSelectionToStorage();
             }
-            
+
             // Update table width if we're in extended view
             if (currentScreen === Screen.LEADERBOARD_EXT) {
                 updateExtendedTableWidth();
@@ -1163,6 +1202,44 @@ function tryLoadColumnSelectionFromStorage() {
         // Reset to defaults on error
         extendedColumnPreferences.selected = tableColumnSets[Screen.LEADERBOARD_EXT]
             .filter(id => id !== 'rank' && id !== 'player');
+    }
+}
+
+function saveSortStateToStorage() {
+    try {
+        localStorage.setItem('sortState', JSON.stringify({
+            version: EXTENDED_LB_VERSION,
+            state: currentSortState
+        }));
+    } catch (e) {
+        console.error('Failed to save sort state to localStorage:', e);
+    }
+}
+
+function tryLoadSortStateFromStorage() {
+    try {
+        const saved = localStorage.getItem('sortState');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+
+            // Check version
+            if (!parsed.version || parsed.version !== EXTENDED_LB_VERSION) {
+                console.log('Sort state version mismatch, using defaults');
+                return;
+            }
+
+            if (parsed.state) {
+                // Restore sort state
+                if (parsed.state[Screen.LEADERBOARD_NEW]) {
+                    currentSortState[Screen.LEADERBOARD_NEW] = parsed.state[Screen.LEADERBOARD_NEW];
+                }
+                if (parsed.state[Screen.LEADERBOARD_EXT]) {
+                    currentSortState[Screen.LEADERBOARD_EXT] = parsed.state[Screen.LEADERBOARD_EXT];
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load sort state from localStorage:', e);
     }
 }
 
@@ -1214,43 +1291,43 @@ function renderPlayerMatrix() {
             }
         },
         // Simple hardcoded list of models to label
-        labeledModels: ["gemini-2.5-pro-preview-03-25","o3-2025-04-16-medium", "o1-2024-12-17-medium", "claude-v3-7-sonnet-thinking_1024", "o4-mini-2025-04-16-medium", "o1-2024-12-17-low", "o1-preview-2024-09-12", "o3-mini-2025-01-31-medium", "o1-mini-2024-09-12", "deepseek-reasoner-r1", "claude-v3-5-sonnet-v1", "grok-2-1212", "gemini-2.0-flash-lite-001" ]
+        labeledModels: ["gemini-2.5-pro-preview-03-25", "o3-2025-04-16-medium", "o1-2024-12-17-medium", "claude-v3-7-sonnet-thinking_1024", "o4-mini-2025-04-16-medium", "o1-2024-12-17-low", "o1-preview-2024-09-12", "o3-mini-2025-01-31-medium", "o1-mini-2024-09-12", "deepseek-reasoner-r1", "claude-v3-5-sonnet-v1", "grok-2-1212", "gemini-2.0-flash-lite-001"]
     };
 
     const canvas = document.getElementById('player-matrix');
     const container = document.getElementById('matrix-view');
-    
+
     // Get the device pixel ratio
     const dpr = window.devicePixelRatio || 1;
-    
+
     // Set canvas dimensions accounting for device pixel ratio
     const containerWidth = container.clientWidth;
     canvas.style.width = containerWidth + 'px';
     canvas.style.height = config.height + 'px';
     canvas.width = containerWidth * dpr;
     canvas.height = config.height * dpr;
-    
+
     const ctx = canvas.getContext('2d');
-    
+
     // Scale all drawing operations by the device pixel ratio
     ctx.scale(dpr, dpr);
-    
+
     const chartWidth = containerWidth - config.padding.left - config.padding.right;
     const chartHeight = config.height - config.padding.top - config.padding.bottom;
-    
+
     ctx.fillStyle = config.colors.background;
     ctx.fillRect(0, 0, containerWidth, config.height);
-    
+
     // Use pre-parsed data instead of parsing again
     const normalRows = parsedCsvData.normalRows;
-    
+
     // Use the default sort function from defaultSortFunctions to sort rows the same way as the leaderboard
-    const sortedRows = [...normalRows].sort((a, b) => 
+    const sortedRows = [...normalRows].sort((a, b) =>
         defaultSortFunctions[Screen.LEADERBOARD_NEW](a.cols, b.cols));
-    
+
     // Get all player names (no top 10 limit)
     const allPlayers = sortedRows.map(row => row.cols[csvIndices.player]);
-    
+
     // Map to the format needed for the visualization
     const playerData = sortedRows.map(row => {
         const cols = row.cols;
@@ -1269,7 +1346,7 @@ function renderPlayerMatrix() {
             moeLosses: parseFloat(cols[csvIndices.moe_black_llm_loss_rate]) || 0
         };
     });
-    
+
     // Draw axes
     ctx.strokeStyle = config.colors.axes;
     ctx.lineWidth = 2;
@@ -1279,82 +1356,82 @@ function renderPlayerMatrix() {
     ctx.moveTo(config.padding.left, config.padding.top);
     ctx.lineTo(config.padding.left, config.padding.top + chartHeight);
     ctx.stroke();
-    
+
     // Draw grid lines
     ctx.strokeStyle = config.colors.gridLines;
     ctx.lineWidth = 1;
-    
+
     // X-axis grid lines and labels (0%, 20%, 40%, 60%, 80%, 100%)
     for (let i = 0; i <= 5; i++) {
         const x = config.padding.left + (chartWidth / 5) * i;
         const value = i * 0.2;
-        
+
         ctx.beginPath();
         ctx.moveTo(x, config.padding.top);
         ctx.lineTo(x, config.padding.top + chartHeight);
         ctx.stroke();
-        
+
         ctx.fillStyle = config.colors.axes;
         ctx.font = config.fonts.axis;
         ctx.textAlign = 'center';
         ctx.fillText((value * 100).toFixed(0) + '%', x, config.padding.top + chartHeight + 25);
     }
-    
+
     // Y-axis grid lines and labels (0%, 25%, 50%, 75%, 100%)
     for (let i = 0; i <= 4; i++) {
         const y = config.padding.top + chartHeight - (chartHeight / 4) * i;
         const value = i * 0.25;
-        
+
         ctx.beginPath();
         ctx.moveTo(config.padding.left, y);
         ctx.lineTo(config.padding.left + chartWidth, y);
         ctx.stroke();
-        
+
         ctx.fillStyle = config.colors.axes;
         ctx.font = config.fonts.axis;
         ctx.textAlign = 'right';
         ctx.fillText((value * 100).toFixed(0) + '%', config.padding.left - 10, y + 5);
     }
-    
+
     // Axis titles
     ctx.fillStyle = config.colors.axes;
     ctx.font = config.fonts.title;
     ctx.textAlign = 'center';
-    
+
     // X-axis title
     ctx.fillText(config.titles.x, config.padding.left + chartWidth / 2, config.padding.top + chartHeight + 45);
-    
+
     // Y-axis title - rotated
     ctx.save();
     ctx.translate(config.padding.left - 50, config.padding.top + chartHeight / 2);
     ctx.rotate(-Math.PI / 2);
     ctx.fillText(config.titles.y, 0, 0);
     ctx.restore();
-    
+
     // Store point data for hover detection
     const points = [];
-    
+
     // Plot data points
     playerData.forEach((player, _) => {
         const x = config.padding.left + chartWidth * (player.gameDuration);
         // const y = config.padding.top + chartHeight - chartHeight * (player.winLossNonInterrupted);
         const y = config.padding.top + chartHeight - chartHeight * (player.winRate);
-        
+
         ctx.beginPath();
         ctx.arc(x, y, config.pointRadius, 0, Math.PI * 2);
         ctx.fillStyle = config.colors.points;
         ctx.fill();
-        
+
         // Draw labels for selected models
         if (config.labeledModels.includes(player.player)) {
             ctx.fillStyle = config.colors.labels;
             ctx.font = config.fonts.labels;
-            
+
             // Measure text width to determine if it will be clipped
             const textWidth = ctx.measureText(player.player).width;
             const rightEdgeX = config.padding.left + chartWidth;
             const bottomEdgeY = config.padding.top + chartHeight;
-            
+
             // Determine text alignment and position
             if (x + textWidth + 10 > rightEdgeX) {
                 // Too close to right edge, place text to the left
@@ -1366,67 +1443,67 @@ function renderPlayerMatrix() {
                 ctx.fillText(player.player, x + config.pointRadius + 5, y);
             }
         }
-        
+
         const point = {
             x: x,
             y: y,
             radius: config.hoverRadius
         };
-        
+
         for (const [key, value] of Object.entries(player)) {
             point[key] = value;
         }
-        
+
         points.push(point);
     });
-    
+
     // Remove old tooltip if exists
     const oldTooltip = document.getElementById('matrix-tooltip');
     if (oldTooltip) {
         document.body.removeChild(oldTooltip);
     }
-    
+
     // Create new tooltip element
     const tooltipElement = document.createElement('div');
     tooltipElement.id = 'matrix-tooltip';
     Object.assign(tooltipElement.style, config.tooltip.style);
     document.body.appendChild(tooltipElement);
-    
+
     let highlightedPoint = null;
-    
+
     // Mouse move handler
-    canvas.addEventListener('mousemove', function(e) {
+    canvas.addEventListener('mousemove', function (e) {
         const rect = canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
-        
+
         let hoveredPoint = null;
-        
+
         // Find if we're hovering over a point
         for (const point of points) {
             const distance = Math.sqrt(
-                Math.pow(mouseX - point.x, 2) + 
+                Math.pow(mouseX - point.x, 2) +
                 Math.pow(mouseY - point.y, 2)
             );
-            
+
             if (distance <= point.radius) {
                 hoveredPoint = point;
                 break;
             }
         }
-        
+
         // Only redraw if hover state changes
-        if ((hoveredPoint && !highlightedPoint) || 
-            (!hoveredPoint && highlightedPoint) || 
+        if ((hoveredPoint && !highlightedPoint) ||
+            (!hoveredPoint && highlightedPoint) ||
             (hoveredPoint && highlightedPoint && hoveredPoint.player !== highlightedPoint.player)) {
-            
+
             // Redraw the entire chart
             ctx.clearRect(0, 0, containerWidth, config.height);
-            
+
             // Redraw background
             ctx.fillStyle = config.colors.background;
             ctx.fillRect(0, 0, containerWidth, config.height);
-            
+
             // Redraw axes
             ctx.strokeStyle = config.colors.axes;
             ctx.lineWidth = 2;
@@ -1436,76 +1513,76 @@ function renderPlayerMatrix() {
             ctx.moveTo(config.padding.left, config.padding.top);
             ctx.lineTo(config.padding.left, config.padding.top + chartHeight);
             ctx.stroke();
-            
+
             // Redraw grid lines and labels
             ctx.strokeStyle = config.colors.gridLines;
             ctx.lineWidth = 1;
-            
+
             // X-axis grid lines and labels
             for (let i = 0; i <= 5; i++) {
                 const x = config.padding.left + (chartWidth / 5) * i;
                 const value = i * 0.2;
-                
+
                 ctx.beginPath();
                 ctx.moveTo(x, config.padding.top);
                 ctx.lineTo(x, config.padding.top + chartHeight);
                 ctx.stroke();
-                
+
                 ctx.fillStyle = config.colors.axes;
                 ctx.font = config.fonts.axis;
                 ctx.textAlign = 'center';
                 ctx.fillText((value * 100).toFixed(0) + '%', x, config.padding.top + chartHeight + 25);
             }
-            
+
             // Y-axis grid lines and labels
             for (let i = 0; i <= 4; i++) {
                 const y = config.padding.top + chartHeight - (chartHeight / 4) * i;
                 const value = i * 0.25;
-                
+
                 ctx.beginPath();
                 ctx.moveTo(config.padding.left, y);
                 ctx.lineTo(config.padding.left + chartWidth, y);
                 ctx.stroke();
-                
+
                 ctx.fillStyle = config.colors.axes;
                 ctx.font = config.fonts.axis;
                 ctx.textAlign = 'right';
                 ctx.fillText((value * 100).toFixed(0) + '%', config.padding.left - 10, y + 5);
             }
-            
+
             // Redraw axis titles
             ctx.fillStyle = config.colors.axes;
             ctx.font = config.fonts.title;
             ctx.textAlign = 'center';
-            
+
             // X-axis title
             ctx.fillText(config.titles.x, config.padding.left + chartWidth / 2, config.padding.top + chartHeight + 45);
-            
+
             // Y-axis title - rotated
             ctx.save();
             ctx.translate(config.padding.left - 50, config.padding.top + chartHeight / 2);
             ctx.rotate(-Math.PI / 2);
             ctx.fillText(config.titles.y, 0, 0);
             ctx.restore();
-            
+
             // Draw all points and labels
             points.forEach(point => {
                 const isHighlighted = hoveredPoint && point.player === hoveredPoint.player;
-                
+
                 ctx.beginPath();
                 ctx.arc(point.x, point.y, config.pointRadius, 0, Math.PI * 2);
                 ctx.fillStyle = isHighlighted ? config.colors.pointHover : config.colors.points;
                 ctx.fill();
-                
+
                 // Draw labels for selected models
                 if (config.labeledModels.includes(point.player)) {
                     ctx.fillStyle = config.colors.labels;
                     ctx.font = config.fonts.labels;
-                    
+
                     // Measure text width to determine if it will be clipped
                     const textWidth = ctx.measureText(point.player).width;
                     const rightEdgeX = config.padding.left + chartWidth;
-                    
+
                     // Determine text alignment and position
                     if (point.x + textWidth + 10 > rightEdgeX) {
                         // Too close to right edge, place text to the left
@@ -1518,11 +1595,11 @@ function renderPlayerMatrix() {
                     }
                 }
             });
-            
+
             // Update highlighted point reference
             highlightedPoint = hoveredPoint;
         }
-        
+
         // Update tooltip
         if (hoveredPoint) {
             tooltipElement.innerHTML = `<span style="color: yellow; font-weight: bold">${hoveredPoint.player}</span><br>
@@ -1541,18 +1618,18 @@ Non-interrupted games: ${hoveredPoint.gamesNotInterruptedPercent}%`;
             tooltipElement.style.display = 'none';
         }
     });
-    
-    canvas.addEventListener('mouseleave', function() {
+
+    canvas.addEventListener('mouseleave', function () {
         tooltipElement.style.display = 'none';
-        
+
         if (highlightedPoint) {
             // Redraw the entire chart to its initial state
             ctx.clearRect(0, 0, containerWidth, config.height);
-            
+
             // Redraw background
             ctx.fillStyle = config.colors.background;
             ctx.fillRect(0, 0, containerWidth, config.height);
-            
+
             // Redraw axes
             ctx.strokeStyle = config.colors.axes;
             ctx.lineWidth = 2;
@@ -1562,74 +1639,74 @@ Non-interrupted games: ${hoveredPoint.gamesNotInterruptedPercent}%`;
             ctx.moveTo(config.padding.left, config.padding.top);
             ctx.lineTo(config.padding.left, config.padding.top + chartHeight);
             ctx.stroke();
-            
+
             // Redraw grid lines and labels
             ctx.strokeStyle = config.colors.gridLines;
             ctx.lineWidth = 1;
-            
+
             // X-axis grid lines and labels
             for (let i = 0; i <= 5; i++) {
                 const x = config.padding.left + (chartWidth / 5) * i;
                 const value = i * 0.2;
-                
+
                 ctx.beginPath();
                 ctx.moveTo(x, config.padding.top);
                 ctx.lineTo(x, config.padding.top + chartHeight);
                 ctx.stroke();
-                
+
                 ctx.fillStyle = config.colors.axes;
                 ctx.font = config.fonts.axis;
                 ctx.textAlign = 'center';
                 ctx.fillText((value * 100).toFixed(0) + '%', x, config.padding.top + chartHeight + 25);
             }
-            
+
             // Y-axis grid lines and labels
             for (let i = 0; i <= 4; i++) {
                 const y = config.padding.top + chartHeight - (chartHeight / 4) * i;
                 const value = i * 0.25;
-                
+
                 ctx.beginPath();
                 ctx.moveTo(config.padding.left, y);
                 ctx.lineTo(config.padding.left + chartWidth, y);
                 ctx.stroke();
-                
+
                 ctx.fillStyle = config.colors.axes;
                 ctx.font = config.fonts.axis;
                 ctx.textAlign = 'right';
                 ctx.fillText((value * 100).toFixed(0) + '%', config.padding.left - 10, y + 5);
             }
-            
+
             // Redraw axis titles
             ctx.fillStyle = config.colors.axes;
             ctx.font = config.fonts.title;
             ctx.textAlign = 'center';
-            
+
             // X-axis title
             ctx.fillText(config.titles.x, config.padding.left + chartWidth / 2, config.padding.top + chartHeight + 45);
-            
+
             // Y-axis title - rotated
             ctx.save();
             ctx.translate(config.padding.left - 50, config.padding.top + chartHeight / 2);
             ctx.rotate(-Math.PI / 2);
             ctx.fillText(config.titles.y, 0, 0);
             ctx.restore();
-            
+
             // Draw all points and labels in normal state
             points.forEach(point => {
                 ctx.beginPath();
                 ctx.arc(point.x, point.y, config.pointRadius, 0, Math.PI * 2);
                 ctx.fillStyle = config.colors.points;
                 ctx.fill();
-                
+
                 // Draw labels for selected models
                 if (config.labeledModels.includes(point.player)) {
                     ctx.fillStyle = config.colors.labels;
                     ctx.font = config.fonts.labels;
-                    
+
                     // Measure text width to determine if it will be clipped
                     const textWidth = ctx.measureText(point.player).width;
                     const rightEdgeX = config.padding.left + chartWidth;
-                    
+
                     // Determine text alignment and position
                     if (point.x + textWidth + 10 > rightEdgeX) {
                         // Too close to right edge, place text to the left
@@ -1642,14 +1719,14 @@ Non-interrupted games: ${hoveredPoint.gamesNotInterruptedPercent}%`;
                     }
                 }
             });
-            
+
             highlightedPoint = null;
         }
     });
 }
 
 // Add window resize handler to make the matrix responsive
-window.addEventListener('resize', function() {
+window.addEventListener('resize', function () {
     if (currentScreen === Screen.MATRIX) {
         renderPlayerMatrix();
     }
@@ -1658,38 +1735,47 @@ window.addEventListener('resize', function() {
 // Replace buildFreshTable with the updated implementation
 function buildFreshTable() {
     const rowObjects = parsedCsvData.rows;
-    
+
     // Separate regular and special rows
     const normalRows = rowObjects;
-    
+
     const specialRows = [];
-    
+
     // Sort normal rows by default criteria first
     normalRows.sort((a, b) => defaultSortFunctions[currentScreen](a.cols, b.cols));
-    
+
     // Assign ranks that will never change
     normalRows.forEach((row, i) => {
         row.rank = i + 1;
     });
-    
+
     // Initialize all rows with default primarySort value
     normalRows.forEach(row => {
         row.primarySort = 9999;
     });
-    
+
     // Combine rows and set as allRows
     allRows = [...normalRows, ...specialRows];
-    
-    // Sort with our new function to handle pinned rows
-    sortTable();
-    
+
+    // Check if there's a saved sort state to restore
+    const savedSort = currentSortState[currentScreen];
+    if (savedSort && savedSort.columnIndex !== null) {
+        // Restore the sort order state for indicators
+        sortOrderState[currentScreen][savedSort.columnIndex] = savedSort.order;
+        // Apply saved sort (pass order to avoid toggling)
+        sortTable(savedSort.columnIndex, savedSort.order);
+    } else {
+        // Sort with default function
+        sortTable();
+    }
+
     // Clear thead and recreate th elements
     const thead = document.querySelector('#leaderboard thead');
     thead.innerHTML = '';
 
     const headerRow = document.createElement('tr');
     const activeColumns = getActiveColumns();
-    
+
     activeColumns.forEach((col, i) => {
         const th = document.createElement('th');
         th.textContent = col.title;
@@ -1698,31 +1784,41 @@ function buildFreshTable() {
         headerRow.appendChild(th);
     });
     thead.appendChild(headerRow);
+
+    // Update sort indicator if there's a saved sort
+    if (savedSort && savedSort.columnIndex !== null) {
+        const sortedHeaderCell = thead.querySelectorAll('th')[savedSort.columnIndex];
+        if (sortedHeaderCell) {
+            const baseText = sortedHeaderCell.textContent.replace(/[▲▼]/g, '').trim();
+            const indicator = savedSort.order === 'asc' ? '▲' : '▼';
+            sortedHeaderCell.innerHTML = `${baseText}&nbsp;${indicator}`;
+        }
+    }
 }
 
 // Add function to update table width based on column count
 function updateExtendedTableWidth() {
     if (currentScreen !== Screen.LEADERBOARD_EXT) return;
-    
+
     const container = document.getElementById('leaderboard').querySelector('.table-container');
     if (!container) return;
-    
+
     // Base number of data columns in standard view (excluding rank and player)
     const baseDataColumns = 3;
-    
+
     // Get current number of selected data columns
     const currentDataColumns = extendedColumnPreferences.selected.length;
-    
+
     // Calculate additional margin needed (85px per extra column)
     const extraColumns = Math.max(0, currentDataColumns - baseDataColumns);
     const extraWidth = extraColumns * 85;
-    
+
     // Base margin is 75px on each side (150px total)
     const baseMargin = 40;
-    
+
     // Calculate new margins (divide extra width equally)
     const newMargin = baseMargin + Math.floor(extraWidth / 2);
-    
+
     // Update the container style
     container.style.marginLeft = `-${newMargin}px`;
     container.style.marginRight = `-${newMargin}px`;
