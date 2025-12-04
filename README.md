@@ -102,7 +102,15 @@ Edit globals in `llm_chess.py` or pass via `run_multiple_games.py`:
 - **Random Agent**: Custom; requests legal moves, picks randomly. Always white.
 - **Proxy Agent**: Custom `AutoReplyAgent`; orchestrates dialogs, provides board/moves.
 - **Chess Engines**:
-  - **Dragon**: Elo-rated (Level 1 ≈ 250 Elo). Binaries in `dragon/`.
+  - **Dragon**: Elo-rated. Binaries in `dragon/`.
+    - Level 1: 250 Elo
+    - Level 2: 375 Elo
+    - Level 3: 500 Elo
+    - Level 4: 625 Elo
+    - Level 5: 750 Elo
+    - Level 6: 875 Elo
+    - Level 7: 1000 Elo
+    - Formula: Elo = 125 × (level + 1)
   - **Stockfish**: Strong engine; install separately.
 
 ## Processing Logs
