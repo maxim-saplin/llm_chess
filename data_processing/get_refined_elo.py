@@ -13,7 +13,7 @@ except Exception:
 def main() -> None:
     # Configure Elo mode and sensible defaults for a quick run
     grc.GAME_MODE = grc.GameMode.ELO
-    grc.FILTER_OUT_BELOW_N_RANDOM = 30
+    grc.FILTER_OUT_BELOW_N_RANDOM = 10
     grc.FILTER_OUT_BELOW_N_MISC = 2
     # 0 means always mix Random and Dragon blocks when Random is calibrated
     grc.ELO_DRAGON_ONLY_MIN_GAMES = 0
