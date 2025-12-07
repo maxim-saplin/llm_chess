@@ -154,7 +154,11 @@ FILTER_OUT_MODELS = [
     "google_gemma-3-27b-it@q4_k_m",
     "google_gemma-3-12b-it@q4_k_m",
     "ring-mini-2.0@q4_k_m",
-    "gpt-5-codex-2025-09-15-low",
+    "gpt-5-codex-2025-09-15-low",  # errors
+    "gpt-4o-mini-2024-07-18-moa-basline",
+    "rekaai_reka-flash-3@q6_k_l",
+    "mixtral-8x7b-32768",
+    "qwen2.5-vl-72b-instruct",
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
 ]
 
