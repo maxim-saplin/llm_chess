@@ -228,7 +228,7 @@ def run(
 
     # Action names
     get_current_board_action = "get_current_board"
-    get_legal_moves_action = "get_legal_moves"
+    get_legal_moves_action = "get_legal_moves"  # Commented out functionality  
     make_move_action = "make_move"
 
     # Init chess board and game state
@@ -247,14 +247,14 @@ def run(
 
     # Action names
     get_current_board_action = "get_current_board"
-    get_legal_moves_action = "get_legal_moves"
+    get_legal_moves_action = "get_legal_moves"  # Commented out functionality
     reflect_action = "do_reflection"
     make_move_action = "make_move"
 
     common_prompt = (
         "Now is your turn to make a move. Before making a move you can pick one of the following actions:\n"
         f"- '{get_current_board_action}' to get the schema and current status of the board\n"
-        f"- '{get_legal_moves_action}' to get a UCI formatted list of available moves\n"
+        # f"- '{get_legal_moves_action}' to get a UCI formatted list of available moves\n"
         + (
             f"- '{reflect_action}' to take a moment to think about your strategy\n"
             if enable_reflection
@@ -275,13 +275,13 @@ def run(
 
     reflection_followup_prompt = (
         "Now that you reflected please choose any of the valid actions: "
-        f"{get_current_board_action}, {get_legal_moves_action}, {reflect_action}, "
+        f"{get_current_board_action}, {reflect_action}, " # {get_legal_moves_action}, 
         f"{make_move_action} <UCI formatted move>"
     )
 
     invalid_action_message = (
         f"Invalid action. Pick one, reply exactly with the name and space delimitted argument: "
-        f"{get_current_board_action}, {get_legal_moves_action}"
+        f"{get_current_board_action}" # , {get_legal_moves_action}
         f"{', ' + reflect_action if enable_reflection else ''}"
         f", {make_move_action} <UCI formatted move>"
     )
@@ -323,7 +323,7 @@ def run(
         human_input_mode="NEVER",
         is_termination_msg=is_termination_message,
         make_move_action=make_move_action,
-        get_legal_moves_action=get_legal_moves_action,
+        # get_legal_moves_action=get_legal_moves_action,
         get_current_board_action=(
             get_current_board_action if random_print_board else None
         ),
@@ -335,7 +335,7 @@ def run(
         human_input_mode="NEVER",
         is_termination_msg=is_termination_message,
         max_failed_attempts=max_failed_attempts,
-        get_legal_moves=get_legal_moves,
+        # get_legal_moves=get_legal_moves,
         get_current_board=get_current_board,
         make_move=make_move,
         move_was_made_message=move_was_made,
@@ -343,7 +343,7 @@ def run(
         too_many_failed_actions_message=TerminationReason.TOO_MANY_WRONG_ACTIONS.value,
         get_current_board_action=get_current_board_action,
         reflect_action=reflect_action,
-        get_legal_moves_action=get_legal_moves_action,
+        # get_legal_moves_action=get_legal_moves_action,
         reflect_prompt=reflect_prompt,
         reflection_followup_prompt=reflection_followup_prompt,
         make_move_action=make_move_action,

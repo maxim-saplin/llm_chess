@@ -77,7 +77,7 @@ class GameAgent(ConversableAgent):
         # Initialize the counter for wrong actions performed by the agent.
         self.wrong_actions = 0
         self.get_board_count = 0
-        self.get_legal_moves_count = 0
+        # self.get_legal_moves_count = 0
         self.make_move_count = 0
         # Flag to track if the agent has requested the board state (either current board or legal moves).
         self.has_requested_board = False
@@ -239,21 +239,21 @@ class RandomPlayerAgent(GameAgent):
 
     Attributes:
         make_move_action (str): The action string for making a move.
-        get_legal_moves_action (str): The action string for getting legal moves.
+        # get_legal_moves_action (str): The action string for getting legal moves.
         get_current_board_action (Optional[str]): Set to action name if you want board printed while random player makes moves
     """
 
     def __init__(
         self,
         make_move_action: str,
-        get_legal_moves_action: str,
+        # get_legal_moves_action: str,
         get_current_board_action: Optional[str] = None,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.make_move_action = make_move_action
-        self.get_legal_moves_action = get_legal_moves_action
+        # self.get_legal_moves_action = get_legal_moves_action
         self.get_current_board_action = get_current_board_action
         self.flip_flag = True
 
@@ -283,9 +283,9 @@ class RandomPlayerAgent(GameAgent):
                 self.flip_flag = True
                 return f"{self.make_move_action} {random_move}"
         except Exception:
-            return self.get_legal_moves_action
+            return "Invalid move" # self.get_legal_moves_action
 
-        return self.get_legal_moves_action
+        return "Invalid move" # self.get_legal_moves_action
 
 
 class AutoReplyAgent(GameAgent):
@@ -295,13 +295,13 @@ class AutoReplyAgent(GameAgent):
     Attributes:
         max_failed_attempts (int): Maximum failed attempts before halting.
         get_current_board (function): Function to get the current board state.
-        get_legal_moves (function): Function to get legal moves.
+        # get_legal_moves (function): Function to get legal moves.
         make_move (function): Function to make a move.
         move_was_made_message (str): Reply message to use indicating a move was made.
         invalid_action_message (str): Reply message to use for invalid actions.
         too_many_failed_actions (str): Reply message to use for too many failed actions.
         get_current_board_action (str): The action string for getting the current board state.
-        get_legal_moves_action (str): The action string for getting legal moves.
+        # get_legal_moves_action (str): The action string for getting legal moves.
         make_move_action (str): The action string for making a move.
         ignore_text (str): A regex pattern to identify and ignore specific text segments in replies.
     """
@@ -309,14 +309,14 @@ class AutoReplyAgent(GameAgent):
     def __init__(
         self,
         get_current_board,
-        get_legal_moves,
+        # get_legal_moves,
         make_move,
         move_was_made_message,
         invalid_action_message,
         too_many_failed_actions_message,
         max_failed_attempts,
         get_current_board_action,
-        get_legal_moves_action,
+        # get_legal_moves_action,
         reflect_action,
         make_move_action,
         reflect_prompt,
@@ -327,14 +327,14 @@ class AutoReplyAgent(GameAgent):
     ):
         super().__init__(*args, **kwargs)
         self.get_current_board = get_current_board
-        self.get_legal_moves = get_legal_moves
+        # self.get_legal_moves = get_legal_moves
         self.make_move = make_move
         self.move_was_made = move_was_made_message
         self.invalid_action_message = invalid_action_message
         self.too_many_failed_actions_message = too_many_failed_actions_message
         self.max_failed_attempts = max_failed_attempts
         self.get_current_board_action = get_current_board_action
-        self.get_legal_moves_action = get_legal_moves_action
+        # self.get_legal_moves_action = get_legal_moves_action
         self.reflect_action = reflect_action
         self.make_move_action = make_move_action
         self.reflect_prompt = reflect_prompt
@@ -377,10 +377,10 @@ class AutoReplyAgent(GameAgent):
             sender.get_board_count += 1
             reply = self.get_current_board()
             sender.has_requested_board = True
-        elif self.get_legal_moves_action in action_choice:
-            sender.get_legal_moves_count += 1
-            reply = self.get_legal_moves()
-            sender.has_requested_board = True
+        # elif self.get_legal_moves_action in action_choice:
+        #     # sender.get_legal_moves_count += 1
+        #     reply = self.get_legal_moves()
+        #     sender.has_requested_board = True
         elif len(messages) > 2 and messages[-2]["content"] == self.reflect_prompt:
             reply = self.reflection_followup_prompt
         elif self.reflect_action in action_choice:
