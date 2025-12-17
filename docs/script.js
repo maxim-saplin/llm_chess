@@ -364,7 +364,7 @@ const columnDefinitions = {
     },
     totalGames: {
         id: 'totalGames',
-        title: 'Totla Games',
+        title: 'Total Games',
         tooltip: 'Total number of games played by this model.',
         getValue: (cols) => cols[csvIndices.total_games],
         isNumeric: true,
