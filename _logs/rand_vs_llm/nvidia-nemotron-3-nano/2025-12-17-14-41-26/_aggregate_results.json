@@ -1,0 +1,73 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2025.12.17_14:41",
+            "log_folder_relative": "_logs/rand_vs_llm/nvidia-nemotron-3-nano/2025-12-17-14-41-26",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 0,
+            "dialog_turn_delay": 0,
+            "max_api_retries": 3,
+            "api_retry_delay": 0,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "nemotron-3-nano@q3_k_l",
+                "api_type": "local",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 6,
+    "black_wins": 0,
+    "draws": 27,
+    "total_moves": 5881,
+    "reasons": {
+        "Max moves reached": 26,
+        "Max turns in single dialog": 1,
+        "Too many wrong actions": 5,
+        "Insufficient material": 1
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 259,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 7.848484848484849,
+        "std_dev_material": 9.893562339095851
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "nemotron-3-nano@q3_k_l",
+        "total_material": 565,
+        "wrong_moves": 427,
+        "wrong_actions": 117,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 17.12121212121212,
+        "std_dev_material": 9.876606121783357
+    },
+    "average_moves": 178.21212121212122,
+    "std_dev_moves": 50.07604066302415
+}
