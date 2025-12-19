@@ -15,7 +15,7 @@ def main() -> None:
     grc.GAME_MODE = grc.GameMode.ELO
     grc.FILTER_OUT_BELOW_N_RANDOM = 10
     grc.FILTER_OUT_BELOW_N_MISC = 2
-    # grc.DATE_AFTER = "2025.12.01_00:00"
+    grc.DATE_AFTER = "2025.12.01_00:00"
     # 0 means always mix Random and Dragon blocks when Random is calibrated
     grc.ELO_DRAGON_ONLY_MIN_GAMES = 0
     grc.main()
