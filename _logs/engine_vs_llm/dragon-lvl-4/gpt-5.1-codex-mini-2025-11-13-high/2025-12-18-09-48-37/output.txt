@@ -9456,3 +9456,79 @@ h8g8,h8f8,e8f8,e8d8,e8d7,a8d8,a8c8,a8b8,e7f8,e7d8,e7f6,e7d6,e7g5,e7c5,e7h4,e7b4,
 --------------------------------------------------------------------------------
 API error on attempt 1/3 for Player_Black: Error code: 429 - {'error': {'message': 'Hit token rate limit. Minute limit: 0 / 120000 tokens. Day limit: 2016173 / 2000000 tokens. Week limit: 10180440 / 9223372036854775807 tokens. Month limit: 27660171 / 9223372036854775807 tokens.', 'display_message': "You've exceeded your daily token limit", 'code': '429'}}
 Retrying in 14400.0 seconds...
+Player_Black (to Proxy):
+
+make_move e8g8
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (f21643b1-eb2e-47d8-8044-b7bc57e8e086): Termination message condition on agent 'Player_Black' met
+MADE MOVE 44
+Material Count - White: 19, Black: 23
+Prompt Tokens: 21566
+Completion Tokens: 295571
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move b1c3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 45
+Material Count - White: 19, Black: 23
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I need to assess the current board before making a move. I'll start by checking the current position.
+
+(get_current_board)
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ⭘ ⭘ ⭘ ♜ ♚ ⭘
+♟ ♟ ♟ ⭘ ♝ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘ ⭘
+♙ ♔ ♘ ⭘ ♟ ⭘ ⭘ ♝
+⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘
+♖ ⭘ ♗ ⭘ ⭘ ⭘ ♖ ⭘
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I should check the legal moves in the current position to determine the best option.
+
+(get_legal_moves)
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,f8e8,f8d8,f8c8,f8b8,a8e8,a8d8,a8c8,a8b8,e7d8,e7f6,e7d6,e7g5,e7c5,e7h4,e7b4,e7a3,h3c8,h3d7,h3e6,h3f5,h3g4,h3g2,h3f1,e3d2,h7h6,g7g6,f7f6,c7c6,b7b6,a7a6,e3e2,h7h5,g7g5,f7f5,c7c5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+API error on attempt 1/3 for Player_Black: OpenAI API call timed out. This could be due to congestion or too small a timeout value. The timeout can be specified by setting the 'timeout' value (in seconds) in the llm_config (if you are using agents) or the OpenAIWrapper constructor (if you are using the OpenAIWrapper directly).
+Retrying in 14400.0 seconds...
