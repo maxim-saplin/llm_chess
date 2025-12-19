@@ -101,7 +101,7 @@ class GameMode(Enum):
 
 
 # Default CLI mode; tests change this at runtime.
-GAME_MODE: GameMode = GameMode.RANDOM_VS_LLM
+GAME_MODE: GameMode = GameMode.ELO
 
 # Engine-vs-LLM sources. `_logs/engine_vs_llm` is the structured pipeline; `_pre_aug_2025`
 # contains legacy folders that still feed historical stats and Elo calibration.
@@ -112,9 +112,9 @@ ENGINE_LOGS_DIRS_LEGACY = [
     "_logs/_pre_aug_2025/dragon_vs_llm",
 ]
 
-FILTER_OUT_BELOW_N_RANDOM = 30  # 0
-FILTER_OUT_BELOW_N_MISC = 30  # 0
-DATE_AFTER = None  # "2025.04.01_00:00"
+FILTER_OUT_BELOW_N_RANDOM = 10
+FILTER_OUT_BELOW_N_MISC = 2
+DATE_AFTER = None  # "2025.12.01_00:00"
 
 # Output files
 OUTPUT_DIR = "data_processing"
@@ -154,11 +154,13 @@ FILTER_OUT_MODELS = [
     "google_gemma-3-27b-it@q4_k_m",
     "google_gemma-3-12b-it@q4_k_m",
     "ring-mini-2.0@q4_k_m",
-    "gpt-5-codex-2025-09-15-low",  # errors
+    "gpt-5-codex-2025-09-15-low",  # too many errors
     "gpt-4o-mini-2024-07-18-moa-basline",
     "rekaai_reka-flash-3@q6_k_l",
     "mixtral-8x7b-32768",
     "qwen2.5-vl-72b-instruct",
+    "gpt-5.1-codex-mini-2025-11-13-high",  ## TBD, to few runs
+    "gpt-5-2025-08-07-medium",  ## TBD, to few runs
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
 ]
 
