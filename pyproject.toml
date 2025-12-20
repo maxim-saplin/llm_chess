@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-chess"
+version = "0.0.0"
+description = "LLM Chess benchmark: agentic chess games to evaluate reasoning and instruction following."
+readme = "README.md"
+requires-python = ">=3.10,<=3.13"
+dependencies = [
+  "ag2[openai,gemini,anthropic,mistral,cerebras,groq]==0.10.1",
+  "cairosvg==2.7.1",
+  "chess==1.11.2",
+  "fastapi==0.115.11",
+  "matplotlib==3.10.0",
+  "moviepy==1.0.3",
+  "pandas",
+  "prettytable",
+  "requests",
+  "scipy",
+  "tabulate",
+  "uvicorn==0.34.0",
+  "seaborn"
+]
+
+[dependency-groups]
+dev = [
+  "ipykernel",
+  "pytest",
+  "pytest-xdist",
+]
+
+[project.scripts]
+llm-chess = "llm_chess:run"
+get-refined-csv = "data_processing.get_refined_csv:main"
+aggregate-logs-csv = "data_processing.aggregate_logs_to_csv_for_paper:main"
+
+[tool.setuptools]
+py-modules = [
+  "custom_agents",
+  "do_call",
+  "get_run_metadata",
+  "llm_chess",
+  "run_multiple_games",
+  "utils",
+]
+packages = ["data_processing"]
+
+
+
+

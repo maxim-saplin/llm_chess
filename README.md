@@ -24,18 +24,13 @@ See the [live leaderboard](https://maxim-saplin.github.io/llm_chess/) for rankin
 
 2. **Create a virtual environment** (recommended):
    ```
-   # Using uv (fast alternative to pip)
-   uv venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-   # Or using pip/venv
-   python -m venv .venv
-   source .venv/bin/activate
+   # Using uv (recommended)
+   uv sync
    ```
 
 3. **Install dependencies**:
    ```
-   uv pip install -r requirements.txt  # Or pip install -r requirements.txt
+   # Already handled by `uv sync` above
    ```
 
 4. **Configure LLMs**:
@@ -53,7 +48,7 @@ See the [live leaderboard](https://maxim-saplin.github.io/llm_chess/) for rankin
 ### Single Game
 Run a single chess simulation:
 ```
-python llm_chess.py
+uv run llm-chess
 ```
 - Default: Random Player (white) vs. LLM (black).
 - Logs saved to `_logs/` with JSON details and optional video recordings.
@@ -61,7 +56,7 @@ python llm_chess.py
 ### Multiple Games
 For benchmarking, run multiple simulations:
 ```
-python run_multiple_games.py
+uv run python run_multiple_games.py
 ```
 - Default: 42 games.
 - Customize in the script:
@@ -118,7 +113,7 @@ Edit globals in `llm_chess.py` or pass via `run_multiple_games.py`:
 Logs in `_logs/` contain JSON per game. Aggregate and refine:
 
    ```
-   python data_processing/get_refined_elo.py
+   uv run get-refined-csv
    ```
    - Handles multiple directories (Random vs. LLM, Dragon vs. LLM).
    - Computes Elo (anchored to Dragon levels: Elo ≈ 125 × (level + 1)), Win/Loss %, Game Duration %.
@@ -128,6 +123,14 @@ Logs in `_logs/` contain JSON per game. Aggregate and refine:
 
 
 Manual review: Check logs for API errors (discard) vs. model failures (LLM loss).
+
+## Tests
+
+Run the test suite (parallel by default):
+
+```
+uv run pytest -q -n auto tests
+```
 
 ## Metrics
 

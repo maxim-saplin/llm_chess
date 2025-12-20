@@ -58,7 +58,6 @@ usage missing, cost/token metrics fall back to 0 for that game.
 """
 
 import os
-import sys
 import csv
 import json
 import math
@@ -69,21 +68,7 @@ from statistics import mean, stdev
 from functools import lru_cache
 from tabulate import tabulate
 from scipy.optimize import root_scalar
-
-# Try direct import first
-try:
-    from llm_chess import TerminationReason
-except ImportError:
-    # Try relative import (for tests)
-    try:
-        from ..llm_chess import TerminationReason
-    except ImportError:
-        # Add project root to path (for direct script execution)
-        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        if project_root not in sys.path:
-            sys.path.append(project_root)
-        # Now try the direct import again
-        from llm_chess import TerminationReason
+from llm_chess import TerminationReason
 
 # Source directories for Random-vs-LLM runs (Black = LLM). Order matters when deduping.
 LOGS_DIRS = [
