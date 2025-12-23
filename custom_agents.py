@@ -8,35 +8,8 @@ import chess.engine
 from autogen import ConversableAgent
 from typing import Any, Dict, List, Optional, Union, Callable
 
-# Define retryable exceptions
-RETRYABLE_EXCEPTIONS = (
-    # OpenAI exceptions
-    "openai.InternalServerError",
-    # "openai.RateLimitError", 
-    # "openai.APITimeoutError",
-    # "openai.APIConnectionError",
-    # # Anthropic exceptions
-    # "anthropic.InternalServerError",
-    # "anthropic.RateLimitError",
-    # "anthropic.APITimeoutError", 
-    # "anthropic.APIConnectionError",
-    # # Generic connection/service errors
-    # "ConnectionError",
-    # "TimeoutError",
-    # "ServiceUnavailableError",
-)
-
 def is_retryable_error(exception) -> bool:
-    """Check if an exception is retryable based on its type or message."""
-    exception_name = type(exception).__name__
-    exception_module = type(exception).__module__
-    full_exception_name = f"{exception_module}.{exception_name}"
-    
-    # Check if the exception type is in our retryable list
-    for retryable in RETRYABLE_EXCEPTIONS:
-        if retryable in full_exception_name or retryable in exception_name:
-            return True
-    
+    """Check if an exception is retryable based on its error message."""
     # Check specific error messages
     error_message = str(exception).lower()
     retryable_messages = [
@@ -46,7 +19,7 @@ def is_retryable_error(exception) -> bool:
         "connection error",
         "temporarily unavailable",
         "try again later",
-        "internal server error", 
+        # "internal server error", 
         "is currently over capacity", # Groq
         "limit exceeded", # Cerebras
     ]
