@@ -145,7 +145,8 @@ FILTER_OUT_MODELS = [
     "mixtral-8x7b-32768",
     "qwen2.5-vl-72b-instruct",
     "gpt-5.1-codex-mini-2025-11-13-high",  ## TBD, to few runs
-    "gpt-5-2025-08-07-medium",  ## TBD, to few runs
+    "gpt-5.1-codex-mini-2025-11-13-medium",  ## TBD, to few runs
+    "chess-4b-thinking-1218",  ## RL experiment, to be ignored
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
 ]
 
