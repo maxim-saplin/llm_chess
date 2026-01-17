@@ -1,0 +1,86 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2026.01.15_10:40",
+            "log_folder_relative": "_logs/engine_vs_llm/dragon-lvl-1/qwen.qwen3-next-80b-a3b/2026-01-15-10-40-57",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "CHESS_ENGINE_DRAGON",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 7,
+            "dialog_turn_delay": 7,
+            "max_api_retries": 3,
+            "api_retry_delay": 14400,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "chess_engines": {
+            "stockfish": {
+                "path": "/opt/homebrew/bin/stockfish",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            },
+            "dragon": {
+                "path": "dragon/dragon-linux",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            }
+        },
+        "llm_configs": {
+            "black": {
+                "model": "qwen.qwen3-next-80b-a3b",
+                "api_type": "oai_comp_endpoint",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 25,
+    "black_wins": 0,
+    "draws": 8,
+    "total_moves": 4158,
+    "reasons": {
+        "Checkmate": 22,
+        "Max moves reached": 8,
+        "Max turns in single dialog": 3
+    },
+    "player_white": {
+        "name": "Chess_Engine_Dragon_White",
+        "model": "",
+        "total_material": 1160,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 35.15151515151515,
+        "std_dev_material": 5.112003106178219
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "qwen.qwen3-next-80b-a3b",
+        "total_material": 830,
+        "wrong_moves": 15,
+        "wrong_actions": 812,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 25.151515151515152,
+        "std_dev_material": 10.497384234064015
+    },
+    "average_moves": 126.0,
+    "std_dev_moves": 58.66270109703439
+}
