@@ -1,0 +1,74 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2026.01.15_16:05",
+            "log_folder_relative": "_logs/rand_vs_llm/qwen.qwen3-next-80b-a3b/2026-01-15-16-05-16",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 7,
+            "dialog_turn_delay": 7,
+            "max_api_retries": 3,
+            "api_retry_delay": 14400,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "qwen.qwen3-next-80b-a3b",
+                "api_type": "oai_comp_endpoint",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 33,
+    "white_wins": 6,
+    "black_wins": 0,
+    "draws": 27,
+    "total_moves": 6030,
+    "reasons": {
+        "Max moves reached": 24,
+        "Checkmate": 3,
+        "ERROR OCCURED": 3,
+        "Too many wrong actions": 1,
+        "Max turns in single dialog": 2
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 739,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 22.393939393939394,
+        "std_dev_material": 8.961512825478303
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "qwen.qwen3-next-80b-a3b",
+        "total_material": 668,
+        "wrong_moves": 27,
+        "wrong_actions": 967,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 20.242424242424242,
+        "std_dev_material": 7.882061528521199
+    },
+    "average_moves": 182.72727272727272,
+    "std_dev_moves": 36.4659710614505
+}
