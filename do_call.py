@@ -4,7 +4,8 @@ from utils import  get_llms
 
 
 _, llm_config_black = get_llms(
-    black_hyperparams={"hyperparams": {"max_tokens": 16001}}) # Anthopic thinking throws if thinking budget is larger or equal to max tokens, easy verification of thinking budget
+    # black_hyperparams={"hyperparams": {"max_tokens": 16001}} # Anthopic thinking throws if thinking budget is larger or equal to max tokens, easy verification of thinking budget
+) 
 
 agent = ConversableAgent(
     name="test",
