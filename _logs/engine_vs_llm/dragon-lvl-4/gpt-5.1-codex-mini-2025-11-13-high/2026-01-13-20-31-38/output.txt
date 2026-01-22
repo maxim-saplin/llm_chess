@@ -24551,3 +24551,1431 @@ Proxy (to Player_Black):
 g8h8,g8f8,e8f8,e8d8,e8c8,e8b8,e8e7,a8d8,a8c8,a8b8,e6c8,e6d7,e6f5,e6d5,e6g4,e6c4,e6h3,e6b3,a2b4,a2c3,a2c1,h7h6,g7g6,f7f6,b7b6,a7a6,e5e4,h7h5,g7g5,f7f5,b7b5,a7a5
 
 --------------------------------------------------------------------------------
+API error on attempt 1/3 for Player_Black: OpenAI API call timed out. This could be due to congestion or too small a timeout value. The timeout can be specified by setting the 'timeout' value (in seconds) in the llm_config (if you are using agents) or the OpenAIWrapper constructor (if you are using the OpenAIWrapper directly).
+Retrying in 14400.0 seconds...
+Player_Black (to Proxy):
+
+{"name": "make_move", "arguments": {"move": "e6f5"}}
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+{"name": "get_current_board", "arguments": {}}
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ⭘ ⭘ ♜ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+♔ ⭘ ⭘ ♙ ⭘ ♘ ⭘ ⭘
+♞ ⭘ ⭘ ⭘ ⭘ ♕ ♙ ♙
+⭘ ♖ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+{"name": "get_legal_moves", "arguments": {}}
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,e8f8,e8d8,e8c8,e8b8,e8e7,a8d8,a8c8,a8b8,e6c8,e6d7,e6f5,e6d5,e6g4,e6c4,e6h3,e6b3,a2b4,a2c3,a2c1,h7h6,g7g6,f7f6,b7b6,a7a6,e5e4,h7h5,g7g5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+{"name": "make_move", "arguments": {"move": "e6g4"}}
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move a2c3
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (d9ffe396-0d69-4751-8a66-16601afbd32a): Termination message condition on agent 'Player_Black' met
+MADE MOVE 46
+Material Count - White: 28, Black: 23
+Prompt Tokens: 27188
+Completion Tokens: 323998
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move f3d2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 47
+Material Count - White: 28, Black: 23
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I will first get the current board. [get_current_board]
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ⭘ ⭘ ♜ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+♔ ⭘ ♞ ♙ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♘ ⭘ ♕ ♙ ♙
+⭘ ♖ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I will now gather the list of legal moves. [get_legal_moves]
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,e8f8,e8d8,e8c8,e8b8,e8e7,a8d8,a8c8,a8b8,e6c8,e6d7,e6f5,e6d5,e6g4,e6c4,e6h3,e6b3,e6a2,c3d5,c3b5,c3e4,c3a4,c3e2,c3a2,c3d1,c3b1,h7h6,g7g6,f7f6,b7b6,a7a6,e5e4,h7h5,g7g5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I will now make my move. [make_move c3b1]
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (f59779e5-80de-4c0f-876f-e9732234dbd3): Termination message condition on agent 'Player_Black' met
+MADE MOVE 48
+Material Count - White: 23, Black: 23
+Prompt Tokens: 28095
+Completion Tokens: 329564
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move d2b1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 49
+Material Count - White: 23, Black: 20
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ⭘ ⭘ ♜ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+♔ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♕ ♙ ♙
+⭘ ♘ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,e8f8,e8d8,e8c8,e8b8,e8e7,a8d8,a8c8,a8b8,e6c8,e6d7,e6f5,e6d5,e6g4,e6c4,e6h3,e6b3,e6a2,h7h6,g7g6,f7f6,b7b6,a7a6,e5e4,h7h5,g7g5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+API error on attempt 1/3 for Player_Black: OpenAI API call timed out. This could be due to congestion or too small a timeout value. The timeout can be specified by setting the 'timeout' value (in seconds) in the llm_config (if you are using agents) or the OpenAIWrapper constructor (if you are using the OpenAIWrapper directly).
+Retrying in 14400.0 seconds...
+Player_Black (to Proxy):
+
+make_move e8c8
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (2e2cb4b0-9610-4c9e-83f2-3015528ec2c6): Termination message condition on agent 'Player_Black' met
+MADE MOVE 50
+Material Count - White: 23, Black: 20
+Prompt Tokens: 28942
+Completion Tokens: 350075
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move f2g3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 51
+Material Count - White: 23, Black: 20
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ♜ ⭘ ⭘ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ♟ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+♔ ⭘ ⭘ ♙ ⭘ ⭘ ♕ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ♙
+⭘ ♘ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,c8f8,c8e8,c8d8,c8b8,c8c7,c8c6,c8c5,c8c4,c8c3,c8c2,c8c1,a8b8,e6d7,e6f5,e6d5,e6g4,e6c4,e6h3,e6b3,e6a2,h7h6,g7g6,f7f6,b7b6,a7a6,e5e4,h7h5,g7g5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move g7g6
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (88bc4e3a-b814-4626-9c1d-9a49f66855fa): Termination message condition on agent 'Player_Black' met
+MADE MOVE 52
+Material Count - White: 23, Black: 20
+Prompt Tokens: 29801
+Completion Tokens: 369626
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move g3h4
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 53
+Material Count - White: 23, Black: 20
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I’m ready to analyze the position. First, I’ll need the current board setup. I'll request the current board state.
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ♜ ⭘ ⭘ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ♕
+♔ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ♙
+⭘ ♘ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,g8g7,c8f8,c8e8,c8d8,c8b8,c8c7,c8c6,c8c5,c8c4,c8c3,c8c2,c8c1,a8b8,e6d7,e6f5,e6d5,e6g4,e6c4,e6h3,e6b3,e6a2,h7h6,f7f6,b7b6,a7a6,g6g5,e5e4,h7h5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move c8c3
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (eb8a349a-77a8-467e-80d2-e78c922da751): Termination message condition on agent 'Player_Black' met
+MADE MOVE 54
+Material Count - White: 23, Black: 20
+Prompt Tokens: 30976
+Completion Tokens: 384408
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move a3b2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 55
+Material Count - White: 23, Black: 20
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I need to assess the current situation before making a move. I'll start by requesting the current board state.
+
+@get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ♕
+⭘ ⭘ ♜ ♙ ⭘ ⭘ ⭘ ⭘
+⭘ ♔ ⭘ ⭘ ⭘ ⭘ ♙ ♙
+⭘ ♘ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+Thanks for the board. Next, I’ll request the list of my legal moves to plan my strategy.
+
+@get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,g8g7,a8f8,a8e8,a8d8,a8c8,a8b8,e6c8,e6d7,e6f5,e6d5,e6g4,e6c4,e6h3,e6b3,e6a2,c3c8,c3c7,c3c6,c3c5,c3c4,c3d3,c3b3,c3a3,c3c2,c3c1,h7h6,f7f6,b7b6,a7a6,g6g5,e5e4,h7h5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I’ll play 1...Rb3+ to keep the pressure on the white king and force it off the long diagonal.
+
+@make_move c3b3
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (4632f5c6-1b62-440d-be66-4d9f8f27c205): Termination message condition on agent 'Player_Black' met
+MADE MOVE 56
+Material Count - White: 23, Black: 20
+Prompt Tokens: 31914
+Completion Tokens: 388795
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move b2a1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 57
+Material Count - White: 23, Black: 20
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I need to understand the current position before making a move. I'll start by reviewing the board.
+
+Could you please provide the current board status?
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ♕
+⭘ ♜ ⭘ ♙ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ♙
+♔ ♘ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,g8g7,a8f8,a8e8,a8d8,a8c8,a8b8,e6c8,e6d7,e6f5,e6d5,e6g4,e6c4,e6h3,b3b6,b3b5,b3b4,b3d3,b3c3,b3a3,b3b2,b3b1,h7h6,f7f6,b7b6,a7a6,g6g5,e5e4,h7h5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move b3b1
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (2f1881f4-d391-4921-8932-c1f170e08646): Termination message condition on agent 'Player_Black' met
+MADE MOVE 58
+Material Count - White: 20, Black: 20
+Prompt Tokens: 33098
+Completion Tokens: 394108
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move a1b1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 59
+Material Count - White: 20, Black: 15
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I will first need the current board status. Could you please provide the current setup?
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ♕
+⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ♙
+⭘ ♔ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,g8g7,a8f8,a8e8,a8d8,a8c8,a8b8,e6c8,e6d7,e6f5,e6d5,e6g4,e6c4,e6h3,e6b3,e6a2,h7h6,f7f6,b7b6,a7a6,g6g5,e5e4,h7h5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move e6d5
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (1f0e05cf-77d7-4277-97a7-508ec10e4a6d): Termination message condition on agent 'Player_Black' met
+MADE MOVE 60
+Material Count - White: 20, Black: 15
+Prompt Tokens: 34229
+Completion Tokens: 415666
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move h4g4
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 61
+Material Count - White: 20, Black: 15
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ♝ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ♕ ⭘
+⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ♙
+⭘ ♔ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,g8g7,a8f8,a8e8,a8d8,a8c8,a8b8,d5e6,d5c6,d5e4,d5c4,d5f3,d5b3,d5g2,d5a2,h7h6,f7f6,b7b6,a7a6,g6g5,e5e4,h7h5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move d5c6
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (c91e9d30-dd2e-4edc-b216-ce6f6e3ddd71): Termination message condition on agent 'Player_Black' met
+MADE MOVE 62
+Material Count - White: 20, Black: 15
+Prompt Tokens: 35064
+Completion Tokens: 434321
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move h2h3
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 63
+Material Count - White: 20, Black: 15
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I’m ready to play. What does the current board look like?
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ⭘ ♟
+⭘ ⭘ ♝ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ♕ ⭘
+⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♙
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ♔ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,g8g7,a8f8,a8e8,a8d8,a8c8,a8b8,c6e8,c6d7,c6d5,c6b5,c6e4,c6a4,c6f3,c6g2,h7h6,f7f6,b7b6,a7a6,g6g5,e5e4,h7h5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move c6d5
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (b677a453-6ec3-480b-bb07-5117a67def49): Termination message condition on agent 'Player_Black' met
+MADE MOVE 64
+Material Count - White: 20, Black: 15
+Prompt Tokens: 36182
+Completion Tokens: 444292
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move g4h4
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 65
+Material Count - White: 20, Black: 15
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ♝ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ♕
+⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♙
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ♔ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,g8g7,a8f8,a8e8,a8d8,a8c8,a8b8,d5e6,d5c6,d5e4,d5c4,d5f3,d5b3,d5g2,d5a2,h7h6,f7f6,b7b6,a7a6,g6g5,e5e4,h7h5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move g6g5
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (616960ae-10f8-4c03-bb65-4e4c9fe727f1): Termination message condition on agent 'Player_Black' met
+MADE MOVE 66
+Material Count - White: 20, Black: 15
+Prompt Tokens: 37017
+Completion Tokens: 449379
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move h4e1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 67
+Material Count - White: 20, Black: 15
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I’m ready to play as Black. Could you please provide the current board position?
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ♟ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♝ ♟ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♙
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ♔ ⭘ ⭘ ♕ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,g8g7,a8f8,a8e8,a8d8,a8c8,a8b8,d5e6,d5c6,d5e4,d5c4,d5f3,d5b3,d5g2,d5a2,h7h6,f7f6,b7b6,a7a6,g5g4,e5e4,h7h5,f7f5,b7b5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move f7f6
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (2623bfe2-9b34-4c47-bbb8-4f051c4bd0d6): Termination message condition on agent 'Player_Black' met
+MADE MOVE 68
+Material Count - White: 20, Black: 15
+Prompt Tokens: 38144
+Completion Tokens: 459993
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move e1a5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 69
+Material Count - White: 20, Black: 15
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘
+♕ ⭘ ⭘ ♝ ♟ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♙
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ♔ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,g8g7,g8f7,a8f8,a8e8,a8d8,a8c8,a8b8,d5f7,d5e6,d5c6,d5e4,d5c4,d5f3,d5b3,d5g2,d5a2,h7h6,b7b6,a7a6,f6f5,g5g4,e5e4,h7h5,b7b5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move d5e6
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (ec496d07-ab8c-4777-bddc-56de831d2748): Termination message condition on agent 'Player_Black' met
+MADE MOVE 70
+Material Count - White: 20, Black: 15
+Prompt Tokens: 38979
+Completion Tokens: 473720
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move b1c2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 71
+Material Count - White: 20, Black: 15
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+Please provide the current board status so I can assess my options.
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+♜ ⭘ ⭘ ⭘ ⭘ ⭘ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ♟ ⭘ ⭘
+♕ ⭘ ⭘ ⭘ ♟ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♙
+⭘ ⭘ ♔ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8f8,g8g7,g8f7,a8f8,a8e8,a8d8,a8c8,a8b8,e6c8,e6f7,e6d7,e6f5,e6d5,e6g4,e6c4,e6h3,e6b3,e6a2,h7h6,b7b6,a7a6,f6f5,g5g4,e5e4,h7h5,b7b5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move a8f8
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (5e5b142f-a460-4807-8a5b-4ee112480aef): Termination message condition on agent 'Player_Black' met
+MADE MOVE 72
+Material Count - White: 20, Black: 15
+Prompt Tokens: 40098
+Completion Tokens: 496426
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move c2d1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 73
+Material Count - White: 20, Black: 15
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+To proceed, I need to see the current board. I’ll use `get_current_board`.
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ♜ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ♟ ⭘ ⭘
+♕ ⭘ ⭘ ⭘ ♟ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♙
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ⭘ ⭘ ♔ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8g7,g8f7,f8e8,f8d8,f8c8,f8b8,f8a8,f8f7,e6c8,e6f7,e6d7,e6f5,e6d5,e6g4,e6c4,e6h3,e6b3,e6a2,h7h6,b7b6,a7a6,f6f5,g5g4,e5e4,h7h5,b7b5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I'll start by reviewing the current position. Please provide the board state using `get_current_board`.
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ♜ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ♝ ♟ ⭘ ⭘
+♕ ⭘ ⭘ ⭘ ♟ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♙
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ⭘ ⭘ ♔ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move e6b3
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (1323bc5f-5d12-464c-938a-497daa7671fa): Termination message condition on agent 'Player_Black' met
+MADE MOVE 74
+Material Count - White: 20, Black: 15
+Prompt Tokens: 41622
+Completion Tokens: 520050
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move d1c1
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 75
+Material Count - White: 20, Black: 15
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I need to inspect the current board. I'll request the board state.
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ♜ ♚ ⭘
+♟ ♟ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ⭘ ⭘ ⭘ ⭘ ♟ ⭘ ⭘
+♕ ⭘ ⭘ ⭘ ♟ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ♝ ⭘ ♙ ⭘ ⭘ ⭘ ♙
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ⭘ ♔ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8g7,g8f7,f8e8,f8d8,f8c8,f8b8,f8a8,f8f7,b3f7,b3e6,b3d5,b3c4,b3a4,b3c2,b3a2,b3d1,h7h6,b7b6,a7a6,f6f5,g5g4,e5e4,h7h5,b7b5
+
+--------------------------------------------------------------------------------
+API error on attempt 1/3 for Player_Black: OpenAI API call timed out. This could be due to congestion or too small a timeout value. The timeout can be specified by setting the 'timeout' value (in seconds) in the llm_config (if you are using agents) or the OpenAIWrapper constructor (if you are using the OpenAIWrapper directly).
+Retrying in 14400.0 seconds...
+Player_Black (to Proxy):
+
+make_move b7b6
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (6b42d7ad-ff61-4583-b8a4-037c1a2ff18f): Termination message condition on agent 'Player_Black' met
+MADE MOVE 76
+Material Count - White: 20, Black: 15
+Prompt Tokens: 42736
+Completion Tokens: 530853
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move a5a6
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 77
+Material Count - White: 20, Black: 15
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I need to see the current position first. I'll start by asking for the board layout. Can you provide the current board status?
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ♜ ♚ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+♕ ♟ ⭘ ⭘ ⭘ ♟ ⭘ ⭘
+⭘ ⭘ ⭘ ⭘ ♟ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ♟ ⭘ ⭘ ⭘ ⭘
+⭘ ♝ ⭘ ♙ ⭘ ⭘ ⭘ ♙
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ⭘ ♔ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8g7,g8f7,f8e8,f8d8,f8c8,f8b8,f8a8,f8f7,b3f7,b3e6,b3d5,b3c4,b3a4,b3c2,b3a2,b3d1,h7h6,f6f5,b6b5,g5g4,e5e4,h7h5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move e5e4
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (3672533e-a104-42f4-9e4f-eaec2aee43a8): Termination message condition on agent 'Player_Black' met
+MADE MOVE 78
+Material Count - White: 20, Black: 15
+Prompt Tokens: 43878
+Completion Tokens: 552868
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move a6b5
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 79
+Material Count - White: 20, Black: 15
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+I’ll start by checking the current board state. I'll request the board layout.
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Invalid action. Pick one, reply exactly with the name and space delimitted argument: get_current_board, get_legal_moves, make_move <UCI formatted move>
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_current_board
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ♜ ♚ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ♟ ⭘ ⭘ ⭘ ♟ ⭘ ⭘
+⭘ ♕ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ♟ ♟ ⭘ ⭘ ⭘
+⭘ ♝ ⭘ ♙ ⭘ ⭘ ⭘ ♙
+⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ⭘ ♔ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+get_legal_moves
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8g7,g8f7,f8e8,f8d8,f8c8,f8b8,f8a8,f8f7,b3f7,b3e6,b3d5,b3c4,b3a4,b3c2,b3a2,b3d1,e4d3,h7h6,a7a6,f6f5,g5g4,e4e3,h7h5,a7a5
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+make_move b3c2
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+
+>>>>>>>> TERMINATING RUN (0e9e9cc2-84f0-4796-a859-e9086538b876): Termination message condition on agent 'Player_Black' met
+MADE MOVE 80
+Material Count - White: 20, Black: 15
+Prompt Tokens: 44998
+Completion Tokens: 578265
+Proxy (to Chess_Engine_Dragon_White):
+
+You are a helpful AI Assistant.
+
+--------------------------------------------------------------------------------
+Chess_Engine_Dragon_White (to Proxy):
+
+make_move c1c2
+
+--------------------------------------------------------------------------------
+Proxy (to Chess_Engine_Dragon_White):
+
+Move made, switching player
+
+--------------------------------------------------------------------------------
+MADE MOVE 81
+Material Count - White: 20, Black: 12
+Prompt Tokens: 0
+Completion Tokens: 0
+Proxy (to Player_Black):
+
+You are a professional chess player and you play as black. Now is your turn to make a move. Before making a move you can pick one of the following actions:
+- 'get_current_board' to get the schema and current status of the board
+- 'get_legal_moves' to get a UCI formatted list of available moves
+- 'make_move <UCI formatted move>' when you are ready to complete your turn (e.g., 'make_move e2e4')
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+Before making a move, I’d like to know the current board state. Please provide it by using the `get_current_board` action.
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+⭘ ⭘ ⭘ ⭘ ⭘ ♜ ♚ ⭘
+♟ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ♟
+⭘ ♟ ⭘ ⭘ ⭘ ♟ ⭘ ⭘
+⭘ ♕ ⭘ ⭘ ⭘ ⭘ ♟ ⭘
+⭘ ⭘ ⭘ ♟ ♟ ⭘ ⭘ ⭘
+⭘ ⭘ ⭘ ♙ ⭘ ⭘ ⭘ ♙
+⭘ ⭘ ♔ ⭘ ⭘ ⭘ ♙ ⭘
+⭘ ⭘ ⭘ ⭘ ⭘ ♗ ⭘ ♖
+
+--------------------------------------------------------------------------------
+Player_Black (to Proxy):
+
+Please provide the list of legal moves with the `get_legal_moves` action.
+
+--------------------------------------------------------------------------------
+Proxy (to Player_Black):
+
+g8h8,g8g7,g8f7,f8e8,f8d8,f8c8,f8b8,f8a8,f8f7,e4d3,h7h6,a7a6,f6f5,g5g4,e4e3,h7h5,a7a5
+
+--------------------------------------------------------------------------------
