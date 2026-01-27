@@ -8,9 +8,10 @@ import chess.engine
 from autogen import ConversableAgent
 from typing import Any, Dict, List, Optional, Union, Callable
 
+
 def is_retryable_error(exception) -> bool:
     """Check if an exception is retryable based on its error message."""
-    # Check specific error messages
+    # Check specific error messages, LOWER CASE
     error_message = str(exception).lower()
     retryable_messages = [
         "service is not available",
@@ -19,11 +20,12 @@ def is_retryable_error(exception) -> bool:
         "connection error",
         "temporarily unavailable",
         "try again later",
-        # "internal server error", 
-        "is currently over capacity", # Groq
-        "limit exceeded", # Cerebras
+        # "internal server error",
+        "is currently over capacity",  # Groq
+        "error code: 429",
+        "limit exceeded",  # Cerebras
     ]
-    
+
     return any(msg in error_message for msg in retryable_messages)
 
 
@@ -79,10 +81,10 @@ class GameAgent(ConversableAgent):
         # Apply the delay before starting timing
         if isinstance(self.dialog_turn_delay, int) and self.dialog_turn_delay > 0:
             time.sleep(self.dialog_turn_delay)
-        
+
         # Start timing only after the delay
         start_time = time.time()
-        
+
         # Implement retry logic for API errors
         for attempt in range(self.max_retries + 1):  # +1 for initial attempt
             try:
@@ -90,13 +92,13 @@ class GameAgent(ConversableAgent):
                 reply = super().generate_reply(messages, sender, **kwargs)
                 end_time = time.time()
                 # Accumulate only the actual execution time, not the delay
-                self.accumulated_reply_time_seconds += (end_time - start_time)
+                self.accumulated_reply_time_seconds += end_time - start_time
                 return reply
-                
+
             except Exception as e:
                 if attempt < self.max_retries and is_retryable_error(e):
                     # Calculate exponential backoff delay
-                    delay = self.retry_delay * (2 ** attempt)
+                    delay = self.retry_delay * (2**attempt)
                     print(f"\033[93mAPI error on attempt {attempt + 1}/{self.max_retries} for {self.name}: {str(e)}\033[0m")
                     print(f"\033[93mRetrying in {delay:.1f} seconds...\033[0m")
                     time.sleep(delay)
@@ -104,18 +106,17 @@ class GameAgent(ConversableAgent):
                 else:
                     # Either max retries reached or non-retryable error
                     end_time = time.time()
-                    self.accumulated_reply_time_seconds += (end_time - start_time)
+                    self.accumulated_reply_time_seconds += end_time - start_time
                     if attempt >= self.max_retries:
                         print(f"\033[91mMax retries ({self.max_retries}) reached for {self.name}. Error: {str(e)}\033[0m")
                     else:
                         print(f"\033[91mNon-retryable error for {self.name}: {str(e)}\033[0m")
                     raise e
-        
+
         # This should never be reached, but just in case
         end_time = time.time()
-        self.accumulated_reply_time_seconds += (end_time - start_time)
+        self.accumulated_reply_time_seconds += end_time - start_time
         return None
-
 
     # ---------- Common helpers for subclasses ----------
     def normalize_last_message(self, messages: Optional[List[Dict[str, Any]]]) -> Dict[str, Any]:
@@ -190,9 +191,7 @@ def build_termination_predicate(termination_conditions: List[str]) -> Callable[[
 
     The predicate normalizes both the conditions and the message content (including tool calls).
     """
-    normalized_terms = [
-        t.lower().strip() for t in termination_conditions if isinstance(t, str)
-    ]
+    normalized_terms = [t.lower().strip() for t in termination_conditions if isinstance(t, str)]
 
     def _predicate(msg: Dict[str, Any]) -> bool:
         try:
@@ -329,15 +328,15 @@ class AutoReplyAgent(GameAgent):
             for msg in messages:
                 if isinstance(msg, dict) and isinstance(msg.get("content"), str):
                     msg["content"] = re.sub(self.remove_text, "", msg["content"], flags=re.DOTALL)
-            
+
             # Clean internal message histories
-            if sender and hasattr(sender, '_oai_messages'):
+            if sender and hasattr(sender, "_oai_messages"):
                 for msgs in sender._oai_messages.values():
                     for msg in msgs:
                         if "content" in msg and isinstance(msg.get("content"), str):  # Make sure content exists
                             msg["content"] = re.sub(self.remove_text, "", msg["content"], flags=re.DOTALL)
-            
-            if hasattr(self, '_oai_messages'):
+
+            if hasattr(self, "_oai_messages"):
                 for msgs in self._oai_messages.values():
                     for msg in msgs:
                         if "content" in msg and isinstance(msg.get("content"), str):  # Make sure content exists
@@ -364,9 +363,7 @@ class AutoReplyAgent(GameAgent):
 
         else:
             # E.g. make_move e2e4 OR make_move c2c1r
-            match = re.search(
-                rf"{self.make_move_action} ([a-zA-Z0-9]{{4,5}})", action_choice
-            )
+            match = re.search(rf"{self.make_move_action} ([a-zA-Z0-9]{{4,5}})", action_choice)
             if match:
                 sender.make_move_count += 1
                 try:
@@ -431,7 +428,6 @@ class ChessEngineStockfishAgent(GameAgent):
 
         try:
             with chess.engine.SimpleEngine.popen_uci(self.stockfish_path) as engine:
-
                 # Set Stockfish skill level (0-20)
                 if self.level is not None:
                     engine.configure({"Skill Level": self.level})
@@ -490,7 +486,6 @@ class ChessEngineDragonAgent(GameAgent):
 
         try:
             with chess.engine.SimpleEngine.popen_uci(self.dragon_path) as engine:
-
                 # Set Dragon skill level if specified
                 if self.level is not None:
                     engine.configure({"Skill": self.level})
@@ -541,20 +536,20 @@ class NonGameAgent(GameAgent):
         """
         super().__init__(dialog_turn_delay=dialog_turn_delay, *args, **kwargs)
         self.llm_configs = llm_configs
-#         self.synthesizer = ConversableAgent(
-#             name="NoN_Synthesizer",
-#             llm_config=self.llm_config,
-#             human_input_mode="NEVER",
-#             system_message = """\
-# You will be provided with a set of responses from various open-source models to the latest user query.
-# Your task is to synthesize these responses into a single, high-quality response in British English spelling.
-# It is crucial to critically evaluate the information provided in these responses, recognizing that some of it may be biased or incorrect.
-# Your response should not simply replicate the given answers but should offer a refined, accurate, and comprehensive reply to the instruction.
-# Ensure your response is well-structured, coherent and adheres to the highest standards of accuracy and reliability.
-# """
-#         )
+        #         self.synthesizer = ConversableAgent(
+        #             name="NoN_Synthesizer",
+        #             llm_config=self.llm_config,
+        #             human_input_mode="NEVER",
+        #             system_message = """\
+        # You will be provided with a set of responses from various open-source models to the latest user query.
+        # Your task is to synthesize these responses into a single, high-quality response in British English spelling.
+        # It is crucial to critically evaluate the information provided in these responses, recognizing that some of it may be biased or incorrect.
+        # Your response should not simply replicate the given answers but should offer a refined, accurate, and comprehensive reply to the instruction.
+        # Ensure your response is well-structured, coherent and adheres to the highest standards of accuracy and reliability.
+        # """
+        #         )
         self._name = "NoN_Synthesizer"
-        self._human_input_mode="NEVER",
+        self._human_input_mode = ("NEVER",)
         self._system_message = """\
 You will be provided with a set of responses from various open-source models to the latest user query.
 Your task is to synthesize these responses into a single, high-quality response in British English spelling.
@@ -569,7 +564,6 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
         self.total_tokens = 0
         self.total_cost = 0
 
-
     def generate_reply(
         self,
         messages: Optional[List[Dict[str, Any]]] = None,
@@ -582,7 +576,7 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
         user_query = self.last_message_text(messages)
         responses = []
         usage_stats = []
-        
+
         # First collect all responses from the LLMs
         for i, config in enumerate(self.llm_configs):
             ag = ConversableAgent(
@@ -591,19 +585,19 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
                 human_input_mode="NEVER",
                 **kwargs,
             )
-            ag.reset() # clear associated usage stats in the client
-            
+            ag.reset()  # clear associated usage stats in the client
+
             # Add retry logic for generate_reply
             max_retries = 4
             retry_count = 0
             response = None
-            
+
             while retry_count < max_retries:
                 try:
                     start_time = time.time()
                     response = ag.generate_reply(messages)
                     end_time = time.time()
-                    self.accumulated_reply_time_seconds += (end_time - start_time)
+                    self.accumulated_reply_time_seconds += end_time - start_time
                     break  # Success, exit the retry loop
                 except Exception as e:
                     retry_count += 1
@@ -614,29 +608,29 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
                     else:
                         print(f"Failed after {max_retries} attempts.")
                         response = f"[Error: Failed to get response from model {i} after {max_retries} attempts]"
-            
+
             responses.append(response)
-            
+
             ag_usage = ag.get_total_usage()
             if ag_usage:
                 usage_stats.append(ag_usage)
-        
+
         # Prepare the merged query for the synthesizer
         merged_query = f"User query\\>\n\n {user_query}\n\n"
         for i, response in enumerate(responses):
-            merged_query += f"Model {i+1} response\\>\n{response}\n\n"
-        
+            merged_query += f"Model {i + 1} response\\>\n{response}\n\n"
+
         # Get synthesizer response with retry logic
         new_messages = messages[:-1] if messages else []
         new_messages.append({"content": merged_query, "role": "user"})
-        
+
         response = super().generate_reply(new_messages, sender, **kwargs)
 
         # Ensure we have enough slots in total_usage_stats
         if len(self.usage_stats_per_agent) < len(self.llm_configs) + 1:
             for _ in range(len(self.usage_stats_per_agent), len(self.llm_configs) + 1):
                 self.usage_stats_per_agent.append({})
-        
+
         # Update total usage statistics once before returning
         for i, stats in enumerate(usage_stats):
             # Update or initialize the stats for this agent
@@ -649,14 +643,13 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
                         model_stats["prompt_tokens"] += data.get("prompt_tokens", 0)
                         model_stats["completion_tokens"] += data.get("completion_tokens", 0)
                         model_stats["total_tokens"] += data.get("total_tokens", 0)
-            
+
             # Update the global token counters
             for model_name, model_data in stats.items():
                 if model_name != "total_cost" and isinstance(model_data, dict):
                     self.total_prompt_tokens += model_data.get("prompt_tokens", 0)
                     self.total_completion_tokens += model_data.get("completion_tokens", 0)
                     self.total_tokens += model_data.get("total_tokens", 0)
-
 
         ## Add synthesizer usage separately
         synthesizer_usage = copy.deepcopy(self.get_total_usage())
@@ -665,18 +658,22 @@ Ensure your response is well-structured, coherent and adheres to the highest sta
             self.usage_stats_per_agent[-1] = copy.deepcopy(synthesizer_usage)
             for model, data in self.usage_stats_per_agent[-1].items():
                 if model != "total_cost" and isinstance(data, dict):
-                        model_stats = self.usage_stats_per_agent[-1][model]
-                        model_stats["prompt_tokens"] = 0
-                        model_stats["completion_tokens"] = 0
-                        model_stats["total_tokens"] = 0
+                    model_stats = self.usage_stats_per_agent[-1][model]
+                    model_stats["prompt_tokens"] = 0
+                    model_stats["completion_tokens"] = 0
+                    model_stats["total_tokens"] = 0
 
         prev_synthesizer_usage = self.usage_stats_per_agent[-1]
         self.usage_stats_per_agent[-1] = synthesizer_usage
 
         for model, data in self.usage_stats_per_agent[-1].items():
             if model != "total_cost" and isinstance(data, dict):
-                self.total_prompt_tokens += synthesizer_usage[model].get("prompt_tokens", 0) - prev_synthesizer_usage[model].get("prompt_tokens", 0)
-                self.total_completion_tokens += synthesizer_usage[model].get("completion_tokens", 0) - prev_synthesizer_usage[model].get("completion_tokens", 0)
+                self.total_prompt_tokens += synthesizer_usage[model].get("prompt_tokens", 0) - prev_synthesizer_usage[model].get(
+                    "prompt_tokens", 0
+                )
+                self.total_completion_tokens += synthesizer_usage[model].get("completion_tokens", 0) - prev_synthesizer_usage[model].get(
+                    "completion_tokens", 0
+                )
                 self.total_tokens += synthesizer_usage[model].get("total_tokens", 0) - prev_synthesizer_usage[model].get("total_tokens", 0)
 
         return response
