@@ -149,6 +149,7 @@ FILTER_OUT_MODELS = [
     # "gpt-5.1-codex-mini-2025-11-13-high",  ## TBD, t0o few runs
     "gpt-5.1-codex-mini-2025-11-13-medium",
     "chess-4b-thinking-1218",  ## RL experiment, to be ignored
+    "cursor_cli_sonnet_4.5",  # eas necessary as a reference to prove the CLI approach to test Composer-1 is valid
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
 ]
 
