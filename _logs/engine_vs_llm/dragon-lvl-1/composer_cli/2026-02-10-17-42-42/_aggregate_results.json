@@ -1,0 +1,85 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2026.02.10_17:42",
+            "log_folder_relative": "_logs/engine_vs_llm/dragon-lvl-1/composer_cli/2026-02-10-17-42-42",
+            "num_repetitions": 10,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "CHESS_ENGINE_DRAGON",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 1,
+            "dialog_turn_delay": 2,
+            "max_api_retries": 3,
+            "api_retry_delay": 1,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "chess_engines": {
+            "stockfish": {
+                "path": "/opt/homebrew/bin/stockfish",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            },
+            "dragon": {
+                "path": "dragon/dragon-linux",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            }
+        },
+        "llm_configs": {
+            "black": {
+                "model": cursor_cli_composer_1.5,
+                "api_type": "local",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 10,
+    "white_wins": 10,
+    "black_wins": 0,
+    "draws": 0,
+    "total_moves": 695,
+    "reasons": {
+        "Too many wrong actions": 5,
+        "Checkmate": 5
+    },
+    "player_white": {
+        "name": "Chess_Engine_Dragon_White",
+        "model": "",
+        "total_material": 215,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 21.5,
+        "std_dev_material": 12.358083274611085
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": cursor_cli_composer_1.5,
+        "total_material": 191,
+        "wrong_moves": 86,
+        "wrong_actions": 41,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 19.1,
+        "std_dev_material": 14.647335745603856
+    },
+    "average_moves": 69.5,
+    "std_dev_moves": 45.365797199603534
+}
