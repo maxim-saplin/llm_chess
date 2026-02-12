@@ -12,8 +12,10 @@ The workflow requires a GitHub secret named `TEST_PYPI_API_TOKEN` to be set up i
 2. Navigate to Secrets and variables > Actions
 3. Click "New repository secret"
 4. Name: `TEST_PYPI_API_TOKEN`
-5. Value: `pypi-AgENdGVzdC5weXBpLm9yZwIkNDE1ZGI0MzUtOGNjOS00YWI5LWFhZjItZDUzMzJhZjhhYzRlAAIqWzMsIjNjN2UxMjhiLTAxZWItNDA1Ni04MzQwLTVlNzVkNmI4MGEyNyJdAAAGIP5KaB1XGygx0YdbxtYXDAO58QKZ7beyv2sJTn7JwWyG`
+5. Value: Use the Test PyPI API token provided in the issue/task
 6. Click "Add secret"
+
+**Note:** The API token should be obtained from Test PyPI (https://test.pypi.org/manage/account/#api-tokens) or use the token provided in your deployment instructions. Never commit API tokens to the repository.
 
 ## Publishing Methods
 
