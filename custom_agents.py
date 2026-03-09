@@ -147,6 +147,7 @@ def extract_message_text(msg: Dict[str, Any]) -> str:
     """
     Convert an OpenAI/Autogen message dict to a text string.
     - If content is a string, return it.
+    - If content is a list of Responses-style content blocks, extract and join text blocks.
     - If content is None but tool/function calls are present, return the tool/function name(s).
     - Fallback to an empty string.
     """
@@ -156,6 +157,32 @@ def extract_message_text(msg: Dict[str, Any]) -> str:
     content = msg.get("content")
     if isinstance(content, str):
         return content
+    if isinstance(content, list):
+        text_parts: List[str] = []
+        for block in content:
+            if not isinstance(block, dict):
+                continue
+
+            block_text = block.get("text")
+            if isinstance(block_text, str) and block_text:
+                text_parts.append(block_text)
+                continue
+
+            if isinstance(block_text, dict):
+                nested_text = block_text.get("value")
+                if isinstance(nested_text, str) and nested_text:
+                    text_parts.append(nested_text)
+                    continue
+
+            if block.get("type") in {"text", "output_text", "input_text"}:
+                for candidate_key in ("value", "content"):
+                    candidate = block.get(candidate_key)
+                    if isinstance(candidate, str) and candidate:
+                        text_parts.append(candidate)
+                        break
+
+        if text_parts:
+            return "\n".join(text_parts)
 
     # OpenAI tool calls format
     tool_calls = msg.get("tool_calls")

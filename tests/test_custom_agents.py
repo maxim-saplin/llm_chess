@@ -723,6 +723,59 @@ class TestToolCallHandling(unittest.TestCase):
         }
         self.assertEqual(extract_message_text(msg), "get_legal_moves")
 
+    def test_extract_message_text_from_responses_text_blocks(self):
+        from custom_agents import extract_message_text
+        msg = {
+            "role": "assistant",
+            "content": [
+                {"type": "text", "role": "assistant", "text": "get_current_board"},
+                {"type": "text", "role": "assistant", "text": "get_legal_moves"},
+            ],
+        }
+        self.assertEqual(
+            extract_message_text(msg),
+            "get_current_board\nget_legal_moves",
+        )
+
+    def test_auto_reply_handles_responses_content_blocks(self):
+        get_current_board = lambda: "board_state"
+        get_legal_moves = lambda: "e2e4,d2d4,g1f3"
+
+        agent = AutoReplyAgent(
+            name="ProxyResponsesTest",
+            get_current_board=get_current_board,
+            get_legal_moves=get_legal_moves,
+            make_move=lambda move: None,
+            move_was_made_message="Move made",
+            invalid_action_message="Invalid action",
+            too_many_failed_actions_message="Too many failed actions",
+            max_failed_attempts=3,
+            get_current_board_action="get_current_board",
+            get_legal_moves_action="get_legal_moves",
+            reflect_action="reflect",
+            make_move_action="make_move",
+            reflect_prompt="Reflecting...",
+            reflection_followup_prompt="Follow-up reflection",
+            remove_text=None,
+        )
+        sender = GameAgent(name="MockPlayer")
+        sender.reflections_used = 0
+        sender.reflections_used_before_board = 0
+
+        messages = [
+            {"content": "You are a chess player."},
+            {
+                "role": "assistant",
+                "content": [
+                    {"type": "text", "role": "assistant", "text": "get_current_board"},
+                    {"type": "text", "role": "assistant", "text": "get_current_board"},
+                ],
+            },
+        ]
+
+        reply = agent.generate_reply(messages=messages, sender=sender)
+        self.assertEqual(reply, get_current_board())
+
     def test_auto_reply_handles_tool_call_action(self):
         # Minimal AutoReplyAgent setup
         get_current_board = lambda: "board_state"
