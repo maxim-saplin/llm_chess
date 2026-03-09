@@ -14,11 +14,13 @@ import numpy as np
 from moviepy.editor import ImageSequenceClip
 import chess.svg
 from typing import Optional, Dict, Tuple
+from urllib.parse import urlsplit, urlunsplit
 
 # Capability mapping for model-specific features
 PROVIDER_CAPABILITIES = {
     "openai": {"reasoning_effort", "frequency_penalty", "presence_penalty"},
     "azure": {"reasoning_effort", "frequency_penalty", "presence_penalty"},
+    "azure_responses": {"reasoning_effort", "frequency_penalty", "presence_penalty"},
     "xai": {"reasoning_effort", "frequency_penalty", "presence_penalty"},
     "anthropic": {"thinking_budget", "max_tokens"},
     "google": {"top_k"},
@@ -77,6 +79,27 @@ def _merge_hyperparams(model_params: Optional[Dict]) -> Dict:
     return merged
 
 
+def _normalize_azure_responses_endpoint(endpoint: str, api_version: str) -> Tuple[str, Dict[str, str]]:
+    """Convert an Azure endpoint into an OpenAI Responses-compatible base URL."""
+    parsed = urlsplit(endpoint.strip())
+    base_path = parsed.path.rstrip("/")
+
+    if base_path.endswith("/openai/v1"):
+        normalized_path = base_path
+    elif base_path.endswith("/openai"):
+        normalized_path = f"{base_path}/v1"
+    else:
+        openai_index = base_path.find("/openai/")
+        if openai_index != -1:
+            base_path = base_path[:openai_index]
+        normalized_path = f"{base_path}/openai/v1" if base_path else "/openai/v1"
+
+    normalized_base_url = urlunsplit(
+        (parsed.scheme, parsed.netloc, normalized_path, "", "")
+    )
+    return normalized_base_url, {"api-version": api_version}
+
+
 def validate_model_config(model_config: Dict, provider_type: str):
     """Validate that the provided configuration is compatible with the provider."""
     if not model_config:
@@ -93,7 +116,7 @@ def _apply_model_specific_config(config: Dict, model_params: Dict, provider_type
     merged_hyperparams = _merge_hyperparams(model_params)
 
     # Provider-specific features
-    if provider_type in ("openai", "azure", "xai", "local", "groq", "cerebras"):
+    if provider_type in ("openai", "azure", "azure_responses", "xai", "local", "groq", "cerebras"):
         if model_params and "reasoning_effort" in model_params:
             # Store reasoning_effort inside the provider-specific entry (matches get_llms_autogen)
             if config.get("config_list"):
@@ -148,6 +171,18 @@ def get_llms(
                 "api_key": os.environ[f"AZURE_OPENAI_KEY_{key}"],
                 "base_url": os.environ[f"AZURE_OPENAI_ENDPOINT_{key}"],
                 "api_version": os.environ[f"AZURE_OPENAI_VERSION_{key}"],
+            }
+        elif kind == "azure_responses":
+            base_url, default_query = _normalize_azure_responses_endpoint(
+                os.environ[f"AZURE_OPENAI_ENDPOINT_{key}"],
+                os.environ[f"AZURE_OPENAI_VERSION_{key}"],
+            )
+            return {
+                "api_type": "responses",
+                "model": os.environ[f"AZURE_OPENAI_DEPLOYMENT_{key}"],
+                "api_key": os.environ[f"AZURE_OPENAI_KEY_{key}"],
+                "base_url": base_url,
+                "default_query": default_query,
             }
         elif kind == "local":
             return {

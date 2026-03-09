@@ -36,7 +36,7 @@ See the [live leaderboard](https://maxim-saplin.github.io/llm_chess/) for rankin
 4. **Configure LLMs**:
    - Copy `.env.sample` to `.env` and add your API keys.
    - Suffixes like `_W` (white) and `_B` (black) distinguish configs for multi-LLM setups.
-   - Supports Azure OpenAI, OpenAI, Anthropic, Google, Groq, and local models via Autogen.
+   - Supports Azure OpenAI chat completions (`MODEL_KIND=azure`), Azure OpenAI Responses API (`MODEL_KIND=azure_responses`), OpenAI, Anthropic, Google, Groq, and local models via Autogen.
    - For local models, ensure Ollama or LM Studio is running.
 
 5. **Chess Engines** (optional, for stronger opponents):
@@ -81,6 +81,10 @@ uv run python run_multiple_games.py
 ## Configurations
 
 Edit globals in `llm_chess.py` or pass via `run_multiple_games.py`:
+
+- Provider choice comes from `MODEL_KIND_W` / `MODEL_KIND_B` in `.env`.
+- Use `azure` for classic Azure chat-completions deployments.
+- Use `azure_responses` for Azure deployments that require the Responses API. Keep `AZURE_OPENAI_ENDPOINT_*` at the resource root such as `https://your-resource.openai.azure.com`; the runtime will normalize it to the Responses base path automatically.
 
 - `white_player_type` / `black_player_type`: `RANDOM_PLAYER`, `LLM`, `CHESS_ENGINE_DRAGON`, `CHESS_ENGINE_STOCKFISH`.
 - `enable_reflection`: Enable "reflect" action for strategic thinking (extra tokens).

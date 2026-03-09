@@ -14,6 +14,18 @@ _ENV_TEMPLATES = {
         "LOCAL_BASE_URL_{}",
         "LOCAL_API_KEY_{}",
     ],
+    "azure": [
+        "AZURE_OPENAI_VERSION_{}",
+        "AZURE_OPENAI_ENDPOINT_{}",
+        "AZURE_OPENAI_KEY_{}",
+        "AZURE_OPENAI_DEPLOYMENT_{}",
+    ],
+    "azure_responses": [
+        "AZURE_OPENAI_VERSION_{}",
+        "AZURE_OPENAI_ENDPOINT_{}",
+        "AZURE_OPENAI_KEY_{}",
+        "AZURE_OPENAI_DEPLOYMENT_{}",
+    ],
     "openai": [
         "OPENAI_MODEL_NAME_{}",
         "OPENAI_API_KEY_{}",
@@ -34,7 +46,15 @@ def _prepare_env(kind_w: str, kind_b: str):
 
     for key_suffix, provider in zip(["W", "B"], [kind_w, kind_b]):
         for tmpl in _ENV_TEMPLATES.get(provider, []):
-            env_updates[tmpl.format(key_suffix)] = f"{provider.lower()}-{key_suffix.lower()}"
+            env_key = tmpl.format(key_suffix)
+            if "ENDPOINT" in env_key:
+                env_updates[env_key] = f"https://{provider.lower()}-{key_suffix.lower()}.openai.azure.com"
+            elif "VERSION" in env_key:
+                env_updates[env_key] = "2025-03-01-preview"
+            elif "KEY" in env_key:
+                env_updates[env_key] = f"{provider.lower()}-{key_suffix.lower()}-key"
+            else:
+                env_updates[env_key] = f"{provider.lower()}-{key_suffix.lower()}"
 
     return patch.dict(os.environ, env_updates, clear=False)
 
@@ -73,6 +93,45 @@ class TestPerModelConfig(unittest.TestCase):
         self.assertIn("thinking", cfg_b["config_list"][0])
         self.assertEqual(cfg_b["config_list"][0]["thinking"]["budget_tokens"], 4096)
         self.assertNotIn("top_p", cfg_b)
+
+    def test_azure_responses_uses_responses_api_shape(self):
+        with _prepare_env("azure_responses", "local"):
+            cfg_w, _ = get_llms(
+                white_hyperparams={
+                    "reasoning_effort": "high",
+                    "hyperparams": llm_chess.default_hyperparams,
+                },
+                black_hyperparams={"hyperparams": llm_chess.default_hyperparams},
+            )
+
+        provider_conf = cfg_w["config_list"][0]
+        self.assertEqual(provider_conf["api_type"], "responses")
+        self.assertEqual(provider_conf["model"], "azure_responses-w")
+        self.assertEqual(
+            provider_conf["base_url"],
+            "https://azure_responses-w.openai.azure.com/openai/v1",
+        )
+        self.assertEqual(
+            provider_conf["default_query"],
+            {"api-version": "2025-03-01-preview"},
+        )
+        self.assertEqual(provider_conf["reasoning_effort"], "high")
+        self.assertNotIn("api_version", provider_conf)
+        self.assertNotIn("temperature", cfg_w)
+        self.assertIn("top_p", cfg_w)
+
+    def test_azure_still_uses_chat_completions_shape(self):
+        with _prepare_env("azure", "local"):
+            cfg_w, _ = get_llms(
+                white_hyperparams={"hyperparams": llm_chess.default_hyperparams},
+                black_hyperparams={"hyperparams": llm_chess.default_hyperparams},
+            )
+
+        provider_conf = cfg_w["config_list"][0]
+        self.assertEqual(provider_conf["api_type"], "azure")
+        self.assertEqual(provider_conf["model"], "azure-w")
+        self.assertEqual(provider_conf["base_url"], "https://azure-w.openai.azure.com")
+        self.assertEqual(provider_conf["api_version"], "2025-03-01-preview")
 
 # ---------------------------------------------------------------------------
 # remove_text feature tests
