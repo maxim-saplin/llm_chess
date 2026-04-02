@@ -1,0 +1,84 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2026.03.17_09:42",
+            "log_folder_relative": "_logs/engine_vs_llm/dragon-lvl-5/gemini-3.1-pro-preview/2026-03-17-09-42-38",
+            "num_repetitions": 10,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "CHESS_ENGINE_DRAGON",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 7,
+            "dialog_turn_delay": 7,
+            "max_api_retries": 5,
+            "api_retry_delay": 14400,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "chess_engines": {
+            "stockfish": {
+                "path": "/opt/homebrew/bin/stockfish",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            },
+            "dragon": {
+                "path": "dragon/dragon-linux",
+                "reset_history": true,
+                "level": 5,
+                "time_per_move": 0.1
+            }
+        },
+        "llm_configs": {
+            "black": {
+                "model": "gemini-3.1-pro-preview",
+                "api_type": "oai_comp_endpoint",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 10,
+    "white_wins": 0,
+    "black_wins": 10,
+    "draws": 0,
+    "total_moves": 672,
+    "reasons": {
+        "Checkmate": 10
+    },
+    "player_white": {
+        "name": "Chess_Engine_Dragon_White",
+        "model": "",
+        "total_material": 95,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 9.5,
+        "std_dev_material": 7.877534865397649
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "gemini-3.1-pro-preview",
+        "total_material": 314,
+        "wrong_moves": 0,
+        "wrong_actions": 6,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 31.4,
+        "std_dev_material": 9.406853293683755
+    },
+    "average_moves": 67.2,
+    "std_dev_moves": 24.534782565891135
+}
