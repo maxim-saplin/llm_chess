@@ -153,6 +153,38 @@ class TestRunMetadata(unittest.TestCase):
                 self.assertEqual(md["llm_configs"]["white"]["api_type"], expected_api_type)
                 self.assertEqual(md["llm_configs"]["white"]["api_key"], "REDACTED")
 
+    def test_responses_api_type_is_preserved_and_redacted(self):
+        llm_chess.white_player_type = llm_chess.PlayerType.LLM_WHITE
+        llm_chess.black_player_type = llm_chess.PlayerType.LLM_BLACK
+
+        cfg_w = {
+            "config_list": [
+                {
+                    "model": "azure-gpt-5-mini",
+                    "api_key": "SECRET",
+                    "api_type": "responses",
+                    "base_url": "https://example.openai.azure.com/openai/v1",
+                    "default_query": {"api-version": "2025-03-01-preview"},
+                    "reasoning_effort": "medium",
+                }
+            ],
+            "timeout": 600,
+            "top_p": 0.95,
+        }
+
+        md = collect_run_metadata(
+            log_folder_relative=self.log_folder,
+            num_repetitions=1,
+            store_individual_logs=False,
+            llm_config_white=cfg_w,
+            llm_config_black=None,
+        )
+
+        self.assertEqual(md["llm_configs"]["white"]["api_type"], "responses")
+        self.assertEqual(md["llm_configs"]["white"]["model"], "azure-gpt-5-mini")
+        self.assertEqual(md["llm_configs"]["white"]["reasoning_effort"], "medium")
+        self.assertEqual(md["llm_configs"]["white"]["api_key"], "REDACTED")
+
 # Copy of helper from test_per_model_config (kept local to avoid import cycles)
 _ENV_TEMPLATES = {
     "local": [
