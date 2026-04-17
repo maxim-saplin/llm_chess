@@ -192,7 +192,7 @@ Move made, switching player
 ## References
 
 - **Libraries**: `chess` (board rules), Autogen (agents/dialogs), Stockfish/Dragon (engines).
-- **Data**: Logs in `_logs/`; analysis in `data_processing/` and `analysis_logs/`.
+- **Data**: Logs in `_logs/`; analysis in `data/`.
 - **Notes/Changelog**: [docs/notes.md](docs/notes.md) for updates, model tiers, and insights.
 - **License**: MIT (see LICENSE).
 - **Contribute**: Fork, PR improvements to setup, agents, or analysis.

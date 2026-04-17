@@ -33,8 +33,7 @@ dev = [
 
 [project.scripts]
 llm-chess = "llm_chess:run"
-get-refined-csv = "data_processing.get_refined_csv:main"
-aggregate-logs-csv = "data_processing.aggregate_logs_to_csv_for_paper:main"
+get-refined-csv = "data.get_refined_csv:main"
 
 [tool.setuptools]
 py-modules = [
@@ -45,7 +44,7 @@ py-modules = [
   "run_multiple_games",
   "utils",
 ]
-packages = ["data_processing"]
+packages = ["data"]
 
 
 

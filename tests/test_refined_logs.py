@@ -3,12 +3,12 @@ import os
 import csv
 import tempfile
 import shutil
-from data_processing.get_refined_csv import (
+from data.get_refined_csv import (
     build_refined_rows_from_logs,
     write_refined_csv,
     GameMode,
 )
-from data_processing import get_refined_csv as grc
+from data import get_refined_csv as grc
 
 
 class TestAggrToRefined(unittest.TestCase):
