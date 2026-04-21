@@ -1,0 +1,74 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2026.04.19_12:00",
+            "log_folder_relative": "_logs/rand_vs_llm/grok-4-20-non-reasoning/2026-04-19-12-00-29",
+            "num_repetitions": 30,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 7,
+            "dialog_turn_delay": 7,
+            "max_api_retries": 5,
+            "api_retry_delay": 1,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "grok-4-20-non-reasoning",
+                "api_type": "azure",
+                "api_version": "2025-01-01-preview",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 30,
+    "white_wins": 3,
+    "black_wins": 0,
+    "draws": 27,
+    "total_moves": 2398,
+    "reasons": {
+        "Max moves reached": 9,
+        "ERROR OCCURED": 18,
+        "Checkmate": 2,
+        "Too many wrong actions": 1
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 982,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 32.733333333333334,
+        "std_dev_material": 8.407440601708963
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "grok-4-20-non-reasoning",
+        "total_material": 924,
+        "wrong_moves": 49,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 30.8,
+        "std_dev_material": 10.835446301455429
+    },
+    "average_moves": 79.93333333333334,
+    "std_dev_moves": 90.47534750277076
+}
