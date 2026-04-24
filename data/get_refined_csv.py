@@ -59,16 +59,36 @@ usage missing, cost/token metrics fall back to 0 for that game.
 
 import os
 import csv
-import json
 import math
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import ClassVar, Dict, Any, List, Union, Tuple
-from statistics import mean, stdev
+from statistics import mean as _mean, stdev as _stdev
 from functools import lru_cache
-from tabulate import tabulate
-from scipy.optimize import root_scalar
-from llm_chess import TerminationReason
+
+import orjson
+
+# `termination_reasons` is a dep-free module; importing from it is cheap. Importing
+# `llm_chess` here would cost ~3.5s because it drags in chess/autogen/matplotlib/etc.
+from termination_reasons import TerminationReason
+
+# `tabulate` is only used by the two `print_*_leaderboard` functions. Defer its
+# import so modules that only need the CSV builders (e.g. tests, pending_models)
+# don't pay for it.
+
+
+def _tabulate(*args, **kwargs):
+    from tabulate import tabulate
+
+    return tabulate(*args, **kwargs)
+
+
+_INTERRUPTED_REASONS: frozenset[str] = frozenset({
+    TerminationReason.ERROR.value,
+    TerminationReason.UNKNOWN_ISSUE.value,
+    TerminationReason.MAX_TURNS.value,
+    TerminationReason.TOO_MANY_WRONG_ACTIONS.value,
+})
 
 # Source directories for Random-vs-LLM runs (Black = LLM). Order matters when deduping.
 LOGS_DIRS = [
@@ -119,16 +139,19 @@ MISC_DRAGON_DIRS = [
 ]
 
 FILTER_OUT_MODELS = [
+    # Match-strings are compared AFTER aliasing, so entries here must use the canonical
+    # (post-ALIASES) form. Legacy Bedrock "claude-3-5-haiku" runs are dropped via
+    # MODEL_OVERRIDES instead, because "claude-3-5-haiku" is now the canonical name for
+    # the newer direct-API runs too.
     "llama-4-scout-17b-16e-instruct",
     "N/A",
-    "o4-mini-2025-04-16-high_timeout-60m",
-    "o4-mini-2025-04-16-high_timeout-20m",
-    "o3-2025-04-16-medium_timeout-60m",
+    "o4-mini-high_timeout-60m",
+    "o4-mini-high_timeout-20m",
+    "o3-medium_timeout-60m",
     "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp03",
     "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp06",
     "anthropic.claude-v3-5-sonnet",
     "llama-3.1-tulu-3-8b@q4_k_m",
-    "claude-3-5-haiku",  # using newer runs
     "anthropic.claude-v3-5-sonnet-v2",  # using newer runs
     "anthropic.claude-v3-5-sonnet-v1",  # using newer runs
     "anthropic.claude-3-7-sonnet-20250219-v1:0",  # using newer runs
@@ -139,15 +162,18 @@ FILTER_OUT_MODELS = [
     "google_gemma-3-27b-it@q4_k_m",
     "google_gemma-3-12b-it@q4_k_m",
     "ring-mini-2.0@q4_k_m",
-    "gpt-5-codex-2025-09-15-low",  # too many errors
+    "gpt-5-codex-low",  # too many errors
     "gpt-4o-mini-2024-07-18-moa-basline",
     "rekaai_reka-flash-3@q6_k_l",
     "mixtral-8x7b-32768",
     "qwen2.5-vl-72b-instruct",
     "gpt-4-32k-0314",  # too few runs
     "gpt-oss:20b-low",  # too few runs
-    # "gpt-5.1-codex-mini-2025-11-13-high",  ## TBD, t0o few runs
-    "gpt-5.1-codex-mini-2025-11-13-medium",
+    # "gpt-5.1-codex-mini-high",  ## TBD, t0o few runs
+    "gpt-5.1-codex-mini-medium",
+    "gpt-5.4-high", # too few logs, failing to get many logs due to slow responses
+    "gpt-5.4-medium", # too few logs
+    "claude-sonnet-4-6_thinking-high", # too few logs
     "chess-4b-thinking-1218",  ## RL experiment, to be ignored
     "cursor_cli_sonnet_4.5",  # eas necessary as a reference to prove the CLI approach to test Composer-1 is valid
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
@@ -163,11 +189,26 @@ SUPPRESS_MODEL_RECOVERY_WARNINGS = [
     "lvl-1_vs_o4-mini-2025-04-16-medium",
 ]
 
-# Models whose tokens and price metrics should be zeroed
+# Models whose tokens and price metrics should be zeroed. All grok entries currently
+# seen in the pipeline are listed here; xAI's API reports reasoning/other token counts
+# inconsistently across models (https://dev.to/maximsaplin/grok-3-api-reasoning-tokens-are-counted-differently-197).
 ZERO_TOKENS: set[str] = {
+    "grok-2",
+    "grok-3-beta",
+    "grok-3-fast-beta",
+    "grok-3-mini-beta",
     "grok-3-mini-beta-low",
     "grok-3-mini-beta-high",
-}  # Grok-3 reasoning logs have wrong token usage due tp different reporting by API (https://dev.to/maximsaplin/grok-3-api-reasoning-tokens-are-counted-differently-197)
+    "grok-3-mini-fast-beta",
+    "grok-3-mini-low",
+    "grok-3-mini-high",
+    # "grok-4-fast-non-reasoning",
+    "grok-4-fast-reasoning",
+    # "grok-4-1-fast-non-reasoning",
+    "grok-4-1-fast-reasoning",
+    # "grok-4-20-non-reasoning",
+    "grok-4-20-reasoning",
+}
 
 # Metadata CSV for pricing
 MODELS_METADATA_CSV = "data/models_metadata.csv"
@@ -186,11 +227,121 @@ MODEL_OVERRIDES = {
     "2025-02-09_o3-mini-2025-01-31-high_24_GAMES_TIMEDOUT": "ignore",
     "2025-02-10_o3-mini-2025-01-31-high-again_timeouts": "ignore",
     "2025-02-10_o1-mini-2024-09-12_plenty_connection_errors": "ignore",
+    # Legacy Bedrock-routed Claude 3.5 Haiku runs (logged as "claude-3-5-haiku"). After the
+    # claude-3-5-haiku-20241022 alias, they would collide with the canonical label; drop them
+    # at the folder level so the direct-API runs own the canonical name.
+    "anthropic.claude-v3-5-haiku/2025-04-09-09-46": "ignore",
 }
-ALIASES = {
-    # Use sparingly: these aliases are applied after overrides and after _run.json inference.
-    # If the incoming name equals the key, replace it with the curated value.
+ALIASES: dict[str, str] = {
+    # Applied after overrides and after _run.json inference. Exact-match only; the incoming
+    # composed label must equal the key. Strips embedded date snapshots when the base family
+    # has exactly one dated release (single-snapshot rule). Multi-snapshot families
+    # (gpt-4o-2024-05-13/08-06/11-20, gpt-35-turbo-0125/0301/0613/1106,
+    # gemini-2.5-pro-preview-03-25/-05-06, gemini-2.0-flash-thinking-exp-01-21/-1219,
+    # deepseek-chat-0324 vs deepseek-chat, deepseek-v3-0324 vs deepseek-v3, deepseek-r1-0528
+    # vs deepseek-r1, claude-3-5-sonnet-v1/v2) keep their snapshot suffix to differentiate
+    # versions.
     "grok-3-mini-fast-beta-high": "grok-3-mini-beta-high",
+
+    # OpenAI GPT-5 family (single-snapshot 2025-08-07 / 2025-09-15 / 2025-11-13 / 2025-12-11)
+    "gpt-5-2025-08-07-low": "gpt-5-low",
+    "gpt-5-2025-08-07-medium": "gpt-5-medium",
+    "gpt-5-2025-08-07-high": "gpt-5-high",
+    "gpt-5-mini-2025-08-07-low": "gpt-5-mini-low",
+    "gpt-5-mini-2025-08-07-medium": "gpt-5-mini-medium",
+    "gpt-5-mini-2025-08-07-high": "gpt-5-mini-high",
+    "gpt-5-nano-2025-08-07-low": "gpt-5-nano-low",
+    "gpt-5-nano-2025-08-07-medium": "gpt-5-nano-medium",
+    "gpt-5-nano-2025-08-07-high": "gpt-5-nano-high",
+    "gpt-5-chat-2025-08-07": "gpt-5-chat",
+    "gpt-5-codex-2025-09-15-low": "gpt-5-codex-low",
+    "gpt-5-codex-2025-09-15-medium": "gpt-5-codex-medium",
+    "gpt-5-codex-2025-09-15-high": "gpt-5-codex-high",
+    "gpt-5.1-2025-11-13-low": "gpt-5.1-low",
+    "gpt-5.1-2025-11-13-medium": "gpt-5.1-medium",
+    "gpt-5.1-2025-11-13-high": "gpt-5.1-high",
+    "gpt-5.1-chat-2025-11-13": "gpt-5.1-chat",
+    "gpt-5.1-codex-2025-11-13-low": "gpt-5.1-codex-low",
+    "gpt-5.1-codex-2025-11-13-medium": "gpt-5.1-codex-medium",
+    "gpt-5.1-codex-2025-11-13-high": "gpt-5.1-codex-high",
+    "gpt-5.1-codex-mini-2025-11-13-low": "gpt-5.1-codex-mini-low",
+    "gpt-5.1-codex-mini-2025-11-13-medium": "gpt-5.1-codex-mini-medium",
+    "gpt-5.1-codex-mini-2025-11-13-high": "gpt-5.1-codex-mini-high",
+    "gpt-5.2-2025-12-11-low": "gpt-5.2-low",
+    "gpt-5.2-2025-12-11-medium": "gpt-5.2-medium",
+    "gpt-5.2-2025-12-11-high": "gpt-5.2-high",
+    "gpt-5.2-chat-2025-12-11": "gpt-5.2-chat",
+
+    # OpenAI GPT-4.x family (single-snapshot)
+    "gpt-4.1-2025-04-14": "gpt-4.1",
+    "gpt-4.1-mini-2025-04-14": "gpt-4.1-mini",
+    "gpt-4.1-nano-2025-04-14": "gpt-4.1-nano",
+    "gpt-4.5-preview-2025-02-27": "gpt-4.5-preview",
+    "gpt-4-turbo-2024-04-09": "gpt-4-turbo",
+    "gpt-4o-mini-2024-07-18": "gpt-4o-mini",
+    "gpt-4-0613": "gpt-4",
+    "gpt-4-32k-0613": "gpt-4-32k",
+
+    # OpenAI reasoning (o1 / o3 / o4). Timeout-suffixed variants kept so their
+    # filter entries match post-alias canonical labels.
+    "o1-preview-2024-09-12": "o1-preview",
+    "o1-2024-12-17-low": "o1-low",
+    "o1-2024-12-17-medium": "o1-medium",
+    "o1-2024-12-17-high": "o1-high",
+    "o1-mini-2024-09-12": "o1-mini",
+    "o1-mini-2025-04-16-low": "o1-mini-low",
+    "o1-mini-2025-04-16-medium": "o1-mini-medium",
+    "o1-mini-2025-04-16-high": "o1-mini-high",
+    "o3-mini-2025-01-31-low": "o3-mini-low",
+    "o3-mini-2025-01-31-medium": "o3-mini-medium",
+    "o3-mini-2025-01-31-high": "o3-mini-high",
+    "o3-2025-04-16": "o3",
+    "o3-2025-04-16-low": "o3-low",
+    "o3-2025-04-16-medium": "o3-medium",
+    "o3-2025-04-16-high": "o3-high",
+    "o3-2025-04-16-medium_timeout-60m": "o3-medium_timeout-60m",
+    "o4-mini-2025-04-16": "o4-mini",
+    "o4-mini-2025-04-16-low": "o4-mini-low",
+    "o4-mini-2025-04-16-medium": "o4-mini-medium",
+    "o4-mini-2025-04-16-high": "o4-mini-high",
+    "o4-mini-2025-04-16-low@PGN": "o4-mini-low@PGN",
+    "o4-mini-2025-04-16-high_timeout-20m": "o4-mini-high_timeout-20m",
+    "o4-mini-2025-04-16-high_timeout-60m": "o4-mini-high_timeout-60m",
+
+    # Anthropic Claude (single-snapshot families; multi-snapshot v1/v2 sonnet-3.5 kept)
+    "claude-3-5-haiku-20241022": "claude-3-5-haiku",
+    "claude-3-7-sonnet-20250219": "claude-3-7-sonnet",
+    "claude-3-7-sonnet-20250219_thinking_1024": "claude-3-7-sonnet_thinking_1024",
+    "claude-3-7-sonnet-20250219_thinking_2048": "claude-3-7-sonnet_thinking_2048",
+    "claude-3-7-sonnet-20250219_thinking_5000": "claude-3-7-sonnet_thinking_5000",
+    "claude-3-7-sonnet-20250219_thinking_10000": "claude-3-7-sonnet_thinking_10000",
+    "claude-sonnet-4-20250514": "claude-sonnet-4",
+    "claude-sonnet-4-20250514_thinking_16000": "claude-sonnet-4_thinking_16000",
+    "claude-sonnet-4-5-20250929": "claude-sonnet-4-5",
+    "claude-sonnet-4-5-20250929_thinking_16000": "claude-sonnet-4-5_thinking_16000",
+    "claude-opus-4-20250514": "claude-opus-4",
+    "claude-opus-4-20250514_thinking_16000": "claude-opus-4_thinking_16000",
+    "claude-opus-4-1-20250805": "claude-opus-4-1",
+    "claude-opus-4-5-20251101": "claude-opus-4-5",
+    # Upstream metadata uses a hyphen (not underscore) before the thinking suffix for 4-5 opus.
+    "claude-opus-4-5-20251101-thinking_16000": "claude-opus-4-5-thinking_16000",
+    "claude-haiku-4-5-20251001": "claude-haiku-4-5",
+    "claude-haiku-4-5-20251001_thinking_16000": "claude-haiku-4-5_thinking_16000",
+
+    # Qwen / Mistral / Grok / Gemini (single-snapshot with mmYY / MMDD / YYYY-MM-DD tails)
+    "qwen-max-2025-01-25": "qwen-max",
+    "qwen-plus-2025-01-25": "qwen-plus",
+    "qwen-turbo-2024-11-01": "qwen-turbo",
+    "qwen3-30b-a3b-thinking-2507@q4_k_m": "qwen3-30b-a3b-thinking@q4_k_m",
+    "qwen3-4b-thinking-2507@q8": "qwen3-4b-thinking@q8",
+    "mistral-nemo-12b-instruct-2407": "mistral-nemo-12b-instruct",
+    "mistral-small-instruct-2409": "mistral-small-instruct",
+    "ministral-8b-instruct-2410": "ministral-8b-instruct",
+    "mistral-small-24b-instruct-2501@q4_k_m": "mistral-small-24b-instruct@q4_k_m",
+    "magistral-small-2506": "magistral-small",
+    "grok-2-1212": "grok-2",
+    "gemini-1.5-pro-preview-0409": "gemini-1.5-pro-preview",
+    "gemini-2.0-flash-lite-preview-02-05": "gemini-2.0-flash-lite-preview",
 }
 
 
@@ -265,12 +416,7 @@ class GameLog:
 
     @property
     def is_interrupted(self) -> int:
-        return self.reason in {
-            TerminationReason.ERROR.value,
-            TerminationReason.UNKNOWN_ISSUE.value,
-            TerminationReason.MAX_TURNS.value,
-            TerminationReason.TOO_MANY_WRONG_ACTIONS.value,
-        }
+        return self.reason in _INTERRUPTED_REASONS
 
     @property
     def game_duration(self) -> float:
@@ -298,8 +444,8 @@ def _model_label_from_run_json(run_dir: str) -> str | None:
         run_json_path = os.path.join(run_dir, "_run.json")
         if not os.path.exists(run_json_path):
             return None
-        with open(run_json_path, "r", encoding="utf-8") as f:
-            md = json.load(f)
+        with open(run_json_path, "rb") as f:
+            md = orjson.loads(f.read())
 
         player_types = md.get("player_types") or {}
         llm_configs = md.get("llm_configs") or {}
@@ -337,8 +483,8 @@ def _white_opponent_from_run_dir(run_dir: str) -> str | None:
     try:
         run_json_path = os.path.join(run_dir, "_run.json")
         if os.path.exists(run_json_path):
-            with open(run_json_path, "r", encoding="utf-8") as f:
-                md = json.load(f)
+            with open(run_json_path, "rb") as f:
+                md = orjson.loads(f.read())
             engines = md.get("chess_engines") or {}
             dragon = engines.get("dragon") if isinstance(engines, dict) else None
             if isinstance(dragon, dict) and "level" in dragon:
@@ -367,8 +513,8 @@ def _white_opponent_from_run_dir(run_dir: str) -> str | None:
 
 def load_game_log(file_path: str) -> GameLog:
     """Load a single per-game JSON into a strongly typed GameLog dataclass."""
-    with open(file_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    with open(file_path, "rb") as f:
+        data = orjson.loads(f.read())
 
         def _extract_usage(stats_dict: dict) -> UsageStats:
             total_cost = stats_dict.get("total_cost", 0)
@@ -402,6 +548,26 @@ def load_game_log(file_path: str) -> GameLog:
         )
 
 
+def _walk_log_files(processed_logs_dirs: List[str]) -> List[Tuple[str, str]]:
+    """Collect (file_path, logs_dir) for every per-game JSON under the configured dirs.
+
+    Applies the cheap filters (extension, `_run.json` exclusion, FILTER_OUT_PATH_KEYWORDS)
+    here so the heavier JSON parse only runs on survivors.
+    """
+    work: list[Tuple[str, str]] = []
+    for logs_dir in processed_logs_dirs:
+        for root, _, files in os.walk(logs_dir):
+            for file in files:
+                if not file.endswith(".json") or file.endswith("_aggregate_results.json") or file == "_run.json":
+                    continue
+                file_path = os.path.join(root, file)
+                file_path_lower = file_path.lower()
+                if any(keyword.lower() in file_path_lower for keyword in FILTER_OUT_PATH_KEYWORDS):
+                    continue
+                work.append((file_path, logs_dir))
+    return work
+
+
 def load_game_logs(
     logs_dirs: Union[str, List[Union[str, Dict[str, str]]]],
     model_overrides: dict | None = None,
@@ -424,106 +590,89 @@ def load_game_logs(
         else:
             processed_logs_dirs.append(entry)
 
-    for logs_dir in processed_logs_dirs:
-        for root, _, files in os.walk(logs_dir):
-            for file in files:
-                if file.endswith(".json") and not file.endswith("_aggregate_results.json") and file != "_run.json":
-                    file_path = os.path.join(root, file)
-                    # Filter out paths containing excluded keywords
-                    file_path_lower = file_path.lower()
-                    if any(keyword.lower() in file_path_lower for keyword in FILTER_OUT_PATH_KEYWORDS):
-                        continue
-                    try:
-                        game_log = load_game_log(file_path)
-                        run_dir = os.path.dirname(file_path)
+    for file_path, logs_dir in _walk_log_files(processed_logs_dirs):
+        try:
+            game_log = load_game_log(file_path)
+        except Exception:
+            # Skip invalid JSON files, matching historical behavior.
+            continue
+        run_dir = os.path.dirname(file_path)
 
-                        if mode == GameMode.RANDOM_VS_LLM:
-                            # Ensure opponent and black roles are expected
-                            if game_log.player_white.name != "Random_Player":
-                                continue
-                            if game_log.player_black.name != "Player_Black":
-                                continue
+        if mode == GameMode.RANDOM_VS_LLM:
+            if game_log.player_white.name != "Random_Player":
+                continue
+            if game_log.player_black.name != "Player_Black":
+                continue
 
-                            if logs_dir in directory_aliases:
-                                # Hard override: entire directory is aliased to a single label.
-                                model_name = directory_aliases[logs_dir]
-                            else:
-                                label_from_run = _model_label_from_run_json(run_dir)
-                                model_name = label_from_run or game_log.player_black.model
-                                if model_overrides:
-                                    key = next((k for k in model_overrides if os.path.dirname(file_path).endswith(k)), None)
-                                    if key:
-                                        model_name = model_overrides[key]
+            if logs_dir in directory_aliases:
+                model_name = directory_aliases[logs_dir]
+            else:
+                label_from_run = _model_label_from_run_json(run_dir)
+                model_name = label_from_run or game_log.player_black.model
+                if model_overrides:
+                    key = next((k for k in model_overrides if os.path.dirname(file_path).endswith(k)), None)
+                    if key:
+                        model_name = model_overrides[key]
 
-                            game_log.player_black.model = model_name
-                            logs.append(game_log)
+            game_log.player_black.model = model_name
+            logs.append(game_log)
 
-                        elif mode == GameMode.DRAGON_VS_LLM:
-                            # Require LLM on black
-                            if game_log.player_black.name != "Player_Black":
-                                continue
+        elif mode == GameMode.DRAGON_VS_LLM:
+            if game_log.player_black.name != "Player_Black":
+                continue
 
-                            # New-format strictness: require _run.json under engine_vs_llm base
-                            is_new_format_base = os.path.normpath(logs_dir).endswith(os.path.normpath("_logs/engine_vs_llm"))
+            is_new_format_base = os.path.normpath(logs_dir).endswith(os.path.normpath("_logs/engine_vs_llm"))
 
-                            # Resolve model label
-                            label_from_run = _model_label_from_run_json(run_dir)
+            label_from_run = _model_label_from_run_json(run_dir)
 
-                            model_name = label_from_run or game_log.player_black.model
+            model_name = label_from_run or game_log.player_black.model
 
-                            if not is_new_format_base and model_name in ("placeholder", "Player_Black", "N/A", ""):
-                                # Try to recover from usage_stats keys (ignore total_cost)
-                                candidate = None
-                                if game_log.usage_stats_black and game_log.usage_stats_black.details:
-                                    candidate = next((k for k in game_log.usage_stats_black.details.keys() if k != "total_cost"), None)
+            if not is_new_format_base and model_name in ("placeholder", "Player_Black", "N/A", ""):
+                candidate = None
+                if game_log.usage_stats_black and game_log.usage_stats_black.details:
+                    candidate = next((k for k in game_log.usage_stats_black.details.keys() if k != "total_cost"), None)
 
-                                if candidate:
-                                    if not any(s in file_path for s in SUPPRESS_MODEL_RECOVERY_WARNINGS):
-                                        print(
-                                            f"WARNING: Recovered model '{candidate}' from usage_stats for log with invalid model '{model_name}' at {file_path}"
-                                        )
-                                    model_name = candidate
-                                else:
-                                    print(
-                                        f"WARNING: Could not determine model ID for log at {file_path}. Player.model='{model_name}', usage_stats keys={list(game_log.usage_stats_black.details.keys()) if game_log.usage_stats_black.details else 'None'}"
-                                    )
+                if candidate:
+                    if not any(s in file_path for s in SUPPRESS_MODEL_RECOVERY_WARNINGS):
+                        print(
+                            f"WARNING: Recovered model '{candidate}' from usage_stats for log with invalid model '{model_name}' at {file_path}"
+                        )
+                    model_name = candidate
+                else:
+                    print(
+                        f"WARNING: Could not determine model ID for log at {file_path}. Player.model='{model_name}', usage_stats keys={list(game_log.usage_stats_black.details.keys()) if game_log.usage_stats_black.details else 'None'}"
+                    )
 
-                            if label_from_run is None:
-                                if is_new_format_base:
-                                    print(
-                                        f"WARNING: Missing or invalid _run.json for run at {run_dir}; skipping (engine_vs_llm new format)"
-                                    )
-                                    continue
+            if label_from_run is None:
+                if is_new_format_base:
+                    print(
+                        f"WARNING: Missing or invalid _run.json for run at {run_dir}; skipping (engine_vs_llm new format)"
+                    )
+                    continue
 
-                            if logs_dir in directory_aliases:
-                                # Even Dragon runs can be hard-aliased directory-wide.
-                                model_name = directory_aliases[logs_dir]
-                            if model_overrides:
-                                key = next((k for k in model_overrides if os.path.dirname(file_path).endswith(k)), None)
-                                if key:
-                                    model_name = model_overrides[key]
+            if logs_dir in directory_aliases:
+                model_name = directory_aliases[logs_dir]
+            if model_overrides:
+                key = next((k for k in model_overrides if os.path.dirname(file_path).endswith(k)), None)
+                if key:
+                    model_name = model_overrides[key]
 
-                            # Resolve white opponent (engine descriptor)
-                            white_op = _white_opponent_from_run_dir(run_dir)
-                            if white_op is None:
-                                if is_new_format_base:
-                                    print(f"WARNING: Could not infer dragon engine level for run at {run_dir}; skipping")
-                                    continue
-                                else:
-                                    # Legacy path without clear level — skip conservatively
-                                    print(f"WARNING: Legacy path without parseable dragon level at {run_dir}; skipping")
-                                    continue
+            white_op = _white_opponent_from_run_dir(run_dir)
+            if white_op is None:
+                if is_new_format_base:
+                    print(f"WARNING: Could not infer dragon engine level for run at {run_dir}; skipping")
+                    continue
+                else:
+                    print(f"WARNING: Legacy path without parseable dragon level at {run_dir}; skipping")
+                    continue
 
-                            game_log.player_black.model = model_name
-                            game_log.white_opponent = white_op
-                            logs.append(game_log)
+            game_log.player_black.model = model_name
+            game_log.white_opponent = white_op
+            logs.append(game_log)
 
-                        else:
-                            # Unknown mode; skip
-                            continue
-                    except Exception:
-                        # Skip invalid JSON files
-                        continue
+        else:
+            # Unknown mode; skip
+            continue
     return logs
 
 
@@ -615,11 +764,11 @@ def build_refined_rows_from_logs(
             else 0.5
             for log in model_logs
         ]
-        std_dev_win_loss = stdev(per_game_win_loss) if total_games > 1 else 0
+        std_dev_win_loss = _stdev(per_game_win_loss) if total_games > 1 else 0
         moe_win_loss = 1.96 * (std_dev_win_loss / math.sqrt(total_games)) if total_games > 1 else 0
 
-        game_duration = mean([log.game_duration for log in model_logs]) if model_logs else 0
-        std_dev_game_duration = stdev([log.game_duration for log in model_logs]) if total_games > 1 else 0
+        game_duration = _mean([log.game_duration for log in model_logs]) if model_logs else 0
+        std_dev_game_duration = _stdev([log.game_duration for log in model_logs]) if total_games > 1 else 0
         moe_game_duration = 1.96 * (std_dev_game_duration / math.sqrt(total_games)) if total_games > 1 else 0
 
         games_interrupted = sum(1 for log in model_logs if log.is_interrupted)
@@ -658,7 +807,7 @@ def build_refined_rows_from_logs(
                 else 0.5
                 for log in non_interrupted_logs
             ]
-            std_dev_win_loss_non_interrupted = stdev(per_game_win_loss_ni) if non_interrupted_games > 1 else 0
+            std_dev_win_loss_non_interrupted = _stdev(per_game_win_loss_ni) if non_interrupted_games > 1 else 0
             moe_win_loss_non_interrupted = (
                 1.96 * (std_dev_win_loss_non_interrupted / math.sqrt(non_interrupted_games)) if non_interrupted_games > 1 else 0
             )
@@ -672,12 +821,12 @@ def build_refined_rows_from_logs(
 
         per_game_llm_material = [log.material_count["black"] for log in model_logs]
         per_game_rand_material = [log.material_count["white"] for log in model_logs]
-        llm_avg_material = mean(per_game_llm_material)
-        rand_avg_material = mean(per_game_rand_material)
+        llm_avg_material = _mean(per_game_llm_material)
+        rand_avg_material = _mean(per_game_rand_material)
 
         per_game_material_diff = [lm - rm for lm, rm in zip(per_game_llm_material, per_game_rand_material)]
-        material_diff_llm_minus_rand = mean(per_game_material_diff)
-        std_dev_material_diff = stdev(per_game_material_diff) if total_games > 1 else 0
+        material_diff_llm_minus_rand = _mean(per_game_material_diff)
+        std_dev_material_diff = _stdev(per_game_material_diff) if total_games > 1 else 0
         moe_material_diff_llm_minus_rand = 1.96 * (std_dev_material_diff / math.sqrt(total_games)) if total_games > 1 else 0
 
         per_game_wrong_actions_per_1000moves = [
@@ -692,15 +841,15 @@ def build_refined_rows_from_logs(
             if log.number_of_moves > 0
         ]
 
-        wrong_actions_per_1000moves = mean(per_game_wrong_actions_per_1000moves) if per_game_wrong_actions_per_1000moves else 0
-        wrong_moves_per_1000moves = mean(per_game_wrong_moves_per_1000moves) if per_game_wrong_moves_per_1000moves else 0
-        mistakes_per_1000moves = mean(per_game_mistakes_per_1000moves) if per_game_mistakes_per_1000moves else 0
+        wrong_actions_per_1000moves = _mean(per_game_wrong_actions_per_1000moves) if per_game_wrong_actions_per_1000moves else 0
+        wrong_moves_per_1000moves = _mean(per_game_wrong_moves_per_1000moves) if per_game_wrong_moves_per_1000moves else 0
+        mistakes_per_1000moves = _mean(per_game_mistakes_per_1000moves) if per_game_mistakes_per_1000moves else 0
 
         std_dev_wrong_actions_per_1000moves = (
-            stdev(per_game_wrong_actions_per_1000moves) if len(per_game_wrong_actions_per_1000moves) > 1 else 0
+            _stdev(per_game_wrong_actions_per_1000moves) if len(per_game_wrong_actions_per_1000moves) > 1 else 0
         )
-        std_dev_wrong_moves_per_1000moves = stdev(per_game_wrong_moves_per_1000moves) if len(per_game_wrong_moves_per_1000moves) > 1 else 0
-        std_dev_mistakes_per_1000moves = stdev(per_game_mistakes_per_1000moves) if len(per_game_mistakes_per_1000moves) > 1 else 0
+        std_dev_wrong_moves_per_1000moves = _stdev(per_game_wrong_moves_per_1000moves) if len(per_game_wrong_moves_per_1000moves) > 1 else 0
+        std_dev_mistakes_per_1000moves = _stdev(per_game_mistakes_per_1000moves) if len(per_game_mistakes_per_1000moves) > 1 else 0
 
         if total_games > 1:
             z_score = 1.96
@@ -710,7 +859,7 @@ def build_refined_rows_from_logs(
             _moe_wrong_moves_per_1000moves = z_score * (std_dev_wrong_moves_per_1000moves / math.sqrt(sample_size))
             moe_mistakes_per_1000moves = z_score * (std_dev_mistakes_per_1000moves / math.sqrt(sample_size))
             per_game_moves = [log.number_of_moves for log in model_logs]
-            std_dev_moves = stdev(per_game_moves)
+            std_dev_moves = _stdev(per_game_moves)
             moe_avg_moves = z_score * (std_dev_moves / math.sqrt(sample_size))
         else:
             moe_mistakes_per_1000moves = 0
@@ -722,7 +871,7 @@ def build_refined_rows_from_logs(
             (log.usage_stats_black.completion_tokens / log.number_of_moves) for log in model_logs if log.number_of_moves > 0
         ]
         std_dev_completion_tokens_black_per_move = (
-            stdev(per_game_completion_tokens_black_per_move) if len(per_game_completion_tokens_black_per_move) > 1 else 0
+            _stdev(per_game_completion_tokens_black_per_move) if len(per_game_completion_tokens_black_per_move) > 1 else 0
         )
         moe_completion_tokens_black_per_move = (
             (1.96 * (std_dev_completion_tokens_black_per_move / math.sqrt(total_games))) if total_games > 1 else 0
@@ -751,11 +900,11 @@ def build_refined_rows_from_logs(
             moves = log.number_of_moves
             per_game_price_per_1000_moves.append((game_cost / moves * 1000) if moves > 0 else 0)
 
-        average_game_cost = mean(per_game_costs) if per_game_costs else 0
-        std_dev_game_cost = stdev(per_game_costs) if len(per_game_costs) > 1 else 0
+        average_game_cost = _mean(per_game_costs) if per_game_costs else 0
+        std_dev_game_cost = _stdev(per_game_costs) if len(per_game_costs) > 1 else 0
         moe_average_game_cost = (1.96 * (std_dev_game_cost / math.sqrt(total_games))) if total_games > 1 else 0
-        average_price_per_1000_moves = mean(per_game_price_per_1000_moves) if per_game_price_per_1000_moves else 0
-        std_dev_price_per_1000_moves = stdev(per_game_price_per_1000_moves) if len(per_game_price_per_1000_moves) > 1 else 0
+        average_price_per_1000_moves = _mean(per_game_price_per_1000_moves) if per_game_price_per_1000_moves else 0
+        std_dev_price_per_1000_moves = _stdev(per_game_price_per_1000_moves) if len(per_game_price_per_1000_moves) > 1 else 0
         moe_price_per_1000_moves = 1.96 * (std_dev_price_per_1000_moves / math.sqrt(total_games)) if total_games > 1 else 0
         price_per_1000_moves = average_price_per_1000_moves
 
@@ -766,8 +915,8 @@ def build_refined_rows_from_logs(
             and log.player_black.accumulated_reply_time_seconds > 0
         ]
         if per_game_time_seconds:
-            average_time_per_game_seconds = mean(per_game_time_seconds)
-            std_dev_time_per_game_seconds = stdev(per_game_time_seconds) if len(per_game_time_seconds) > 1 else 0
+            average_time_per_game_seconds = _mean(per_game_time_seconds)
+            std_dev_time_per_game_seconds = _stdev(per_game_time_seconds) if len(per_game_time_seconds) > 1 else 0
             moe_average_time_per_game_seconds = (
                 1.96 * (std_dev_time_per_game_seconds / math.sqrt(len(per_game_time_seconds))) if len(per_game_time_seconds) > 1 else 0
             )
@@ -1176,6 +1325,10 @@ def estimate_elo_from_blocks(
     if fa * fb > 0:
         return float("nan"), float("nan")
 
+    # Lazy import: scipy.optimize alone adds ~0.5-1s of interpreter startup, which only
+    # matters here (ELO mode with non-empty blocks). Dragon/Random modes never pay it.
+    from scipy.optimize import root_scalar
+
     root = root_scalar(f, bracket=(a, b), method="brentq").root
 
     # Fisher information at root
@@ -1231,8 +1384,8 @@ def _calibrate_random_elo_from_misc(dirs: List[str]) -> Tuple[float, float, int]
                     continue
                 opp_elo = lvl_to_elo(lvl)
                 try:
-                    with open(os.path.join(root, fn), "r", encoding="utf-8") as f:
-                        data = json.load(f)
+                    with open(os.path.join(root, fn), "rb") as f:
+                        data = orjson.loads(f.read())
                 except Exception:
                     continue
                 # In these aggregates, the calibrated player (Random) is White.
@@ -1262,6 +1415,12 @@ def print_leaderboard(csv_file, top_n=None):
         reader = csv.DictReader(f)
         data = list(reader)
 
+    def sf(v):
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return 0.0
+
     # Sorting
     has_opponent = any("white_opponent" in r for r in data)
     if has_opponent:
@@ -1276,12 +1435,6 @@ def print_leaderboard(csv_file, top_n=None):
                 return int(m.group(1)) if m else 999
             except Exception:
                 return 999
-
-        def sf(v):
-            try:
-                return float(v)
-            except (TypeError, ValueError):
-                return 0.0
 
         sorted_data = sorted(
             data,
@@ -1307,8 +1460,6 @@ def print_leaderboard(csv_file, top_n=None):
         player_name = row["Player"]
         white_op = row.get("white_opponent", "")
 
-        # Format the metrics like in the web version
-        win_loss = f"{float(row['win_loss']) * 100:.2f}%"
         game_duration = f"{float(row['game_duration']) * 100:.2f}%"
         tokens = float(row["completion_tokens_black_per_move"])
         tokens_str = f"{tokens:.1f}" if tokens > 1000 else f"{tokens:.2f}"
@@ -1317,6 +1468,11 @@ def print_leaderboard(csv_file, top_n=None):
         cost = float(row["average_game_cost"])
         moe = float(row["moe_average_game_cost"])
         cost_str = f"${cost:.4f}±{moe:.4f}"
+
+        # Cost per move derived from price_per_1000_moves to avoid a schema change.
+        cost_per_move = sf(row.get("price_per_1000_moves")) / 1000.0
+        moe_cost_per_move = sf(row.get("moe_price_per_1000_moves")) / 1000.0
+        cost_per_move_str = f"${cost_per_move:.5f}±{moe_cost_per_move:.5f}"
 
         # Calculate total cost per model
         total_games = int(row["total_games"])
@@ -1339,13 +1495,11 @@ def print_leaderboard(csv_file, top_n=None):
         else:
             time_str = "N/A"
 
-        # Win Rate column (player_wins_percent)
         try:
             win_rate_col = f"{float(row.get('player_wins_percent', 0)):.2f}%"
         except (ValueError, TypeError):
             win_rate_col = "0.00%"
 
-        # Include opponent column if present
         if white_op:
             rows.append(
                 [
@@ -1353,10 +1507,10 @@ def print_leaderboard(csv_file, top_n=None):
                     player_name,
                     white_op,
                     win_rate_col,
-                    win_loss,
                     game_duration,
                     tokens_str,
                     cost_str,
+                    cost_per_move_str,
                     time_str,
                     total_games,
                     total_cost_str,
@@ -1364,16 +1518,49 @@ def print_leaderboard(csv_file, top_n=None):
             )
         else:
             rows.append(
-                [rank, player_name, win_rate_col, win_loss, game_duration, tokens_str, cost_str, time_str, total_games, total_cost_str]
+                [
+                    rank,
+                    player_name,
+                    win_rate_col,
+                    game_duration,
+                    tokens_str,
+                    cost_str,
+                    cost_per_move_str,
+                    time_str,
+                    total_games,
+                    total_cost_str,
+                ]
             )
 
-    # Print the table with headers
     headers = (
-        ["#", "Player", "Opponent", "Win Rate", "Win/Loss", "Game Duration", "Tokens", "Cost/Game", "Time/Game", "Games", "Total Cost"]
+        [
+            "#",
+            "Player",
+            "Opponent",
+            "Win Rate",
+            "Game Duration",
+            "Tokens",
+            "Cost/Game",
+            "Cost/Move",
+            "Time/Game",
+            "Games",
+            "Total Cost",
+        ]
         if has_opponent
-        else ["#", "Player", "Win Rate", "Win/Loss", "Game Duration", "Tokens", "Cost/Game", "Time/Game", "Games", "Total Cost"]
+        else [
+            "#",
+            "Player",
+            "Win Rate",
+            "Game Duration",
+            "Tokens",
+            "Cost/Game",
+            "Cost/Move",
+            "Time/Game",
+            "Games",
+            "Total Cost",
+        ]
     )
-    print(tabulate(rows, headers=headers, tablefmt="grid"))
+    print(_tabulate(rows, headers=headers, tablefmt="grid"))
     print(f"\nTotal cost across all models: ${total_cost_all_models:.2f}")
 
 
@@ -1424,11 +1611,6 @@ def print_elo_leaderboard(csv_file, top_n=None):
         elo_str = row.get("elo") or ""
         elo_moe = row.get("elo_moe_95") or ""
 
-        # Reuse formatting from non-opponent leaderboard
-        try:
-            win_loss = f"{float(row.get('win_loss', 0)) * 100:.2f}%"
-        except (TypeError, ValueError):
-            win_loss = "0.00%"
         try:
             game_duration = f"{float(row.get('game_duration', 0)) * 100:.2f}%"
         except (TypeError, ValueError):
@@ -1440,6 +1622,10 @@ def print_elo_leaderboard(csv_file, top_n=None):
         cost = sf(row.get("average_game_cost"))
         moe = sf(row.get("moe_average_game_cost"))
         cost_str = f"${cost:.4f}±{moe:.4f}"
+
+        cost_per_move = sf(row.get("price_per_1000_moves")) / 1000.0
+        moe_cost_per_move = sf(row.get("moe_price_per_1000_moves")) / 1000.0
+        cost_per_move_str = f"${cost_per_move:.5f}±{moe_cost_per_move:.5f}"
 
         total_games = int(sf(row.get("total_games"), 0))
         total_cost = cost * total_games
@@ -1465,7 +1651,6 @@ def print_elo_leaderboard(csv_file, top_n=None):
         else:
             time_str = "N/A"
 
-        # Win Rate column (player_wins_percent)
         try:
             win_rate_col = f"{float(row.get('player_wins_percent', 0)):.2f}%"
         except (TypeError, ValueError):
@@ -1478,10 +1663,10 @@ def print_elo_leaderboard(csv_file, top_n=None):
                 player_name,
                 elo_display,
                 win_rate_col,
-                win_loss,
                 game_duration,
                 tokens_str,
                 cost_str,
+                cost_per_move_str,
                 time_str,
                 total_games,
                 games_vs_random,
@@ -1494,16 +1679,16 @@ def print_elo_leaderboard(csv_file, top_n=None):
         "Player",
         "Elo",
         "Win Rate",
-        "Win/Loss",
         "Game Duration",
         "Tokens",
         "Cost/Game",
+        "Cost/Move",
         "Time/Game",
         "Games",
         "Games vs Random",
         "Total Cost",
     ]
-    print(tabulate(table_rows, headers=headers, tablefmt="grid"))
+    print(_tabulate(table_rows, headers=headers, tablefmt="grid"))
     print(f"\nTotal cost across all models: ${total_cost_all_models:.2f}")
 
 

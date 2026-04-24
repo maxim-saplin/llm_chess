@@ -13,24 +13,15 @@ from custom_agents import (
     build_termination_predicate,
 )
 from utils import calculate_material_count, generate_game_stats, get_llms, display_board, display_store_game_video_and_stats
+# Re-export so existing `from llm_chess import TerminationReason` callers keep working.
+# The canonical definition lives in termination_reasons.py (intentionally dep-free) so
+# lightweight consumers like data/get_refined_csv.py can skip llm_chess's heavy import chain.
+from termination_reasons import TerminationReason  # noqa: F401
 
 class BoardRepresentation(Enum):
     FEN_ONLY = 1
     UNICODE_ONLY = 2
     UNICODE_WITH_PGN = 3
-
-
-class TerminationReason(Enum):
-    TOO_MANY_WRONG_ACTIONS = "Too many wrong actions"
-    CHECKMATE = "Checkmate"
-    STALEMATE = "Stalemate"
-    INSUFFICIENT_MATERIAL = "Insufficient material"
-    SEVENTYFIVE_MOVES = "Seventy-five moves rule"
-    FIVEFOLD_REPETITION = "Fivefold repetition"
-    MAX_TURNS = "Max turns in single dialog"
-    UNKNOWN_ISSUE = "Unknown issue, failed to make a move"
-    MAX_MOVES = "Max moves reached"
-    ERROR = "ERROR OCCURED"
 
 
 class PlayerType(Enum):
