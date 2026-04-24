@@ -21,6 +21,7 @@ def is_retryable_error(exception) -> bool:
         "temporarily unavailable",
         "try again later",
         # "internal server error",
+        "bad gateway",
         "is currently over capacity",  # Groq
         "error code: 429",
         "limit exceeded",  # Cerebras
