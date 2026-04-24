@@ -4,6 +4,7 @@ import csv
 import tempfile
 import shutil
 from data.get_refined_csv import (
+    ALIASES,
     build_refined_rows_from_logs,
     write_refined_csv,
     GameMode,
@@ -402,13 +403,14 @@ class TestDragonVsLLMRefined(unittest.TestCase):
         rows = build_refined_rows_from_logs(
             os.path.join(self._tmp_dir, "engine_vs_llm"),
             filter_out_below_n=0,
+            model_aliases=ALIASES,
             mode=GameMode.DRAGON_VS_LLM,
         )
         # Expect a single grouped row by (Player, opponent)
         self.assertEqual(len(rows), 1)
         row = rows[0]
-        # Player should be composed from _run.json model + reasoning suffix
-        self.assertEqual(row["Player"], "gpt-5-nano-2025-08-07-low")
+        # Player should be composed from _run.json model + reasoning suffix and then aliased.
+        self.assertEqual(row["Player"], "gpt-5-nano-low")
         # Opponent from _run.json dragon level
         self.assertEqual(row.get("white_opponent"), "dragon-lvl-3")
         # 2 games, one win for black, one for white

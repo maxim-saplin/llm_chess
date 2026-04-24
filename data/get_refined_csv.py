@@ -139,16 +139,19 @@ MISC_DRAGON_DIRS = [
 ]
 
 FILTER_OUT_MODELS = [
+    # Match-strings are compared AFTER aliasing, so entries here must use the canonical
+    # (post-ALIASES) form. Legacy Bedrock "claude-3-5-haiku" runs are dropped via
+    # MODEL_OVERRIDES instead, because "claude-3-5-haiku" is now the canonical name for
+    # the newer direct-API runs too.
     "llama-4-scout-17b-16e-instruct",
     "N/A",
-    "o4-mini-2025-04-16-high_timeout-60m",
-    "o4-mini-2025-04-16-high_timeout-20m",
-    "o3-2025-04-16-medium_timeout-60m",
+    "o4-mini-high_timeout-60m",
+    "o4-mini-high_timeout-20m",
+    "o3-medium_timeout-60m",
     "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp03",
     "deepseek-r1-distill-qwen-32b@q4_k_m|noisol_temp06",
     "anthropic.claude-v3-5-sonnet",
     "llama-3.1-tulu-3-8b@q4_k_m",
-    "claude-3-5-haiku",  # using newer runs
     "anthropic.claude-v3-5-sonnet-v2",  # using newer runs
     "anthropic.claude-v3-5-sonnet-v1",  # using newer runs
     "anthropic.claude-3-7-sonnet-20250219-v1:0",  # using newer runs
@@ -159,15 +162,18 @@ FILTER_OUT_MODELS = [
     "google_gemma-3-27b-it@q4_k_m",
     "google_gemma-3-12b-it@q4_k_m",
     "ring-mini-2.0@q4_k_m",
-    "gpt-5-codex-2025-09-15-low",  # too many errors
+    "gpt-5-codex-low",  # too many errors
     "gpt-4o-mini-2024-07-18-moa-basline",
     "rekaai_reka-flash-3@q6_k_l",
     "mixtral-8x7b-32768",
     "qwen2.5-vl-72b-instruct",
     "gpt-4-32k-0314",  # too few runs
     "gpt-oss:20b-low",  # too few runs
-    # "gpt-5.1-codex-mini-2025-11-13-high",  ## TBD, t0o few runs
-    "gpt-5.1-codex-mini-2025-11-13-medium",
+    # "gpt-5.1-codex-mini-high",  ## TBD, t0o few runs
+    "gpt-5.1-codex-mini-medium",
+    "gpt-5.4-high", # too few logs, failing to get many logs due to slow responses
+    "gpt-5.4-medium", # too few logs
+    "claude-sonnet-4-6_thinking-high", # too few logs
     "chess-4b-thinking-1218",  ## RL experiment, to be ignored
     "cursor_cli_sonnet_4.5",  # eas necessary as a reference to prove the CLI approach to test Composer-1 is valid
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
@@ -183,11 +189,26 @@ SUPPRESS_MODEL_RECOVERY_WARNINGS = [
     "lvl-1_vs_o4-mini-2025-04-16-medium",
 ]
 
-# Models whose tokens and price metrics should be zeroed
+# Models whose tokens and price metrics should be zeroed. All grok entries currently
+# seen in the pipeline are listed here; xAI's API reports reasoning/other token counts
+# inconsistently across models (https://dev.to/maximsaplin/grok-3-api-reasoning-tokens-are-counted-differently-197).
 ZERO_TOKENS: set[str] = {
+    "grok-2",
+    "grok-3-beta",
+    "grok-3-fast-beta",
+    "grok-3-mini-beta",
     "grok-3-mini-beta-low",
     "grok-3-mini-beta-high",
-}  # Grok-3 reasoning logs have wrong token usage due tp different reporting by API (https://dev.to/maximsaplin/grok-3-api-reasoning-tokens-are-counted-differently-197)
+    "grok-3-mini-fast-beta",
+    "grok-3-mini-low",
+    "grok-3-mini-high",
+    # "grok-4-fast-non-reasoning",
+    "grok-4-fast-reasoning",
+    # "grok-4-1-fast-non-reasoning",
+    "grok-4-1-fast-reasoning",
+    # "grok-4-20-non-reasoning",
+    "grok-4-20-reasoning",
+}
 
 # Metadata CSV for pricing
 MODELS_METADATA_CSV = "data/models_metadata.csv"
@@ -206,11 +227,121 @@ MODEL_OVERRIDES = {
     "2025-02-09_o3-mini-2025-01-31-high_24_GAMES_TIMEDOUT": "ignore",
     "2025-02-10_o3-mini-2025-01-31-high-again_timeouts": "ignore",
     "2025-02-10_o1-mini-2024-09-12_plenty_connection_errors": "ignore",
+    # Legacy Bedrock-routed Claude 3.5 Haiku runs (logged as "claude-3-5-haiku"). After the
+    # claude-3-5-haiku-20241022 alias, they would collide with the canonical label; drop them
+    # at the folder level so the direct-API runs own the canonical name.
+    "anthropic.claude-v3-5-haiku/2025-04-09-09-46": "ignore",
 }
-ALIASES = {
-    # Use sparingly: these aliases are applied after overrides and after _run.json inference.
-    # If the incoming name equals the key, replace it with the curated value.
+ALIASES: dict[str, str] = {
+    # Applied after overrides and after _run.json inference. Exact-match only; the incoming
+    # composed label must equal the key. Strips embedded date snapshots when the base family
+    # has exactly one dated release (single-snapshot rule). Multi-snapshot families
+    # (gpt-4o-2024-05-13/08-06/11-20, gpt-35-turbo-0125/0301/0613/1106,
+    # gemini-2.5-pro-preview-03-25/-05-06, gemini-2.0-flash-thinking-exp-01-21/-1219,
+    # deepseek-chat-0324 vs deepseek-chat, deepseek-v3-0324 vs deepseek-v3, deepseek-r1-0528
+    # vs deepseek-r1, claude-3-5-sonnet-v1/v2) keep their snapshot suffix to differentiate
+    # versions.
     "grok-3-mini-fast-beta-high": "grok-3-mini-beta-high",
+
+    # OpenAI GPT-5 family (single-snapshot 2025-08-07 / 2025-09-15 / 2025-11-13 / 2025-12-11)
+    "gpt-5-2025-08-07-low": "gpt-5-low",
+    "gpt-5-2025-08-07-medium": "gpt-5-medium",
+    "gpt-5-2025-08-07-high": "gpt-5-high",
+    "gpt-5-mini-2025-08-07-low": "gpt-5-mini-low",
+    "gpt-5-mini-2025-08-07-medium": "gpt-5-mini-medium",
+    "gpt-5-mini-2025-08-07-high": "gpt-5-mini-high",
+    "gpt-5-nano-2025-08-07-low": "gpt-5-nano-low",
+    "gpt-5-nano-2025-08-07-medium": "gpt-5-nano-medium",
+    "gpt-5-nano-2025-08-07-high": "gpt-5-nano-high",
+    "gpt-5-chat-2025-08-07": "gpt-5-chat",
+    "gpt-5-codex-2025-09-15-low": "gpt-5-codex-low",
+    "gpt-5-codex-2025-09-15-medium": "gpt-5-codex-medium",
+    "gpt-5-codex-2025-09-15-high": "gpt-5-codex-high",
+    "gpt-5.1-2025-11-13-low": "gpt-5.1-low",
+    "gpt-5.1-2025-11-13-medium": "gpt-5.1-medium",
+    "gpt-5.1-2025-11-13-high": "gpt-5.1-high",
+    "gpt-5.1-chat-2025-11-13": "gpt-5.1-chat",
+    "gpt-5.1-codex-2025-11-13-low": "gpt-5.1-codex-low",
+    "gpt-5.1-codex-2025-11-13-medium": "gpt-5.1-codex-medium",
+    "gpt-5.1-codex-2025-11-13-high": "gpt-5.1-codex-high",
+    "gpt-5.1-codex-mini-2025-11-13-low": "gpt-5.1-codex-mini-low",
+    "gpt-5.1-codex-mini-2025-11-13-medium": "gpt-5.1-codex-mini-medium",
+    "gpt-5.1-codex-mini-2025-11-13-high": "gpt-5.1-codex-mini-high",
+    "gpt-5.2-2025-12-11-low": "gpt-5.2-low",
+    "gpt-5.2-2025-12-11-medium": "gpt-5.2-medium",
+    "gpt-5.2-2025-12-11-high": "gpt-5.2-high",
+    "gpt-5.2-chat-2025-12-11": "gpt-5.2-chat",
+
+    # OpenAI GPT-4.x family (single-snapshot)
+    "gpt-4.1-2025-04-14": "gpt-4.1",
+    "gpt-4.1-mini-2025-04-14": "gpt-4.1-mini",
+    "gpt-4.1-nano-2025-04-14": "gpt-4.1-nano",
+    "gpt-4.5-preview-2025-02-27": "gpt-4.5-preview",
+    "gpt-4-turbo-2024-04-09": "gpt-4-turbo",
+    "gpt-4o-mini-2024-07-18": "gpt-4o-mini",
+    "gpt-4-0613": "gpt-4",
+    "gpt-4-32k-0613": "gpt-4-32k",
+
+    # OpenAI reasoning (o1 / o3 / o4). Timeout-suffixed variants kept so their
+    # filter entries match post-alias canonical labels.
+    "o1-preview-2024-09-12": "o1-preview",
+    "o1-2024-12-17-low": "o1-low",
+    "o1-2024-12-17-medium": "o1-medium",
+    "o1-2024-12-17-high": "o1-high",
+    "o1-mini-2024-09-12": "o1-mini",
+    "o1-mini-2025-04-16-low": "o1-mini-low",
+    "o1-mini-2025-04-16-medium": "o1-mini-medium",
+    "o1-mini-2025-04-16-high": "o1-mini-high",
+    "o3-mini-2025-01-31-low": "o3-mini-low",
+    "o3-mini-2025-01-31-medium": "o3-mini-medium",
+    "o3-mini-2025-01-31-high": "o3-mini-high",
+    "o3-2025-04-16": "o3",
+    "o3-2025-04-16-low": "o3-low",
+    "o3-2025-04-16-medium": "o3-medium",
+    "o3-2025-04-16-high": "o3-high",
+    "o3-2025-04-16-medium_timeout-60m": "o3-medium_timeout-60m",
+    "o4-mini-2025-04-16": "o4-mini",
+    "o4-mini-2025-04-16-low": "o4-mini-low",
+    "o4-mini-2025-04-16-medium": "o4-mini-medium",
+    "o4-mini-2025-04-16-high": "o4-mini-high",
+    "o4-mini-2025-04-16-low@PGN": "o4-mini-low@PGN",
+    "o4-mini-2025-04-16-high_timeout-20m": "o4-mini-high_timeout-20m",
+    "o4-mini-2025-04-16-high_timeout-60m": "o4-mini-high_timeout-60m",
+
+    # Anthropic Claude (single-snapshot families; multi-snapshot v1/v2 sonnet-3.5 kept)
+    "claude-3-5-haiku-20241022": "claude-3-5-haiku",
+    "claude-3-7-sonnet-20250219": "claude-3-7-sonnet",
+    "claude-3-7-sonnet-20250219_thinking_1024": "claude-3-7-sonnet_thinking_1024",
+    "claude-3-7-sonnet-20250219_thinking_2048": "claude-3-7-sonnet_thinking_2048",
+    "claude-3-7-sonnet-20250219_thinking_5000": "claude-3-7-sonnet_thinking_5000",
+    "claude-3-7-sonnet-20250219_thinking_10000": "claude-3-7-sonnet_thinking_10000",
+    "claude-sonnet-4-20250514": "claude-sonnet-4",
+    "claude-sonnet-4-20250514_thinking_16000": "claude-sonnet-4_thinking_16000",
+    "claude-sonnet-4-5-20250929": "claude-sonnet-4-5",
+    "claude-sonnet-4-5-20250929_thinking_16000": "claude-sonnet-4-5_thinking_16000",
+    "claude-opus-4-20250514": "claude-opus-4",
+    "claude-opus-4-20250514_thinking_16000": "claude-opus-4_thinking_16000",
+    "claude-opus-4-1-20250805": "claude-opus-4-1",
+    "claude-opus-4-5-20251101": "claude-opus-4-5",
+    # Upstream metadata uses a hyphen (not underscore) before the thinking suffix for 4-5 opus.
+    "claude-opus-4-5-20251101-thinking_16000": "claude-opus-4-5-thinking_16000",
+    "claude-haiku-4-5-20251001": "claude-haiku-4-5",
+    "claude-haiku-4-5-20251001_thinking_16000": "claude-haiku-4-5_thinking_16000",
+
+    # Qwen / Mistral / Grok / Gemini (single-snapshot with mmYY / MMDD / YYYY-MM-DD tails)
+    "qwen-max-2025-01-25": "qwen-max",
+    "qwen-plus-2025-01-25": "qwen-plus",
+    "qwen-turbo-2024-11-01": "qwen-turbo",
+    "qwen3-30b-a3b-thinking-2507@q4_k_m": "qwen3-30b-a3b-thinking@q4_k_m",
+    "qwen3-4b-thinking-2507@q8": "qwen3-4b-thinking@q8",
+    "mistral-nemo-12b-instruct-2407": "mistral-nemo-12b-instruct",
+    "mistral-small-instruct-2409": "mistral-small-instruct",
+    "ministral-8b-instruct-2410": "ministral-8b-instruct",
+    "mistral-small-24b-instruct-2501@q4_k_m": "mistral-small-24b-instruct@q4_k_m",
+    "magistral-small-2506": "magistral-small",
+    "grok-2-1212": "grok-2",
+    "gemini-1.5-pro-preview-0409": "gemini-1.5-pro-preview",
+    "gemini-2.0-flash-lite-preview-02-05": "gemini-2.0-flash-lite-preview",
 }
 
 
