@@ -9,10 +9,11 @@ from get_run_metadata import collect_run_metadata, write_run_metadata
 import llm_chess
 
 
-# Module-level defaults (allow tests to override)
-NUM_REPETITIONS = 20
-LOG_FOLDER = None  # If None, computed at runtime; tests may override
-STORE_INDIVIDUAL_LOGS = True
+# Launch settings - edit these for a new experiment
+NUM_REPETITIONS = 10
+REASONING_EFFORT = None #"high"
+WHITE_PLAYER_TYPE = llm_chess.PlayerType.CHESS_ENGINE_DRAGON  
+ENGINE_LEVEL = 1
 
 
 def run_games():
@@ -63,34 +64,31 @@ def run_games():
     }
 
     # ---------------------------------------------------------------------------
-    # Per-model configuration – edit ONLY these two dicts for experiments
+    # Per-model configuration
     # ---------------------------------------------------------------------------
     WHITE_HYPERPARAMS = {
-        # Start from experiment defaults; adjust as needed per run
         "hyperparams": EXPERIMENT_DEFAULT_HYPERPARAMS.copy(),
-        # "reasoning_effort": "high",
-        # "thinking_budget": 4096,
     }
 
     BLACK_HYPERPARAMS = {
-        # Start from experiment defaults; adjust as needed per run
         "hyperparams": EXPERIMENT_DEFAULT_HYPERPARAMS.copy(),
-        # "reasoning_effort": "high",
     }
+    if REASONING_EFFORT:
+        BLACK_HYPERPARAMS["reasoning_effort"] = REASONING_EFFORT
 
     LLM_CONFIG_WHITE, LLM_CONFIG_BLACK = get_llms(
         white_hyperparams=WHITE_HYPERPARAMS,
         black_hyperparams=BLACK_HYPERPARAMS,
-        timeout=1500,  # seconds (for engine moves and API calls)
+        # timeout=1500,  # seconds (for engine moves and API calls)
     )
 
     # Pull module-level overrides (NUM_REPETITIONS, STORE_INDIVIDUAL_LOGS)
     global NUM_REPETITIONS, STORE_INDIVIDUAL_LOGS
 
-    llm_chess.throttle_delay = 0#7
-    llm_chess.dialog_turn_delay = 0#7
-    llm_chess.max_api_retries = 5
-    llm_chess.api_retry_delay = 0 #4*60*60 # retry in 4, 8, 16 hours, workaround for daily rate limiting
+    llm_chess.throttle_delay = 7
+    llm_chess.dialog_turn_delay = 7
+    llm_chess.max_api_retries = 6
+    llm_chess.api_retry_delay = 30*60 # retry in 0.5, 1, 2, 4, 8, 16 hours, workaround for daily rate limiting
     # llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
     # llm_chess.rotate_board_for_white = True
 
@@ -98,10 +96,13 @@ def run_games():
     llm_chess.remove_text = llm_chess.DEFAULT_REMOVE_TEXT_REGEX
 
     llm_chess.dragon_path = "dragon/dragon-linux"
-    llm_chess.dragon_level = 9
 
-    llm_chess.white_player_type = llm_chess.PlayerType.RANDOM_PLAYER
+    llm_chess.white_player_type = WHITE_PLAYER_TYPE
     llm_chess.black_player_type = llm_chess.PlayerType.LLM_BLACK
+    if WHITE_PLAYER_TYPE == llm_chess.PlayerType.CHESS_ENGINE_DRAGON:
+        llm_chess.dragon_level = ENGINE_LEVEL
+    elif WHITE_PLAYER_TYPE == llm_chess.PlayerType.CHESS_ENGINE_STOCKFISH:
+        llm_chess.stockfish_level = ENGINE_LEVEL
 
     # Determine LOG_FOLDER lazily to respect external overrides in tests
     global LOG_FOLDER
@@ -409,6 +410,11 @@ def build_log_folder(
 
     # 5) misc (engine_vs_random, random_vs_random, or anything else)
     return f"_logs/misc/{ts}"
+
+
+# Runtime defaults (allow tests to override)
+LOG_FOLDER = None  # If None, computed at runtime; tests may override
+STORE_INDIVIDUAL_LOGS = True
 
 
 if __name__ == "__main__":

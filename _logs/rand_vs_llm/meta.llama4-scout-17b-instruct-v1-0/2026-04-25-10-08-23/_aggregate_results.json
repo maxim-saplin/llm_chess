@@ -1,0 +1,73 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2026.04.25_10:08",
+            "log_folder_relative": "_logs/rand_vs_llm/meta.llama4-scout-17b-instruct-v1-0/2026-04-25-10-08-23",
+            "num_repetitions": 20,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 7,
+            "dialog_turn_delay": 7,
+            "max_api_retries": 6,
+            "api_retry_delay": 1800,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "meta.llama4-scout-17b-instruct-v1:0",
+                "api_type": "oai_comp_endpoint",
+                "api_key": "REDACTED",
+                "timeout": 600
+            }
+        }
+    },
+    "total_games": 20,
+    "white_wins": 16,
+    "black_wins": 1,
+    "draws": 3,
+    "total_moves": 1936,
+    "reasons": {
+        "Max moves reached": 3,
+        "Too many wrong actions": 12,
+        "Max turns in single dialog": 4,
+        "Checkmate": 1
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 595,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 29.75,
+        "std_dev_material": 8.704959264090423
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "meta.llama4-scout-17b-instruct-v1:0",
+        "total_material": 488,
+        "wrong_moves": 253,
+        "wrong_actions": 7,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 24.4,
+        "std_dev_material": 12.783212675841291
+    },
+    "average_moves": 96.8,
+    "std_dev_moves": 69.86724253144222
+}
