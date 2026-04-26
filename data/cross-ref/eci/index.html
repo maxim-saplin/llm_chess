@@ -1,0 +1,2451 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LLM Chess vs Epoch ECI</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f5ef;
+      --panel: #fffdf8;
+      --ink: #1f2428;
+      --muted: #6b7280;
+      --line: #d8d1c3;
+      --accent: #234f9f;
+      --accent-soft: #e8eefc;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111315;
+        --panel: #181b1f;
+        --ink: #eceff3;
+        --muted: #a5acb8;
+        --line: #323842;
+        --accent: #8fb4ff;
+        --accent-soft: #1c2942;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.45 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    header {
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+      padding: 32px max(24px, calc((100vw - 1180px) / 2));
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1, h2, h3 { line-height: 1.15; margin: 0; }
+    h1 { font-size: clamp(2rem, 5vw, 4rem); letter-spacing: -0.04em; }
+    h2 { font-size: 1.5rem; letter-spacing: -0.02em; }
+    h3 { font-size: 1rem; margin: 0 0 12px; }
+    .subtitle { color: var(--muted); max-width: 820px; margin: 12px 0 0; }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+    nav a {
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: 6px 11px;
+      text-decoration: none;
+      font-size: 0.88rem;
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 22px;
+      margin: 18px 0;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    .section-note, .muted { color: var(--muted); }
+    .section-note { margin: 8px 0 18px; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      background: color-mix(in srgb, var(--panel) 90%, var(--accent-soft));
+    }
+    .card-label { color: var(--muted); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .card-value { font-size: 1.5rem; font-weight: 700; margin-top: 8px; }
+    .card-detail { color: var(--muted); margin-top: 4px; }
+    .grid { display: grid; gap: 18px; margin-top: 16px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 9px 10px; text-align: left; vertical-align: top; }
+    th { background: var(--accent-soft); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    tr:last-child td { border-bottom: 0; }
+    td:not(:first-child), th:not(:first-child) { white-space: nowrap; }
+    details {
+      max-width: 1180px;
+      margin: 18px auto 40px;
+      padding: 0 24px;
+      color: var(--muted);
+    }
+    summary { cursor: pointer; color: var(--accent); }
+    pre {
+      overflow-x: auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      color: var(--ink);
+    }
+    @media (max-width: 900px) {
+      .cards, .grid.two { grid-template-columns: 1fr; }
+      section { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LLM Chess vs Epoch ECI</h1>
+    <p class="subtitle">Static dashboard generated from <code>eci_prediction_summary.json</code>. The layout is fixed; the numbers come from the current analysis run.</p>
+    <nav><a href="#overview">Overview</a><a href="#sample">Sample</a><a href="#relationship">ECI vs Elo</a><a href="#release">Release</a><a href="#prediction">Prediction</a><a href="#metrics">Metrics</a><a href="#sensitivity">Sensitivity</a><a href="#coverage">Coverage</a><a href="#outliers">Outliers</a></nav>
+  </header>
+  <main>
+    <section id="overview"><h2>Overview</h2><div class="cards"><div class="card"><div class="card-label">Matched sample</div><div class="card-value">66</div><div class="card-detail">74 raw bridge matches</div></div><div class="card"><div class="card-label">ECI vs Elo</div><div class="card-value">0.697</div><div class="card-detail">R2 0.486</div></div><div class="card"><div class="card-label">Best chess-only model</div><div class="card-value">Best 4-metric combo</div><div class="card-detail">CV R2 0.604</div></div><div class="card"><div class="card-label">Date + chess lift</div><div class="card-value">+0.107</div><div class="card-detail">date-only R2 0.727</div></div></div></section><section id="sample"><h2>Sample And Data Quality</h2><p class="section-note">Counts, bridge coverage, and duplicate bridge keys that shape every downstream view.</p><div class="grid two"><div><h3>Input Counts</h3><div class="table-wrap"><table><thead><tr><th>Measure</th><th>Value</th></tr></thead><tbody><tr><td>LLM chess rows</td><td>178</td></tr>
+<tr><td>Epoch ECI rows</td><td>168</td></tr>
+<tr><td>Epoch rows with numeric score</td><td>161</td></tr>
+<tr><td>Epoch rows with bridge key</td><td>89</td></tr>
+<tr><td>Raw direct matches</td><td>74</td></tr>
+<tr><td>Matched sample after dedupe</td><td>66</td></tr></tbody></table></div></div><div><h3>Duplicate Bridge Keys</h3><div class="table-wrap"><table><thead><tr><th>Bridge key</th><th>Rows</th></tr></thead><tbody><tr><td>gemini-2.5-flash</td><td>4</td></tr>
+<tr><td>gemini-1.5-pro-preview</td><td>3</td></tr>
+<tr><td>gemini-1.5-flash-001</td><td>2</td></tr>
+<tr><td>gemini-2.0-flash-001</td><td>2</td></tr>
+<tr><td>gpt-4</td><td>2</td></tr></tbody></table></div></div></div></section><section id="relationship"><h2>ECI vs Chess Elo</h2><p class="section-note">Headline association and leave-one-out stability for the matched sample.</p><div class="grid two"><div><h3>Headline Fit</h3><div class="table-wrap"><table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody><tr><td>n</td><td>66</td></tr>
+<tr><td>Pearson r</td><td>0.697</td></tr>
+<tr><td>Spearman rho</td><td>0.698</td></tr>
+<tr><td>OLS slope: Elo per ECI</td><td>33.62</td></tr>
+<tr><td>OLS R2</td><td>0.486</td></tr>
+<tr><td>Pearson bootstrap 95%</td><td>0.589 to 0.786</td></tr>
+<tr><td>Slope bootstrap 95%</td><td>24.54 to 42.94</td></tr>
+<tr><td>Weighted R2</td><td>0.409</td></tr></tbody></table></div></div><div><h3>Leave-One-Out Influence</h3><div class="table-wrap"><table><thead><tr><th>Model</th><th>Delta r</th><th>Delta slope</th></tr></thead><tbody><tr><td>gemini-3.1-pro-preview</td><td>-0.020</td><td>-2.63</td></tr>
+<tr><td>gemini-3-flash-preview</td><td>+0.019</td><td>+1.29</td></tr>
+<tr><td>llama3.1-8b</td><td>-0.018</td><td>-0.29</td></tr>
+<tr><td>gpt-5.2-medium</td><td>-0.015</td><td>-1.26</td></tr>
+<tr><td>zai.glm-5</td><td>+0.014</td><td>+0.71</td></tr>
+<tr><td>gemini-3-pro-preview</td><td>-0.013</td><td>-1.21</td></tr>
+<tr><td>claude-opus-4-6_thinking-high</td><td>+0.012</td><td>+1.32</td></tr>
+<tr><td>gemini-2.5-pro</td><td>+0.010</td><td>+0.64</td></tr>
+<tr><td>gemma-2-9b-it-8bit</td><td>-0.009</td><td>+0.12</td></tr>
+<tr><td>gemini-2.5-flash</td><td>+0.008</td><td>+0.35</td></tr>
+<tr><td>claude-sonnet-4-6</td><td>+0.008</td><td>+0.98</td></tr>
+<tr><td>gpt-5.1-medium</td><td>-0.008</td><td>-0.98</td></tr></tbody></table></div></div></div></section><section id="release"><h2>Release-Date Confounding</h2><p class="section-note">The dashboard separates raw cross-model association from the shared release-time trend.</p><div class="table-wrap"><table><thead><tr><th>View</th><th>n</th><th>Pearson r</th><th>Spearman rho</th></tr></thead><tbody><tr><td>ECI vs release month</td><td>65</td><td>0.882</td><td>0.903</td></tr>
+<tr><td>Elo vs release month</td><td>65</td><td>0.568</td><td>0.594</td></tr>
+<tr><td>ECI vs Elo, release controlled</td><td>65</td><td>0.493</td><td>0.452</td></tr></tbody></table></div></section><section id="prediction"><h2>Predicting ECI From Chess</h2><p class="section-note">Out-of-sample model comparison using chess metrics only unless the row says date.</p><h3>Model Leaderboard</h3><div class="table-wrap"><table><thead><tr><th>Model</th><th>CV R2</th><th>RMSE</th><th>MAE</th><th>Rank rho</th><th>Features</th></tr></thead><tbody><tr><td>Best 4-metric combo</td><td>0.604</td><td>6.23</td><td>5.00</td><td>0.785</td><td>elo, games_interrupted_percent, material_diff_player_llm_minus_opponent, opponent_avg_material</td></tr>
+<tr><td>Best 3-metric combo</td><td>0.604</td><td>6.23</td><td>4.98</td><td>0.772</td><td>elo, games_interrupted_percent, opponent_avg_material</td></tr>
+<tr><td>Ridge, all chess metrics</td><td>0.532</td><td>6.77</td><td>5.35</td><td>0.743</td><td>elo, player_wins_percent, win_loss, win_loss_non_interrupted, player_draws_percent, material_diff_player_llm_minus_opponent, player_avg_material, opponent_avg_material, games_interrupted_percent, wrong_actions_per_1000moves, wrong_moves_per_1000moves, mistakes_per_1000moves, average_time_per_game_seconds, completion_tokens_black_per_move, average_game_cost, price_per_1000_moves, game_duration</td></tr>
+<tr><td>Ridge, board control metrics</td><td>0.520</td><td>6.86</td><td>5.81</td><td>0.694</td><td>material_diff_player_llm_minus_opponent, player_avg_material, opponent_avg_material</td></tr>
+<tr><td>Best 2-metric combo</td><td>0.509</td><td>6.94</td><td>5.73</td><td>0.717</td><td>elo, opponent_avg_material</td></tr>
+<tr><td>Elo only</td><td>0.449</td><td>7.35</td><td>5.92</td><td>0.679</td><td>elo</td></tr>
+<tr><td>Ridge, outcome metrics</td><td>0.447</td><td>7.36</td><td>5.84</td><td>0.731</td><td>elo, player_wins_percent, win_loss, win_loss_non_interrupted, player_draws_percent</td></tr>
+<tr><td>PCR latent factor, all chess metrics</td><td>0.434</td><td>7.45</td><td>5.87</td><td>0.715</td><td>elo, player_wins_percent, win_loss, win_loss_non_interrupted, player_draws_percent, material_diff_player_llm_minus_opponent, player_avg_material, opponent_avg_material, games_interrupted_percent, wrong_actions_per_1000moves, wrong_moves_per_1000moves, mistakes_per_1000moves, average_time_per_game_seconds, completion_tokens_black_per_move, average_game_cost, price_per_1000_moves, game_duration</td></tr>
+<tr><td>Best single metric</td><td>0.384</td><td>7.77</td><td>6.54</td><td>0.644</td><td>elo</td></tr>
+<tr><td>Ridge, deliberation resources metrics</td><td>0.342</td><td>8.03</td><td>6.65</td><td>0.632</td><td>average_time_per_game_seconds, completion_tokens_black_per_move, average_game_cost, price_per_1000_moves, game_duration</td></tr>
+<tr><td>Ridge, reliability metrics</td><td>0.057</td><td>9.61</td><td>7.77</td><td>0.291</td><td>games_interrupted_percent, wrong_actions_per_1000moves, wrong_moves_per_1000moves, mistakes_per_1000moves</td></tr>
+<tr><td>Mean only</td><td>-0.026</td><td>10.02</td><td>8.38</td><td>-0.219</td><td>n/a</td></tr></tbody></table></div><div class="grid two"><div><h3>Compact Bundle Stability</h3><div class="table-wrap"><table><thead><tr><th>Search</th><th>Most frequent metrics</th><th>Count</th></tr></thead><tbody><tr><td>best single metric</td><td>elo</td><td>7</td></tr>
+<tr><td>best 2 metric combo</td><td>elo, opponent_avg_material</td><td>8</td></tr>
+<tr><td>best 3 metric combo</td><td>elo, games_interrupted_percent, opponent_avg_material</td><td>8</td></tr>
+<tr><td>best 4 metric combo</td><td>elo, games_interrupted_percent, material_diff_player_llm_minus_opponent, opponent_avg_material</td><td>4</td></tr></tbody></table></div></div><div><h3>Date Sanity Check</h3><div class="table-wrap"><table><thead><tr><th>Model</th><th>R2</th><th>RMSE</th><th>MAE</th><th>Rank rho</th></tr></thead><tbody><tr><td>Date only</td><td>0.727</td><td>5.15</td><td>4.02</td><td>0.897</td></tr>
+<tr><td>Date + best chess bundle</td><td>0.834</td><td>4.01</td><td>3.10</td><td>0.930</td></tr></tbody></table></div></div></div></section><section id="metrics"><h2>Metric Signal</h2><p class="section-note">Chess metrics sorted by release-controlled Pearson association with ECI.</p><div class="table-wrap"><table><thead><tr><th>Metric</th><th>n</th><th>Raw Pearson r</th><th>Partial Pearson r</th><th>Partial Spearman rho</th></tr></thead><tbody><tr><td>player wins percent</td><td>66</td><td>0.669</td><td>0.531</td><td>0.590</td></tr>
+<tr><td>material diff player llm minus opponent</td><td>66</td><td>0.645</td><td>0.505</td><td>0.528</td></tr>
+<tr><td>elo</td><td>66</td><td>0.697</td><td>0.493</td><td>0.452</td></tr>
+<tr><td>average game cost</td><td>66</td><td>0.312</td><td>0.453</td><td>0.588</td></tr>
+<tr><td>games interrupted percent</td><td>66</td><td>-0.427</td><td>-0.338</td><td>-0.236</td></tr>
+<tr><td>average time per game seconds</td><td>66</td><td>0.602</td><td>0.321</td><td>0.337</td></tr>
+<tr><td>completion tokens black per move</td><td>66</td><td>0.465</td><td>0.313</td><td>0.373</td></tr>
+<tr><td>wrong moves per 1000moves</td><td>66</td><td>-0.061</td><td>-0.208</td><td>-0.281</td></tr>
+<tr><td>mistakes per 1000moves</td><td>66</td><td>-0.038</td><td>-0.201</td><td>-0.214</td></tr>
+<tr><td>player draws percent</td><td>66</td><td>-0.242</td><td>-0.044</td><td>-0.125</td></tr>
+<tr><td>average moves</td><td>66</td><td>-0.214</td><td>-0.029</td><td>-0.159</td></tr></tbody></table></div></section><section id="sensitivity"><h2>Sensitivity</h2><p class="section-note">How bridge deduping and minimum game counts affect the headline relationship.</p><div class="grid two"><div><h3>Dedupe Rule</h3><div class="table-wrap"><table><thead><tr><th>Rule</th><th>n</th><th>Pearson r</th><th>Spearman rho</th><th>Slope</th><th>R2</th></tr></thead><tbody><tr><td>max</td><td>66</td><td>0.697</td><td>0.698</td><td>33.62</td><td>0.486</td></tr>
+<tr><td>min</td><td>66</td><td>0.708</td><td>0.727</td><td>33.03</td><td>0.501</td></tr>
+<tr><td>mean</td><td>66</td><td>0.705</td><td>0.718</td><td>33.45</td><td>0.496</td></tr>
+<tr><td>median</td><td>66</td><td>0.705</td><td>0.718</td><td>33.35</td><td>0.497</td></tr></tbody></table></div></div><div><h3>Minimum Game Count</h3><div class="table-wrap"><table><thead><tr><th>Min games</th><th>n</th><th>Pearson r</th><th>Spearman rho</th></tr></thead><tbody><tr><td>0</td><td>66</td><td>0.697</td><td>0.698</td></tr>
+<tr><td>20</td><td>66</td><td>0.697</td><td>0.698</td></tr>
+<tr><td>30</td><td>63</td><td>0.705</td><td>0.689</td></tr>
+<tr><td>40</td><td>47</td><td>0.723</td><td>0.668</td></tr>
+<tr><td>50</td><td>32</td><td>0.757</td><td>0.729</td></tr>
+<tr><td>60</td><td>27</td><td>0.767</td><td>0.786</td></tr></tbody></table></div></div></div></section><section id="coverage"><h2>Coverage And Selection</h2><p class="section-note">What part of Epoch&#x27;s frontier is represented in the chess benchmark bridge.</p><h3>Top-ECI Coverage</h3><div class="table-wrap"><table><thead><tr><th>ECI slice</th><th>Matched</th><th>Bridged</th></tr></thead><tbody><tr><td>10</td><td>6 (60%)</td><td>6 (60%)</td></tr>
+<tr><td>20</td><td>13 (65%)</td><td>14 (70%)</td></tr>
+<tr><td>30</td><td>19 (63%)</td><td>20 (67%)</td></tr>
+<tr><td>40</td><td>27 (68%)</td><td>28 (70%)</td></tr>
+<tr><td>50</td><td>35 (70%)</td><td>36 (72%)</td></tr>
+<tr><td>75</td><td>51 (68%)</td><td>56 (75%)</td></tr>
+<tr><td>100</td><td>66 (66%)</td><td>72 (72%)</td></tr></tbody></table></div><div class="grid two"><div><h3>Matchedness</h3><div class="table-wrap"><table><thead><tr><th>Has bridge</th><th>Matched</th><th>n</th><th>Mean ECI</th><th>Median ECI</th></tr></thead><tbody><tr><td>False</td><td>False</td><td>72</td><td>118.1</td><td>117.5</td></tr>
+<tr><td>True</td><td>False</td><td>15</td><td>121.7</td><td>119.0</td></tr>
+<tr><td>True</td><td>True</td><td>74</td><td>137.5</td><td>139.0</td></tr></tbody></table></div></div><div><h3>Vendor Mix</h3><div class="table-wrap"><table><thead><tr><th>Vendor</th><th>Matched</th><th>Bridged unmatched</th><th>No bridge</th></tr></thead><tbody><tr><td>Anthropic</td><td>14</td><td>3</td><td>2</td></tr>
+<tr><td>DeepSeek</td><td>4</td><td>0</td><td>7</td></tr>
+<tr><td>Google</td><td>19</td><td>2</td><td>4</td></tr>
+<tr><td>Meta</td><td>4</td><td>2</td><td>11</td></tr>
+<tr><td>MiniMax</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>Mistral</td><td>0</td><td>2</td><td>5</td></tr>
+<tr><td>Moonshot</td><td>1</td><td>0</td><td>3</td></tr>
+<tr><td>OpenAI</td><td>23</td><td>4</td><td>4</td></tr>
+<tr><td>Other</td><td>0</td><td>1</td><td>25</td></tr>
+<tr><td>Qwen</td><td>3</td><td>0</td><td>9</td></tr>
+<tr><td>ZAI</td><td>1</td><td>0</td><td>2</td></tr>
+<tr><td>xAI</td><td>5</td><td>0</td><td>0</td></tr></tbody></table></div></div></div></section><section id="outliers"><h2>Outliers</h2><p class="section-note">Models where chess metrics and ECI disagree most strongly.</p><h3>Prediction Misses</h3><div class="table-wrap"><table><thead><tr><th>LLM chess model</th><th>Epoch model</th><th>Actual ECI</th><th>Predicted ECI</th><th>Residual</th></tr></thead><tbody><tr><td>claude-3-sonnet</td><td>Claude 3 Sonnet</td><td>120.0</td><td>134.5</td><td>-14.5</td></tr>
+<tr><td>gpt-4.1</td><td>GPT-4.1</td><td>137.0</td><td>124.1</td><td>+12.9</td></tr>
+<tr><td>claude-opus-4-6_thinking-high</td><td>Claude Opus 4.6</td><td>155.0</td><td>142.3</td><td>+12.7</td></tr>
+<tr><td>zai.glm-5</td><td>GLM-5</td><td>146.0</td><td>133.5</td><td>+12.5</td></tr>
+<tr><td>gemini-3-flash-preview</td><td>Gemini 3 Flash</td><td>151.0</td><td>139.3</td><td>+11.7</td></tr>
+<tr><td>gpt-5.4-low</td><td>GPT-5.4</td><td>156.0</td><td>144.3</td><td>+11.7</td></tr>
+<tr><td>gpt-5-nano-high</td><td>GPT-5 nano</td><td>140.0</td><td>150.5</td><td>-10.5</td></tr>
+<tr><td>llama3.1-8b</td><td>Llama 3.1-8B</td><td>116.0</td><td>126.4</td><td>-10.4</td></tr>
+<tr><td>llama-3-70b-instruct-awq</td><td>Llama 3-70B</td><td>120.0</td><td>129.7</td><td>-9.7</td></tr>
+<tr><td>claude-sonnet-4-6</td><td>Claude Sonnet 4.6</td><td>153.0</td><td>143.7</td><td>+9.3</td></tr></tbody></table></div><div class="grid two"><div><h3>Above Elo Trend</h3><div class="table-wrap"><table><thead><tr><th>LLM chess model</th><th>Epoch model</th><th>ECI</th><th>Elo</th><th>Residual</th></tr></thead><tbody><tr><td>gemini-3.1-pro-preview</td><td>Gemini 3.1 Pro</td><td>157.0</td><td>1511.4</td><td>+852.4</td></tr>
+<tr><td>gpt-5-medium</td><td>GPT-5</td><td>150.0</td><td>1086.8</td><td>+663.2</td></tr>
+<tr><td>gpt-5-nano-high</td><td>GPT-5 nano</td><td>140.0</td><td>683.0</td><td>+595.5</td></tr>
+<tr><td>gpt-5.1-medium</td><td>GPT-5.1</td><td>150.0</td><td>947.5</td><td>+523.8</td></tr>
+<tr><td>grok-4-20-reasoning</td><td>Grok 4</td><td>147.0</td><td>843.0</td><td>+520.2</td></tr>
+<tr><td>gemini-3-pro-preview</td><td>Gemini 3 Pro</td><td>153.0</td><td>1033.7</td><td>+509.2</td></tr>
+<tr><td>gpt-5-mini-high</td><td>GPT-5 mini</td><td>145.0</td><td>759.0</td><td>+503.4</td></tr>
+<tr><td>gpt-5.2-medium</td><td>GPT-5.2</td><td>154.0</td><td>1054.3</td><td>+496.2</td></tr>
+<tr><td>grok-4-fast-reasoning</td><td>Grok 4 Fast</td><td>145.0</td><td>735.1</td><td>+479.5</td></tr>
+<tr><td>o3-medium</td><td>o3</td><td>147.0</td><td>777.6</td><td>+454.8</td></tr></tbody></table></div></div><div><h3>Below Elo Trend</h3><div class="table-wrap"><table><thead><tr><th>LLM chess model</th><th>Epoch model</th><th>ECI</th><th>Elo</th><th>Residual</th></tr></thead><tbody><tr><td>deepseek-v3</td><td>DeepSeek-V3</td><td>133.0</td><td>-822.8</td><td>-675.0</td></tr>
+<tr><td>gemini-3-flash-preview</td><td>Gemini 3 Flash</td><td>151.0</td><td>-179.5</td><td>-636.8</td></tr>
+<tr><td>zai.glm-5</td><td>GLM-5</td><td>146.0</td><td>-299.2</td><td>-588.4</td></tr>
+<tr><td>deepseek-v3-0324</td><td>DeepSeek-V3 (Mar 2025)</td><td>137.0</td><td>-579.5</td><td>-566.1</td></tr>
+<tr><td>claude-opus-4-6_thinking-high</td><td>Claude Opus 4.6</td><td>155.0</td><td>107.8</td><td>-483.9</td></tr>
+<tr><td>gemini-2.5-flash</td><td>Gemini 2.5 Flash (Sep 2025)</td><td>143.0</td><td>-289.3</td><td>-477.7</td></tr>
+<tr><td>gemini-2.5-pro</td><td>Gemini 2.5 Pro (Jun 2025)</td><td>147.0</td><td>-147.2</td><td>-470.0</td></tr>
+<tr><td>claude-sonnet-4-6</td><td>Claude Sonnet 4.6</td><td>153.0</td><td>110.6</td><td>-413.9</td></tr>
+<tr><td>qwen2.5-72b-instruct</td><td>Qwen2.5-72B</td><td>129.0</td><td>-672.2</td><td>-389.9</td></tr>
+<tr><td>gpt-oss-120b-high</td><td>gpt-oss-120b</td><td>141.0</td><td>-252.1</td><td>-373.2</td></tr></tbody></table></div></div></div></section>
+  </main>
+  <details>
+    <summary>Embedded JSON payload</summary>
+    <pre id="summary-json"></pre>
+  </details>
+  <script id="summary-data" type="application/json">{
+  "files": {
+    "elo_refined_csv": "data/elo_refined.csv",
+    "epoch_eci_csv": "data/cross-ref/eci/epoch_eci_apr_2026.csv",
+    "models_metadata_csv": "data/models_metadata.csv"
+  },
+  "counts": {
+    "elo_rows": 178,
+    "epoch_rows": 168,
+    "epoch_rows_with_numeric_score": 161,
+    "epoch_rows_with_bridge": 89,
+    "raw_direct_matches": 74,
+    "matched_sample_max_dedupe": 66
+  },
+  "duplicate_bridge_keys": {
+    "n_keys": 5,
+    "n_extra_rows": 8,
+    "counts": {
+      "gemini-2.5-flash": 4,
+      "gemini-1.5-pro-preview": 3,
+      "gemini-2.0-flash-001": 2,
+      "gemini-1.5-flash-001": 2,
+      "gpt-4": 2
+    }
+  },
+  "relationship": {
+    "name": "eci_vs_elo",
+    "n": 66,
+    "pearson_r": 0.6967985896751969,
+    "pearson_p": 8.145056614243324e-11,
+    "spearman_r": 0.6975609958190682,
+    "spearman_p": 7.615533872938682e-11,
+    "slope": 33.618223451037,
+    "intercept": -4619.078090935939,
+    "r2": 0.48552827457334313,
+    "linregress_p": 8.145056614243514e-11,
+    "slope_stderr": 4.325718613518767,
+    "weighted_fit": {
+      "slope": 27.69842614220582,
+      "intercept": -3710.379195130856,
+      "weighted_r2": 0.40909525251395573
+    },
+    "bootstrap_95": {
+      "pearson_r": [
+        0.5892353944955292,
+        0.7859880357619583
+      ],
+      "spearman_r": [
+        0.5350388831993598,
+        0.8076384170729677
+      ],
+      "slope": [
+        24.53682000464145,
+        42.94200938659689
+      ]
+    },
+    "leave_one_out_top_influence": [
+      {
+        "llm_chess_model": "gemini-3.1-pro-preview",
+        "pearson_delta": -0.02048317220143503,
+        "slope_delta": -2.634696999726131
+      },
+      {
+        "llm_chess_model": "gemini-3-flash-preview",
+        "pearson_delta": 0.018812656735285094,
+        "slope_delta": 1.293271693669766
+      },
+      {
+        "llm_chess_model": "llama3.1-8b",
+        "pearson_delta": -0.017867142652017498,
+        "slope_delta": -0.29117274905325274
+      },
+      {
+        "llm_chess_model": "gpt-5.2-medium",
+        "pearson_delta": -0.014748127614927387,
+        "slope_delta": -1.2648698736865285
+      },
+      {
+        "llm_chess_model": "zai.glm-5",
+        "pearson_delta": 0.014125238739867596,
+        "slope_delta": 0.7094874485945439
+      },
+      {
+        "llm_chess_model": "gemini-3-pro-preview",
+        "pearson_delta": -0.01291740970073152,
+        "slope_delta": -1.2088860239319033
+      },
+      {
+        "llm_chess_model": "claude-opus-4-6_thinking-high",
+        "pearson_delta": 0.011624051065860619,
+        "slope_delta": 1.3195620986913283
+      },
+      {
+        "llm_chess_model": "gemini-2.5-pro",
+        "pearson_delta": 0.009959915984932066,
+        "slope_delta": 0.6428514786449142
+      },
+      {
+        "llm_chess_model": "gemma-2-9b-it-8bit",
+        "pearson_delta": -0.008523416529227057,
+        "slope_delta": 0.1195228424569521
+      },
+      {
+        "llm_chess_model": "gemini-2.5-flash",
+        "pearson_delta": 0.00849779332408207,
+        "slope_delta": 0.3467724963676204
+      },
+      {
+        "llm_chess_model": "claude-sonnet-4-6",
+        "pearson_delta": 0.008387100918582524,
+        "slope_delta": 0.9825412486162719
+      },
+      {
+        "llm_chess_model": "gpt-5.1-medium",
+        "pearson_delta": -0.007713089342173185,
+        "slope_delta": -0.97562691945312
+      }
+    ]
+  },
+  "release_confound": {
+    "eci_vs_release_month": {
+      "name": "eci_vs_release_month",
+      "n": 65,
+      "pearson_r": 0.8819492140446007,
+      "pearson_p": 2.97531523966038e-22,
+      "spearman_r": 0.9026581956269175,
+      "spearman_p": 9.436529465541774e-25,
+      "slope": 1.2030640592903614,
+      "intercept": 113.52480838317933,
+      "r2": 0.7778344161538889,
+      "linregress_p": 2.975315239660482e-22,
+      "slope_stderr": 0.08100527330493458
+    },
+    "elo_vs_release_month": {
+      "name": "elo_vs_release_month",
+      "n": 65,
+      "pearson_r": 0.5683230242239782,
+      "pearson_p": 7.881771460477742e-07,
+      "spearman_r": 0.5936606784048837,
+      "spearman_p": 1.8661373983517172e-07,
+      "slope": 37.5874698435393,
+      "intercept": -744.2776887889452,
+      "r2": 0.3229910598630885,
+      "linregress_p": 7.881771460477755e-07,
+      "slope_stderr": 6.856062516698406
+    },
+    "eci_vs_elo_partial_release_month": {
+      "n": 65,
+      "pearson_r": 0.4932339086474794,
+      "pearson_p": 2.9865073161074014e-05,
+      "spearman_r": 0.45226569951198614,
+      "spearman_p": 0.00015543965081730088
+    }
+  },
+  "selected_metric_relationships": [
+    {
+      "name": "elo",
+      "n": 66,
+      "pearson_r": 0.6967985896751969,
+      "pearson_p": 8.145056614243324e-11,
+      "spearman_r": 0.6975609958190682,
+      "spearman_p": 7.615533872938682e-11,
+      "slope": 33.618223451037,
+      "intercept": -4619.078090935939,
+      "r2": 0.48552827457334313,
+      "linregress_p": 8.145056614243514e-11,
+      "slope_stderr": 4.325718613518767,
+      "partial_release_month": {
+        "n": 65,
+        "pearson_r": 0.4932339086474794,
+        "pearson_p": 2.9865073161074014e-05,
+        "spearman_r": 0.45226569951198614,
+        "spearman_p": 0.00015543965081730088
+      }
+    },
+    {
+      "name": "player_wins_percent",
+      "n": 66,
+      "pearson_r": 0.6694688625513046,
+      "pearson_p": 7.960870321602821e-10,
+      "spearman_r": 0.7534339608048275,
+      "spearman_p": 2.894376353054493e-13,
+      "slope": 1.7137842234557243,
+      "intercept": -215.5609560158271,
+      "r2": 0.44818855792573764,
+      "linregress_p": 7.960870321602733e-10,
+      "slope_stderr": 0.2377010618667033,
+      "partial_release_month": {
+        "n": 65,
+        "pearson_r": 0.5312961254500289,
+        "pearson_p": 5.275439634140742e-06,
+        "spearman_r": 0.5902176765112688,
+        "spearman_p": 2.286197810431684e-07
+      }
+    },
+    {
+      "name": "player_draws_percent",
+      "n": 66,
+      "pearson_r": -0.24249823949336477,
+      "pearson_p": 0.04978419668705204,
+      "spearman_r": -0.2818204574778405,
+      "spearman_p": 0.021879382679723062,
+      "slope": -0.7558285920564073,
+      "intercept": 148.78612666429126,
+      "r2": 0.058805396157381284,
+      "linregress_p": 0.04978419668705209,
+      "slope_stderr": 0.3779761995375677,
+      "partial_release_month": {
+        "n": 65,
+        "pearson_r": -0.04399963958242709,
+        "pearson_p": 0.7278236481206557,
+        "spearman_r": -0.12452331267549153,
+        "spearman_p": 0.3229994876991883
+      }
+    },
+    {
+      "name": "games_interrupted_percent",
+      "n": 66,
+      "pearson_r": -0.4265896995779548,
+      "pearson_p": 0.0003546547667590228,
+      "spearman_r": -0.46074438705835435,
+      "spearman_p": 9.902658931055863e-05,
+      "slope": -1.3667772615609635,
+      "intercept": 215.18699253178545,
+      "r2": 0.18197877178600957,
+      "linregress_p": 0.00035465476675902534,
+      "slope_stderr": 0.36222605023780985,
+      "partial_release_month": {
+        "n": 65,
+        "pearson_r": -0.3375179134008515,
+        "pearson_p": 0.005967843485910433,
+        "spearman_r": -0.23578781809341362,
+        "spearman_p": 0.05864410837973214
+      }
+    },
+    {
+      "name": "wrong_moves_per_1000moves",
+      "n": 66,
+      "pearson_r": -0.060648281860496395,
+      "pearson_p": 0.6285699348408599,
+      "spearman_r": -0.2507758174666991,
+      "spearman_p": 0.04225850949722896,
+      "slope": -0.18766243483478973,
+      "intercept": 45.94513151183287,
+      "r2": 0.0036782140926302116,
+      "linregress_p": 0.6285699348408595,
+      "slope_stderr": 0.38607232519731377,
+      "partial_release_month": {
+        "n": 65,
+        "pearson_r": -0.20843203927597276,
+        "pearson_p": 0.0956771964781873,
+        "spearman_r": -0.28121551202320555,
+        "spearman_p": 0.023253387313326213
+      }
+    },
+    {
+      "name": "mistakes_per_1000moves",
+      "n": 66,
+      "pearson_r": -0.03761730115969978,
+      "pearson_p": 0.764275192152625,
+      "spearman_r": -0.19054789836224187,
+      "spearman_p": 0.1253941735353022,
+      "slope": -0.2100461313430595,
+      "intercept": 59.122929752840996,
+      "r2": 0.0014150613465395484,
+      "linregress_p": 0.7642751921526255,
+      "slope_stderr": 0.6974764874794471,
+      "partial_release_month": {
+        "n": 65,
+        "pearson_r": -0.20108874273746566,
+        "pearson_p": 0.10822408957345021,
+        "spearman_r": -0.2138837594164682,
+        "spearman_p": 0.08712058908275029
+      }
+    },
+    {
+      "name": "average_moves",
+      "n": 66,
+      "pearson_r": -0.2141702871029722,
+      "pearson_p": 0.08420680163795874,
+      "spearman_r": -0.26925056318687907,
+      "spearman_p": 0.028804349201745745,
+      "slope": -1.0059336908824958,
+      "intercept": 262.80033837152604,
+      "r2": 0.04586891187776951,
+      "linregress_p": 0.08420680163795892,
+      "slope_stderr": 0.5734877839176656,
+      "partial_release_month": {
+        "n": 65,
+        "pearson_r": -0.029130623300615006,
+        "pearson_p": 0.8178194779909304,
+        "spearman_r": -0.15865904703827108,
+        "spearman_p": 0.20682506688847896
+      }
+    },
+    {
+      "name": "average_time_per_game_seconds",
+      "n": 66,
+      "pearson_r": 0.6021799943298431,
+      "pearson_p": 8.856444511639614e-08,
+      "spearman_r": 0.7638815053424745,
+      "spearman_p": 8.644283590931854e-14,
+      "slope": 207.1215195006892,
+      "intercept": -25815.39595033532,
+      "r2": 0.3626207455710902,
+      "linregress_p": 8.856444511639523e-08,
+      "slope_stderr": 34.324788919718216,
+      "partial_release_month": {
+        "n": 65,
+        "pearson_r": 0.3208238452107626,
+        "pearson_p": 0.009170064841034643,
+        "spearman_r": 0.3373699461980506,
+        "spearman_p": 0.005991218313076481
+      }
+    },
+    {
+      "name": "average_game_cost",
+      "n": 66,
+      "pearson_r": 0.31191672278354216,
+      "pearson_p": 0.010785896207914319,
+      "spearman_r": 0.5332220027149085,
+      "spearman_p": 4.035360340463842e-06,
+      "slope": 0.1347922300016502,
+      "intercept": -16.3736666786154,
+      "r2": 0.09729204195202505,
+      "linregress_p": 0.010785896207914352,
+      "slope_stderr": 0.05132274158576871,
+      "partial_release_month": {
+        "n": 65,
+        "pearson_r": 0.4532417689010212,
+        "pearson_p": 0.0001498056341068326,
+        "spearman_r": 0.5883779886889557,
+        "spearman_p": 2.545699259224958e-07
+      }
+    },
+    {
+      "name": "completion_tokens_black_per_move",
+      "n": 66,
+      "pearson_r": 0.4646754495218225,
+      "pearson_p": 8.475211982232997e-05,
+      "spearman_r": 0.5920068237541403,
+      "spearman_p": 1.646254658299078e-07,
+      "slope": 112.70224628443643,
+      "intercept": -14035.253708054828,
+      "r2": 0.2159232733883077,
+      "linregress_p": 8.475211982233079e-05,
+      "slope_stderr": 26.845539670675716,
+      "partial_release_month": {
+        "n": 65,
+        "pearson_r": 0.3132956082629848,
+        "pearson_p": 0.011047690956537171,
+        "spearman_r": 0.37278727226000835,
+        "spearman_p": 0.0022263560876956932
+      }
+    },
+    {
+      "name": "material_diff_player_llm_minus_opponent",
+      "n": 66,
+      "pearson_r": 0.6448656668919237,
+      "pearson_p": 5.1005095830164225e-09,
+      "spearman_r": 0.6624813267269001,
+      "spearman_p": 1.3730153868517796e-09,
+      "slope": 0.5052161656602783,
+      "intercept": -66.09480995668154,
+      "r2": 0.4158517283359657,
+      "linregress_p": 5.100509583016345e-09,
+      "slope_stderr": 0.07484788693537185,
+      "partial_release_month": {
+        "n": 65,
+        "pearson_r": 0.5052981983999622,
+        "pearson_p": 1.762817836669264e-05,
+        "spearman_r": 0.5276178199235507,
+        "spearman_p": 6.29557386500752e-06
+      }
+    }
+  ],
+  "game_threshold_sensitivity": [
+    {
+      "min_total_games": 0,
+      "name": "eci_vs_elo_min_games_0",
+      "n": 66,
+      "pearson_r": 0.6967985896751969,
+      "pearson_p": 8.145056614243324e-11,
+      "spearman_r": 0.6975609958190682,
+      "spearman_p": 7.615533872938682e-11,
+      "slope": 33.618223451037,
+      "intercept": -4619.078090935939,
+      "r2": 0.48552827457334313,
+      "linregress_p": 8.145056614243514e-11,
+      "slope_stderr": 4.325718613518767
+    },
+    {
+      "min_total_games": 20,
+      "name": "eci_vs_elo_min_games_20",
+      "n": 66,
+      "pearson_r": 0.6967985896751969,
+      "pearson_p": 8.145056614243324e-11,
+      "spearman_r": 0.6975609958190682,
+      "spearman_p": 7.615533872938682e-11,
+      "slope": 33.618223451037,
+      "intercept": -4619.078090935939,
+      "r2": 0.48552827457334313,
+      "linregress_p": 8.145056614243514e-11,
+      "slope_stderr": 4.325718613518767
+    },
+    {
+      "min_total_games": 30,
+      "name": "eci_vs_elo_min_games_30",
+      "n": 63,
+      "pearson_r": 0.704545445678386,
+      "pearson_p": 1.1664687090102323e-10,
+      "spearman_r": 0.6890076565148998,
+      "spearman_p": 4.301035496118185e-10,
+      "slope": 34.24221687052162,
+      "intercept": -4706.578199312184,
+      "r2": 0.49638428502615534,
+      "linregress_p": 1.1664687090102434e-10,
+      "slope_stderr": 4.4160865949463854
+    },
+    {
+      "min_total_games": 40,
+      "name": "eci_vs_elo_min_games_40",
+      "n": 47,
+      "pearson_r": 0.7228961253679546,
+      "pearson_p": 9.573069752555838e-09,
+      "spearman_r": 0.6676318435408731,
+      "spearman_p": 2.959601085093201e-07,
+      "slope": 39.543383291467556,
+      "intercept": -5420.500921823307,
+      "r2": 0.5225788080720021,
+      "linregress_p": 9.573069752555655e-09,
+      "slope_stderr": 5.63433307499188
+    },
+    {
+      "min_total_games": 50,
+      "name": "eci_vs_elo_min_games_50",
+      "n": 32,
+      "pearson_r": 0.7571540800738238,
+      "pearson_p": 5.285451885854667e-07,
+      "spearman_r": 0.7286242947644568,
+      "spearman_p": 2.264795001517946e-06,
+      "slope": 39.67066952690166,
+      "intercept": -5331.686762871056,
+      "r2": 0.573282300972438,
+      "linregress_p": 5.285451885854766e-07,
+      "slope_stderr": 6.248776105393753
+    },
+    {
+      "min_total_games": 60,
+      "name": "eci_vs_elo_min_games_60",
+      "n": 27,
+      "pearson_r": 0.7672234585809691,
+      "pearson_p": 3.0265804242255624e-06,
+      "spearman_r": 0.7859990839703017,
+      "spearman_p": 1.1815275211254556e-06,
+      "slope": 38.53477237696638,
+      "intercept": -5182.796916524752,
+      "r2": 0.5886318353969445,
+      "linregress_p": 3.0265804242255277e-06,
+      "slope_stderr": 6.442823881657321
+    }
+  ],
+  "coverage": [
+    {
+      "top_n": 10,
+      "matched_count": 6,
+      "matched_pct": 0.6,
+      "bridged_count": 6,
+      "bridged_pct": 0.6
+    },
+    {
+      "top_n": 20,
+      "matched_count": 13,
+      "matched_pct": 0.65,
+      "bridged_count": 14,
+      "bridged_pct": 0.7
+    },
+    {
+      "top_n": 30,
+      "matched_count": 19,
+      "matched_pct": 0.6333333333333333,
+      "bridged_count": 20,
+      "bridged_pct": 0.6666666666666666
+    },
+    {
+      "top_n": 40,
+      "matched_count": 27,
+      "matched_pct": 0.675,
+      "bridged_count": 28,
+      "bridged_pct": 0.7
+    },
+    {
+      "top_n": 50,
+      "matched_count": 35,
+      "matched_pct": 0.7,
+      "bridged_count": 36,
+      "bridged_pct": 0.72
+    },
+    {
+      "top_n": 75,
+      "matched_count": 51,
+      "matched_pct": 0.68,
+      "bridged_count": 56,
+      "bridged_pct": 0.7466666666666667
+    },
+    {
+      "top_n": 100,
+      "matched_count": 66,
+      "matched_pct": 0.66,
+      "bridged_count": 72,
+      "bridged_pct": 0.72
+    }
+  ],
+  "dedupe_sensitivity": [
+    {
+      "method": "max",
+      "name": "eci_vs_elo_max",
+      "n": 66,
+      "pearson_r": 0.6967985896751969,
+      "pearson_p": 8.145056614243324e-11,
+      "spearman_r": 0.6975609958190682,
+      "spearman_p": 7.615533872938682e-11,
+      "slope": 33.618223451037,
+      "intercept": -4619.078090935939,
+      "r2": 0.48552827457334313,
+      "linregress_p": 8.145056614243514e-11,
+      "slope_stderr": 4.325718613518767
+    },
+    {
+      "method": "min",
+      "name": "eci_vs_elo_min",
+      "n": 66,
+      "pearson_r": 0.7081622300452323,
+      "pearson_p": 2.9252434563044186e-11,
+      "spearman_r": 0.7270184850110916,
+      "spearman_p": 4.782847540182511e-12,
+      "slope": 33.02815956549642,
+      "intercept": -4523.905305499636,
+      "r2": 0.5014937440626365,
+      "linregress_p": 2.9252434563044555e-11,
+      "slope_stderr": 4.11620441015308
+    },
+    {
+      "method": "mean",
+      "name": "eci_vs_elo_mean",
+      "n": 66,
+      "pearson_r": 0.7045862112588545,
+      "pearson_p": 4.058521578093418e-11,
+      "spearman_r": 0.7178450386946049,
+      "spearman_p": 1.1755120304688569e-11,
+      "slope": 33.452264941889915,
+      "intercept": -4589.098979507975,
+      "r2": 0.49644172909610756,
+      "linregress_p": 4.058521578093255e-11,
+      "slope_stderr": 4.211397817813053
+    },
+    {
+      "method": "median",
+      "name": "eci_vs_elo_median",
+      "n": 66,
+      "pearson_r": 0.7050472596144588,
+      "pearson_p": 3.8918121725785253e-11,
+      "spearman_r": 0.7184969138949043,
+      "spearman_p": 1.1040336036195524e-11,
+      "slope": 33.34977240507582,
+      "intercept": -4574.346599422521,
+      "r2": 0.4970916382898576,
+      "linregress_p": 3.89181217257866e-11,
+      "slope_stderr": 4.19304078575057
+    }
+  ],
+  "selection_bias": {
+    "matchedness_summary": [
+      {
+        "has_bridge": false,
+        "matched": false,
+        "n": 72,
+        "mean_score": 118.09722222222223,
+        "median_score": 117.5
+      },
+      {
+        "has_bridge": true,
+        "matched": false,
+        "n": 15,
+        "mean_score": 121.66666666666667,
+        "median_score": 119.0
+      },
+      {
+        "has_bridge": true,
+        "matched": true,
+        "n": 74,
+        "mean_score": 137.48648648648648,
+        "median_score": 139.0
+      }
+    ],
+    "vendor_mix": [
+      {
+        "vendor": "Anthropic",
+        "no_bridge_unmatched": 2,
+        "has_bridge_unmatched": 3,
+        "matched": 14
+      },
+      {
+        "vendor": "DeepSeek",
+        "no_bridge_unmatched": 7,
+        "has_bridge_unmatched": 0,
+        "matched": 4
+      },
+      {
+        "vendor": "Google",
+        "no_bridge_unmatched": 4,
+        "has_bridge_unmatched": 2,
+        "matched": 19
+      },
+      {
+        "vendor": "Meta",
+        "no_bridge_unmatched": 11,
+        "has_bridge_unmatched": 2,
+        "matched": 4
+      },
+      {
+        "vendor": "MiniMax",
+        "no_bridge_unmatched": 0,
+        "has_bridge_unmatched": 1,
+        "matched": 0
+      },
+      {
+        "vendor": "Mistral",
+        "no_bridge_unmatched": 5,
+        "has_bridge_unmatched": 2,
+        "matched": 0
+      },
+      {
+        "vendor": "Moonshot",
+        "no_bridge_unmatched": 3,
+        "has_bridge_unmatched": 0,
+        "matched": 1
+      },
+      {
+        "vendor": "OpenAI",
+        "no_bridge_unmatched": 4,
+        "has_bridge_unmatched": 4,
+        "matched": 23
+      },
+      {
+        "vendor": "Other",
+        "no_bridge_unmatched": 25,
+        "has_bridge_unmatched": 1,
+        "matched": 0
+      },
+      {
+        "vendor": "Qwen",
+        "no_bridge_unmatched": 9,
+        "has_bridge_unmatched": 0,
+        "matched": 3
+      },
+      {
+        "vendor": "ZAI",
+        "no_bridge_unmatched": 2,
+        "has_bridge_unmatched": 0,
+        "matched": 1
+      },
+      {
+        "vendor": "xAI",
+        "no_bridge_unmatched": 0,
+        "has_bridge_unmatched": 0,
+        "matched": 5
+      }
+    ],
+    "top_missing_bridge_models": [
+      {
+        "Model": "GPT-5.4 Pro",
+        "Score": 158.0
+      },
+      {
+        "Model": "Claude Opus 4.7",
+        "Score": 156.0
+      },
+      {
+        "Model": "Muse Spark",
+        "Score": 155.0
+      },
+      {
+        "Model": "GPT-5.2 Pro",
+        "Score": 154.0
+      },
+      {
+        "Model": "GPT-5 Pro",
+        "Score": 150.0
+      },
+      {
+        "Model": "o3-pro",
+        "Score": 148.0
+      },
+      {
+        "Model": "DeepSeek-V3.2",
+        "Score": 146.0
+      },
+      {
+        "Model": "Qwen3-235B-A22B-Thinking (Jul 2025)",
+        "Score": 145.0
+      },
+      {
+        "Model": "Kimi K2 Thinking",
+        "Score": 145.0
+      },
+      {
+        "Model": "DeepSeek-V3.2-Exp",
+        "Score": 145.0
+      },
+      {
+        "Model": "GLM-4.7",
+        "Score": 144.0
+      },
+      {
+        "Model": "Qwen3-Max",
+        "Score": 144.0
+      },
+      {
+        "Model": "GLM-4.6",
+        "Score": 141.0
+      },
+      {
+        "Model": "Kimi K2 (Jul 2025)",
+        "Score": 140.0
+      },
+      {
+        "Model": "Qwen3-235B-A22B",
+        "Score": 140.0
+      },
+      {
+        "Model": "DeepSeek-V3.1",
+        "Score": 139.0
+      },
+      {
+        "Model": "Kimi K2 (Sep 2025)",
+        "Score": 138.0
+      },
+      {
+        "Model": "Gemini 2.0 Pro",
+        "Score": 136.0
+      },
+      {
+        "Model": "Mistral Medium 3",
+        "Score": 135.0
+      },
+      {
+        "Model": "Llama 4 Scout",
+        "Score": 131.0
+      }
+    ],
+    "top_bridged_but_unmatched_models": [
+      {
+        "Model": "MiniMax-M2.5",
+        "llm_chess_model": "minimax.minimax-m2.5",
+        "Score": 147.0
+      },
+      {
+        "Model": "Gemini 2.0 Flash Thinking (Jan 2025)",
+        "llm_chess_model": "gemini-2.0-flash-thinking-exp-01-21",
+        "Score": 136.0
+      },
+      {
+        "Model": "Magistral Small 1.1",
+        "llm_chess_model": "magistral-small",
+        "Score": 133.0
+      },
+      {
+        "Model": "Phi-4",
+        "llm_chess_model": "phi-4",
+        "Score": 131.0
+      },
+      {
+        "Model": "Gemma 3 27B",
+        "llm_chess_model": "google_gemma-3-27b-it@iq4_xs",
+        "Score": 131.0
+      },
+      {
+        "Model": "GPT-4.1 nano",
+        "llm_chess_model": "gpt-4.1-nano",
+        "Score": 131.0
+      },
+      {
+        "Model": "Claude 2",
+        "llm_chess_model": "claude-2",
+        "Score": 120.0
+      },
+      {
+        "Model": "Mistral NeMo",
+        "llm_chess_model": "mistral-nemo-12b-instruct",
+        "Score": 119.0
+      },
+      {
+        "Model": "Claude 2.1",
+        "llm_chess_model": "claude-2-1",
+        "Score": 119.0
+      },
+      {
+        "Model": "Claude 3 Haiku",
+        "llm_chess_model": "claude-3-haiku",
+        "Score": 118.0
+      },
+      {
+        "Model": "Llama 3-8B",
+        "llm_chess_model": "llama3-8b-8192",
+        "Score": 117.0
+      },
+      {
+        "Model": "GPT-3.5 Turbo (Jun 2023)",
+        "llm_chess_model": "gpt-35-turbo-0613",
+        "Score": 114.0
+      },
+      {
+        "Model": "GPT-3.5 Turbo (Nov 2023)",
+        "llm_chess_model": "gpt-35-turbo-1106",
+        "Score": 107.0
+      },
+      {
+        "Model": "GPT-3.5 Turbo (Jan 2024)",
+        "llm_chess_model": "gpt-35-turbo-0125",
+        "Score": 104.0
+      },
+      {
+        "Model": "Llama 2-7B",
+        "llm_chess_model": "llama-2-7b-chat",
+        "Score": 98.0
+      }
+    ]
+  },
+  "residuals": {
+    "top_positive": [
+      {
+        "llm_chess_model": "gemini-3.1-pro-preview",
+        "Model": "Gemini 3.1 Pro",
+        "Score": 157.0,
+        "elo": 1511.389,
+        "residual": 852.4060091231302,
+        "eci_rank": 1.0,
+        "elo_rank": 1.0,
+        "rank_gap": 0.0
+      },
+      {
+        "llm_chess_model": "gpt-5-medium",
+        "Model": "GPT-5",
+        "Score": 150.0,
+        "elo": 1086.816,
+        "residual": 663.1605732803894,
+        "eci_rank": 8.0,
+        "elo_rank": 2.0,
+        "rank_gap": -6.0
+      },
+      {
+        "llm_chess_model": "gpt-5-nano-high",
+        "Model": "GPT-5 nano",
+        "Score": 140.0,
+        "elo": 682.959,
+        "residual": 595.4858077907594,
+        "eci_rank": 32.0,
+        "elo_rank": 10.0,
+        "rank_gap": -22.0
+      },
+      {
+        "llm_chess_model": "gpt-5.1-medium",
+        "Model": "GPT-5.1",
+        "Score": 150.0,
+        "elo": 947.455,
+        "residual": 523.7995732803894,
+        "eci_rank": 8.0,
+        "elo_rank": 5.0,
+        "rank_gap": -3.0
+      },
+      {
+        "llm_chess_model": "grok-4-20-reasoning",
+        "Model": "Grok 4",
+        "Score": 147.0,
+        "elo": 842.954,
+        "residual": 520.1532436335003,
+        "eci_rank": 12.0,
+        "elo_rank": 6.0,
+        "rank_gap": -6.0
+      },
+      {
+        "llm_chess_model": "gemini-3-pro-preview",
+        "Model": "Gemini 3 Pro",
+        "Score": 153.0,
+        "elo": 1033.727,
+        "residual": 509.2169029272784,
+        "eci_rank": 5.0,
+        "elo_rank": 4.0,
+        "rank_gap": -1.0
+      },
+      {
+        "llm_chess_model": "gpt-5-mini-high",
+        "Model": "GPT-5 mini",
+        "Score": 145.0,
+        "elo": 758.971,
+        "residual": 503.4066905355744,
+        "eci_rank": 18.0,
+        "elo_rank": 8.0,
+        "rank_gap": -10.0
+      },
+      {
+        "llm_chess_model": "gpt-5.2-medium",
+        "Model": "GPT-5.2",
+        "Score": 154.0,
+        "elo": 1054.338,
+        "residual": 496.20967947624126,
+        "eci_rank": 4.0,
+        "elo_rank": 3.0,
+        "rank_gap": -1.0
+      },
+      {
+        "llm_chess_model": "grok-4-fast-reasoning",
+        "Model": "Grok 4 Fast",
+        "Score": 145.0,
+        "elo": 735.072,
+        "residual": 479.5076905355744,
+        "eci_rank": 18.0,
+        "elo_rank": 9.0,
+        "rank_gap": -9.0
+      },
+      {
+        "llm_chess_model": "o3-medium",
+        "Model": "o3",
+        "Score": 147.0,
+        "elo": 777.637,
+        "residual": 454.8362436335003,
+        "eci_rank": 12.0,
+        "elo_rank": 7.0,
+        "rank_gap": -5.0
+      },
+      {
+        "llm_chess_model": "gpt-4o-2024-08-06",
+        "Model": "GPT-4o (Aug 2024)",
+        "Score": 124.0,
+        "elo": -133.876,
+        "residual": 316.54238300735165,
+        "eci_rank": 61.0,
+        "elo_rank": 39.0,
+        "rank_gap": -22.0
+      },
+      {
+        "llm_chess_model": "grok-3-mini-beta-high",
+        "Model": "Grok-3 mini",
+        "Score": 141.0,
+        "elo": 430.366,
+        "residual": 309.2745843397224,
+        "eci_rank": 29.0,
+        "elo_rank": 13.0,
+        "rank_gap": -16.0
+      }
+    ],
+    "top_negative": [
+      {
+        "llm_chess_model": "deepseek-v3",
+        "Model": "DeepSeek-V3",
+        "Score": 133.0,
+        "elo": -822.813,
+        "residual": -674.9586280519815,
+        "eci_rank": 45.0,
+        "elo_rank": 66.0,
+        "rank_gap": 21.0
+      },
+      {
+        "llm_chess_model": "gemini-3-flash-preview",
+        "Model": "Gemini 3 Flash",
+        "Score": 151.0,
+        "elo": -179.501,
+        "residual": -636.7746501706476,
+        "eci_rank": 7.0,
+        "elo_rank": 48.0,
+        "rank_gap": 41.0
+      },
+      {
+        "llm_chess_model": "zai.glm-5",
+        "Model": "GLM-5",
+        "Score": 146.0,
+        "elo": -299.22,
+        "residual": -588.4025329154626,
+        "eci_rank": 17.0,
+        "elo_rank": 54.0,
+        "rank_gap": 37.0
+      },
+      {
+        "llm_chess_model": "deepseek-v3-0324",
+        "Model": "DeepSeek-V3 (Mar 2025)",
+        "Score": 137.0,
+        "elo": -579.453,
+        "residual": -566.0715218561295,
+        "eci_rank": 38.0,
+        "elo_rank": 61.0,
+        "rank_gap": 23.0
+      },
+      {
+        "llm_chess_model": "claude-opus-4-6_thinking-high",
+        "Model": "Claude Opus 4.6",
+        "Score": 155.0,
+        "elo": 107.814,
+        "residual": -483.93254397479575,
+        "eci_rank": 3.0,
+        "elo_rank": 23.0,
+        "rank_gap": 20.0
+      },
+      {
+        "llm_chess_model": "gemini-2.5-flash",
+        "Model": "Gemini 2.5 Flash (Sep 2025)",
+        "Score": 143.0,
+        "elo": -289.333,
+        "residual": -477.6608625623516,
+        "eci_rank": 21.0,
+        "elo_rank": 53.0,
+        "rank_gap": 32.0
+      },
+      {
+        "llm_chess_model": "gemini-2.5-pro",
+        "Model": "Gemini 2.5 Pro (Jun 2025)",
+        "Score": 147.0,
+        "elo": -147.178,
+        "residual": -469.9787563664996,
+        "eci_rank": 12.0,
+        "elo_rank": 45.0,
+        "rank_gap": 33.0
+      },
+      {
+        "llm_chess_model": "claude-sonnet-4-6",
+        "Model": "Claude Sonnet 4.6",
+        "Score": 153.0,
+        "elo": 110.636,
+        "residual": -413.8740970727217,
+        "eci_rank": 5.0,
+        "elo_rank": 22.0,
+        "rank_gap": 17.0
+      },
+      {
+        "llm_chess_model": "qwen2.5-72b-instruct",
+        "Model": "Qwen2.5-72B",
+        "Score": 129.0,
+        "elo": -672.233,
+        "residual": -389.9057342478334,
+        "eci_rank": 51.0,
+        "elo_rank": 64.0,
+        "rank_gap": 13.0
+      },
+      {
+        "llm_chess_model": "gpt-oss-120b-high",
+        "Model": "gpt-oss-120b",
+        "Score": 141.0,
+        "elo": -252.146,
+        "residual": -373.2374156602775,
+        "eci_rank": 29.0,
+        "elo_rank": 51.0,
+        "rank_gap": 22.0
+      },
+      {
+        "llm_chess_model": "gemini-1.5-pro-preview",
+        "Model": "Gemini 1.5 Pro (Sept 2024)",
+        "Score": 129.0,
+        "elo": -651.021,
+        "residual": -368.6937342478334,
+        "eci_rank": 51.0,
+        "elo_rank": 63.0,
+        "rank_gap": 12.0
+      },
+      {
+        "llm_chess_model": "gemini-2.5-pro-preview-03-25",
+        "Model": "Gemini 2.5 Pro (Mar 2025)",
+        "Score": 143.0,
+        "elo": -144.34,
+        "residual": -332.6678625623516,
+        "eci_rank": 21.0,
+        "elo_rank": 43.0,
+        "rank_gap": 22.0
+      }
+    ],
+    "vendor_summary": [
+      {
+        "vendor": "xAI",
+        "n": 5,
+        "avg_residual": 199.61987372013724,
+        "median_residual": 309.2745843397224,
+        "avg_score": 140.6
+      },
+      {
+        "vendor": "OpenAI",
+        "n": 22,
+        "avg_residual": 186.63117776229817,
+        "median_residual": 168.3663774776851,
+        "avg_score": 138.95454545454547
+      },
+      {
+        "vendor": "Meta",
+        "n": 4,
+        "avg_residual": -3.2631728554076282,
+        "median_residual": -14.041228718166899,
+        "avg_score": 124.25
+      },
+      {
+        "vendor": "Anthropic",
+        "n": 14,
+        "avg_residual": -71.6129619627379,
+        "median_residual": -50.56975083683308,
+        "avg_score": 139.92857142857142
+      },
+      {
+        "vendor": "Google",
+        "n": 12,
+        "avg_residual": -109.99185795429612,
+        "median_residual": -194.18063358164804,
+        "avg_score": 139.25
+      },
+      {
+        "vendor": "Qwen",
+        "n": 3,
+        "avg_residual": -178.3631103526728,
+        "median_residual": -194.17896875820355,
+        "avg_score": 133.66666666666666
+      },
+      {
+        "vendor": "Moonshot",
+        "n": 1,
+        "avg_residual": -245.23797981753665,
+        "median_residual": -245.23797981753665,
+        "avg_score": 148.0
+      },
+      {
+        "vendor": "DeepSeek",
+        "n": 4,
+        "avg_residual": -349.9297453071665,
+        "median_residual": -434.85285703268505,
+        "avg_score": 138.0
+      },
+      {
+        "vendor": "ZAI",
+        "n": 1,
+        "avg_residual": -588.4025329154626,
+        "median_residual": -588.4025329154626,
+        "avg_score": 146.0
+      }
+    ]
+  },
+  "prediction": {
+    "target": "Epoch Score",
+    "sample_n": 66,
+    "cv_protocol": {
+      "outer_folds": 5,
+      "inner_folds": 3,
+      "repeats": 3,
+      "seeds": [
+        11,
+        23,
+        37
+      ],
+      "selection": "Any best metric/combo, ridge alpha, or PCR component count is selected inside the outer training fold.",
+      "compact_search_screen": "Compact subset search screens to the top 10 metrics by training-fold absolute Pearson association before inner-CV combination search."
+    },
+    "predictor_families": {
+      "outcome": [
+        "elo",
+        "player_wins_percent",
+        "win_loss",
+        "win_loss_non_interrupted",
+        "player_draws_percent"
+      ],
+      "board_control": [
+        "material_diff_player_llm_minus_opponent",
+        "player_avg_material",
+        "opponent_avg_material"
+      ],
+      "reliability": [
+        "games_interrupted_percent",
+        "wrong_actions_per_1000moves",
+        "wrong_moves_per_1000moves",
+        "mistakes_per_1000moves"
+      ],
+      "deliberation_resources": [
+        "average_time_per_game_seconds",
+        "completion_tokens_black_per_move",
+        "average_game_cost",
+        "price_per_1000_moves",
+        "game_duration"
+      ]
+    },
+    "best_model": {
+      "name": "Best 4-metric combo",
+      "key": "best_4_metric_combo",
+      "cv": {
+        "r2": 0.6039048637372124,
+        "rmse": 6.228311383755635,
+        "mae": 5.000707707888483,
+        "rank_spearman": 0.7854202891939118
+      },
+      "features": [
+        "elo",
+        "games_interrupted_percent",
+        "material_diff_player_llm_minus_opponent",
+        "opponent_avg_material"
+      ]
+    },
+    "model_leaderboard": [
+      {
+        "name": "Best 4-metric combo",
+        "type": "nested_subset_search",
+        "cv": {
+          "r2": 0.6039048637372124,
+          "rmse": 6.228311383755635,
+          "mae": 5.000707707888483,
+          "rank_spearman": 0.7854202891939118
+        },
+        "in_sample": {
+          "r2": 0.6860986516774328,
+          "rmse": 5.544560832214663,
+          "mae": 4.520429287349974,
+          "rank_spearman": 0.8159000343765667
+        },
+        "features": [
+          "elo",
+          "games_interrupted_percent",
+          "material_diff_player_llm_minus_opponent",
+          "opponent_avg_material"
+        ],
+        "notes": "Combination is selected inside each training fold."
+      },
+      {
+        "name": "Best 3-metric combo",
+        "type": "nested_subset_search",
+        "cv": {
+          "r2": 0.6036286752697938,
+          "rmse": 6.2304824379550015,
+          "mae": 4.982382226486121,
+          "rank_spearman": 0.7722774912679625
+        },
+        "in_sample": {
+          "r2": 0.675416747115552,
+          "rmse": 5.638110928794523,
+          "mae": 4.563298843925278,
+          "rank_spearman": 0.8132674922052665
+        },
+        "features": [
+          "elo",
+          "games_interrupted_percent",
+          "opponent_avg_material"
+        ],
+        "notes": "Combination is selected inside each training fold."
+      },
+      {
+        "name": "Ridge, all chess metrics",
+        "type": "nested_ridge",
+        "cv": {
+          "r2": 0.5323631446138859,
+          "rmse": 6.767448006881182,
+          "mae": 5.353981990685885,
+          "rank_spearman": 0.743208741987379
+        },
+        "in_sample": {
+          "r2": 0.6577814793071807,
+          "rmse": 5.789250168242549,
+          "mae": 4.557721028208236,
+          "rank_spearman": 0.821771021282403
+        },
+        "features": [
+          "elo",
+          "player_wins_percent",
+          "win_loss",
+          "win_loss_non_interrupted",
+          "player_draws_percent",
+          "material_diff_player_llm_minus_opponent",
+          "player_avg_material",
+          "opponent_avg_material",
+          "games_interrupted_percent",
+          "wrong_actions_per_1000moves",
+          "wrong_moves_per_1000moves",
+          "mistakes_per_1000moves",
+          "average_time_per_game_seconds",
+          "completion_tokens_black_per_move",
+          "average_game_cost",
+          "price_per_1000_moves",
+          "game_duration"
+        ],
+        "notes": "Most frequent alpha: 30."
+      },
+      {
+        "name": "Ridge, board control metrics",
+        "type": "nested_ridge_family",
+        "cv": {
+          "r2": 0.5196487535875529,
+          "rmse": 6.858829752669679,
+          "mae": 5.811748257333448,
+          "rank_spearman": 0.6939754774148983
+        },
+        "in_sample": {
+          "r2": 0.5592771221931878,
+          "rmse": 6.569818317945333,
+          "mae": 5.568812721296734,
+          "rank_spearman": 0.7141292969447914
+        },
+        "features": [
+          "material_diff_player_llm_minus_opponent",
+          "player_avg_material",
+          "opponent_avg_material"
+        ],
+        "family": "board_control",
+        "notes": "Most frequent alpha: 3."
+      },
+      {
+        "name": "Best 2-metric combo",
+        "type": "nested_subset_search",
+        "cv": {
+          "r2": 0.5085583263168141,
+          "rmse": 6.937556815287611,
+          "mae": 5.734385611128743,
+          "rank_spearman": 0.716646919898605
+        },
+        "in_sample": {
+          "r2": 0.5940779590024265,
+          "rmse": 6.3050985473578915,
+          "mae": 5.2159217216434834,
+          "rank_spearman": 0.748059840485995
+        },
+        "features": [
+          "elo",
+          "opponent_avg_material"
+        ],
+        "notes": "Combination is selected inside each training fold."
+      },
+      {
+        "name": "Elo only",
+        "type": "baseline",
+        "cv": {
+          "r2": 0.4486843635863146,
+          "rmse": 7.348026555830513,
+          "mae": 5.922126253220934,
+          "rank_spearman": 0.6785903723896081
+        },
+        "in_sample": {
+          "r2": 0.48552827457334313,
+          "rmse": 7.098250438237137,
+          "mae": 5.6895282703899275,
+          "rank_spearman": 0.6975609958190682
+        },
+        "features": [
+          "elo"
+        ]
+      },
+      {
+        "name": "Ridge, outcome metrics",
+        "type": "nested_ridge_family",
+        "cv": {
+          "r2": 0.44681560441917134,
+          "rmse": 7.3604695870107335,
+          "mae": 5.8371886824737,
+          "rank_spearman": 0.7312706618508269
+        },
+        "in_sample": {
+          "r2": 0.513911402692593,
+          "rmse": 6.89966935234902,
+          "mae": 5.460775204188025,
+          "rank_spearman": 0.76788747953809
+        },
+        "features": [
+          "elo",
+          "player_wins_percent",
+          "win_loss",
+          "win_loss_non_interrupted",
+          "player_draws_percent"
+        ],
+        "family": "outcome",
+        "notes": "Most frequent alpha: 10."
+      },
+      {
+        "name": "PCR latent factor, all chess metrics",
+        "type": "nested_pcr",
+        "cv": {
+          "r2": 0.43359046739160634,
+          "rmse": 7.447934335732018,
+          "mae": 5.872878527397915,
+          "rank_spearman": 0.7152472188831779
+        },
+        "in_sample": {
+          "r2": 0.6392867620702756,
+          "rmse": 5.943627762142719,
+          "mae": 4.844912818218583,
+          "rank_spearman": 0.7910162429002282
+        },
+        "features": [
+          "elo",
+          "player_wins_percent",
+          "win_loss",
+          "win_loss_non_interrupted",
+          "player_draws_percent",
+          "material_diff_player_llm_minus_opponent",
+          "player_avg_material",
+          "opponent_avg_material",
+          "games_interrupted_percent",
+          "wrong_actions_per_1000moves",
+          "wrong_moves_per_1000moves",
+          "mistakes_per_1000moves",
+          "average_time_per_game_seconds",
+          "completion_tokens_black_per_move",
+          "average_game_cost",
+          "price_per_1000_moves",
+          "game_duration"
+        ],
+        "notes": "Most frequent component count: 5."
+      },
+      {
+        "name": "Best single metric",
+        "type": "nested_subset_search",
+        "cv": {
+          "r2": 0.3837182335769318,
+          "rmse": 7.768912345892254,
+          "mae": 6.540523158222826,
+          "rank_spearman": 0.64427697528513
+        },
+        "in_sample": {
+          "r2": 0.48552827457334313,
+          "rmse": 7.098250438237137,
+          "mae": 5.6895282703899275,
+          "rank_spearman": 0.6975609958190682
+        },
+        "features": [
+          "elo"
+        ],
+        "notes": "Metric is selected inside each training fold."
+      },
+      {
+        "name": "Ridge, deliberation resources metrics",
+        "type": "nested_ridge_family",
+        "cv": {
+          "r2": 0.34178982429782057,
+          "rmse": 8.028841013794155,
+          "mae": 6.646869685173649,
+          "rank_spearman": 0.6320172361151031
+        },
+        "in_sample": {
+          "r2": 0.41839008146117085,
+          "rmse": 7.5472105192973435,
+          "mae": 6.209668417412149,
+          "rank_spearman": 0.6978535005047682
+        },
+        "features": [
+          "average_time_per_game_seconds",
+          "completion_tokens_black_per_move",
+          "average_game_cost",
+          "price_per_1000_moves",
+          "game_duration"
+        ],
+        "family": "deliberation_resources",
+        "notes": "Most frequent alpha: 30."
+      },
+      {
+        "name": "Ridge, reliability metrics",
+        "type": "nested_ridge_family",
+        "cv": {
+          "r2": 0.05724472305906769,
+          "rmse": 9.608819783275173,
+          "mae": 7.771210122641381,
+          "rank_spearman": 0.29116113602812194
+        },
+        "in_sample": {
+          "r2": 0.22836068568523593,
+          "rmse": 8.69316124776325,
+          "mae": 6.880002634584419,
+          "rank_spearman": 0.4487068711872266
+        },
+        "features": [
+          "games_interrupted_percent",
+          "wrong_actions_per_1000moves",
+          "wrong_moves_per_1000moves",
+          "mistakes_per_1000moves"
+        ],
+        "family": "reliability",
+        "notes": "Most frequent alpha: 0.01."
+      },
+      {
+        "name": "Mean only",
+        "type": "baseline",
+        "cv": {
+          "r2": -0.025755378769883874,
+          "rmse": 10.022878450339078,
+          "mae": 8.381265485039071,
+          "rank_spearman": -0.21867821105473156
+        },
+        "in_sample": {
+          "r2": 0.0,
+          "rmse": 9.896247816461134,
+          "mae": 8.267217630853992,
+          "rank_spearman": null
+        },
+        "notes": "Training-fold mean ECI; no chess information."
+      }
+    ],
+    "selected_metric_combinations": {
+      "best_single_metric": {
+        "combination_frequency": [
+          {
+            "metrics": [
+              "elo"
+            ],
+            "count": 7
+          },
+          {
+            "metrics": [
+              "opponent_avg_material"
+            ],
+            "count": 7
+          },
+          {
+            "metrics": [
+              "player_wins_percent"
+            ],
+            "count": 1
+          }
+        ],
+        "metric_selection_frequency": [
+          {
+            "metric": "elo",
+            "count": 7
+          },
+          {
+            "metric": "opponent_avg_material",
+            "count": 7
+          },
+          {
+            "metric": "player_wins_percent",
+            "count": 1
+          }
+        ]
+      },
+      "best_2_metric_combo": {
+        "combination_frequency": [
+          {
+            "metrics": [
+              "elo",
+              "opponent_avg_material"
+            ],
+            "count": 8
+          },
+          {
+            "metrics": [
+              "opponent_avg_material",
+              "player_wins_percent"
+            ],
+            "count": 4
+          },
+          {
+            "metrics": [
+              "elo",
+              "material_diff_player_llm_minus_opponent"
+            ],
+            "count": 2
+          },
+          {
+            "metrics": [
+              "material_diff_player_llm_minus_opponent",
+              "opponent_avg_material"
+            ],
+            "count": 1
+          }
+        ],
+        "metric_selection_frequency": [
+          {
+            "metric": "opponent_avg_material",
+            "count": 13
+          },
+          {
+            "metric": "elo",
+            "count": 10
+          },
+          {
+            "metric": "player_wins_percent",
+            "count": 4
+          },
+          {
+            "metric": "material_diff_player_llm_minus_opponent",
+            "count": 3
+          }
+        ]
+      },
+      "best_3_metric_combo": {
+        "combination_frequency": [
+          {
+            "metrics": [
+              "elo",
+              "games_interrupted_percent",
+              "opponent_avg_material"
+            ],
+            "count": 8
+          },
+          {
+            "metrics": [
+              "elo",
+              "game_duration",
+              "opponent_avg_material"
+            ],
+            "count": 4
+          },
+          {
+            "metrics": [
+              "elo",
+              "material_diff_player_llm_minus_opponent",
+              "player_wins_percent"
+            ],
+            "count": 1
+          },
+          {
+            "metrics": [
+              "elo",
+              "opponent_avg_material",
+              "win_loss"
+            ],
+            "count": 1
+          },
+          {
+            "metrics": [
+              "elo",
+              "opponent_avg_material",
+              "win_loss_non_interrupted"
+            ],
+            "count": 1
+          }
+        ],
+        "metric_selection_frequency": [
+          {
+            "metric": "elo",
+            "count": 15
+          },
+          {
+            "metric": "opponent_avg_material",
+            "count": 14
+          },
+          {
+            "metric": "games_interrupted_percent",
+            "count": 8
+          },
+          {
+            "metric": "game_duration",
+            "count": 4
+          },
+          {
+            "metric": "material_diff_player_llm_minus_opponent",
+            "count": 1
+          },
+          {
+            "metric": "player_wins_percent",
+            "count": 1
+          },
+          {
+            "metric": "win_loss",
+            "count": 1
+          },
+          {
+            "metric": "win_loss_non_interrupted",
+            "count": 1
+          }
+        ]
+      },
+      "best_4_metric_combo": {
+        "combination_frequency": [
+          {
+            "metrics": [
+              "elo",
+              "games_interrupted_percent",
+              "material_diff_player_llm_minus_opponent",
+              "opponent_avg_material"
+            ],
+            "count": 4
+          },
+          {
+            "metrics": [
+              "elo",
+              "game_duration",
+              "material_diff_player_llm_minus_opponent",
+              "opponent_avg_material"
+            ],
+            "count": 2
+          },
+          {
+            "metrics": [
+              "elo",
+              "opponent_avg_material",
+              "win_loss",
+              "win_loss_non_interrupted"
+            ],
+            "count": 2
+          },
+          {
+            "metrics": [
+              "average_time_per_game_seconds",
+              "elo",
+              "game_duration",
+              "opponent_avg_material"
+            ],
+            "count": 1
+          },
+          {
+            "metrics": [
+              "average_time_per_game_seconds",
+              "elo",
+              "games_interrupted_percent",
+              "opponent_avg_material"
+            ],
+            "count": 1
+          },
+          {
+            "metrics": [
+              "average_time_per_game_seconds",
+              "elo",
+              "material_diff_player_llm_minus_opponent",
+              "player_wins_percent"
+            ],
+            "count": 1
+          },
+          {
+            "metrics": [
+              "completion_tokens_black_per_move",
+              "elo",
+              "game_duration",
+              "opponent_avg_material"
+            ],
+            "count": 1
+          },
+          {
+            "metrics": [
+              "elo",
+              "game_duration",
+              "games_interrupted_percent",
+              "opponent_avg_material"
+            ],
+            "count": 1
+          },
+          {
+            "metrics": [
+              "elo",
+              "game_duration",
+              "opponent_avg_material",
+              "win_loss_non_interrupted"
+            ],
+            "count": 1
+          },
+          {
+            "metrics": [
+              "elo",
+              "opponent_avg_material",
+              "player_wins_percent",
+              "win_loss"
+            ],
+            "count": 1
+          }
+        ],
+        "metric_selection_frequency": [
+          {
+            "metric": "elo",
+            "count": 15
+          },
+          {
+            "metric": "opponent_avg_material",
+            "count": 14
+          },
+          {
+            "metric": "material_diff_player_llm_minus_opponent",
+            "count": 7
+          },
+          {
+            "metric": "game_duration",
+            "count": 6
+          },
+          {
+            "metric": "games_interrupted_percent",
+            "count": 6
+          },
+          {
+            "metric": "average_time_per_game_seconds",
+            "count": 3
+          },
+          {
+            "metric": "win_loss",
+            "count": 3
+          },
+          {
+            "metric": "win_loss_non_interrupted",
+            "count": 3
+          },
+          {
+            "metric": "player_wins_percent",
+            "count": 2
+          },
+          {
+            "metric": "completion_tokens_black_per_move",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "feature_stability": {
+      "model": "Ridge over all chess metrics on full sample",
+      "alpha": 30.0,
+      "coefficients": [
+        {
+          "feature": "opponent_avg_material",
+          "median": -1.8702625660952437,
+          "ci_95": [
+            -2.531811507625268,
+            -1.2281298239553207
+          ],
+          "sign_stability": 1.0
+        },
+        {
+          "feature": "elo",
+          "median": 1.6944594574170688,
+          "ci_95": [
+            1.0251455171350892,
+            2.242763203863346
+          ],
+          "sign_stability": 1.0
+        },
+        {
+          "feature": "player_draws_percent",
+          "median": -1.2137040817414166,
+          "ci_95": [
+            -1.878005077034476,
+            -0.5140452297277871
+          ],
+          "sign_stability": 1.0
+        },
+        {
+          "feature": "material_diff_player_llm_minus_opponent",
+          "median": 0.9896450176784666,
+          "ci_95": [
+            0.4725394121505614,
+            1.5437697265737935
+          ],
+          "sign_stability": 1.0
+        },
+        {
+          "feature": "player_wins_percent",
+          "median": 0.964073210378148,
+          "ci_95": [
+            0.4487703523406073,
+            1.376948615206791
+          ],
+          "sign_stability": 1.0
+        },
+        {
+          "feature": "average_time_per_game_seconds",
+          "median": 1.2440917118430237,
+          "ci_95": [
+            0.5698863911419055,
+            2.0093357645035796
+          ],
+          "sign_stability": 0.999
+        },
+        {
+          "feature": "player_avg_material",
+          "median": -1.2438352264325632,
+          "ci_95": [
+            -1.9077076501003014,
+            -0.4493143897339205
+          ],
+          "sign_stability": 0.999
+        },
+        {
+          "feature": "mistakes_per_1000moves",
+          "median": 0.40820888160327495,
+          "ci_95": [
+            -0.1213311604456559,
+            1.0763136294511828
+          ],
+          "sign_stability": 0.941
+        },
+        {
+          "feature": "wrong_moves_per_1000moves",
+          "median": 0.8222528725264335,
+          "ci_95": [
+            -0.32899878245719755,
+            1.7223297258540944
+          ],
+          "sign_stability": 0.926
+        },
+        {
+          "feature": "games_interrupted_percent",
+          "median": -0.2961931138269982,
+          "ci_95": [
+            -0.8132813482165383,
+            0.2094260954303183
+          ],
+          "sign_stability": 0.877
+        },
+        {
+          "feature": "win_loss_non_interrupted",
+          "median": 0.4876657301043945,
+          "ci_95": [
+            -0.5531721661732657,
+            1.7006542299066898
+          ],
+          "sign_stability": 0.802
+        },
+        {
+          "feature": "win_loss",
+          "median": 0.24532821111290776,
+          "ci_95": [
+            -0.3983226636131793,
+            0.8805866417593459
+          ],
+          "sign_stability": 0.756
+        },
+        {
+          "feature": "game_duration",
+          "median": 0.21092819086150194,
+          "ci_95": [
+            -0.46915573009247474,
+            0.9318820760019719
+          ],
+          "sign_stability": 0.723
+        },
+        {
+          "feature": "wrong_actions_per_1000moves",
+          "median": -0.14386787760806458,
+          "ci_95": [
+            -1.0375292803212433,
+            0.4810316962434507
+          ],
+          "sign_stability": 0.678
+        },
+        {
+          "feature": "completion_tokens_black_per_move",
+          "median": 0.13778483846739575,
+          "ci_95": [
+            -0.7777510534020902,
+            1.4235523423363545
+          ],
+          "sign_stability": 0.601
+        },
+        {
+          "feature": "average_game_cost",
+          "median": 0.06256426267821681,
+          "ci_95": [
+            -0.5843048891700618,
+            1.3367888081572346
+          ],
+          "sign_stability": 0.56
+        },
+        {
+          "feature": "price_per_1000_moves",
+          "median": 0.027904762157960342,
+          "ci_95": [
+            -0.53335711152409,
+            1.091042223681209
+          ],
+          "sign_stability": 0.543
+        }
+      ]
+    },
+    "top_prediction_misses": [
+      {
+        "llm_chess_model": "claude-3-sonnet",
+        "Model": "Claude 3 Sonnet",
+        "Score": 120.0,
+        "elo": -321.78,
+        "predicted": 134.4743030749041,
+        "residual": -14.4743030749041,
+        "abs_error": 14.4743030749041,
+        "prediction_sd": 0.6451334831164719,
+        "n_predictions": 3
+      },
+      {
+        "llm_chess_model": "gpt-4.1",
+        "Model": "GPT-4.1",
+        "Score": 137.0,
+        "elo": -110.612,
+        "predicted": 124.07924370817979,
+        "residual": 12.920756291820211,
+        "abs_error": 12.920756291820211,
+        "prediction_sd": 4.395689085773531,
+        "n_predictions": 3
+      },
+      {
+        "llm_chess_model": "claude-opus-4-6_thinking-high",
+        "Model": "Claude Opus 4.6",
+        "Score": 155.0,
+        "elo": 107.814,
+        "predicted": 142.2962961454165,
+        "residual": 12.703703854583495,
+        "abs_error": 12.703703854583495,
+        "prediction_sd": 1.675784476922445,
+        "n_predictions": 3
+      },
+      {
+        "llm_chess_model": "zai.glm-5",
+        "Model": "GLM-5",
+        "Score": 146.0,
+        "elo": -299.22,
+        "predicted": 133.4944277829653,
+        "residual": 12.505572217034711,
+        "abs_error": 12.505572217034711,
+        "prediction_sd": 1.6895011294263278,
+        "n_predictions": 3
+      },
+      {
+        "llm_chess_model": "gemini-3-flash-preview",
+        "Model": "Gemini 3 Flash",
+        "Score": 151.0,
+        "elo": -179.501,
+        "predicted": 139.26871241334717,
+        "residual": 11.731287586652826,
+        "abs_error": 11.731287586652826,
+        "prediction_sd": 2.640949346602135,
+        "n_predictions": 3
+      },
+      {
+        "llm_chess_model": "gpt-5.4-low",
+        "Model": "GPT-5.4",
+        "Score": 156.0,
+        "elo": 347.899,
+        "predicted": 144.27680570982682,
+        "residual": 11.723194290173183,
+        "abs_error": 11.723194290173183,
+        "prediction_sd": 1.8685821783032261,
+        "n_predictions": 3
+      },
+      {
+        "llm_chess_model": "gpt-5-nano-high",
+        "Model": "GPT-5 nano",
+        "Score": 140.0,
+        "elo": 682.959,
+        "predicted": 150.50317240456278,
+        "residual": -10.503172404562775,
+        "abs_error": 10.503172404562775,
+        "prediction_sd": 0.5190761921667653,
+        "n_predictions": 3
+      },
+      {
+        "llm_chess_model": "llama3.1-8b",
+        "Model": "Llama 3.1-8B",
+        "Score": 116.0,
+        "elo": -795.614,
+        "predicted": 126.40066730515609,
+        "residual": -10.400667305156091,
+        "abs_error": 10.400667305156091,
+        "prediction_sd": 0.6672916556849551,
+        "n_predictions": 3
+      },
+      {
+        "llm_chess_model": "llama-3-70b-instruct-awq",
+        "Model": "Llama 3-70B",
+        "Score": 120.0,
+        "elo": -278.122,
+        "predicted": 129.70560404445268,
+        "residual": -9.705604044452684,
+        "abs_error": 9.705604044452684,
+        "prediction_sd": 1.0830754244363923,
+        "n_predictions": 3
+      },
+      {
+        "llm_chess_model": "claude-sonnet-4-6",
+        "Model": "Claude Sonnet 4.6",
+        "Score": 153.0,
+        "elo": 110.636,
+        "predicted": 143.72285756363024,
+        "residual": 9.277142436369758,
+        "abs_error": 9.277142436369758,
+        "prediction_sd": 1.2855975758337335,
+        "n_predictions": 3
+      },
+      {
+        "llm_chess_model": "gemini-2.5-pro",
+        "Model": "Gemini 2.5 Pro (Jun 2025)",
+        "Score": 147.0,
+        "elo": -147.178,
+        "predicted": 137.92215804598777,
+        "residual": 9.077841954012229,
+        "abs_error": 9.077841954012229,
+        "prediction_sd": 1.3816613397882678,
+        "n_predictions": 3
+      },
+      {
+        "llm_chess_model": "deepseek-v3",
+        "Model": "DeepSeek-V3",
+        "Score": 133.0,
+        "elo": -822.813,
+        "predicted": 124.51298860299886,
+        "residual": 8.48701139700114,
+        "abs_error": 8.48701139700114,
+        "prediction_sd": 1.8223210607594689,
+        "n_predictions": 3
+      }
+    ],
+    "leave_one_out_sensitivity": {
+      "r2": 0.6446768536835354,
+      "rmse": 5.899053183973635,
+      "mae": 4.846342258738521,
+      "rank_spearman": 0.7985377919610862,
+      "top_misses": [
+        {
+          "llm_chess_model": "claude-3-sonnet",
+          "Model": "Claude 3 Sonnet",
+          "actual": 120.0,
+          "predicted": 133.06248668609243,
+          "residual": -13.062486686092427,
+          "abs_error": 13.062486686092427
+        },
+        {
+          "llm_chess_model": "gpt-5.4-low",
+          "Model": "GPT-5.4",
+          "actual": 156.0,
+          "predicted": 143.03706746359146,
+          "residual": 12.962932536408545,
+          "abs_error": 12.962932536408545
+        },
+        {
+          "llm_chess_model": "zai.glm-5",
+          "Model": "GLM-5",
+          "actual": 146.0,
+          "predicted": 133.9633815249748,
+          "residual": 12.036618475025193,
+          "abs_error": 12.036618475025193
+        },
+        {
+          "llm_chess_model": "gemini-3-flash-preview",
+          "Model": "Gemini 3 Flash",
+          "actual": 151.0,
+          "predicted": 139.07228897180002,
+          "residual": 11.92771102819998,
+          "abs_error": 11.92771102819998
+        },
+        {
+          "llm_chess_model": "llama-3-70b-instruct-awq",
+          "Model": "Llama 3-70B",
+          "actual": 120.0,
+          "predicted": 131.13031333265886,
+          "residual": -11.130313332658858,
+          "abs_error": 11.130313332658858
+        },
+        {
+          "llm_chess_model": "gpt-5-nano-high",
+          "Model": "GPT-5 nano",
+          "actual": 140.0,
+          "predicted": 150.62976688789362,
+          "residual": -10.629766887893624,
+          "abs_error": 10.629766887893624
+        },
+        {
+          "llm_chess_model": "claude-opus-4-6_thinking-high",
+          "Model": "Claude Opus 4.6",
+          "actual": 155.0,
+          "predicted": 144.85280203845204,
+          "residual": 10.14719796154796,
+          "abs_error": 10.14719796154796
+        },
+        {
+          "llm_chess_model": "claude-sonnet-4-6",
+          "Model": "Claude Sonnet 4.6",
+          "actual": 153.0,
+          "predicted": 143.6519888529284,
+          "residual": 9.348011147071588,
+          "abs_error": 9.348011147071588
+        },
+        {
+          "llm_chess_model": "gemma-2-27b-it@q6_k_l",
+          "Model": "Gemma 2 27B",
+          "actual": 123.0,
+          "predicted": 132.27362268184575,
+          "residual": -9.273622681845751,
+          "abs_error": 9.273622681845751
+        },
+        {
+          "llm_chess_model": "gpt-4.1",
+          "Model": "GPT-4.1",
+          "actual": 137.0,
+          "predicted": 128.1991409439079,
+          "residual": 8.800859056092094,
+          "abs_error": 8.800859056092094
+        },
+        {
+          "llm_chess_model": "gemini-2.5-pro",
+          "Model": "Gemini 2.5 Pro (Jun 2025)",
+          "actual": 147.0,
+          "predicted": 138.30727374541422,
+          "residual": 8.692726254585779,
+          "abs_error": 8.692726254585779
+        },
+        {
+          "llm_chess_model": "o1-preview",
+          "Model": "o1-preview",
+          "actual": 136.0,
+          "predicted": 143.84696460834823,
+          "residual": -7.84696460834823,
+          "abs_error": 7.84696460834823
+        }
+      ]
+    },
+    "date_sanity_check": {
+      "sample_n": 65,
+      "date_features": [
+        "release_month_index",
+        "release_month_sq"
+      ],
+      "date_only_repeated_cv": {
+        "r2": 0.7273968079629377,
+        "rmse": 5.151185378327581,
+        "mae": 4.015632122923911,
+        "rank_spearman": 0.8969904937280759
+      },
+      "date_plus_best_chess_repeated_cv": {
+        "r2": 0.8344960853211258,
+        "rmse": 4.013708666671041,
+        "mae": 3.0950335176243895,
+        "rank_spearman": 0.930186778804526
+      }
+    }
+  }
+}</script>
+  <script>
+    const summaryText = document.getElementById("summary-data").textContent;
+    document.getElementById("summary-json").textContent = summaryText;
+  </script>
+</body>
+</html>
