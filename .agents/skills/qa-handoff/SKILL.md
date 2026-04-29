@@ -19,6 +19,7 @@ Use this skill after implementation work and before reporting results to the use
 - The QA reviewer has **no conversation history**. Reconstruct the needed context in the handoff package.
 - Only the user can waive a requirement.
 - Before assembling or reviewing evidence, read `references/evidence-taxonomy.md`.
+- QA validates deliverable readiness, not only internal correctness.
 
 ## Choose the Mode
 - Default to `references/default-qa-mode.md`.
