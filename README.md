@@ -110,6 +110,12 @@ Edit globals in `llm_chess.py` or pass via `run_multiple_games.py`:
     - Level 6: 875 Elo
     - Level 7: 1000 Elo
     - Formula: Elo = 125 × (level + 1)
+    - Practical rule of thumb for stronger models:
+      - Use completed games at the strongest Dragon level already tested and compute `S = (wins + 0.5 * draws) / N`.
+      - If `35% <= S <= 65%`, stay at that level; this is the informative range for Elo estimation.
+      - If `S > 65%` across roughly 15 to 20 clean games, test a higher Dragon level.
+      - If `65% <= S < 80%`, move up 1 level. If `80% <= S < 90%`, move up 2 levels. If `S >= 90%`, move up 3 levels.
+      - If the model is at `100%` wins on its strongest tested level, treat the current Elo as under-resolved and keep raising Dragon until the strongest-level score drops back near `35%` to `65%`.
   - **Stockfish**: Strong engine; install separately.
 
 ## Processing Logs
