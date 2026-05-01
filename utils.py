@@ -146,7 +146,7 @@ def _apply_model_specific_config(config: Dict, model_params: Dict, provider_type
 def get_llms(
     white_hyperparams: Optional[Dict] = None,
     black_hyperparams: Optional[Dict] = None,
-    timeout: int = 600,
+    timeout: int = 1800,
 ) -> Tuple[Dict, Dict]:
     """Create LLM configurations from environment + per-model hyperparameter settings.
 
