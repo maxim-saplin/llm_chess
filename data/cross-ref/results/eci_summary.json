@@ -1,0 +1,1218 @@
+{
+  "eval_id": "eci",
+  "eval_label": "Epoch ECI",
+  "summary_tagline": "Epoch ECI analysis computed directly in the shared cross-ref framework.",
+  "target_score_column": "score_numeric",
+  "inputs": {
+    "source": {
+      "file": "/Users/admin/src/llm_chess/data/cross-ref/evals/eci/epoch_eci_apr_2026.csv",
+      "rows": 168,
+      "columns": [
+        "Model",
+        "Score",
+        "90% CI",
+        "llm_chess_model"
+      ],
+      "required_columns": [
+        "Model",
+        "Score",
+        "90% CI",
+        "llm_chess_model"
+      ],
+      "optional_columns_present": {},
+      "key_column": "Model",
+      "key_non_null": 168,
+      "duplicate_keys": 0,
+      "numeric_parse_rates": {
+        "score_numeric": 1.0,
+        "eci_ci_low": 1.0,
+        "eci_ci_high": 1.0,
+        "eci_ci90_half_width": 1.0
+      }
+    },
+    "source_note_path": "data/cross-ref/evals/eci/SOURCE.md",
+    "source_file_paths": [
+      "data/cross-ref/evals/eci/epoch_eci_apr_2026.csv"
+    ]
+  },
+  "llm_chess_inputs": {
+    "elo_refined": {
+      "file": "/Users/admin/src/llm_chess/data/elo_refined.csv",
+      "rows": 178,
+      "columns": [
+        "Player",
+        "total_games",
+        "player_wins",
+        "opponent_wins",
+        "draws",
+        "player_wins_percent",
+        "player_draws_percent",
+        "average_moves",
+        "moe_average_moves",
+        "total_moves",
+        "player_wrong_actions",
+        "player_wrong_moves",
+        "wrong_actions_per_1000moves",
+        "wrong_moves_per_1000moves",
+        "mistakes_per_1000moves",
+        "moe_mistakes_per_1000moves",
+        "player_avg_material",
+        "opponent_avg_material",
+        "material_diff_player_llm_minus_opponent",
+        "moe_material_diff_llm_minus_rand",
+        "completion_tokens_black_per_move",
+        "moe_completion_tokens_black_per_move",
+        "moe_black_llm_win_rate",
+        "moe_draw_rate",
+        "moe_black_llm_loss_rate",
+        "win_loss",
+        "moe_win_loss",
+        "win_loss_non_interrupted",
+        "moe_win_loss_non_interrupted",
+        "game_duration",
+        "moe_game_duration",
+        "games_interrupted",
+        "games_interrupted_percent",
+        "moe_games_interrupted",
+        "games_not_interrupted",
+        "games_not_interrupted_percent",
+        "moe_games_not_interrupted",
+        "average_game_cost",
+        "moe_average_game_cost",
+        "price_per_1000_moves",
+        "moe_price_per_1000_moves",
+        "average_time_per_game_seconds",
+        "moe_average_time_per_game_seconds",
+        "elo",
+        "elo_moe_95",
+        "games_vs_random",
+        "games_vs_dragon"
+      ],
+      "required_columns": [
+        "Player",
+        "elo",
+        "elo_moe_95",
+        "total_games",
+        "player_wins_percent",
+        "player_draws_percent",
+        "games_interrupted_percent",
+        "wrong_moves_per_1000moves",
+        "mistakes_per_1000moves",
+        "average_moves",
+        "average_time_per_game_seconds",
+        "average_game_cost",
+        "completion_tokens_black_per_move",
+        "material_diff_player_llm_minus_opponent"
+      ],
+      "optional_columns_present": {},
+      "key_column": "Player",
+      "key_non_null": 178,
+      "duplicate_keys": 0,
+      "numeric_parse_rates": {
+        "elo": 1.0,
+        "elo_moe_95": 1.0,
+        "total_games": 1.0,
+        "average_game_cost": 1.0,
+        "average_time_per_game_seconds": 1.0
+      }
+    },
+    "models_metadata": {
+      "file": "/Users/admin/src/llm_chess/data/models_metadata.csv",
+      "rows": 254,
+      "columns": [
+        "model",
+        "1m_prompt",
+        "1m_completion",
+        "date_released",
+        "reasoning_status",
+        "comment"
+      ],
+      "required_columns": [
+        "model",
+        "1m_prompt",
+        "1m_completion",
+        "date_released",
+        "reasoning_status",
+        "comment"
+      ],
+      "optional_columns_present": {},
+      "key_column": "model",
+      "key_non_null": 254,
+      "duplicate_keys": 0,
+      "numeric_parse_rates": {
+        "1m_prompt": 1.0,
+        "1m_completion": 1.0
+      }
+    },
+    "join_coverage": {
+      "elo_players": 178,
+      "metadata_models": 254,
+      "joined_models": 175,
+      "elo_without_metadata": 3,
+      "metadata_without_elo": 79
+    }
+  },
+  "mapping_source_of_truth": {
+    "mapping_file": "data/cross-ref/mappings/eci.csv",
+    "mapping_basis": "Run-time source of truth is the mapping CSV. For ECI it is seeded from the source llm_chess_model bridge and then reviewed in data/cross-ref/mappings/eci.csv.",
+    "source_seed_column": "llm_chess_model",
+    "run_used_mapping_file_directly": true,
+    "fresh_review_status": "source-bridge-seeded-qa-passed",
+    "changed_source_bridge_matches": 0,
+    "changed_source_bridge_examples": []
+  },
+  "mapping": {
+    "mapping_file_status_counts": {
+      "accepted": 89,
+      "unmatched": 79
+    },
+    "mapping_review_status_counts": {
+      "qa_passed": 168
+    },
+    "accepted_count": 89,
+    "ambiguous_count": 0,
+    "unmatched_count": 79,
+    "excluded_count": 0,
+    "qa_verdict": "pass",
+    "unresolved_high_impact_rows": [
+      {
+        "eval_row_id": "eci:0000",
+        "eval_model_label": "GPT-5.4 Pro",
+        "score_numeric": 158.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0003",
+        "eval_model_label": "Claude Opus 4.7",
+        "score_numeric": 156.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0005",
+        "eval_model_label": "Muse Spark",
+        "score_numeric": 155.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0006",
+        "eval_model_label": "GPT-5.2 Pro",
+        "score_numeric": 154.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0011",
+        "eval_model_label": "GPT-5 Pro",
+        "score_numeric": 150.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0016",
+        "eval_model_label": "o3-pro",
+        "score_numeric": 148.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0024",
+        "eval_model_label": "DeepSeek-V3.2",
+        "score_numeric": 146.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0026",
+        "eval_model_label": "Qwen3-235B-A22B-Thinking (Jul 2025)",
+        "score_numeric": 145.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0027",
+        "eval_model_label": "Kimi K2 Thinking",
+        "score_numeric": 145.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0028",
+        "eval_model_label": "DeepSeek-V3.2-Exp",
+        "score_numeric": 145.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0031",
+        "eval_model_label": "GLM-4.7",
+        "score_numeric": 144.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0032",
+        "eval_model_label": "Qwen3-Max",
+        "score_numeric": 144.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0042",
+        "eval_model_label": "GLM-4.6",
+        "score_numeric": 141.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0046",
+        "eval_model_label": "Kimi K2 (Jul 2025)",
+        "score_numeric": 140.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      },
+      {
+        "eval_row_id": "eci:0051",
+        "eval_model_label": "Qwen3-235B-A22B",
+        "score_numeric": 140.0,
+        "mapping_status": "unmatched",
+        "confidence": "low",
+        "open_questions": "No legacy bridge value present."
+      }
+    ],
+    "mapping_file_path": "data/cross-ref/mappings/eci.csv",
+    "legacy_bridge_non_null": 89,
+    "legacy_bridge_changed_matches": []
+  },
+  "coverage": {
+    "external_rows": 168,
+    "numeric_score_rows": 161,
+    "accepted_mapping_rows": 89,
+    "rows_joined_to_llm_chess_metric_rows": 89,
+    "unique_llm_chess_players_joined_to_metric_rows": 81,
+    "metric_analysis_rows_max_dedupe": 81,
+    "rows_joined_to_llm_chess_rows_with_non_null_elo": 74,
+    "unique_llm_chess_players_joined_to_elo": 66,
+    "elo_analysis_rows_max_dedupe": 66,
+    "rows_joined_to_llm_chess_elo": 74,
+    "regression_rows_max_dedupe": 66,
+    "external_rows_without_llm_chess_elo_join": 87,
+    "external_rows_without_llm_chess_metric_join": 72,
+    "llm_chess_rows_without_eval_match": 60,
+    "duplicate_metric_joined_player_rows": 8,
+    "duplicate_joined_player_rows": 8
+  },
+  "analysis_surfaces": {
+    "metric_analysis": {
+      "stage_id": "metric_analysis_rows_max_dedupe",
+      "count": 81,
+      "used_by": [
+        "relationships.selected_metrics",
+        "prediction"
+      ],
+      "description": "Deduped eval rows joined to LLM Chess metric rows, even when Elo is missing."
+    },
+    "elo_analysis": {
+      "stage_id": "elo_analysis_rows_max_dedupe",
+      "count": 66,
+      "used_by": [
+        "relationships.raw_elo",
+        "relationships.release_controlled_elo"
+      ],
+      "description": "Deduped eval rows joined to LLM Chess players with non-null Elo."
+    }
+  },
+  "funnel": {
+    "stages": [
+      {
+        "stage_id": "numeric_external_eval_rows",
+        "label": "External eval rows with a numeric score",
+        "branch": "base",
+        "filter_side": "eval",
+        "required_condition": "The eval row has a parsed numeric target score.",
+        "previous_stage_id": null,
+        "count": 161,
+        "dropped_from_previous": 0
+      },
+      {
+        "stage_id": "accepted_mapping_rows",
+        "label": "Numeric eval rows with an accepted mapping",
+        "branch": "base",
+        "filter_side": "mapping",
+        "required_condition": "The mapping status is accepted, alias, or variant-compatible, and a LLM Chess player is assigned.",
+        "previous_stage_id": "numeric_external_eval_rows",
+        "count": 89,
+        "dropped_from_previous": 72
+      },
+      {
+        "stage_id": "rows_joined_to_llm_chess_metric_rows",
+        "label": "Accepted eval rows joined to LLM Chess metric rows",
+        "branch": "base",
+        "filter_side": "chess",
+        "required_condition": "The mapped LLM Chess player exists in the current LLM Chess metrics table in data/elo_refined.csv.",
+        "previous_stage_id": "accepted_mapping_rows",
+        "count": 89,
+        "dropped_from_previous": 0
+      },
+      {
+        "stage_id": "metric_analysis_rows_max_dedupe",
+        "label": "Deduped metric-analysis rows",
+        "branch": "metric",
+        "filter_side": "dedupe",
+        "required_condition": "For each LLM Chess player, keep the highest-scoring eval row for metric-only analysis.",
+        "previous_stage_id": "rows_joined_to_llm_chess_metric_rows",
+        "count": 81,
+        "dropped_from_previous": 8
+      },
+      {
+        "stage_id": "rows_joined_to_llm_chess_rows_with_non_null_elo",
+        "label": "Accepted eval rows joined to LLM Chess rows with non-null Elo",
+        "branch": "elo",
+        "filter_side": "chess",
+        "required_condition": "The mapped LLM Chess player exists and has a non-null Elo.",
+        "previous_stage_id": "rows_joined_to_llm_chess_metric_rows",
+        "count": 74,
+        "dropped_from_previous": 15
+      },
+      {
+        "stage_id": "elo_analysis_rows_max_dedupe",
+        "label": "Deduped Elo-analysis rows",
+        "branch": "elo",
+        "filter_side": "dedupe",
+        "required_condition": "For each Elo-valid LLM Chess player, keep the highest-scoring eval row for Elo analysis.",
+        "previous_stage_id": "rows_joined_to_llm_chess_rows_with_non_null_elo",
+        "count": 66,
+        "dropped_from_previous": 8
+      }
+    ],
+    "analysis_split_note": {
+      "metric_analysis": "Selected metric relationships and prediction use the metric-analysis sample.",
+      "elo_analysis": "Raw Elo relationships and release-controlled Elo relationships use the Elo-analysis sample."
+    }
+  },
+  "relationships": {
+    "raw_elo": {
+      "name": "eci_vs_elo",
+      "n": 66,
+      "pearson_r": 0.6967985896751968,
+      "pearson_p": 8.145056614243323e-11,
+      "spearman_r": 0.6975609958190682,
+      "spearman_p": 7.615533872938683e-11,
+      "slope": 33.61822345103702,
+      "intercept": -4619.078090935942,
+      "r2": 0.4855282745733436,
+      "linregress_p": 8.145056614243289e-11,
+      "slope_stderr": 4.325718613518766,
+      "sample_stage_id": "elo_analysis_rows_max_dedupe",
+      "weighted_fit": {
+        "slope": 27.698426142205843,
+        "intercept": -3710.3791951308585,
+        "weighted_r2": 0.40909525251395573
+      },
+      "bootstrap_95": {
+        "pearson_r": [
+          0.5892353944955292,
+          0.7859880357619582
+        ],
+        "spearman_r": [
+          0.5350388831993598,
+          0.8076384170729677
+        ],
+        "slope": [
+          24.536820004641452,
+          42.942009386596844
+        ]
+      },
+      "leave_one_out_top_influence": [
+        {
+          "llm_chess_model": "gemini-3.1-pro-preview",
+          "pearson_delta": -0.02048317220143503,
+          "slope_delta": -2.6346969997261525
+        },
+        {
+          "llm_chess_model": "gemini-3-flash-preview",
+          "pearson_delta": 0.018812656735285205,
+          "slope_delta": 1.2932716936697588
+        },
+        {
+          "llm_chess_model": "llama3.1-8b",
+          "pearson_delta": -0.017867142652017498,
+          "slope_delta": -0.29117274905327406
+        },
+        {
+          "llm_chess_model": "gpt-5.2-medium",
+          "pearson_delta": -0.014748127614927165,
+          "slope_delta": -1.264869873686557
+        },
+        {
+          "llm_chess_model": "zai.glm-5",
+          "pearson_delta": 0.014125238739867707,
+          "slope_delta": 0.7094874485945155
+        },
+        {
+          "llm_chess_model": "gemini-3-pro-preview",
+          "pearson_delta": -0.012917409700731297,
+          "slope_delta": -1.2088860239319317
+        },
+        {
+          "llm_chess_model": "claude-opus-4-6_thinking-high",
+          "pearson_delta": 0.011624051065860841,
+          "slope_delta": 1.3195620986913
+        },
+        {
+          "llm_chess_model": "gemini-2.5-pro",
+          "pearson_delta": 0.009959915984932288,
+          "slope_delta": 0.6428514786449142
+        },
+        {
+          "llm_chess_model": "gemma-2-9b-it-8bit",
+          "pearson_delta": -0.008523416529226946,
+          "slope_delta": 0.11952284245692368
+        },
+        {
+          "llm_chess_model": "gemini-2.5-flash",
+          "pearson_delta": 0.008497793324082181,
+          "slope_delta": 0.3467724963676062
+        },
+        {
+          "llm_chess_model": "claude-sonnet-4-6",
+          "pearson_delta": 0.008387100918582413,
+          "slope_delta": 0.9825412486162435
+        },
+        {
+          "llm_chess_model": "gpt-5.1-medium",
+          "pearson_delta": -0.007713089342173074,
+          "slope_delta": -0.9756269194531342
+        }
+      ]
+    },
+    "release_controlled_elo": {
+      "n": 65,
+      "pearson_r": 0.49323390864747946,
+      "pearson_p": 2.9865073161073933e-05,
+      "spearman_r": 0.45226569951198614,
+      "spearman_p": 0.00015543965081730088,
+      "sample_stage_id": "elo_analysis_rows_max_dedupe"
+    },
+    "selected_metrics": [
+      {
+        "name": "elo",
+        "n": 66,
+        "pearson_r": 0.6967985896751968,
+        "pearson_p": 8.145056614243323e-11,
+        "spearman_r": 0.6975609958190682,
+        "spearman_p": 7.615533872938683e-11,
+        "slope": 33.61822345103702,
+        "intercept": -4619.078090935942,
+        "r2": 0.4855282745733436,
+        "linregress_p": 8.145056614243289e-11,
+        "slope_stderr": 4.325718613518766,
+        "partial_release_month": {
+          "n": 65,
+          "pearson_r": 0.49323390864747946,
+          "pearson_p": 2.9865073161073933e-05,
+          "spearman_r": 0.45226569951198614,
+          "spearman_p": 0.00015543965081730088
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "player_wins_percent",
+        "n": 81,
+        "pearson_r": 0.6368307096743647,
+        "pearson_p": 1.6506203133919284e-10,
+        "spearman_r": 0.7690402371081186,
+        "spearman_p": 5.0991445985490244e-17,
+        "slope": 1.2579736327831397,
+        "intercept": -152.58581532926453,
+        "r2": 0.40555335278435517,
+        "linregress_p": 1.6506203133919315e-10,
+        "slope_stderr": 0.17135249625508864,
+        "partial_release_month": {
+          "n": 80,
+          "pearson_r": 0.4682435713791427,
+          "pearson_p": 1.186778024060923e-05,
+          "spearman_r": 0.5387302504112608,
+          "spearman_p": 2.536889973515957e-07
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "player_draws_percent",
+        "n": 81,
+        "pearson_r": 0.12694796934361366,
+        "pearson_p": 0.25875030305369007,
+        "spearman_r": 0.13993922695556063,
+        "spearman_p": 0.21275734713983288,
+        "slope": 0.3366932503532666,
+        "intercept": -9.551547291622825,
+        "r2": 0.01611578692046708,
+        "linregress_p": 0.25875030305369,
+        "slope_stderr": 0.2959832280409692,
+        "partial_release_month": {
+          "n": 80,
+          "pearson_r": 0.2269048607373341,
+          "pearson_p": 0.04296603062495825,
+          "spearman_r": 0.2604068380721376,
+          "spearman_p": 0.019653590142555674
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "games_interrupted_percent",
+        "n": 81,
+        "pearson_r": -0.5910067120767106,
+        "pearson_p": 6.302462633096352e-09,
+        "spearman_r": -0.5907850593416851,
+        "spearman_p": 6.405707231714364e-09,
+        "slope": -1.9409420432338174,
+        "intercept": 302.2957018740667,
+        "r2": 0.3492889337197239,
+        "linregress_p": 6.3024626330963386e-09,
+        "slope_stderr": 0.29805794645722583,
+        "partial_release_month": {
+          "n": 80,
+          "pearson_r": -0.4970820766883569,
+          "pearson_p": 2.7277635830917033e-06,
+          "spearman_r": -0.45988477481124357,
+          "spearman_p": 1.7738218486986944e-05
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "wrong_moves_per_1000moves",
+        "n": 81,
+        "pearson_r": -0.1809542297855944,
+        "pearson_p": 0.10595347934566034,
+        "spearman_r": -0.2649314598233865,
+        "spearman_p": 0.016839127691410456,
+        "slope": -0.8396224527224078,
+        "intercept": 146.90979579487492,
+        "r2": 0.032744433277297716,
+        "linregress_p": 0.10595347934565974,
+        "slope_stderr": 0.5134195217823982,
+        "partial_release_month": {
+          "n": 80,
+          "pearson_r": -0.2134367563853875,
+          "pearson_p": 0.05730743633678831,
+          "spearman_r": -0.3109425913322983,
+          "spearman_p": 0.004995336573769311
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "mistakes_per_1000moves",
+        "n": 81,
+        "pearson_r": -0.5092269287925114,
+        "pearson_p": 1.2057394750717167e-06,
+        "spearman_r": -0.3878854933321167,
+        "spearman_p": 0.0003464065054998472,
+        "slope": -11.436903926520552,
+        "intercept": 1677.3020633424535,
+        "r2": 0.25931206500745374,
+        "linregress_p": 1.2057394750717017e-06,
+        "slope_stderr": 2.1747092449186574,
+        "partial_release_month": {
+          "n": 80,
+          "pearson_r": -0.5380263596072364,
+          "pearson_p": 2.647910771662753e-07,
+          "spearman_r": -0.3592442392979359,
+          "spearman_p": 0.001065684157135748
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "average_moves",
+        "n": 81,
+        "pearson_r": 0.2719707771178706,
+        "pearson_p": 0.014042230507592,
+        "spearman_r": 0.1527057801320894,
+        "spearman_p": 0.17351756478434952,
+        "slope": 1.320013983343856,
+        "intercept": -75.14602769710268,
+        "r2": 0.07396810360609844,
+        "linregress_p": 0.014042230507591985,
+        "slope_stderr": 0.5254794261060917,
+        "partial_release_month": {
+          "n": 80,
+          "pearson_r": 0.34683564023709157,
+          "pearson_p": 0.0016225723232687493,
+          "spearman_r": 0.27361166467115877,
+          "spearman_p": 0.014057178304162204
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "average_time_per_game_seconds",
+        "n": 81,
+        "pearson_r": 0.5893981877928343,
+        "pearson_p": 7.089257497081136e-09,
+        "spearman_r": 0.8009350208120998,
+        "spearman_p": 2.803347719264711e-19,
+        "slope": 155.97965324159776,
+        "intercept": -18778.998610833405,
+        "r2": 0.347390223773477,
+        "linregress_p": 7.089257497081168e-09,
+        "slope_stderr": 24.05317418686268,
+        "partial_release_month": {
+          "n": 80,
+          "pearson_r": 0.3151118028129933,
+          "pearson_p": 0.004413313828669441,
+          "spearman_r": 0.3801138505127283,
+          "spearman_p": 0.000505461407938384
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "average_game_cost",
+        "n": 81,
+        "pearson_r": 0.3360238293526224,
+        "pearson_p": 0.002162811816160333,
+        "spearman_r": 0.5627292941686111,
+        "spearman_p": 4.556167437401972e-08,
+        "slope": 0.10783181865389391,
+        "intercept": -12.723477933105762,
+        "r2": 0.11291201389280031,
+        "linregress_p": 0.0021628118161603513,
+        "slope_stderr": 0.034005303579369144,
+        "partial_release_month": {
+          "n": 80,
+          "pearson_r": 0.420084645298892,
+          "pearson_p": 0.00010475445952686061,
+          "spearman_r": 0.5827292174253099,
+          "spearman_p": 1.4197008401690576e-08
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "completion_tokens_black_per_move",
+        "n": 81,
+        "pearson_r": 0.46370948825445174,
+        "pearson_p": 1.3016523749414107e-05,
+        "spearman_r": 0.5833965357611517,
+        "spearman_p": 1.0934229685631548e-08,
+        "slope": 83.98920528276834,
+        "intercept": -10040.234572917181,
+        "r2": 0.21502648949720546,
+        "linregress_p": 1.3016523749414173e-05,
+        "slope_stderr": 18.054748561470195,
+        "partial_release_month": {
+          "n": 80,
+          "pearson_r": 0.27443458553152933,
+          "pearson_p": 0.01375948965762387,
+          "spearman_r": 0.33211240371997824,
+          "spearman_p": 0.0026152810228288904
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "material_diff_player_llm_minus_opponent",
+        "n": 81,
+        "pearson_r": 0.5691937583764195,
+        "pearson_p": 2.946421046737219e-08,
+        "spearman_r": 0.606326461783649,
+        "spearman_p": 1.9887189367993826e-09,
+        "slope": 0.33101933195033223,
+        "intercept": -41.704788380786304,
+        "r2": 0.3239815345746737,
+        "linregress_p": 2.9464210467372365e-08,
+        "slope_stderr": 0.05379711207149051,
+        "partial_release_month": {
+          "n": 80,
+          "pearson_r": 0.3856854556175142,
+          "pearson_p": 0.00041067918724704746,
+          "spearman_r": 0.42792845601199486,
+          "spearman_p": 7.510525443165139e-05
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      }
+    ]
+  },
+  "prediction": {
+    "target": "Epoch Score",
+    "sample_stage_id": "metric_analysis_rows_max_dedupe",
+    "sample_n": 81,
+    "status": "ok",
+    "n": 81,
+    "features": [
+      "player_wins_percent",
+      "games_interrupted_percent",
+      "average_time_per_game_seconds",
+      "material_diff_player_llm_minus_opponent"
+    ],
+    "baseline_mean": {
+      "r2": -0.009597512354108106,
+      "rmse": 12.391314947903405,
+      "mae": 10.06977979582146,
+      "rank_spearman": -0.13249591472136224,
+      "top_prediction_misses": [
+        {
+          "row_index": 61,
+          "actual": 98.0,
+          "predicted": 135.1948717948718,
+          "prediction_sd": 0.4154795712929063,
+          "n_predictions": 3,
+          "llm_chess_player": "llama-2-7b-chat",
+          "eval_model_label": "Llama 2-7B",
+          "score_numeric": 98.0,
+          "elo": null,
+          "residual": -37.1948717948718,
+          "abs_error": 37.1948717948718
+        },
+        {
+          "row_index": 35,
+          "actual": 104.0,
+          "predicted": 135.67948717948718,
+          "prediction_sd": 0.12213178771318502,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-35-turbo-0125",
+          "eval_model_label": "GPT-3.5 Turbo (Jan 2024)",
+          "score_numeric": 104.0,
+          "elo": null,
+          "residual": -31.679487179487182,
+          "abs_error": 31.679487179487182
+        },
+        {
+          "row_index": 37,
+          "actual": 107.0,
+          "predicted": 135.31794871794872,
+          "prediction_sd": 0.39950659904743935,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-35-turbo-1106",
+          "eval_model_label": "GPT-3.5 Turbo (Nov 2023)",
+          "score_numeric": 107.0,
+          "elo": null,
+          "residual": -28.317948717948724,
+          "abs_error": 28.317948717948724
+        },
+        {
+          "row_index": 31,
+          "actual": 157.0,
+          "predicted": 134.81594551282052,
+          "prediction_sd": 0.27908646944498183,
+          "n_predictions": 3,
+          "llm_chess_player": "gemini-3.1-pro-preview",
+          "eval_model_label": "Gemini 3.1 Pro",
+          "score_numeric": 157.0,
+          "elo": 1511.389,
+          "residual": 22.18405448717948,
+          "abs_error": 22.18405448717948
+        },
+        {
+          "row_index": 36,
+          "actual": 114.0,
+          "predicted": 135.53333333333333,
+          "prediction_sd": 0.27101969767638834,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-35-turbo-0613",
+          "eval_model_label": "GPT-3.5 Turbo (Jun 2023)",
+          "score_numeric": 114.0,
+          "elo": null,
+          "residual": -21.53333333333333,
+          "abs_error": 21.53333333333333
+        },
+        {
+          "row_index": 53,
+          "actual": 156.0,
+          "predicted": 135.09230769230768,
+          "prediction_sd": 0.2664693550105935,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-5.4-low",
+          "eval_model_label": "GPT-5.4",
+          "score_numeric": 156.0,
+          "elo": 347.899,
+          "residual": 20.907692307692315,
+          "abs_error": 20.907692307692315
+        },
+        {
+          "row_index": 12,
+          "actual": 155.0,
+          "predicted": 135.16923076923078,
+          "prediction_sd": 0.5146378056516228,
+          "n_predictions": 3,
+          "llm_chess_player": "claude-opus-4-6_thinking-high",
+          "eval_model_label": "Claude Opus 4.6",
+          "score_numeric": 155.0,
+          "elo": 107.814,
+          "residual": 19.83076923076922,
+          "abs_error": 19.83076923076922
+        },
+        {
+          "row_index": 66,
+          "actual": 116.0,
+          "predicted": 135.2602564102564,
+          "prediction_sd": 0.4828467931352779,
+          "n_predictions": 3,
+          "llm_chess_player": "llama3.1-8b",
+          "eval_model_label": "Llama 3.1-8B",
+          "score_numeric": 116.0,
+          "elo": -795.614,
+          "residual": -19.260256410256403,
+          "abs_error": 19.260256410256403
+        },
+        {
+          "row_index": 52,
+          "actual": 154.0,
+          "predicted": 134.91794871794872,
+          "prediction_sd": 0.3413628562183011,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-5.2-medium",
+          "eval_model_label": "GPT-5.2",
+          "score_numeric": 154.0,
+          "elo": 1054.338,
+          "residual": 19.08205128205128,
+          "abs_error": 19.08205128205128
+        },
+        {
+          "row_index": 65,
+          "actual": 117.0,
+          "predicted": 135.04671474358975,
+          "prediction_sd": 0.23706363843885792,
+          "n_predictions": 3,
+          "llm_chess_player": "llama3-8b-8192",
+          "eval_model_label": "Llama 3-8B",
+          "score_numeric": 117.0,
+          "elo": null,
+          "residual": -18.046714743589746,
+          "abs_error": 18.046714743589746
+        }
+      ]
+    },
+    "ols": {
+      "r2": 0.5036575055922629,
+      "rmse": 8.688283610235526,
+      "mae": 7.022826352471592,
+      "rank_spearman": 0.7325401942628295,
+      "top_prediction_misses": [
+        {
+          "row_index": 61,
+          "actual": 98.0,
+          "predicted": 124.94112088210856,
+          "prediction_sd": 0.873701758564453,
+          "n_predictions": 3,
+          "llm_chess_player": "llama-2-7b-chat",
+          "eval_model_label": "Llama 2-7B",
+          "score_numeric": 98.0,
+          "elo": null,
+          "residual": -26.941120882108564,
+          "abs_error": 26.941120882108564
+        },
+        {
+          "row_index": 68,
+          "actual": 147.0,
+          "predicted": 123.69225519911731,
+          "prediction_sd": 0.3409184072090185,
+          "n_predictions": 3,
+          "llm_chess_player": "minimax.minimax-m2.5",
+          "eval_model_label": "MiniMax-M2.5",
+          "score_numeric": 147.0,
+          "elo": null,
+          "residual": 23.307744800882688,
+          "abs_error": 23.307744800882688
+        },
+        {
+          "row_index": 35,
+          "actual": 104.0,
+          "predicted": 124.52570050301172,
+          "prediction_sd": 0.7758689467967275,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-35-turbo-0125",
+          "eval_model_label": "GPT-3.5 Turbo (Jan 2024)",
+          "score_numeric": 104.0,
+          "elo": null,
+          "residual": -20.52570050301172,
+          "abs_error": 20.52570050301172
+        },
+        {
+          "row_index": 37,
+          "actual": 107.0,
+          "predicted": 125.11609187497525,
+          "prediction_sd": 0.46884237095742765,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-35-turbo-1106",
+          "eval_model_label": "GPT-3.5 Turbo (Nov 2023)",
+          "score_numeric": 107.0,
+          "elo": null,
+          "residual": -18.116091874975254,
+          "abs_error": 18.116091874975254
+        },
+        {
+          "row_index": 29,
+          "actual": 151.0,
+          "predicted": 133.69606266254814,
+          "prediction_sd": 0.9860784961077989,
+          "n_predictions": 3,
+          "llm_chess_player": "gemini-3-flash-preview",
+          "eval_model_label": "Gemini 3 Flash",
+          "score_numeric": 151.0,
+          "elo": -179.501,
+          "residual": 17.303937337451856,
+          "abs_error": 17.303937337451856
+        },
+        {
+          "row_index": 80,
+          "actual": 146.0,
+          "predicted": 130.39945655509345,
+          "prediction_sd": 0.22640077267714245,
+          "n_predictions": 3,
+          "llm_chess_player": "zai.glm-5",
+          "eval_model_label": "GLM-5",
+          "score_numeric": 146.0,
+          "elo": -299.22,
+          "residual": 15.600543444906549,
+          "abs_error": 15.600543444906549
+        },
+        {
+          "row_index": 15,
+          "actual": 153.0,
+          "predicted": 138.33119772839936,
+          "prediction_sd": 0.3931673360284162,
+          "n_predictions": 3,
+          "llm_chess_player": "claude-sonnet-4-6",
+          "eval_model_label": "Claude Sonnet 4.6",
+          "score_numeric": 153.0,
+          "elo": 110.636,
+          "residual": 14.66880227160064,
+          "abs_error": 14.66880227160064
+        },
+        {
+          "row_index": 12,
+          "actual": 155.0,
+          "predicted": 141.3471700875214,
+          "prediction_sd": 0.09645796150514781,
+          "n_predictions": 3,
+          "llm_chess_player": "claude-opus-4-6_thinking-high",
+          "eval_model_label": "Claude Opus 4.6",
+          "score_numeric": 155.0,
+          "elo": 107.814,
+          "residual": 13.652829912478609,
+          "abs_error": 13.652829912478609
+        },
+        {
+          "row_index": 24,
+          "actual": 136.0,
+          "predicted": 123.3827868920938,
+          "prediction_sd": 0.9348899242881893,
+          "n_predictions": 3,
+          "llm_chess_player": "gemini-2.0-flash-thinking-exp-01-21",
+          "eval_model_label": "Gemini 2.0 Flash Thinking (Jan 2025)",
+          "score_numeric": 136.0,
+          "elo": null,
+          "residual": 12.617213107906196,
+          "abs_error": 12.617213107906196
+        },
+        {
+          "row_index": 53,
+          "actual": 156.0,
+          "predicted": 143.73371026706437,
+          "prediction_sd": 0.5400032829660818,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-5.4-low",
+          "eval_model_label": "GPT-5.4",
+          "score_numeric": 156.0,
+          "elo": 347.899,
+          "residual": 12.266289732935633,
+          "abs_error": 12.266289732935633
+        }
+      ],
+      "in_sample": {
+        "r2": 0.5488010010016894,
+        "rmse": 8.283756480315041,
+        "mae": 6.6439675153277395,
+        "rank_spearman": 0.770945561786913
+      }
+    }
+  },
+  "sensitivity": {
+    "dedupe": [
+      {
+        "method": "max",
+        "name": "eci_vs_elo_max",
+        "n": 66,
+        "pearson_r": 0.6967985896751968,
+        "pearson_p": 8.145056614243323e-11,
+        "spearman_r": 0.6975609958190682,
+        "spearman_p": 7.615533872938683e-11,
+        "slope": 33.61822345103702,
+        "intercept": -4619.078090935942,
+        "r2": 0.4855282745733436,
+        "linregress_p": 8.145056614243289e-11,
+        "slope_stderr": 4.325718613518766
+      },
+      {
+        "method": "min",
+        "name": "eci_vs_elo_min",
+        "n": 66,
+        "pearson_r": 0.7081622300452322,
+        "pearson_p": 2.925243456304474e-11,
+        "spearman_r": 0.7270184850110916,
+        "spearman_p": 4.7828475401825126e-12,
+        "slope": 33.02815956549644,
+        "intercept": -4523.9053054996375,
+        "r2": 0.5014937440626364,
+        "linregress_p": 2.925243456304456e-11,
+        "slope_stderr": 4.116204410153084
+      },
+      {
+        "method": "mean",
+        "name": "eci_vs_elo_mean",
+        "n": 66,
+        "pearson_r": 0.7045862112588545,
+        "pearson_p": 4.058521578093418e-11,
+        "spearman_r": 0.7178450386946049,
+        "spearman_p": 1.1755120304688572e-11,
+        "slope": 33.452264941889894,
+        "intercept": -4589.098979507972,
+        "r2": 0.49644172909610723,
+        "linregress_p": 4.0585215780933406e-11,
+        "slope_stderr": 4.211397817813054
+      },
+      {
+        "method": "median",
+        "name": "eci_vs_elo_median",
+        "n": 66,
+        "pearson_r": 0.7050472596144588,
+        "pearson_p": 3.8918121725785253e-11,
+        "spearman_r": 0.7184969138949043,
+        "spearman_p": 1.1040336036195524e-11,
+        "slope": 33.34977240507584,
+        "intercept": -4574.3465994225235,
+        "r2": 0.4970916382898579,
+        "linregress_p": 3.8918121725785505e-11,
+        "slope_stderr": 4.19304078575057
+      }
+    ],
+    "min_total_games": [
+      {
+        "min_total_games": 0,
+        "name": "score_numeric_vs_elo_min_games_0",
+        "n": 66,
+        "pearson_r": 0.6967985896751968,
+        "pearson_p": 8.145056614243323e-11,
+        "spearman_r": 0.6975609958190682,
+        "spearman_p": 7.615533872938683e-11,
+        "slope": 33.61822345103702,
+        "intercept": -4619.078090935942,
+        "r2": 0.4855282745733436,
+        "linregress_p": 8.145056614243289e-11,
+        "slope_stderr": 4.325718613518766
+      },
+      {
+        "min_total_games": 20,
+        "name": "score_numeric_vs_elo_min_games_20",
+        "n": 66,
+        "pearson_r": 0.6967985896751968,
+        "pearson_p": 8.145056614243323e-11,
+        "spearman_r": 0.6975609958190682,
+        "spearman_p": 7.615533872938683e-11,
+        "slope": 33.61822345103702,
+        "intercept": -4619.078090935942,
+        "r2": 0.4855282745733436,
+        "linregress_p": 8.145056614243289e-11,
+        "slope_stderr": 4.325718613518766
+      },
+      {
+        "min_total_games": 30,
+        "name": "score_numeric_vs_elo_min_games_30",
+        "n": 63,
+        "pearson_r": 0.704545445678386,
+        "pearson_p": 1.1664687090102281e-10,
+        "spearman_r": 0.6890076565148998,
+        "spearman_p": 4.301035496118186e-10,
+        "slope": 34.24221687052163,
+        "intercept": -4706.5781993121855,
+        "r2": 0.4963842850261558,
+        "linregress_p": 1.166468709010204e-10,
+        "slope_stderr": 4.416086594946384
+      },
+      {
+        "min_total_games": 40,
+        "name": "score_numeric_vs_elo_min_games_40",
+        "n": 47,
+        "pearson_r": 0.7228961253679547,
+        "pearson_p": 9.573069752555833e-09,
+        "spearman_r": 0.6676318435408731,
+        "spearman_p": 2.9596010850932004e-07,
+        "slope": 39.54338329146754,
+        "intercept": -5420.500921823305,
+        "r2": 0.5225788080720017,
+        "linregress_p": 9.573069752555752e-09,
+        "slope_stderr": 5.634333074991882
+      },
+      {
+        "min_total_games": 50,
+        "name": "score_numeric_vs_elo_min_games_50",
+        "n": 32,
+        "pearson_r": 0.7571540800738237,
+        "pearson_p": 5.285451885854729e-07,
+        "spearman_r": 0.7286242947644568,
+        "spearman_p": 2.2647950015179465e-06,
+        "slope": 39.67066952690167,
+        "intercept": -5331.686762871057,
+        "r2": 0.5732823009724384,
+        "linregress_p": 5.285451885854695e-07,
+        "slope_stderr": 6.24877610539375
+      },
+      {
+        "min_total_games": 60,
+        "name": "score_numeric_vs_elo_min_games_60",
+        "n": 27,
+        "pearson_r": 0.7672234585809691,
+        "pearson_p": 3.0265804242255616e-06,
+        "spearman_r": 0.7859990839703017,
+        "spearman_p": 1.1815275211254556e-06,
+        "slope": 38.53477237696638,
+        "intercept": -5182.796916524752,
+        "r2": 0.5886318353969443,
+        "linregress_p": 3.0265804242255383e-06,
+        "slope_stderr": 6.442823881657323
+      }
+    ],
+    "legacy_parity": {
+      "matched_sample_max_dedupe": 66,
+      "raw_direct_matches": 74,
+      "pearson_r": 0.6967985896751968,
+      "r2": 0.4855282745733436
+    }
+  },
+  "verification": {
+    "runner_command": ".venv/bin/python data/cross-ref/run_cross_ref.py eci",
+    "inventory_path": "data/cross-ref/model-identity/llm_chess_models.csv",
+    "mapping_file": "data/cross-ref/mappings/eci.csv",
+    "verification_commands": [
+      ".venv/bin/python -m pytest tests/test_cross_ref.py"
+    ],
+    "verification_checks": [
+      {
+        "command": ".venv/bin/python -m pytest tests/test_cross_ref.py",
+        "output": "bringing up nodes...\n......... [100%]\n9 passed in 5.07s"
+      }
+    ],
+    "test_status": "passed",
+    "mapping_qa_status": "pass",
+    "run_qa_status": "pass",
+    "known_limitations": [],
+    "artifact_paths": {
+      "summary_json": "data/cross-ref/results/eci_summary.json",
+      "html": "data/cross-ref/results/eci.html",
+      "normalized_csv": "data/cross-ref/results/eci_normalized.csv",
+      "coverage_csv": "data/cross-ref/results/eci_coverage.csv"
+    }
+  }
+}
