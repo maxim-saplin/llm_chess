@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from framework.data_quality import filter_multifactor_candidate_metrics
+
 DEFAULT_SELECTED_METRICS = [
     "elo",
     "player_wins_percent",
@@ -240,6 +242,70 @@ def repeated_cv_ols(
     return _prediction_summary_from_rows(df, prediction_rows, target_column=target_column)
 
 
+def repeated_cv_ols_with_fold_feature_selection(
+    df: pd.DataFrame,
+    *,
+    target_column: str,
+    candidate_metrics: list[str],
+    max_metrics: int = 4,
+    seeds: list[int] | None = None,
+    n_folds: int = 5,
+) -> dict[str, object]:
+    seeds = seeds or DEFAULT_CV_SEEDS
+    prediction_rows = []
+    selected_feature_counts: dict[str, int] = {}
+    fold_count = 0
+    folds_without_features = 0
+    for repeat_idx, seed in enumerate(seeds):
+        for fold_idx, test_idx in enumerate(split_random_folds(len(df), n_folds, seed)):
+            fold_count += 1
+            train_idx = [idx for idx in range(len(df)) if idx not in test_idx]
+            train_df = df.iloc[train_idx]
+            test_df = df.iloc[test_idx]
+            features = choose_features(
+                train_df,
+                target_column=target_column,
+                candidate_metrics=candidate_metrics,
+                max_metrics=max_metrics,
+            )
+            if not features:
+                folds_without_features += 1
+                predictions = np.repeat(float(train_df[target_column].mean()), len(test_df))
+            else:
+                for feature in features:
+                    selected_feature_counts[feature] = selected_feature_counts.get(feature, 0) + 1
+                predictions = ols_predict(train_df, test_df, features, target_column=target_column)
+            for row_idx, predicted in zip(test_idx, predictions, strict=True):
+                prediction_rows.append(
+                    {
+                        "repeat": repeat_idx,
+                        "fold": fold_idx,
+                        "row_index": row_idx,
+                        "actual": float(df.iloc[row_idx][target_column]),
+                        "predicted": float(predicted),
+                    }
+                )
+
+    selected_features = [
+        metric
+        for metric, _ in sorted(
+            selected_feature_counts.items(),
+            key=lambda item: (-item[1], item[0]),
+        )
+    ]
+    return {
+        **_prediction_summary_from_rows(df, prediction_rows, target_column=target_column),
+        "features": selected_features[:max_metrics],
+        "selected_feature_counts": dict(sorted(selected_feature_counts.items())),
+        "feature_selection": {
+            "method": "within_cv_training_folds",
+            "max_features_per_fold": max_metrics,
+            "fold_count": fold_count,
+            "folds_without_features": folds_without_features,
+        },
+    }
+
+
 def choose_features(
     df: pd.DataFrame,
     *,
@@ -247,6 +313,7 @@ def choose_features(
     candidate_metrics: list[str],
     max_metrics: int = 4,
 ) -> list[str]:
+    candidate_metrics, _ = filter_multifactor_candidate_metrics(candidate_metrics)
     scored = []
     for metric in candidate_metrics:
         valid = df[[target_column, metric]].dropna()
@@ -265,7 +332,7 @@ def build_metric_relationships(
     target_column: str,
     candidate_metrics: list[str] | None = None,
 ) -> list[dict[str, object]]:
-    candidate_metrics = candidate_metrics or DEFAULT_SELECTED_METRICS
+    candidate_metrics, _ = filter_multifactor_candidate_metrics(candidate_metrics or DEFAULT_SELECTED_METRICS)
     rows = []
     for metric in candidate_metrics:
         if metric not in df.columns:
@@ -304,34 +371,39 @@ def build_prediction_summary(
     target_column: str,
     candidate_metrics: list[str] | None = None,
 ) -> dict[str, object]:
-    candidate_metrics = candidate_metrics or DEFAULT_SELECTED_METRICS
-    features = choose_features(df, target_column=target_column, candidate_metrics=candidate_metrics)
-    if not features:
+    filtered_candidate_metrics, excluded_candidate_metrics = filter_multifactor_candidate_metrics(
+        candidate_metrics or DEFAULT_SELECTED_METRICS
+    )
+    available_candidate_metrics = [metric for metric in filtered_candidate_metrics if metric in df.columns]
+    if not available_candidate_metrics:
         return {
             "status": "insufficient_features",
             "n": int(len(df)),
             "features": [],
+            "candidate_metrics_considered": filtered_candidate_metrics,
+            "excluded_candidate_metrics": excluded_candidate_metrics,
         }
-    model_df = df.dropna(subset=[target_column, *features]).reset_index(drop=True)
+    model_df = df.dropna(subset=[target_column, *available_candidate_metrics]).reset_index(drop=True)
     if len(model_df) < 8:
         return {
             "status": "insufficient_sample",
             "n": int(len(model_df)),
-            "features": features,
+            "features": [],
+            "candidate_metrics_considered": filtered_candidate_metrics,
+            "excluded_candidate_metrics": excluded_candidate_metrics,
         }
     baseline = repeated_cv_mean(model_df, target_column=target_column)
-    ols = repeated_cv_ols(model_df, features, target_column=target_column)
-    in_sample = regression_score(
-        model_df[target_column].to_numpy(dtype=float),
-        ols_predict(model_df, model_df, features, target_column=target_column),
+    ols = repeated_cv_ols_with_fold_feature_selection(
+        model_df,
+        target_column=target_column,
+        candidate_metrics=available_candidate_metrics,
     )
     return {
         "status": "ok",
         "n": int(len(model_df)),
-        "features": features,
+        "features": ols["features"],
+        "candidate_metrics_considered": filtered_candidate_metrics,
+        "excluded_candidate_metrics": excluded_candidate_metrics,
         "baseline_mean": baseline,
-        "ols": {
-            **ols,
-            "in_sample": in_sample,
-        },
+        "ols": ols,
     }

@@ -5,6 +5,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from framework.data_quality import apply_elo_data_quality_overrides
+
 
 def clean_key_column(df: pd.DataFrame, column: str) -> None:
     if column not in df.columns:
@@ -71,6 +73,7 @@ def load_llm_chess_inputs(repo_root: Path) -> tuple[pd.DataFrame, pd.DataFrame, 
     elo["elo_moe_95"] = pd.to_numeric(elo["elo_moe_95"], errors="coerce")
     elo["total_games"] = pd.to_numeric(elo["total_games"], errors="coerce")
     metadata["date_released"] = metadata["date_released"].astype(str).str.strip()
+    elo, data_quality = apply_elo_data_quality_overrides(elo)
 
     elo_contract = summarize_input_contract(
         df=elo,
@@ -128,5 +131,6 @@ def load_llm_chess_inputs(repo_root: Path) -> tuple[pd.DataFrame, pd.DataFrame, 
             "elo_without_metadata": int(len(elo_players - metadata_models)),
             "metadata_without_elo": int(len(metadata_models - elo_players)),
         },
+        "data_quality": data_quality,
     }
     return elo, metadata, contract

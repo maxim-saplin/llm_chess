@@ -10,9 +10,10 @@ MAPPING_COLUMNS = [
     "eval_id",
     "eval_row_id",
     "eval_model_label",
-    "eval_variant_label",
     "llm_chess_player",
+    "eval_variant_label",
     "mapping_status",
+    "review_status",
     "confidence",
     "provider_or_family",
     "version_or_release_clue",
@@ -26,10 +27,20 @@ MAPPING_COLUMNS = [
     "rationale",
     "open_questions",
     "reviewer",
-    "review_status",
 ]
 OPTIONAL_MAPPING_COLUMNS = ["source_llm_chess_model"]
 ACCEPTED_MAPPING_STATUSES = {"accepted", "alias", "variant-compatible"}
+
+
+def preferred_mapping_columns(columns: list[str]) -> list[str]:
+    preferred = [column for column in MAPPING_COLUMNS if column in columns]
+    preferred.extend(column for column in OPTIONAL_MAPPING_COLUMNS if column in columns)
+    preferred.extend(column for column in columns if column not in preferred)
+    return preferred
+
+
+def reorder_mapping_columns(mapping: pd.DataFrame) -> pd.DataFrame:
+    return mapping.loc[:, preferred_mapping_columns(list(mapping.columns))]
 
 
 def load_mapping_file(mapping_path: Path) -> pd.DataFrame:
@@ -39,7 +50,7 @@ def load_mapping_file(mapping_path: Path) -> pd.DataFrame:
         raise ValueError(
             f"{mapping_path} is missing required mapping columns: {', '.join(missing_columns)}"
         )
-    return mapping
+    return reorder_mapping_columns(mapping)
 
 
 def apply_mapping(normalized: pd.DataFrame, mapping: pd.DataFrame) -> pd.DataFrame:
@@ -131,4 +142,4 @@ def seed_eci_mapping(normalized: pd.DataFrame, inventory: pd.DataFrame) -> pd.Da
                 "source_llm_chess_model": row.source_llm_chess_model,
             }
         )
-    return pd.DataFrame(rows)
+    return reorder_mapping_columns(pd.DataFrame(rows))

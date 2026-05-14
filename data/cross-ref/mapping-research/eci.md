@@ -39,3 +39,15 @@ Access date: 2026-04-28.
 
 - Seed mapping generated from the source bridge and written to `data/cross-ref/mappings/eci.csv`.
 - The mapping CSV is the current published source of truth used by the shared runner for ECI cross-reference runs.
+
+## Mapping Priority Queue (2026-05-13)
+
+No ECI mapping rows were changed for this queue. Rows below retain their current `unmatched` status until exact model/config evidence supports a CSV change.
+
+Rank unresolved ECI rows by external score, cross-eval inconsistency, current frontier family, and plausible inventory matches with missing evidence:
+
+1. GPT Pro variants: `eci:0000` GPT-5.4 Pro (`score_numeric=158.0`), `eci:0006` GPT-5.2 Pro (`154.0`), and `eci:0011` GPT-5 Pro (`150.0`). Current inventory has plain or tiered GPT rows, but the Pro axis is not represented exactly; do not collapse these to GPT-5.4, GPT-5.2, or GPT-5 without source evidence.
+2. Claude Opus 4.7: `eci:0003` Claude Opus 4.7 (`156.0`). ARC also has Claude 4.7 frontier rows marked unmatched. Keep this row unmatched until an exact LLM Chess Claude 4.7/Opus 4.7 row exists.
+3. DeepSeek-V3.2 consistency review: `eci:0024` DeepSeek-V3.2 (`146.0`) and `eci:0028` DeepSeek-V3.2-Exp (`145.0`). ARC maps `arc_agi_2:0054:deepseek_v3_2` to `deepseek-V3.2_non-reasoning`, while inventory also contains a separate `DeepSeek-V3.2-Speciale` metadata-only row. Verify whether the ECI plain label is the same non-reasoning identity, an experimental variant, or a separate reasoning setup before changing status.
+4. High-score open-weight/local rows with family-level but not exact candidates: `eci:0026` Qwen3-235B-A22B-Thinking (`145.0`), `eci:0027` Kimi K2 Thinking (`145.0`), `eci:0031` GLM-4.7 (`144.0`), `eci:0032` Qwen3-Max (`144.0`), `eci:0042` GLM-4.6 (`141.0`), `eci:0046` Kimi K2 (Jul 2025) (`140.0`), and `eci:0051` Qwen3-235B-A22B (`140.0`). Use exact release/config evidence, not broad family similarity, before mapping.
+5. Other high-score unmatched rows: `eci:0005` Muse Spark (`155.0`) and `eci:0016` o3-pro (`148.0`). These remain no-bridge rows; prioritize them after the cross-eval/frontier groups unless new inventory evidence appears.
