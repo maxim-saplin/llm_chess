@@ -19,10 +19,11 @@ def R(m):  # (has_reasoning, example_dict|None)
     t = c.get("stages")
     return (True, {"stages": t[:1]}) if isinstance(t, list) and t else (False, None)
 
+prompt = "4*8="
 
 _, cfg = get_llms(black_hyperparams={"reasoning_effort": "low"})
 a = ConversableAgent("test", llm_config=cfg, max_consecutive_auto_reply=2, human_input_mode="NEVER")
-print(a.generate_reply(messages=[{"role": "user", "content": "Hello, how are you?"}]))
+print(a.generate_reply(messages=[{"role": "user", "content": prompt}]))
 print("AG2 custom reasoning:", "yes" if next((R(m)[0] for v in a._oai_messages.values() for m in reversed(v) if isinstance(m, dict) and m.get("role") == "assistant"), False) else "no")
 print("--- Raw HTTP ---")
 if os.getenv("MODEL_KIND_B") != "local":
@@ -31,12 +32,12 @@ elif not (u := os.getenv("LOCAL_BASE_URL_B", "").strip()) or not (k := os.getenv
     print("skip: no URL/key")
 else:
     p = (cfg.get("config_list") or [{}])[0]
-    mt = p.get("max_tokens") or (65535 if "thinking" in os.getenv("LOCAL_MODEL_NAME_B", "").lower() else 256)
+    mt = p.get("max_tokens") or (65535 if "thinking" in os.getenv("LOCAL_MODEL_NAME_B", "").lower() else 4096)
     try:
         r = requests.post(
             f"{u.rstrip('/')}/chat/completions?api-version=2024-02-01",
             headers={"Api-Key": k, "Content-Type": "application/json"},
-            json={"messages": [{"role": "user", "content": "Say hi in 3 words"}], "max_tokens": int(mt)},
+            json={"messages": [{"role": "user", "content": prompt}], "max_tokens": int(mt)},
             timeout=120,
         )
     except requests.RequestException as e:
@@ -55,5 +56,6 @@ else:
                 else:
                     ok, sn = R((d.get("choices") or [{}])[0].get("message"))
                     print("reasoning:", "yes" if ok else "no")
+                    print(json.dumps(d["usage"])),
                     if sn:
                         print(json.dumps(sn, indent=2))

@@ -11,9 +11,9 @@ import llm_chess
 
 # Launch settings - edit these for a new experiment
 NUM_REPETITIONS = 10
-REASONING_EFFORT = "medium"
+REASONING_EFFORT = None #"medium"
 WHITE_PLAYER_TYPE = llm_chess.PlayerType.CHESS_ENGINE_DRAGON  
-ENGINE_LEVEL = 10
+ENGINE_LEVEL = 1
 
 
 def run_games():
@@ -85,10 +85,10 @@ def run_games():
     # Pull module-level overrides (NUM_REPETITIONS, STORE_INDIVIDUAL_LOGS)
     global NUM_REPETITIONS, STORE_INDIVIDUAL_LOGS
 
-    llm_chess.throttle_delay = 7
-    llm_chess.dialog_turn_delay = 7
+    llm_chess.throttle_delay = 0#7
+    llm_chess.dialog_turn_delay = 0#7
     llm_chess.max_api_retries = 6
-    llm_chess.api_retry_delay = 30*60 # retry in 0.5, 1, 2, 4, 8, 16 hours, workaround for daily rate limiting
+    llm_chess.api_retry_delay = 0#30*60 # retry in 0.5, 1, 2, 4, 8, 16 hours, workaround for daily rate limiting
     # llm_chess.board_representation_mode = llm_chess.BoardRepresentation.UNICODE_WITH_PGN
     # llm_chess.rotate_board_for_white = True
 
