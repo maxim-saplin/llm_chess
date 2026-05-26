@@ -25,7 +25,8 @@ Interpretation:
 - `ambiguous`, `unmatched`, and `excluded` rows stay visible in coverage and mapping review, but do not enter correlations.
 - Multiple external rows for one LLM Chess player are deduped by keeping the highest external score.
 - Pearson `r` measures linear fit; Spearman `rho` measures rank-order fit.
-- Release-controlled Elo removes the linear effect of release month from both sides before correlating residuals.
+- Raw Elo correlates external score directly with LLM Chess Elo.
+- Release-controlled Elo first predicts each side from release month, subtracts predicted from actual on both sides, then correlates the two residual lists.
 - OLS CV uses repeated 5-fold cross-validation over 3 seeds. Feature selection happens inside each training fold, not on the full target sample.
 
 ## Coverage Debt
@@ -46,8 +47,11 @@ The audit currently reports `reproducibility_status = pass`, `coverage_status = 
 
 ## Evidence Pointers
 
-- Aggregate facts: [results/cross_ref_summary.json](results/cross_ref_summary.json)
-- Generated fact table: [results/cross_ref_report.md](results/cross_ref_report.md)
-- Mapping debt: [results/mapping_review.csv](results/mapping_review.csv)
+- Methodology and workspace guide: [README.md](README.md)
 - ECI summary: [results/eci_summary.json](results/eci_summary.json)
 - ARC summary: [results/arc_agi_2_summary.json](results/arc_agi_2_summary.json)
+- ECI report: [results/eci.html](results/eci.html)
+- ARC report: [results/arc_agi_2.html](results/arc_agi_2.html)
+- ECI coverage: [results/eci_coverage.csv](results/eci_coverage.csv)
+- ARC coverage: [results/arc_agi_2_coverage.csv](results/arc_agi_2_coverage.csv)
+- Mapping sources: [mappings/eci.csv](mappings/eci.csv), [mappings/arc_agi_2.csv](mappings/arc_agi_2.csv)
