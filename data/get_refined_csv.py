@@ -171,11 +171,13 @@ FILTER_OUT_MODELS = [
     "gpt-oss:20b-low",  # too few runs
     # "gpt-5.1-codex-mini-high",  ## TBD, t0o few runs
     "gpt-5.1-codex-mini-medium",
-    "gpt-5.4-high", # too few logs, failing to get many logs due to slow responses
-    "gpt-5.4-medium", # too few logs
-    "claude-sonnet-4-6_thinking-high", # too few logs
+    # "gpt-5.4-high", # too few logs, failing to get many logs due to slow responses
+    # "gpt-5.4-medium", # too few logs
+    # "claude-sonnet-4-6_thinking-high",
     "chess-4b-thinking-1218",  ## RL experiment, to be ignored
-    "cursor_cli_sonnet_4.5",  # eas necessary as a reference to prove the CLI approach to test Composer-1 is valid
+    "cursor_cli_sonnet_4.5",  # was necessary as a reference to prove the CLI approach to test Composer-1 is valid
+    "claude-opus-4-7@default", # Google Cloud is not definitive regarcing reasoning defaults
+    "gpt-5.4-2026-03-05-high", # to few logs
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
 ]
 
