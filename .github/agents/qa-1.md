@@ -1,6 +1,6 @@
 ---
 name: qa-1
-model: Claude Opus 4.7 (copilot)
+model: GPT-5.3-Codex (copilot)
 description: Use for QA
 ---
 

@@ -172,10 +172,11 @@ FILTER_OUT_MODELS = [
     # "gpt-5.1-codex-mini-high",  ## TBD, t0o few runs
     "gpt-5.1-codex-mini-medium",
     "gpt-5.4-high", # too few logs, failing to get many logs due to slow responses
-    "gpt-5.4-medium", # too few logs
-    "claude-sonnet-4-6_thinking-high", # too few logs
+    # "gpt-5.4-medium", # too few logs
+    # "claude-sonnet-4-6_thinking-high",
     "chess-4b-thinking-1218",  ## RL experiment, to be ignored
-    "cursor_cli_sonnet_4.5",  # eas necessary as a reference to prove the CLI approach to test Composer-1 is valid
+    "cursor_cli_sonnet_4.5",  # was necessary as a reference to prove the CLI approach to test Composer-1 is valid
+    "claude-opus-4-7@default", # Google Cloud is not definitive regarcing reasoning defaults
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
 ]
 
@@ -243,7 +244,7 @@ ALIASES: dict[str, str] = {
     # versions.
     "grok-3-mini-fast-beta-high": "grok-3-mini-beta-high",
 
-    # OpenAI GPT-5 family (single-snapshot 2025-08-07 / 2025-09-15 / 2025-11-13 / 2025-12-11)
+    # OpenAI GPT-5 family (single-snapshot dated aliases)
     "gpt-5-2025-08-07-low": "gpt-5-low",
     "gpt-5-2025-08-07-medium": "gpt-5-medium",
     "gpt-5-2025-08-07-high": "gpt-5-high",
@@ -271,6 +272,18 @@ ALIASES: dict[str, str] = {
     "gpt-5.2-2025-12-11-medium": "gpt-5.2-medium",
     "gpt-5.2-2025-12-11-high": "gpt-5.2-high",
     "gpt-5.2-chat-2025-12-11": "gpt-5.2-chat",
+    "gpt-5.3-codex-2026-02-24-low": "gpt-5.3-codex-low",
+    "gpt-5.3-codex-2026-02-24-medium": "gpt-5.3-codex-medium",
+    "gpt-5.3-codex-2026-02-24-high": "gpt-5.3-codex-high",
+    "gpt-5.4-2026-03-05-low": "gpt-5.4-low",
+    "gpt-5.4-2026-03-05-medium": "gpt-5.4-medium",
+    "gpt-5.4-2026-03-05-high": "gpt-5.4-high",
+    "gpt-5.4-mini-2026-03-17-low": "gpt-5.4-mini-low",
+    "gpt-5.4-mini-2026-03-17-medium": "gpt-5.4-mini-medium",
+    "gpt-5.4-mini-2026-03-17-high": "gpt-5.4-mini-high",
+    "gpt-5.5-2026-04-24-low": "gpt-5.5-low",
+    "gpt-5.5-2026-04-24-medium": "gpt-5.5-medium",
+    "gpt-5.5-2026-04-24-high": "gpt-5.5-high",
 
     # OpenAI GPT-4.x family (single-snapshot)
     "gpt-4.1-2025-04-14": "gpt-4.1",
