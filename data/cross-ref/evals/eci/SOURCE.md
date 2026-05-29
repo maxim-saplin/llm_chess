@@ -1,8 +1,29 @@
 # Epoch ECI Source Note
 
-Snapshot file: `data/cross-ref/evals/eci/epoch_eci_apr_2026.csv`
+Snapshot file: `data/cross-ref/evals/eci/epoch_eci_may_2026.csv`
 
-Access date for supporting sources: 2026-04-28.
+Access date for supporting sources: 2026-05-29.
+
+This snapshot is a refresh of the overall (composite) Epoch ECI leaderboard taken from
+`https://epoch.ai/data/eci_scores.csv` on 2026-05-29 (178 models). It supersedes the prior
+`epoch_eci_apr_2026.csv` (168 models): Epoch added 14 models and dropped 4 unscored ones since
+that snapshot. `Score` and the `90% CI` bounds are Epoch's published `eci`, `eci_ci_low`, and
+`eci_ci_high` rounded to integers to match the website display and the prior snapshot schema. The
+`llm_chess_model` snapshot bridge column is historical seed data and was carried over by label for
+retained models only; `mappings/eci.csv` is the live mapping source of truth.
+
+Mapping reconciliation in this refresh:
+- `GPT-5.4` was re-pointed from `gpt-5.4-low` to `gpt-5.4-medium` (the prior pick predated
+  `gpt-5.4-medium` existing in `elo_refined.csv`; base GPT-5.x rows map to the `-medium` tier).
+- Of the 14 new ECI models, 4 with clear LLM Chess counterparts were accepted following the family
+  tier convention (`GPT-5.5`→`gpt-5.5-medium`, `GPT-5.3 Codex`→`gpt-5.3-codex-medium`,
+  `GPT-5.4 Mini`→`gpt-5.4-mini-high`, `GPT-5.4 Nano`→`gpt-5.4-nano-high`).
+- `grok-4-20-reasoning` was reassigned from Epoch `Grok 4` to Epoch `Grok 4.20` (maintainer-confirmed
+  that the LLM Chess id is Grok 4.20). Epoch `Grok 4` is now `unmatched` (no plain grok-4 in
+  `elo_refined.csv`). Net accepted mappings: 93.
+- The remaining new/affected rows stay `unmatched` with explicit reasons in `open_questions` (no LLM
+  Chess entry, or a distinct product/host tier): GPT-5.5 Pro, Kimi K2.6, GLM-5.1, Gemini 3.5 Flash,
+  and the hosted Qwen 3.5/3.6 models.
 
 ## Provenance
 

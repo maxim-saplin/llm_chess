@@ -22,7 +22,7 @@ EVAL_LABEL = "Epoch ECI"
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CROSS_REF_ROOT = Path(__file__).resolve().parents[1]
 EVAL_ROOT = CROSS_REF_ROOT / "evals" / "eci"
-SOURCE_PATH = EVAL_ROOT / "epoch_eci_apr_2026.csv"
+SOURCE_PATH = EVAL_ROOT / "epoch_eci_may_2026.csv"
 SOURCE_NOTE_PATH = EVAL_ROOT / "SOURCE.md"
 
 

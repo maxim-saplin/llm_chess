@@ -12,7 +12,7 @@ Access date: 2026-04-28.
 
 ## Input Basis
 
-- Source snapshot: `data/cross-ref/evals/eci/epoch_eci_apr_2026.csv`
+- Source snapshot: `data/cross-ref/evals/eci/epoch_eci_may_2026.csv`
 - Historical bridge seed: source column `llm_chess_model`
 - LLM Chess inventory: `data/cross-ref/model-identity/llm_chess_models.csv`
 

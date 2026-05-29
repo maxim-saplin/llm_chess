@@ -6,12 +6,14 @@ Epoch ECI is the only supported external eval with a strong enough signal to tre
 
 Do not sell this as broad benchmark validation. It is a two-eval comparison with unresolved identity debt.
 
+Figures reflect the 2026-05-29 ECI refresh (overall Epoch index, 178 models) against the current `elo_refined.csv`. The ECI signal strengthened versus the prior snapshot, mainly from reconciling the mapping (e.g. `GPT-5.4` now `gpt-5.4-medium`) and adding four newly matched GPT-5.x models.
+
 ## Signal Table
 
 | Eval | Raw Elo | Release-controlled | Top chess metric | OLS CV |
 | --- | --- | --- | --- | --- |
-| Epoch ECI | Pearson `0.697`, Spearman `0.698`, `n=66` | Pearson `0.493`, `n=65` | `player_wins_percent`: Pearson `0.637`, Spearman `0.769`, `n=81` | `R2=0.381` vs mean baseline `-0.043`; rank Spearman `0.683` |
-| ARC-AGI-2 | Pearson `0.527`, Spearman `0.630`, `n=52` | Pearson `0.384`, `n=52` | `player_wins_percent`: Pearson `0.401`, Spearman `0.607`, `n=55` | `R2=-0.041` vs mean baseline `-0.044`; rank Spearman `0.485` |
+| Epoch ECI | Pearson `0.757`, Spearman `0.744`, `n=70` | Pearson `0.551`, `n=69` | `player_wins_percent`: Pearson `0.689`, Spearman `0.791`, `n=85` | `R2=0.527` vs mean baseline `-0.021`; rank Spearman `0.739` |
+| ARC-AGI-2 | Pearson `0.520`, Spearman `0.637`, `n=54` | Pearson `0.348`, `n=54` | `player_wins_percent`: Pearson `0.360`, Spearman `0.583`, `n=57` | `R2=-0.016` vs mean baseline `-0.042`; rank Spearman `0.494` |
 
 Interpretation:
 
@@ -33,10 +35,10 @@ Interpretation:
 
 | Eval | Numeric rows | Accepted mappings | Metric sample | Elo sample | Unmatched external rows | High-impact unresolved |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Epoch ECI | 161 | 89 | 81 | 66 | 79 | 15 |
-| ARC-AGI-2 | 150 | 65 | 55 | 52 | 92 | 15 |
+| Epoch ECI | 178 | 93 | 85 | 70 | 85 | 15 |
+| ARC-AGI-2 | 150 | 65 | 57 | 54 | 90 | 15 |
 
-The audit currently reports `reproducibility_status = pass`, `coverage_status = review-needed`, and `unresolved_row_count = 169`.
+The audit currently reports `reproducibility_status = pass`, `coverage_status = review-needed`, and `unresolved_row_count = 175`.
 
 ## What Raises Signal
 

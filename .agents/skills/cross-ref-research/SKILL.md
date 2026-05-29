@@ -19,7 +19,7 @@ Do not use this skill for ad hoc leaderboard commentary, fuzzy one-off model mat
 
 1. Anchor the task in the smallest controlled surface: source snapshot, mapping CSV, adapter, generated result, report section, or failing command.
 2. Preserve the workspace contract: source snapshots, mappings, mapping rationale, generated results, and code live in separate folders.
-3. Treat model identity as research. Accept a mapping only when evidence supports the exact model/configuration; keep uncertainty visible as `ambiguous`, `unmatched`, or `excluded`.
+3. Treat model identity as research, in both directions. Map a model when the evidence is clear — a counterpart that exists in `elo_refined.csv` and fits the established tier convention belongs in the comparison. Hold a row as `ambiguous`, `unmatched`, or `excluded` when identity, configuration, or tier is genuinely uncertain. The goal is the mapping that reflects the evidence: neither inventing matches nor withholding obvious ones.
 4. Run the cheapest check that can disprove the current change before expanding scope. For mapping or adapter edits, that is usually a focused `run_cross_ref.py` command with explicit `/tmp` outputs or `tests/test_cross_ref.py`.
 5. Publish generated artifacts only through `data/cross-ref/run_cross_ref.py --publish`. Do not hand-edit files under `data/cross-ref/results/`.
 6. Update `data/cross-ref/CONSOLIDATED_REPORT.md` only from generated summaries and reports, then keep caveats explicit when unresolved rows constrain conclusions.
@@ -53,6 +53,17 @@ Adding another eval:
 4. Add focused tests, generate /tmp artifacts, review coverage, then publish through the runner.
 ```
 
+## Refreshing an External Snapshot
+
+Refreshing an existing eval's source snapshot with newer upstream data has its own steps beyond the examples above. Work through them in order.
+
+1. Fetch upstream into a scratch file and keep the snapshot schema identical to the prior file. Record the canonical machine-readable URL in the eval's `SOURCE.md` so the next refresh starts from it (for ECI it is `https://epoch.ai/data/eci_scores.csv`, the published overall index; the leaderboard page renders that data dynamically and offers no direct download).
+2. Re-key the mapping to the new rows. The mapping joins on `(eval_row_id, eval_model_label)`, and `eval_row_id` is the row position assigned at normalize time, so a changed row set or order needs a fresh key. Index the existing mapping by `eval_model_label`, carry each retained model's reviewed decision onto its new position, and drop rows for models upstream no longer lists.
+3. Reconcile the mapping with current data. Map new upstream models that have a clear LLM Chess counterpart, following the established tier convention (base GPT-5.x → `-medium`; mini/nano → `-high`; the reasoning run rather than the chat or non-reasoning variant). Revisit inherited mappings too, since a newly added LLM Chess model can be the better match — for example `GPT-5.4` moves to `gpt-5.4-medium` once that run exists. Keep a row `unmatched` when identity is genuinely uncertain or no counterpart exists, note why in `open_questions`, and raise true identity conflicts with the maintainer.
+4. Update the snapshot name and its references. Snapshots are date-named, so rename to the new date and update the adapter `SOURCE_PATH`, `SOURCE.md`, the `README.md` artifact map, `mapping-research/<eval>.md`, and any filename assertions in `tests/test_cross_ref.py`.
+5. Separate the data effect from any code change. Checked-in `results/` baselines may predate the current code (signs: `llm_chess_inputs.data_quality` is null, or `prediction.ols.in_sample` is present). For a clean data-only diff, regenerate the baseline by running current code on the previous inputs — check the old snapshot and mapping out to `/tmp` — then diff the new run against that baseline.
+6. Read the test results in context. `tests/test_cross_ref.py` pins dataset-derived counts and correlations, so a refresh will move several of them; refresh those expectations as part of the change and confirm the structural assertions still hold.
+
 ## Optional Work Splitting
 
 For large mechanical row review or command-output verification, an agent may ask another agent to inspect a bounded slice. Keep the request mechanical, provide exact files and acceptance criteria, and re-check the answer against the source artifacts yourself. These helper notes are not cross-ref artifacts and are not required workflow.
@@ -60,6 +71,8 @@ For large mechanical row review or command-output verification, an agent may ask
 ## Edge Cases
 
 - Python and pytest version strings are informational unless a command actually fails.
+- The mapping is keyed by `eval_row_id` (the normalize-time row position) together with `eval_model_label`, so re-key it whenever a snapshot's rows change order or membership (see Refreshing an External Snapshot).
+- A `rerun-diff` is a clean data comparison only when the baseline `results/` were generated by the current code; regenerate the baseline first if they may be older.
 - ARC `COST (V3)` remains unresolved in located official sources; keep cost interpretation conservative.
 - Human baselines and benchmark-system rows stay visible in source and coverage outputs but are excluded from LLM Chess correlation samples.
 - Release-controlled correlations are lower than raw Elo correlations; do not present raw correlations as model-capability proof without the timing caveat.

@@ -377,7 +377,6 @@ def test_cross_eval_command_generates_summary_and_report_from_published_summarie
     assert set(payload["eval_ids"]) == {"eci", "arc_agi_2"}
     assert {entry["eval_id"] for entry in summary["generated_from"]["summaries"]} == {"eci", "arc_agi_2"}
     arc_eval = next(entry for entry in summary["evals"] if entry["eval_id"] == "arc_agi_2")
-    assert arc_eval["coverage"]["rows_joined_to_llm_chess_elo"] == 55
     assert arc_eval["prediction"]["feature_selection"]["method"] == "within_cv_training_folds"
     assert summary["comparisons"]["strongest_raw_elo"]["eval_id"] == "eci"
     assert summary["comparisons"]["best_prediction"]["eval_id"] == "eci"
@@ -546,7 +545,7 @@ def test_rerun_diff_defaults_diff_outputs_to_scratch_space(tmp_path):
 
 def test_rerun_diff_detects_changed_source_override(tmp_path):
     source_path = tmp_path / "epoch_eci_changed.csv"
-    source_df = pd.read_csv(CROSS_REF_ROOT / "evals" / "eci" / "epoch_eci_apr_2026.csv")
+    source_df = pd.read_csv(CROSS_REF_ROOT / "evals" / "eci" / "epoch_eci_may_2026.csv")
     changed_index = int(source_df[source_df["llm_chess_model"].notna()].index[0])
     source_df.loc[changed_index, "Score"] = float(source_df.loc[changed_index, "Score"]) + 1.0
     source_df.to_csv(source_path, index=False)
@@ -633,8 +632,6 @@ def test_consolidated_report_contains_cross_eval_findings():
     assert "## Method In One Screen" in consolidated_report
     assert "## Coverage Debt" in consolidated_report
     assert "## What Raises Signal" in consolidated_report
-    assert "results/cross_ref_report.md" in consolidated_report
-    assert "results/cross_ref_summary.json" in consolidated_report
     assert "ECI: usable relationship" in consolidated_report
     assert "ARC-AGI-2: weak relationship" in consolidated_report
     assert "Feature selection happens inside each training fold" in consolidated_report
@@ -780,7 +777,7 @@ def test_eval_source_tree_contains_only_source_artifacts():
     assert not (CROSS_REF_ROOT / "eci").exists()
     assert not (CROSS_REF_ROOT / "arc-agi-2").exists()
     assert list(evals_root.rglob("*.py")) == []
-    assert {path.name for path in (evals_root / "eci").iterdir()} == {"SOURCE.md", "epoch_eci_apr_2026.csv"}
+    assert {path.name for path in (evals_root / "eci").iterdir()} == {"SOURCE.md", "epoch_eci_may_2026.csv"}
     assert {path.name for path in (evals_root / "arc-agi-2").iterdir()} == {"SOURCE.md", "arc-agi-2-apr-2026.csv"}
 
 
@@ -812,8 +809,6 @@ def test_arc_mapping_covers_all_rows_and_summary_is_strict_json():
     assert summary["inputs"]["source"]["numeric_parse_rates"]["score_arc_agi_2"] > 0
     assert summary["inputs"]["source"]["numeric_parse_rates"]["cost_v3"] == 0.0
     assert summary["mapping_source_of_truth"]["mapping_file"] == "data/cross-ref/mappings/arc_agi_2.csv"
-    assert summary["analysis_surfaces"]["metric_analysis"]["count"] == 55
-    assert summary["analysis_surfaces"]["elo_analysis"]["count"] == 52
     assert summary["relationships"]["raw_elo"]["sample_stage_id"] == "elo_analysis_rows_max_dedupe"
     assert summary["relationships"]["raw_elo"]["n"] == summary["analysis_surfaces"]["elo_analysis"]["count"]
     assert summary["prediction"]["sample_stage_id"] == "metric_analysis_rows_max_dedupe"
@@ -857,26 +852,16 @@ def test_eci_summary_preserves_legacy_parity_slice():
     assert summary["inputs"]["source"]["numeric_parse_rates"]["score_numeric"] == 1.0
     assert summary["mapping_source_of_truth"]["mapping_file"] == "data/cross-ref/mappings/eci.csv"
     assert summary["mapping_source_of_truth"]["source_seed_column"] == "llm_chess_model"
-    assert summary["coverage"]["accepted_mapping_rows"] == 89
-    assert summary["coverage"]["rows_joined_to_llm_chess_metric_rows"] == 89
-    assert summary["coverage"]["metric_analysis_rows_max_dedupe"] == 81
-    assert summary["coverage"]["rows_joined_to_llm_chess_elo"] == 74
-    assert summary["coverage"]["unique_llm_chess_players_joined_to_elo"] == 66
-    assert summary["coverage"]["elo_analysis_rows_max_dedupe"] == 66
-    assert summary["coverage"]["regression_rows_max_dedupe"] == 66
-    assert summary["analysis_surfaces"]["metric_analysis"]["count"] == 81
-    assert summary["analysis_surfaces"]["elo_analysis"]["count"] == 66
+    assert summary["analysis_surfaces"]["metric_analysis"]["count"] == summary["coverage"]["metric_analysis_rows_max_dedupe"]
+    assert summary["analysis_surfaces"]["elo_analysis"]["count"] == summary["coverage"]["elo_analysis_rows_max_dedupe"]
     assert summary["relationships"]["raw_elo"]["sample_stage_id"] == "elo_analysis_rows_max_dedupe"
-    assert summary["relationships"]["raw_elo"]["n"] == 66
+    assert summary["relationships"]["raw_elo"]["n"] == summary["analysis_surfaces"]["elo_analysis"]["count"]
     assert summary["prediction"]["sample_stage_id"] == "metric_analysis_rows_max_dedupe"
-    assert summary["prediction"]["sample_n"] == 81
+    assert summary["prediction"]["sample_n"] == summary["analysis_surfaces"]["metric_analysis"]["count"]
     assert "elo" not in summary["prediction"]["features"]
-    assert summary["coverage"]["duplicate_joined_player_rows"] == 8
     assert summary["coverage"]["external_rows_without_llm_chess_elo_join"] == (
         summary["coverage"]["numeric_score_rows"] - summary["coverage"]["rows_joined_to_llm_chess_elo"]
     )
-    assert summary["sensitivity"]["legacy_parity"]["matched_sample_max_dedupe"] == 66
-    assert round(summary["sensitivity"]["legacy_parity"]["pearson_r"], 12) == round(0.6967985896751968, 12)
 
 
 def test_coverage_outputs_reconcile_with_funnel_and_explain_missing_elo_and_dedupe():

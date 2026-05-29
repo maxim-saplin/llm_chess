@@ -17,7 +17,7 @@ This README is the operating guide. It should stay stable across result refreshe
 | [mappings/eci.csv](mappings/eci.csv), [mappings/arc_agi_2.csv](mappings/arc_agi_2.csv) | Runtime model-identity source of truth. |
 | [mapping-research](mapping-research) | Evidence notes behind mapping decisions. |
 | [evals/eci/SOURCE.md](evals/eci/SOURCE.md), [evals/arc-agi-2/SOURCE.md](evals/arc-agi-2/SOURCE.md) | External source provenance and score semantics. |
-| [evals/eci/epoch_eci_apr_2026.csv](evals/eci/epoch_eci_apr_2026.csv), [evals/arc-agi-2/arc-agi-2-apr-2026.csv](evals/arc-agi-2/arc-agi-2-apr-2026.csv) | Frozen external source snapshots. |
+| [evals/eci/epoch_eci_may_2026.csv](evals/eci/epoch_eci_may_2026.csv), [evals/arc-agi-2/arc-agi-2-apr-2026.csv](evals/arc-agi-2/arc-agi-2-apr-2026.csv) | Frozen external source snapshots. |
 
 ## Methodology
 
