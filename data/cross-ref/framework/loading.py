@@ -80,6 +80,7 @@ def load_llm_chess_inputs(repo_root: Path) -> tuple[pd.DataFrame, pd.DataFrame, 
         file_path=elo_path,
         required_columns=[
             "Player",
+            "min_game_date",
             "elo",
             "elo_moe_95",
             "total_games",

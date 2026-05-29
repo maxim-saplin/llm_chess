@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BullshitBench v2</title>
+  <style>
+    :root {
+      --bg: #f2efe7;
+      --panel: #fffdf7;
+      --ink: #1f1f1b;
+      --muted: #676252;
+      --line: #d8d1c3;
+      --accent: #15546f;
+      --accent-soft: #dbeef3;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: radial-gradient(circle at top left, #fffef9, var(--bg)); color: var(--ink); font: 15px/1.5 Georgia, Cambria, serif; }
+    header { padding: 32px max(24px, calc((100vw - 1100px) / 2)); border-bottom: 1px solid var(--line); }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    h1, h2, h3 { line-height: 1.15; margin: 0; }
+    h1 { font-size: clamp(2rem, 5vw, 3.8rem); letter-spacing: -0.03em; }
+    h2 { font-size: 1.4rem; margin-bottom: 12px; }
+    p { margin: 0; }
+    nav { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+    nav a { color: var(--accent); background: var(--accent-soft); padding: 6px 10px; border-radius: 999px; text-decoration: none; font-size: 0.9rem; }
+    section { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin: 18px 0; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .card { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: color-mix(in srgb, var(--panel) 90%, var(--accent-soft)); }
+    .card .label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .card .value { font-size: 1.5rem; font-weight: 700; margin-top: 8px; }
+    .muted { color: var(--muted); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--accent-soft); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    tr:last-child td { border-bottom: 0; }
+    pre { overflow-x: auto; background: #f7f3ea; border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+    @media (max-width: 900px) { .cards { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BullshitBench v2</h1>
+    <p class="muted">BullshitBench v2 nonsense-detection leaderboard normalized through the shared cross-ref contracts.</p>
+    <nav>
+      <a href="#overview">Overview</a>
+      <a href="#mapping-source">Mapping Source</a>
+      <a href="#funnel">Funnel</a>
+      <a href="#mapping">Mapping</a>
+      <a href="#coverage">Coverage</a>
+      <a href="#relationships">Relationships</a>
+      <a href="#prediction">Prediction</a>
+      <a href="#verification">Verification</a>
+    </nav>
+  </header>
+  <main>
+    <section id="overview">
+      <h2>Overview</h2>
+      <div class="cards">
+        <div class="card"><div class="label">Metric analysis sample</div><div class="value">58</div></div>
+        <div class="card"><div class="label">Elo analysis sample</div><div class="value">55</div></div>
+        <div class="card"><div class="label">Numeric external rows</div><div class="value">162</div></div>
+        <div class="card"><div class="label">Pearson r vs Elo</div><div class="value">0.303</div></div>
+      </div>
+      <p class="muted">Selected metric relationships and prediction use the metric-analysis sample.</p>
+      <p class="muted">Raw Elo relationships and release-controlled Elo relationships use the Elo-analysis sample.</p>
+    </section>
+    <section id="mapping-source">
+      <h2>Mapping Source Of Truth</h2>
+      <div class="table-wrap"><table><thead><tr><th>mapping_file</th><th>mapping_basis</th><th>source_seed_column</th><th>run_used_mapping_file_directly</th><th>fresh_review_status</th><th>changed_source_bridge_matches</th></tr></thead><tbody><tr><td>data/cross-ref/mappings/bullshit_bench.csv</td><td>Run-time source of truth is the mapping CSV. For BullshitBench it is a reviewed row-level mapping from per-reasoning-level leaderboard rows into the current LLM Chess inventory, matching reasoning effort where both sides expose it.</td><td>n/a</td><td>True</td><td>mapping-csv-reviewed</td><td>0</td></tr></tbody></table></div>
+      <h3>Source-bridge changes</h3>
+      <p class="muted">No rows.</p>
+    </section>
+    <section id="funnel">
+      <h2>Analysis Funnel</h2>
+      <div class="table-wrap"><table><thead><tr><th>label</th><th>branch</th><th>count</th><th>filter_side</th><th>required_condition</th><th>dropped_from_previous</th></tr></thead><tbody><tr><td>External eval rows with a numeric score</td><td>base</td><td>162</td><td>eval</td><td>The eval row has a parsed numeric target score.</td><td>0</td></tr><tr><td>Numeric eval rows with an accepted mapping</td><td>base</td><td>66</td><td>mapping</td><td>The mapping status is accepted, alias, or variant-compatible, and a LLM Chess player is assigned.</td><td>96</td></tr><tr><td>Accepted eval rows joined to LLM Chess metric rows</td><td>base</td><td>66</td><td>chess</td><td>The mapped LLM Chess player exists in the current LLM Chess metrics table in data/elo_refined.csv.</td><td>0</td></tr><tr><td>Deduped metric-analysis rows</td><td>metric</td><td>58</td><td>dedupe</td><td>For each LLM Chess player, keep the highest-scoring eval row for metric-only analysis.</td><td>8</td></tr><tr><td>Accepted eval rows joined to LLM Chess rows with non-null Elo</td><td>elo</td><td>62</td><td>chess</td><td>The mapped LLM Chess player exists and has a non-null Elo.</td><td>4</td></tr><tr><td>Deduped Elo-analysis rows</td><td>elo</td><td>55</td><td>dedupe</td><td>For each Elo-valid LLM Chess player, keep the highest-scoring eval row for Elo analysis.</td><td>7</td></tr></tbody></table></div>
+      <h3>Analysis Surfaces</h3>
+      <div class="table-wrap"><table><thead><tr><th>stage_id</th><th>count</th><th>used_by</th><th>description</th></tr></thead><tbody><tr><td>metric_analysis_rows_max_dedupe</td><td>58</td><td>relationships.selected_metrics, prediction</td><td>Deduped eval rows joined to LLM Chess metric rows, even when Elo is missing.</td></tr><tr><td>elo_analysis_rows_max_dedupe</td><td>55</td><td>relationships.raw_elo, relationships.release_controlled_elo</td><td>Deduped eval rows joined to LLM Chess players with non-null Elo.</td></tr></tbody></table></div>
+    </section>
+    <section id="mapping">
+      <h2>Mapping</h2>
+      <p class="muted">QA verdict: reviewed_with_unresolved_debt</p>
+      <div class="table-wrap"><table><thead><tr><th>accepted</th><th>alias</th><th>ambiguous</th><th>unmatched</th><th>variant-compatible</th></tr></thead><tbody><tr><td>6</td><td>21</td><td>6</td><td>90</td><td>39</td></tr></tbody></table></div>
+      <h3>Unresolved high-impact rows</h3>
+      <div class="table-wrap"><table><thead><tr><th>eval_row_id</th><th>eval_model_label</th><th>score_numeric</th><th>mapping_status</th><th>confidence</th><th>open_questions</th></tr></thead><tbody><tr><td>bullshit_bench:0000:anthropic_claude_opus_4_8_reasoning_none</td><td>anthropic/claude-opus-4.8@reasoning=none</td><td>1.93</td><td>unmatched</td><td>none</td><td>No Claude Opus 4.8 in elo_refined.csv (newest opus is 4.7).</td></tr><tr><td>bullshit_bench:0001:anthropic_claude_opus_4_8_reasoning_xhigh</td><td>anthropic/claude-opus-4.8@reasoning=xhigh</td><td>1.9233</td><td>unmatched</td><td>none</td><td>No Claude Opus 4.8 in elo_refined.csv (newest opus is 4.7).</td></tr><tr><td>bullshit_bench:0007:anthropic_claude_opus_4_7_reasoning_none</td><td>anthropic/claude-opus-4.7@reasoning=none</td><td>1.7833</td><td>unmatched</td><td>none</td><td>none row has no non-reasoning opus-4.7 counterpart; max mapped to the adaptive-thinking-high run (effort label differs).</td></tr><tr><td>bullshit_bench:0008:qwen_qwen3_5_397b_a17b_reasoning_high</td><td>qwen/qwen3.5-397b-a17b@reasoning=high</td><td>1.7033</td><td>unmatched</td><td>none</td><td>Only a 9B qwen3.5 distill in elo, not the hosted 397B-A17B model.</td></tr><tr><td>bullshit_bench:0015:qwen_qwen3_7_max_reasoning_none</td><td>qwen/qwen3.7-max@reasoning=none</td><td>1.5667</td><td>unmatched</td><td>none</td><td>No qwen3.7 family in elo_refined.csv.</td></tr><tr><td>bullshit_bench:0016:qwen_qwen3_6_plus_reasoning_none</td><td>qwen/qwen3.6-plus@reasoning=none</td><td>1.5567</td><td>unmatched</td><td>none</td><td>Only a local 27B qwen3.6 quant in elo, not the hosted Plus model.</td></tr><tr><td>bullshit_bench:0017:qwen_qwen3_5_397b_a17b_reasoning_none</td><td>qwen/qwen3.5-397b-a17b@reasoning=none</td><td>1.5267</td><td>unmatched</td><td>none</td><td>Only a 9B qwen3.5 distill in elo, not the hosted 397B-A17B model.</td></tr><tr><td>bullshit_bench:0018:qwen_qwen3_max_thinking_reasoning_high</td><td>qwen/qwen3-max-thinking@reasoning=high</td><td>1.5033</td><td>unmatched</td><td>none</td><td>qwen-max in elo is the older non-reasoning Qwen-Max, not Qwen3-Max-Thinking.</td></tr><tr><td>bullshit_bench:0019:moonshotai_kimi_k2_6_reasoning_none</td><td>moonshotai/kimi-k2.6@reasoning=none</td><td>1.4933</td><td>unmatched</td><td>none</td><td>Only kimi-k2.5 and kimi-k2 in elo, not k2.6.</td></tr><tr><td>bullshit_bench:0020:x_ai_grok_4_20_multi_agent_beta_reasoning_xhigh</td><td>x-ai/grok-4.20-multi-agent-beta@reasoning=xhigh</td><td>1.4333</td><td>unmatched</td><td>none</td><td>Multi-agent beta is a distinct system from the single-model grok-4-20 runs in elo.</td></tr><tr><td>bullshit_bench:0021:x_ai_grok_4_20_multi_agent_beta_reasoning_low</td><td>x-ai/grok-4.20-multi-agent-beta@reasoning=low</td><td>1.43</td><td>unmatched</td><td>none</td><td>Multi-agent beta is a distinct system from the single-model grok-4-20 runs in elo.</td></tr><tr><td>bullshit_bench:0022:xiaomi_mimo_v2_5_pro_reasoning_xhigh</td><td>xiaomi/mimo-v2.5-pro@reasoning=xhigh</td><td>1.4233</td><td>unmatched</td><td>none</td><td>No Xiaomi MiMo models in elo.</td></tr><tr><td>bullshit_bench:0023:qwen_qwen3_6_plus_reasoning_xhigh</td><td>qwen/qwen3.6-plus@reasoning=xhigh</td><td>1.4167</td><td>unmatched</td><td>none</td><td>Only a local 27B qwen3.6 quant in elo, not the hosted Plus model.</td></tr><tr><td>bullshit_bench:0024:qwen_qwen3_7_max_reasoning_xhigh</td><td>qwen/qwen3.7-max@reasoning=xhigh</td><td>1.3333</td><td>unmatched</td><td>none</td><td>No qwen3.7 family in elo_refined.csv.</td></tr><tr><td>bullshit_bench:0025:x_ai_grok_4_3_reasoning_minimal</td><td>x-ai/grok-4.3@reasoning=minimal</td><td>1.3033</td><td>unmatched</td><td>none</td><td>No grok-4.3 in elo_refined.csv.</td></tr></tbody></table></div>
+    </section>
+    <section id="coverage">
+      <h2>Coverage</h2>
+      <div class="table-wrap"><table><thead><tr><th>external_rows</th><th>numeric_score_rows</th><th>accepted_mapping_rows</th><th>rows_joined_to_llm_chess_metric_rows</th><th>unique_llm_chess_players_joined_to_metric_rows</th><th>metric_analysis_rows_max_dedupe</th><th>rows_joined_to_llm_chess_rows_with_non_null_elo</th><th>unique_llm_chess_players_joined_to_elo</th><th>elo_analysis_rows_max_dedupe</th><th>mapped_to_llm_chess_rows</th><th>matched_llm_chess_rows</th><th>matched_unique_llm_chess_players</th><th>external_rows_without_llm_chess_match</th><th>external_rows_without_llm_chess_elo_join</th><th>llm_chess_rows_without_eval_match</th><th>duplicate_mapping_keys</th><th>duplicate_elo_joined_player_rows</th><th>org_counts</th><th>reasoning_level_counts</th></tr></thead><tbody><tr><td>162</td><td>162</td><td>66</td><td>66</td><td>58</td><td>58</td><td>62</td><td>55</td><td>55</td><td>66</td><td>55</td><td>55</td><td>96</td><td>100</td><td>79</td><td>8</td><td>7</td><td>{&#x27;ai21&#x27;: 1, &#x27;anthropic&#x27;: 24, &#x27;arcee-ai&#x27;: 2, &#x27;baidu&#x27;: 3, &#x27;bytedance-seed&#x27;: 2, &#x27;deepseek&#x27;: 9, &#x27;google&#x27;: 17, &#x27;meta&#x27;: 3, &#x27;minimax&#x27;: 4, &#x27;mistralai&#x27;: 3, &#x27;moonshotai&#x27;: 5, &#x27;nvidia&#x27;: 8, &#x27;openai&#x27;: 38, &#x27;prime-intellect&#x27;: 2, &#x27;qwen&#x27;: 11, &#x27;stealth&#x27;: 4, &#x27;stepfun&#x27;: 2, &#x27;tencent&#x27;: 2, &#x27;x-ai&#x27;: 8, &#x27;xiaomi&#x27;: 6, &#x27;z-ai&#x27;: 8}</td><td>{&#x27;default&#x27;: 33, &#x27;high&#x27;: 32, &#x27;low&#x27;: 12, &#x27;max&#x27;: 1, &#x27;medium&#x27;: 1, &#x27;minimal&#x27;: 4, &#x27;none&#x27;: 46, &#x27;xhigh&#x27;: 33}</td></tr></tbody></table></div>
+    </section>
+    <section id="relationships">
+      <h2>Relationships</h2>
+      <div class="table-wrap"><table><thead><tr><th>name</th><th>n</th><th>pearson_r</th><th>pearson_p</th><th>spearman_r</th><th>spearman_p</th><th>slope</th><th>intercept</th><th>r2</th><th>linregress_p</th><th>slope_stderr</th><th>sample_stage_id</th><th>bootstrap_95</th></tr></thead><tbody><tr><td>bullshit_bench_vs_elo</td><td>55</td><td>0.3025879652751511</td><td>0.024740335096928377</td><td>0.47967963642199885</td><td>0.00021089560634087693</td><td>323.96033471120126</td><td>-111.28559067260042</td><td>0.09155947672935608</td><td>0.02474033509692834</td><td>140.16852478570252</td><td>elo_analysis_rows_max_dedupe</td><td>{&#x27;pearson_r&#x27;: [0.1397924994568805, 0.4506900398495455], &#x27;spearman_r&#x27;: [0.2690692255388596, 0.6451186438938419], &#x27;slope&#x27;: [137.88315180580298, 578.8179271547175]}</td></tr></tbody></table></div>
+      <h3>Selected metrics</h3>
+      <div class="table-wrap"><table><thead><tr><th>name</th><th>n</th><th>pearson_r</th><th>spearman_r</th><th>r2</th></tr></thead><tbody><tr><td>elo</td><td>55</td><td>0.3025879652751511</td><td>0.47967963642199885</td><td>0.09155947672935608</td></tr><tr><td>player_wins_percent</td><td>58</td><td>0.06012656134003025</td><td>0.14112497692871523</td><td>0.0036152033785764237</td></tr><tr><td>player_draws_percent</td><td>58</td><td>0.23056642593470136</td><td>0.22263937067559597</td><td>0.053160876768302105</td></tr><tr><td>games_interrupted_percent</td><td>58</td><td>-0.4023857315148205</td><td>-0.47968140725469866</td><td>0.1619142769267172</td></tr><tr><td>average_moves</td><td>58</td><td>0.20212320340047657</td><td>0.15728678014129926</td><td>0.04085378935287047</td></tr><tr><td>average_time_per_game_seconds</td><td>58</td><td>0.25979500703523334</td><td>0.3652458919796088</td><td>0.06749344568043694</td></tr><tr><td>average_game_cost</td><td>56</td><td>0.4279818316686636</td><td>0.5749098560112615</td><td>0.18316844823846426</td></tr><tr><td>completion_tokens_black_per_move</td><td>56</td><td>0.001242657282248573</td><td>0.07519182469679421</td><td>1.54419712112535e-06</td></tr><tr><td>material_diff_player_llm_minus_opponent</td><td>58</td><td>-0.04693235134785165</td><td>0.013689359221415702</td><td>0.002202645603038187</td></tr></tbody></table></div>
+    </section>
+    <section id="prediction">
+      <h2>Prediction</h2>
+      <div class="table-wrap"><table><thead><tr><th>status</th><th>sample_stage_id</th><th>sample_n</th><th>features</th><th>feature_selection</th></tr></thead><tbody><tr><td>ok</td><td>metric_analysis_rows_max_dedupe</td><td>58</td><td>average_game_cost, games_interrupted_percent, player_draws_percent, average_time_per_game_seconds</td><td>within_cv_training_folds</td></tr></tbody></table></div>
+      <h3>Baseline</h3>
+      <div class="table-wrap"><table><thead><tr><th>r2</th><th>rmse</th><th>mae</th><th>rank_spearman</th></tr></thead><tbody><tr><td>-0.01672091839221168</td><td>0.49879209141363917</td><td>0.4127105044492545</td><td>-0.14622100974622887</td></tr></tbody></table></div>
+      <h3>OLS</h3>
+      <div class="table-wrap"><table><thead><tr><th>r2</th><th>rmse</th><th>mae</th><th>rank_spearman</th></tr></thead><tbody><tr><td>0.0901202124452446</td><td>0.4718573107375277</td><td>0.34770162581279057</td><td>0.47202381869312954</td></tr></tbody></table></div>
+    </section>
+    <section id="verification">
+      <h2>Verification</h2>
+      <div class="table-wrap"><table><thead><tr><th>runner_command</th><th>inventory_path</th><th>mapping_file</th><th>verification_commands</th><th>verification_checks</th><th>test_status</th><th>mapping_qa_status</th><th>run_qa_status</th><th>known_limitations</th></tr></thead><tbody><tr><td>.venv/bin/python data/cross-ref/run_cross_ref.py bullshit_bench</td><td>data/cross-ref/model-identity/llm_chess_models.csv</td><td>data/cross-ref/mappings/bullshit_bench.csv</td><td>[]</td><td>[]</td><td>running-under-pytest</td><td>reviewed_with_unresolved_debt</td><td>publish_reproducible</td><td>[]</td></tr></tbody></table></div>
+    </section>
+    <section>
+      <h2>Machine Summary</h2>
+      <pre>{
+  &quot;eval_id&quot;: &quot;bullshit_bench&quot;,
+  &quot;eval_label&quot;: &quot;BullshitBench v2&quot;,
+  &quot;target_score_column&quot;: &quot;score_numeric&quot;,
+  &quot;summary_json&quot;: null,
+  &quot;coverage_csv&quot;: null
+}</pre>
+    </section>
+  </main>
+</body>
+</html>

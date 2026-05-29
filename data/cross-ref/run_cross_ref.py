@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 
-from adapters import arc_agi_2, eci
+from adapters import arc_agi_2, bullshit_bench, eci
 from framework.cross_eval import build_cross_eval_summary, render_cross_eval_report_markdown
 from framework.diffing import build_eval_diff_report, render_artifact_diff_markdown
 from framework.loading import load_llm_chess_inputs
@@ -25,6 +25,7 @@ PUBLISHED_OUTPUT_DIRS = (MODEL_IDENTITY_DIR, RESULTS_DIR)
 ADAPTERS = {
     "eci": eci,
     "arc_agi_2": arc_agi_2,
+    "bullshit_bench": bullshit_bench,
 }
 
 
@@ -141,6 +142,12 @@ def refresh_inventory(output_path: Path | None = None, *, publish: bool = False)
 def run_eval(args: argparse.Namespace) -> dict[str, object]:
     adapter = ADAPTERS[args.eval_id]
     publish = bool(getattr(args, "publish", False))
+    mistake_stats = getattr(args, "mistake_stats", "excluded")
+    if mistake_stats == "clean_only" and publish:
+        raise ValueError(
+            "mistake_stats=clean_only is a research-only mode and must not be published; "
+            "drop --publish and use explicit scratch outputs instead"
+        )
     scratch_dir = None if publish else _scratch_output_dir(args.eval_id)
     source_path = getattr(args, "source_path", None)
     inventory_output = args.inventory_output or (
@@ -179,6 +186,7 @@ def run_eval(args: argparse.Namespace) -> dict[str, object]:
         verification=verification,
         source_path=source_path,
         mapping_path=mapping_path,
+        mistake_stats=mistake_stats,
     )
     if not verification["known_limitations"] and summary.get("limitations"):
         verification["known_limitations"] = list(summary["limitations"])
@@ -539,7 +547,9 @@ def run_audit(args: argparse.Namespace) -> dict[str, object]:
             "safe_for": [
                 "Published per-eval summaries reproduce cleanly against the current source snapshots and mapping CSVs." if not failure_reasons else "Published per-eval summaries need investigation before they can be trusted.",
                 "The aggregate cross-eval report is regenerated from the published per-eval summaries.",
-                "The benchmark set covered by this audit is llm_chess, eci, and arc_agi_2.",
+                "The benchmark set covered by this audit is "
+                + ", ".join(["llm_chess", *[entry["eval_id"] for entry in cross_eval_summary["evals"]]])
+                + ".",
             ],
             "not_safe_for": [
                 "Claims that assume unresolved mapping rows are already resolved.",
@@ -597,7 +607,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     audit_parser = subparsers.add_parser(
         "audit",
-        help="Run one non-mutating trust audit across llm_chess, ECI, and ARC-AGI-2.",
+        help="Run one non-mutating trust audit across llm_chess and every registered external eval.",
     )
     audit_parser.add_argument("--results-dir", type=Path, default=RESULTS_DIR)
     audit_parser.add_argument("--mapping-dir", type=Path, default=MAPPINGS_DIR)
@@ -624,6 +634,13 @@ def build_parser() -> argparse.ArgumentParser:
         eval_parser.add_argument("--inventory-output", type=Path)
         eval_parser.add_argument("--mapping-path", type=Path)
         eval_parser.add_argument("--source-path", type=Path)
+        eval_parser.add_argument(
+            "--mistake-stats",
+            choices=["excluded", "clean_only"],
+            default="excluded",
+            help="'clean_only' restricts to models with min_game_date >= the cutoff and re-enables "
+            "the repaired wrong-action/wrong-move/mistake metrics (research-only; cannot be published).",
+        )
         eval_parser.add_argument("--summary-output", type=Path)
         eval_parser.add_argument("--html-output", type=Path)
         eval_parser.add_argument("--normalized-output", type=Path)

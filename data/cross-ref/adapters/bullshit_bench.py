@@ -7,19 +7,18 @@ import pandas as pd
 from framework.analysis_surface import build_analysis_samples
 from framework.eval_analysis import EvalAnalysisConfig, run_configured_eval_analysis, standard_game_threshold_sensitivity
 from framework.loading import summarize_input_contract
-from framework.model_identity import infer_provider_or_family
-from framework.normalization import parse_currency, parse_day_month_year, parse_percent, slugify_label
+from framework.normalization import safe_float, slugify_label
 from framework.statistics import (
     bootstrap_corr,
     named_corr,
 )
 
-EVAL_ID = "arc_agi_2"
-EVAL_LABEL = "ARC-AGI-2"
+EVAL_ID = "bullshit_bench"
+EVAL_LABEL = "BullshitBench v2"
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CROSS_REF_ROOT = Path(__file__).resolve().parents[1]
-SOURCE_DIR = CROSS_REF_ROOT / "evals" / "arc-agi-2"
-SOURCE_PATH = SOURCE_DIR / "arc-agi-2-may-2026.csv"
+SOURCE_DIR = CROSS_REF_ROOT / "evals" / "bullshit-bench"
+SOURCE_PATH = SOURCE_DIR / "bullshit_bench_v2_may_2026.csv"
 SOURCE_NOTE_PATH = SOURCE_DIR / "SOURCE.md"
 
 
@@ -36,7 +35,7 @@ def _relationship_extras(sample: pd.DataFrame, target_column: str) -> dict[str, 
 
 
 def _accepted_row_filter(merged_mapping: pd.DataFrame) -> pd.Series:
-    return merged_mapping["score_arc_agi_2"].notna()
+    return merged_mapping["score_numeric"].notna()
 
 
 def _coverage_extras(config: EvalAnalysisConfig, context: dict[str, object]) -> dict[str, object]:
@@ -58,18 +57,20 @@ def _coverage_extras(config: EvalAnalysisConfig, context: dict[str, object]) -> 
         "llm_chess_rows_without_eval_match": int(len(samples["elo_players"] - elo_joined_players)),
         "duplicate_mapping_keys": int(metric_joined_rows["llm_chess_player"].duplicated().sum()),
         "duplicate_elo_joined_player_rows": int(elo_joined_rows["llm_chess_player"].duplicated().sum()),
-        "system_type_counts": {
+        "org_counts": {
             key: int(value)
-            for key, value in normalized["SYSTEM TYPE"].fillna("missing").value_counts().sort_index().items()
+            for key, value in normalized["org"].fillna("missing").value_counts().sort_index().items()
+        },
+        "reasoning_level_counts": {
+            key: int(value)
+            for key, value in normalized["reasoning"].fillna("missing").value_counts().sort_index().items()
         },
     }
 
 
 def _coverage_output_transform(coverage_output: pd.DataFrame) -> pd.DataFrame:
     coverage_output = coverage_output.copy()
-    coverage_output["provider_or_family_inferred"] = coverage_output["eval_model_label"].map(
-        lambda label: infer_provider_or_family(label)[0]
-    )
+    coverage_output["provider_or_family_inferred"] = coverage_output["org"]
     return coverage_output
 
 
@@ -97,7 +98,7 @@ def _sensitivity(config: EvalAnalysisConfig, context: dict[str, object]) -> dict
         status_sensitivity.append(
             {
                 "status_scope": label,
-                **named_corr(f"arc_agi_2_vs_elo_{label}", sample[config.target_score_column], sample["elo"]),
+                **named_corr(f"bullshit_bench_vs_elo_{label}", sample[config.target_score_column], sample["elo"]),
             }
         )
     return {
@@ -109,25 +110,26 @@ def _sensitivity(config: EvalAnalysisConfig, context: dict[str, object]) -> dict
 CONFIG = EvalAnalysisConfig(
     eval_id=EVAL_ID,
     eval_label=EVAL_LABEL,
-    summary_tagline="ARC Prize leaderboard rows normalized through the shared cross-ref contracts.",
-    target_score_column="score_arc_agi_2",
-    prediction_target="ARC-AGI-2 Score",
+    summary_tagline="BullshitBench v2 nonsense-detection leaderboard normalized through the shared cross-ref contracts.",
+    target_score_column="score_numeric",
+    prediction_target="BullshitBench avg_score",
     repo_root=REPO_ROOT,
     source_note_path=SOURCE_NOTE_PATH,
     default_source_path=SOURCE_PATH,
-    default_mapping_path=CROSS_REF_ROOT / "mappings" / "arc_agi_2.csv",
-    mapping_basis="Run-time source of truth is the mapping CSV. For ARC it is a reviewed row-level mapping from leaderboard labels into the current LLM Chess inventory.",
+    default_mapping_path=CROSS_REF_ROOT / "mappings" / "bullshit_bench.csv",
+    mapping_basis="Run-time source of truth is the mapping CSV. For BullshitBench it is a reviewed row-level mapping from per-reasoning-level leaderboard rows into the current LLM Chess inventory, matching reasoning effort where both sides expose it.",
     source_seed_column=None,
     fresh_review_status="mapping-csv-reviewed",
-    relationship_name="arc_agi_2_vs_elo",
+    relationship_name="bullshit_bench_vs_elo",
     accepted_row_filter=_accepted_row_filter,
     relationship_extras=_relationship_extras,
     coverage_extras=_coverage_extras,
     coverage_output_transform=_coverage_output_transform,
     sensitivity_builder=_sensitivity,
     limitations=[
-        "ARC leaderboard rows can represent systems or reasoning configurations rather than plain base models.",
-        "COST (V3) meaning was not defined in the official ARC sources located during this implementation.",
+        "avg_score measures one behavior (nonsense detection), not broad capability; it can diverge from or invert raw capability rankings.",
+        "Leaderboard rows are per reasoning level, so one base model contributes several external rows that are deduped by keeping the highest avg_score per LLM Chess player.",
+        "Many leaderboard models have no LLM Chess counterpart (distinct host tier, open-weight long-tail, or stealth rows) and remain unmatched.",
         "Correlations are exploratory and should not be over-interpreted when the matched sample is small or mapping status is unresolved.",
     ],
 )
@@ -139,43 +141,39 @@ def normalize_source(source_path: Path | None = None) -> tuple[pd.DataFrame, dic
     normalized = raw.reset_index(names="source_row_index").copy()
     normalized["eval_id"] = EVAL_ID
     normalized["eval_row_id"] = normalized.apply(
-        lambda row: f"{EVAL_ID}:{row['source_row_index']:04d}:{slugify_label(row['AI SYSTEM'])}",
+        lambda row: f"{EVAL_ID}:{row['source_row_index']:04d}:{slugify_label(row['model'])}",
         axis=1,
     )
-    normalized["eval_model_label"] = normalized["AI SYSTEM"].astype(str).str.strip()
+    normalized["eval_model_label"] = normalized["model"].astype(str).str.strip()
     normalized["eval_variant_label"] = normalized["eval_model_label"]
-    normalized["source_date"] = normalized["DATE"].map(parse_day_month_year)
-    normalized["score_arc_agi_1"] = normalized["ARC-AGI-1"].map(parse_percent)
-    normalized["score_arc_agi_2"] = normalized["ARC-AGI-2"].map(parse_percent)
-    normalized["score_arc_agi_3"] = normalized["ARC-AGI-3"].map(parse_percent)
-    normalized["score_numeric"] = normalized["score_arc_agi_2"]
-    normalized["cost_per_task"] = normalized["COST/TASK"].map(parse_currency)
-    normalized["cost_v3"] = normalized["COST (V3)"].map(parse_currency)
-    normalized["score_label"] = "ARC-AGI-2"
+    normalized["score_numeric"] = normalized["avg_score"].map(safe_float)
+    normalized["green_rate_numeric"] = normalized["green_rate"].map(safe_float)
+    normalized["red_rate_numeric"] = normalized["red_rate"].map(safe_float)
+    normalized["score_label"] = "BullshitBench avg_score"
     contract = summarize_input_contract(
         df=raw,
         file_path=actual_source_path,
         required_columns=[
-            "AI SYSTEM",
-            "AUTHOR",
-            "DATE",
-            "SYSTEM TYPE",
-            "ARC-AGI-1",
-            "ARC-AGI-2",
-            "ARC-AGI-3",
-            "COST/TASK",
-            "COST (V3)",
-            "CODE / PAPER",
+            "rank",
+            "model",
+            "org",
+            "reasoning",
+            "avg_score",
+            "green_rate",
+            "red_rate",
+            "score_2",
+            "score_1",
+            "score_0",
+            "nonsense_count",
+            "error_count",
         ],
-        key_column="AI SYSTEM",
-        numeric_columns=[],
+        key_column="model",
+        numeric_columns=["avg_score", "green_rate", "red_rate"],
     )
     contract["numeric_parse_rates"] = {
-        "score_arc_agi_1": _parse_rate(raw["ARC-AGI-1"], normalized["score_arc_agi_1"]),
-        "score_arc_agi_2": _parse_rate(raw["ARC-AGI-2"], normalized["score_arc_agi_2"]),
-        "score_arc_agi_3": _parse_rate(raw["ARC-AGI-3"], normalized["score_arc_agi_3"]),
-        "cost_per_task": _parse_rate(raw["COST/TASK"], normalized["cost_per_task"]),
-        "cost_v3": _parse_rate(raw["COST (V3)"], normalized["cost_v3"]),
+        "score_numeric": _parse_rate(raw["avg_score"], normalized["score_numeric"]),
+        "green_rate_numeric": _parse_rate(raw["green_rate"], normalized["green_rate_numeric"]),
+        "red_rate_numeric": _parse_rate(raw["red_rate"], normalized["red_rate_numeric"]),
     }
     return normalized, contract
 

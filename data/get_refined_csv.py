@@ -709,6 +709,22 @@ def load_model_prices(metadata_file_path: str) -> dict[str, tuple[float, float]]
     return model_prices
 
 
+def _earliest_log_date(logs) -> str:
+    """Earliest game start date (YYYY-MM-DD) across the given logs, or "" if none parse.
+
+    Game logs store ``time_started`` as ``YYYY.MM.DD_HH:MM``. This date is stamped per model into
+    the refined output so downstream consumers can tell which models were run after the
+    2025-03-16 wrong-action/wrong-move logging fix without walking the raw logs again.
+    """
+    dates = []
+    for log in logs:
+        ts = str(getattr(log, "time_started", "") or "")
+        date_part = ts.split("_", 1)[0].replace(".", "-")
+        if len(date_part) == 10 and date_part[4] == "-" and date_part[7] == "-":
+            dates.append(date_part)
+    return min(dates) if dates else ""
+
+
 def build_refined_rows_from_logs(
     logs_dirs: Union[str, List[Union[str, Dict[str, str]]]],
     model_overrides: dict | None = None,
@@ -939,6 +955,7 @@ def build_refined_rows_from_logs(
 
         row = {
             "Player": model_name,
+            "min_game_date": _earliest_log_date(model_logs),
             "total_games": total_games,
             "player_wins": black_llm_wins,
             "opponent_wins": opponent_wins,
@@ -1016,6 +1033,7 @@ def build_refined_rows_from_logs(
 # Unified refined CSV headers used across functions
 BASE_REFINED_HEADERS = [
     "Player",
+    "min_game_date",
     "total_games",
     "player_wins",
     "opponent_wins",
@@ -1191,6 +1209,10 @@ def collapse_refined_rows_by_player(rows):
         ]:
             g[key] = max(to_float(g.get(key)), to_float(row.get(key)))
 
+        # Earliest game date across merged groups (keep the oldest non-empty stamp)
+        merged_dates = [d for d in (g.get("min_game_date"), row.get("min_game_date")) if d]
+        g["min_game_date"] = min(merged_dates) if merged_dates else ""
+
     # Recompute derived metrics from merged totals
     out = []
     for (player, _opponent_label), g in grouped.items():
@@ -1252,6 +1274,7 @@ def write_refined_csv(rows, output_file):
             # Normalize: ensure all headers present
             out_row = {k: r.get(k, "0") for k in headers}
             out_row["Player"] = r.get("Player", "")
+            out_row["min_game_date"] = r.get("min_game_date", "")
             writer.writerow(out_row)
 
 
@@ -1262,6 +1285,7 @@ def write_elo_refined_csv(rows, output_file):
         for r in rows:
             out_row = {k: r.get(k, "0") for k in ELO_REFINED_HEADERS}
             out_row["Player"] = r.get("Player", "")
+            out_row["min_game_date"] = r.get("min_game_date", "")
             writer.writerow(out_row)
 
 

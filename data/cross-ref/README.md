@@ -11,13 +11,13 @@ This README is the operating guide. It should stay stable across result refreshe
 | Artifact | Role |
 | --- | --- |
 | [CONSOLIDATED_REPORT.md](CONSOLIDATED_REPORT.md) | Cross-eval findings, current caveats, and research next steps. |
-| [results/eci_summary.json](results/eci_summary.json), [results/arc_agi_2_summary.json](results/arc_agi_2_summary.json) | Machine-readable per-eval facts used for reporting. |
-| [results/eci.html](results/eci.html), [results/arc_agi_2.html](results/arc_agi_2.html) | Human-readable per-eval reports. |
-| [results/eci_coverage.csv](results/eci_coverage.csv), [results/arc_agi_2_coverage.csv](results/arc_agi_2_coverage.csv) | Row-level coverage and inclusion surfaces. |
-| [mappings/eci.csv](mappings/eci.csv), [mappings/arc_agi_2.csv](mappings/arc_agi_2.csv) | Runtime model-identity source of truth. |
+| [results/eci_summary.json](results/eci_summary.json), [results/arc_agi_2_summary.json](results/arc_agi_2_summary.json), [results/bullshit_bench_summary.json](results/bullshit_bench_summary.json) | Machine-readable per-eval facts used for reporting. |
+| [results/eci.html](results/eci.html), [results/arc_agi_2.html](results/arc_agi_2.html), [results/bullshit_bench.html](results/bullshit_bench.html) | Human-readable per-eval reports. |
+| [results/eci_coverage.csv](results/eci_coverage.csv), [results/arc_agi_2_coverage.csv](results/arc_agi_2_coverage.csv), [results/bullshit_bench_coverage.csv](results/bullshit_bench_coverage.csv) | Row-level coverage and inclusion surfaces. |
+| [mappings/eci.csv](mappings/eci.csv), [mappings/arc_agi_2.csv](mappings/arc_agi_2.csv), [mappings/bullshit_bench.csv](mappings/bullshit_bench.csv) | Runtime model-identity source of truth. |
 | [mapping-research](mapping-research) | Evidence notes behind mapping decisions. |
-| [evals/eci/SOURCE.md](evals/eci/SOURCE.md), [evals/arc-agi-2/SOURCE.md](evals/arc-agi-2/SOURCE.md) | External source provenance and score semantics. |
-| [evals/eci/epoch_eci_may_2026.csv](evals/eci/epoch_eci_may_2026.csv), [evals/arc-agi-2/arc-agi-2-apr-2026.csv](evals/arc-agi-2/arc-agi-2-apr-2026.csv) | Frozen external source snapshots. |
+| [evals/eci/SOURCE.md](evals/eci/SOURCE.md), [evals/arc-agi-2/SOURCE.md](evals/arc-agi-2/SOURCE.md), [evals/bullshit-bench/SOURCE.md](evals/bullshit-bench/SOURCE.md) | External source provenance and score semantics. |
+| [evals/eci/epoch_eci_may_2026.csv](evals/eci/epoch_eci_may_2026.csv), [evals/arc-agi-2/arc-agi-2-may-2026.csv](evals/arc-agi-2/arc-agi-2-may-2026.csv), [evals/bullshit-bench/bullshit_bench_v2_may_2026.csv](evals/bullshit-bench/bullshit_bench_v2_may_2026.csv) | Frozen external source snapshots. |
 
 ## Methodology
 
@@ -79,9 +79,9 @@ The release-controlled value answers a stricter question: among models with comp
 ## Review Order
 
 1. Read [CONSOLIDATED_REPORT.md](CONSOLIDATED_REPORT.md) for the cross-eval bottom line and current caveats.
-2. Inspect [results/eci.html](results/eci.html) and [results/arc_agi_2.html](results/arc_agi_2.html) for per-eval detail.
-3. Check [results/eci_summary.json](results/eci_summary.json) and [results/arc_agi_2_summary.json](results/arc_agi_2_summary.json) when a claim needs machine-readable backing.
-4. Use [results/eci_coverage.csv](results/eci_coverage.csv), [results/arc_agi_2_coverage.csv](results/arc_agi_2_coverage.csv), and the mapping CSVs to review row-level inclusion decisions.
+2. Inspect [results/eci.html](results/eci.html), [results/arc_agi_2.html](results/arc_agi_2.html), and [results/bullshit_bench.html](results/bullshit_bench.html) for per-eval detail.
+3. Check [results/eci_summary.json](results/eci_summary.json), [results/arc_agi_2_summary.json](results/arc_agi_2_summary.json), and [results/bullshit_bench_summary.json](results/bullshit_bench_summary.json) when a claim needs machine-readable backing.
+4. Use [results/eci_coverage.csv](results/eci_coverage.csv), [results/arc_agi_2_coverage.csv](results/arc_agi_2_coverage.csv), [results/bullshit_bench_coverage.csv](results/bullshit_bench_coverage.csv), and the mapping CSVs to review row-level inclusion decisions.
 5. Use `mapping-review` or `audit` commands below for generated review surfaces that are not necessarily checked in.
 
 ## Commands
@@ -91,6 +91,7 @@ From the repository root with `.venv` active:
 ```bash
 .venv/bin/python data/cross-ref/run_cross_ref.py eci
 .venv/bin/python data/cross-ref/run_cross_ref.py arc_agi_2
+.venv/bin/python data/cross-ref/run_cross_ref.py bullshit_bench
 .venv/bin/python data/cross-ref/run_cross_ref.py cross-eval
 .venv/bin/python data/cross-ref/run_cross_ref.py mapping-review
 .venv/bin/python data/cross-ref/run_cross_ref.py audit

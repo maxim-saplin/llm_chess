@@ -250,6 +250,7 @@ def repeated_cv_ols_with_fold_feature_selection(
     max_metrics: int = 4,
     seeds: list[int] | None = None,
     n_folds: int = 5,
+    allowed_repaired: frozenset[str] | set[str] = frozenset(),
 ) -> dict[str, object]:
     seeds = seeds or DEFAULT_CV_SEEDS
     prediction_rows = []
@@ -267,6 +268,7 @@ def repeated_cv_ols_with_fold_feature_selection(
                 target_column=target_column,
                 candidate_metrics=candidate_metrics,
                 max_metrics=max_metrics,
+                allowed_repaired=allowed_repaired,
             )
             if not features:
                 folds_without_features += 1
@@ -312,8 +314,9 @@ def choose_features(
     target_column: str,
     candidate_metrics: list[str],
     max_metrics: int = 4,
+    allowed_repaired: frozenset[str] | set[str] = frozenset(),
 ) -> list[str]:
-    candidate_metrics, _ = filter_multifactor_candidate_metrics(candidate_metrics)
+    candidate_metrics, _ = filter_multifactor_candidate_metrics(candidate_metrics, allowed_repaired)
     scored = []
     for metric in candidate_metrics:
         valid = df[[target_column, metric]].dropna()
@@ -331,8 +334,11 @@ def build_metric_relationships(
     *,
     target_column: str,
     candidate_metrics: list[str] | None = None,
+    allowed_repaired: frozenset[str] | set[str] = frozenset(),
 ) -> list[dict[str, object]]:
-    candidate_metrics, _ = filter_multifactor_candidate_metrics(candidate_metrics or DEFAULT_SELECTED_METRICS)
+    candidate_metrics, _ = filter_multifactor_candidate_metrics(
+        candidate_metrics or DEFAULT_SELECTED_METRICS, allowed_repaired
+    )
     rows = []
     for metric in candidate_metrics:
         if metric not in df.columns:
@@ -370,9 +376,10 @@ def build_prediction_summary(
     *,
     target_column: str,
     candidate_metrics: list[str] | None = None,
+    allowed_repaired: frozenset[str] | set[str] = frozenset(),
 ) -> dict[str, object]:
     filtered_candidate_metrics, excluded_candidate_metrics = filter_multifactor_candidate_metrics(
-        candidate_metrics or DEFAULT_SELECTED_METRICS
+        candidate_metrics or DEFAULT_SELECTED_METRICS, allowed_repaired
     )
     available_candidate_metrics = [metric for metric in filtered_candidate_metrics if metric in df.columns]
     if not available_candidate_metrics:
@@ -397,6 +404,7 @@ def build_prediction_summary(
         model_df,
         target_column=target_column,
         candidate_metrics=available_candidate_metrics,
+        allowed_repaired=allowed_repaired,
     )
     return {
         "status": "ok",

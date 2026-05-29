@@ -14,6 +14,11 @@ from framework.analysis_surface import (
     build_analysis_surfaces,
     build_funnel,
 )
+from framework.data_quality import (
+    MISTAKE_STATS_TRUSTED_AFTER,
+    REPAIRABLE_MISTAKE_METRICS,
+    clean_mistake_stats_mask,
+)
 from framework.loading import load_llm_chess_inputs
 from framework.mapping import ACCEPTED_MAPPING_STATUSES, apply_mapping, summarize_mapping
 from framework.rendering import render_summary_html
@@ -59,6 +64,14 @@ class EvalAnalysisConfig:
     limitations: list[str] = field(default_factory=list)
 
 
+def _ordered_extend(base: list[str], extra: list[str]) -> list[str]:
+    out = list(base)
+    for item in extra:
+        if item not in out:
+            out.append(item)
+    return out
+
+
 def _report_path(path: Path, repo_root: Path) -> str:
     resolved = path.resolve()
     try:
@@ -82,11 +95,13 @@ def _metric_relationships(
     *,
     target_column: str,
     candidate_metrics: list[str],
+    allowed_repaired: frozenset[str] | set[str] = frozenset(),
 ) -> list[dict[str, object]]:
     selected_metrics = build_metric_relationships(
         sample,
         target_column=target_column,
         candidate_metrics=candidate_metrics,
+        allowed_repaired=allowed_repaired,
     )
     for metric in selected_metrics:
         metric["sample_stage_id"] = METRIC_STAGE_ID
@@ -99,6 +114,7 @@ def _prediction_summary(
     target_column: str,
     target_label: str,
     candidate_metrics: list[str],
+    allowed_repaired: frozenset[str] | set[str] = frozenset(),
 ) -> dict[str, object]:
     return {
         "target": target_label,
@@ -108,6 +124,7 @@ def _prediction_summary(
             sample,
             target_column=target_column,
             candidate_metrics=candidate_metrics,
+            allowed_repaired=allowed_repaired,
         ),
     }
 
@@ -116,6 +133,9 @@ def _build_core_relationships(
     config: EvalAnalysisConfig,
     elo_analysis: pd.DataFrame,
     metric_analysis: pd.DataFrame,
+    *,
+    selected_metrics: list[str],
+    allowed_repaired: frozenset[str] | set[str] = frozenset(),
 ) -> dict[str, object]:
     raw_relationship = named_corr(
         config.relationship_name,
@@ -140,7 +160,8 @@ def _build_core_relationships(
         "selected_metrics": _metric_relationships(
             metric_analysis,
             target_column=config.target_score_column,
-            candidate_metrics=config.selected_metrics,
+            candidate_metrics=selected_metrics,
+            allowed_repaired=allowed_repaired,
         ),
     }
 
@@ -178,13 +199,34 @@ def run_configured_eval_analysis(
     verification: dict[str, object],
     source_path: Path | None = None,
     mapping_path: Path | None = None,
+    mistake_stats: str = "excluded",
 ) -> tuple[dict[str, object], pd.DataFrame, pd.DataFrame, str]:
+    if mistake_stats not in ("excluded", "clean_only"):
+        raise ValueError(f"mistake_stats must be 'excluded' or 'clean_only', got {mistake_stats!r}")
     actual_source_path = source_path or config.default_source_path
     actual_mapping_path = mapping_path or config.default_mapping_path
     normalized, source_contract = normalize_source(actual_source_path)
     merged_mapping = apply_mapping(normalized, mapping)
     accepted = _accepted_rows(config, merged_mapping)
     elo, metadata, llm_chess_inputs = load_llm_chess_inputs(config.repo_root)
+
+    # Mistake-stats mode. By default the historically tainted error metrics stay excluded. In
+    # "clean_only" we restrict the sample to models stamped clean (min_game_date >= cutoff) and
+    # re-enable the repaired rate metrics for that sample. Pre-cutoff models are dropped wholesale;
+    # we never recompute an individual model's stats.
+    clean_mask = clean_mistake_stats_mask(elo)
+    clean_players = sorted(elo.loc[clean_mask, "Player"].dropna())
+    dropped_players = sorted(elo.loc[~clean_mask, "Player"].dropna())
+    if mistake_stats == "clean_only":
+        elo = elo.loc[clean_mask].reset_index(drop=True)
+        allowed_repaired = frozenset(m for m in REPAIRABLE_MISTAKE_METRICS if m in elo.columns)
+        selected_metrics = _ordered_extend(config.selected_metrics, sorted(allowed_repaired))
+        prediction_candidates = _ordered_extend(config.prediction_candidate_metrics, sorted(allowed_repaired))
+    else:
+        allowed_repaired = frozenset()
+        selected_metrics = list(config.selected_metrics)
+        prediction_candidates = list(config.prediction_candidate_metrics)
+
     samples = build_analysis_samples(
         accepted,
         elo,
@@ -200,12 +242,19 @@ def run_configured_eval_analysis(
     elo_analysis_rows = samples["elo_analysis_rows"]
     elo_analysis = samples["elo_analysis_sample"]
 
-    relationships = _build_core_relationships(config, elo_analysis, metric_analysis)
+    relationships = _build_core_relationships(
+        config,
+        elo_analysis,
+        metric_analysis,
+        selected_metrics=selected_metrics,
+        allowed_repaired=allowed_repaired,
+    )
     prediction = _prediction_summary(
         metric_analysis,
         target_column=config.target_score_column,
         target_label=config.prediction_target,
-        candidate_metrics=config.prediction_candidate_metrics,
+        candidate_metrics=prediction_candidates,
+        allowed_repaired=allowed_repaired,
     )
     mapping_summary = summarize_mapping(
         merged_mapping,
@@ -268,6 +317,14 @@ def run_configured_eval_analysis(
             "source_file_paths": [_report_path(actual_source_path, config.repo_root)],
         },
         "llm_chess_inputs": llm_chess_inputs,
+        "mistake_stats": {
+            "mode": mistake_stats,
+            "trusted_after": MISTAKE_STATS_TRUSTED_AFTER,
+            "repaired_metrics_enabled": sorted(allowed_repaired),
+            "clean_player_count": len(clean_players),
+            "pre_cutoff_player_count": len(dropped_players),
+            "pre_cutoff_players_dropped": dropped_players if mistake_stats == "clean_only" else [],
+        },
         "mapping_source_of_truth": mapping_source_of_truth,
         "mapping": mapping_summary,
         "coverage": coverage,

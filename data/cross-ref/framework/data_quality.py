@@ -12,9 +12,16 @@ GROK_INVALID_TOKEN_AND_COST_COLUMNS = (
     "moe_price_per_1000_moves",
 )
 
-# Historical logs before 2025-03-16 underreported wrong actions and wrong moves.
-# The current aggregate elo_refined.csv does not preserve row-level run-date provenance,
-# so multifactor analysis must exclude these metrics until provenance is carried through.
+# Logs before this date underreported wrong actions and wrong moves. Models whose earliest LLM Chess
+# game (elo_refined.csv `min_game_date`) is on/after this date have trustworthy error metrics.
+# This is the single source of truth for the cutoff; everything else reads it.
+MISTAKE_STATS_TRUSTED_AFTER = "2025-03-16"
+
+# Historical logs before MISTAKE_STATS_TRUSTED_AFTER underreported wrong actions and wrong moves.
+# These metrics are excluded from analysis by default. They can be re-enabled only on a sample
+# restricted to models stamped clean (min_game_date >= cutoff); see clean_mistake_stats_mask and the
+# eval analysis `mistake_stats="clean_only"` mode. We never repair individual models — we drop the
+# pre-cutoff ones wholesale, since the aggregate rows cannot be safely recomputed per model.
 HISTORICALLY_TAINTED_MULTIFACTOR_METRICS = (
     "player_wrong_actions",
     "player_wrong_moves",
@@ -23,6 +30,25 @@ HISTORICALLY_TAINTED_MULTIFACTOR_METRICS = (
     "mistakes_per_1000moves",
     "moe_mistakes_per_1000moves",
 )
+
+# The error/discipline rate metrics analysis can use once the sample is restricted to clean models.
+REPAIRABLE_MISTAKE_METRICS = (
+    "wrong_actions_per_1000moves",
+    "wrong_moves_per_1000moves",
+    "mistakes_per_1000moves",
+)
+
+
+def clean_mistake_stats_mask(elo: pd.DataFrame, *, cutoff: str = MISTAKE_STATS_TRUSTED_AFTER) -> pd.Series:
+    """Boolean mask of elo rows whose earliest game ran on/after the cutoff.
+
+    Rows with a missing/blank ``min_game_date`` are treated as NOT clean (dropped), because we cannot
+    vouch for when those games ran.
+    """
+    if "min_game_date" not in elo.columns:
+        return pd.Series(False, index=elo.index)
+    stamped = elo["min_game_date"].astype(str).str.strip()
+    return stamped.ne("") & stamped.ne("nan") & (stamped >= cutoff)
 
 
 def _ordered_unique(values: list[str]) -> list[str]:
@@ -36,11 +62,20 @@ def _ordered_unique(values: list[str]) -> list[str]:
     return ordered
 
 
-def filter_multifactor_candidate_metrics(candidate_metrics: list[str] | None) -> tuple[list[str], list[str]]:
+def filter_multifactor_candidate_metrics(
+    candidate_metrics: list[str] | None,
+    allowed_repaired: frozenset[str] | set[str] = frozenset(),
+) -> tuple[list[str], list[str]]:
+    """Split candidates into kept/excluded, dropping historically tainted metrics.
+
+    Metrics in ``allowed_repaired`` are exempt from exclusion: callers pass these only when the
+    analysis sample has been restricted to models stamped clean (min_game_date >= cutoff), so the
+    metric values are trustworthy for that sample.
+    """
     filtered: list[str] = []
     excluded: list[str] = []
     for metric in candidate_metrics or []:
-        if metric in HISTORICALLY_TAINTED_MULTIFACTOR_METRICS:
+        if metric in HISTORICALLY_TAINTED_MULTIFACTOR_METRICS and metric not in allowed_repaired:
             excluded.append(metric)
             continue
         filtered.append(metric)

@@ -64,6 +64,29 @@ Refreshing an existing eval's source snapshot with newer upstream data has its o
 5. Separate the data effect from any code change. Checked-in `results/` baselines may predate the current code (signs: `llm_chess_inputs.data_quality` is null, or `prediction.ols.in_sample` is present). For a clean data-only diff, regenerate the baseline by running current code on the previous inputs — check the old snapshot and mapping out to `/tmp` — then diff the new run against that baseline.
 6. Read the test results in context. `tests/test_cross_ref.py` pins dataset-derived counts and correlations, so a refresh will move several of them; refresh those expectations as part of the change and confirm the structural assertions still hold.
 
+## Mistake Metrics (wrong actions / wrong moves / mistakes)
+
+Logs before `2025-03-16` underreported wrong actions and wrong moves, so the error/discipline
+metrics (`wrong_actions_per_1000moves`, `wrong_moves_per_1000moves`, `mistakes_per_1000moves`, and
+the `player_wrong_*` counts) are **excluded from analysis by default**. Do not quietly re-enable
+them.
+
+- Each model row in `elo_refined.csv` carries `min_game_date` (earliest game start). A model is
+  trustworthy for these metrics only when `min_game_date >= 2025-03-16` — then *every* game is
+  post-fix, so the published full-history value is already clean. The cutoff lives in one place:
+  `framework/data_quality.MISTAKE_STATS_TRUSTED_AFTER`.
+- To use these metrics in research, request clean mode: `run_cross_ref.py <eval> --mistake-stats
+  clean_only` (or `run_analysis(..., mistake_stats="clean_only")`). It drops every model with
+  `min_game_date` before the cutoff (or missing) and re-enables the repaired rate metrics for the
+  remaining sample. It is research-only and refuses `--publish`; published artifacts always run with
+  `mistake_stats="excluded"`.
+- Policy is **drop, never recover**: a model whose earliest game predates the cutoff is dropped
+  whole, even if it also has later games. We do not recompute individual models from a post-cutoff
+  subset.
+- `min_game_date` is produced by `data/get_refined_csv.py` during the normal build; it is the only
+  run-date provenance carried into the aggregate, so prefer it over model release dates for any
+  "was this tested after X" question.
+
 ## Optional Work Splitting
 
 For large mechanical row review or command-output verification, an agent may ask another agent to inspect a bounded slice. Keep the request mechanical, provide exact files and acceptance criteria, and re-check the answer against the source artifacts yourself. These helper notes are not cross-ref artifacts and are not required workflow.
@@ -77,3 +100,4 @@ For large mechanical row review or command-output verification, an agent may ask
 - Human baselines and benchmark-system rows stay visible in source and coverage outputs but are excluded from LLM Chess correlation samples.
 - Release-controlled correlations are lower than raw Elo correlations; do not present raw correlations as model-capability proof without the timing caveat.
 - If generated outputs differ after a rerun, inspect whether the difference comes from source, mapping, code, dependency behavior, or expected artifact metadata before publishing.
+- The error/discipline metrics are excluded by default and only usable via `--mistake-stats clean_only`; see "Mistake Metrics" above. Never present them from a default run, and never publish a clean-only run.

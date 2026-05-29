@@ -2,7 +2,7 @@
 
 Mapping file: `data/cross-ref/mappings/arc_agi_2.csv`
 
-Access date: 2026-04-28.
+Access date: 2026-05-29 (snapshot `arc-agi-2-may-2026.csv`, upstream data `last-modified: 2026-05-19`).
 
 ## Run-Time Source Of Truth
 
@@ -29,20 +29,25 @@ Access date: 2026-04-28.
 
 ## High-Impact Outcomes
 
-- GPT-5.5 and Claude 4.7 rows remain `unmatched` because there are no corresponding current LLM Chess rows.
+- The refreshed `elo_refined.csv` added GPT-5.5 (low/medium/high), GPT-5.4 Mini (low/medium), and Claude Opus 4.7 to the LLM Chess inventory, so several ARC rows that were previously `unmatched` now map:
+  - `GPT-5.5 (Low/Medium/High)` → `gpt-5.5-low` / `gpt-5.5-medium` / `gpt-5.5-high` (`accepted`, exact tier ids).
+  - `GPT-5.4 Mini (Medium/Low)` → `gpt-5.4-mini-medium` / `gpt-5.4-mini-low` (`accepted`, exact mini tiers).
+  - `Claude 4.7 (High)` → `claude-opus-4-7_adaptive-thinking-high` (`variant-compatible`; family/effort clear, ARC label omits the Opus tier and the adaptive-thinking suffix). Confirmed Opus by the sibling `Opus 4.7 (High)` ARC-AGI-3 row.
+- GPT-5.5 `xHigh`, GPT-5.5 `Pro`, and Claude 4.7 `Low/Medium/Max` stay `unmatched`: only the High effort / no-Pro tiers exist in the inventory.
+- New ARC rows in this snapshot: `Gemini 3.5 Flash (Minimal/High)` stay `unmatched` (no Gemini 3.5 Flash inventory row); `GPT-5.5 (High)` and `Opus 4.7 (High)` ARC-AGI-3 entries map to their respective LLM Chess players but carry no ARC-AGI-2 score, so they stay out of the ARC-AGI-2 sample.
 - Gemini 3.1 Pro (Preview), Grok 4.20 (Reasoning), GLM-5, Kimi K2.5, Minimax M2.5, GPT-5.4 tier rows, GPT-5.2 tier rows, GPT-5 tier rows, o3 tier rows, o4-mini tier rows, and several legacy-model rows map cleanly.
-- Gemini `Deep Think`, GPT `Pro`, `xHigh`, ARC `Refine.`, Claude 4.6 `120K`, and many token-budget rows remain `ambiguous` on purpose.
+- Gemini `Deep Think`, GPT `Pro`, `xHigh`, ARC `Refine.`, Claude 4.6 `120K`, Llama 4 Scout (three candidate inventory rows), and many token-budget rows remain `ambiguous` on purpose.
 - Human and system baselines such as `Human Panel`, `Avg. Mturker`, `Stem Grad`, `NVARC`, `ARChitects`, `Icecuber`, `TRM`, and `HRM` are preserved but `excluded` from model matching.
 
 ## Current Status Mix
 
-Generated from the current mapping CSV:
+Generated from the current mapping CSV (`arc-agi-2-may-2026.csv`, 161 rows):
 
-- `accepted`: 9
+- `accepted`: 15
 - `alias`: 46
-- `variant-compatible`: 12
+- `variant-compatible`: 14
 - `ambiguous`: 54
-- `unmatched`: 28
+- `unmatched`: 24
 - `excluded`: 8
 
 ## Review Notes

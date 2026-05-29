@@ -266,6 +266,7 @@ def run_analysis(
     verification: dict[str, object],
     source_path: Path | None = None,
     mapping_path: Path | None = None,
+    mistake_stats: str = "excluded",
 ) -> tuple[dict[str, object], pd.DataFrame, pd.DataFrame, str]:
     return run_configured_eval_analysis(
         CONFIG,
@@ -274,4 +275,5 @@ def run_analysis(
         verification=verification,
         source_path=source_path,
         mapping_path=mapping_path,
+        mistake_stats=mistake_stats,
     )

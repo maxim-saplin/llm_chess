@@ -1,0 +1,138 @@
+{
+  "artifact_kind": "cross_ref_audit",
+  "overall_status": "review-needed",
+  "reproducibility_status": "pass",
+  "coverage_status": "review-needed",
+  "benchmarks": {
+    "count": 4,
+    "ids": [
+      "llm_chess",
+      "arc_agi_2",
+      "bullshit_bench",
+      "eci"
+    ],
+    "reference_metric": "llm_chess",
+    "external_eval_count": 3,
+    "external_eval_ids": [
+      "arc_agi_2",
+      "bullshit_bench",
+      "eci"
+    ]
+  },
+  "published_state": {
+    "results_dir": "data/cross-ref/results",
+    "inventory_summary": {
+      "rows": 270,
+      "elo_only": 3,
+      "metadata_only": 83,
+      "exact_match": 184
+    },
+    "source_summaries": [
+      {
+        "eval_id": "arc_agi_2",
+        "eval_label": "ARC-AGI-2",
+        "summary_path": "data/cross-ref/results/arc_agi_2_summary.json",
+        "summary_sha256": "a1b32087e637e2e8a42f0726a9c196d6afbb61cfc4f2820606f6f19f7de7a034",
+        "report_path": "data/cross-ref/results/arc_agi_2.html",
+        "coverage_path": "data/cross-ref/results/arc_agi_2_coverage.csv"
+      },
+      {
+        "eval_id": "bullshit_bench",
+        "eval_label": "BullshitBench v2",
+        "summary_path": "data/cross-ref/results/bullshit_bench_summary.json",
+        "summary_sha256": "0b1f993f8f16e64aa877fc5124198bfe2fec3ae0045e70418fa46b50eff9a22e",
+        "report_path": "data/cross-ref/results/bullshit_bench.html",
+        "coverage_path": "data/cross-ref/results/bullshit_bench_coverage.csv"
+      },
+      {
+        "eval_id": "eci",
+        "eval_label": "Epoch ECI",
+        "summary_path": "data/cross-ref/results/eci_summary.json",
+        "summary_sha256": "b9f3491f7a7ed9fd314ba6653a2c4e87fdf8a0e41f827b21bbbb5c71f1de1651",
+        "report_path": "data/cross-ref/results/eci.html",
+        "coverage_path": "data/cross-ref/results/eci_coverage.csv"
+      }
+    ]
+  },
+  "mapping_review": {
+    "row_count": 501,
+    "eval_count": 3,
+    "unique_llm_chess_players": 128,
+    "unresolved_row_count": 267,
+    "allowed_unresolved_row_count": 0,
+    "status_counts": {
+      "accepted": 114,
+      "alias": 67,
+      "ambiguous": 60,
+      "excluded": 8,
+      "unmatched": 199,
+      "variant-compatible": 53
+    }
+  },
+  "reproducibility": {
+    "cross_eval_generated_from_published_summaries": true,
+    "rerun_diff_all_clean": true,
+    "evals_with_diff_count": 0,
+    "per_eval": [
+      {
+        "eval_id": "arc_agi_2",
+        "has_diff": false,
+        "metric_rows": 60,
+        "elo_rows": 57,
+        "raw_elo_pearson_r": 0.5840866342392731,
+        "prediction_r2": -0.11930523199393295,
+        "unresolved_high_impact_count": 15
+      },
+      {
+        "eval_id": "bullshit_bench",
+        "has_diff": false,
+        "metric_rows": 58,
+        "elo_rows": 55,
+        "raw_elo_pearson_r": 0.3025879652751511,
+        "prediction_r2": 0.0901202124452446,
+        "unresolved_high_impact_count": 15
+      },
+      {
+        "eval_id": "eci",
+        "has_diff": false,
+        "metric_rows": 85,
+        "elo_rows": 70,
+        "raw_elo_pearson_r": 0.7572923846322877,
+        "prediction_r2": 0.5271779128772349,
+        "unresolved_high_impact_count": 15
+      }
+    ]
+  },
+  "analysis_snapshot": {
+    "strongest_raw_elo": {
+      "eval_id": "eci",
+      "eval_label": "Epoch ECI",
+      "pearson_r": 0.7572923846322877,
+      "n": 70,
+      "r2": 0.5734917558220564
+    },
+    "best_prediction": {
+      "eval_id": "eci",
+      "eval_label": "Epoch ECI",
+      "r2": 0.5271779128772349,
+      "sample_n": 85,
+      "rank_spearman": 0.7388979694315129
+    }
+  },
+  "trust_boundaries": {
+    "safe_for": [
+      "Published per-eval summaries reproduce cleanly against the current source snapshots and mapping CSVs.",
+      "The aggregate cross-eval report is regenerated from the published per-eval summaries.",
+      "The benchmark set covered by this audit is llm_chess, arc_agi_2, bullshit_bench, eci."
+    ],
+    "not_safe_for": [
+      "Claims that assume unresolved mapping rows are already resolved.",
+      "Whole-surface drift explanation above the per-eval rerun-diff layer."
+    ]
+  },
+  "review_needed_reasons": [
+    "mapping review still has 267 unresolved rows above the allowed threshold of 0",
+    "claims that depend on unresolved mappings being correct still need manual review"
+  ],
+  "failure_reasons": []
+}
