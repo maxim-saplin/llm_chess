@@ -23,10 +23,10 @@ Generated facts from published per-eval summaries. It does not rerun evals; rege
 
 | Eval | Raw Elo | Release-controlled | Top chess metric | OLS CV |
 | --- | --- | --- | --- | --- |
-| ARC-AGI-2 | r `0.584`, rho `0.660`, n `57` | r `0.412`, n `57` | `average_game_cost`: r `0.473`, rho `0.621`, n `58` | R2 `-0.119` vs baseline `-0.028`, rank rho `0.522` |
-| BullshitBench v2 | r `0.303`, rho `0.480`, n `55` | r `0.118`, n `54` | `average_game_cost`: r `0.428`, rho `0.575`, n `56` | R2 `0.090` vs baseline `-0.017`, rank rho `0.472` |
-| DELEGATE-52 | r `0.381`, rho `0.538`, n `14` | r `0.283`, n `14` | `completion_tokens_black_per_move`: r `-0.630`, rho `-0.464`, n `15` | R2 `-0.682` vs baseline `-0.146`, rank rho `0.246` |
-| Epoch ECI | r `0.757`, rho `0.744`, n `70` | r `0.551`, n `69` | `player_wins_percent`: r `0.689`, rho `0.791`, n `85` | R2 `0.527` vs baseline `-0.021`, rank rho `0.739` |
+| ARC-AGI-2 | r `0.584` (p `<0.001`), rho `0.660`, n `57` | r `0.412` (p `0.001`), n `57` | `average_game_cost`: r `0.473` (p `<0.001`), rho `0.621`, n `58` | R2 `-0.119` vs baseline `-0.028`, rank rho `0.522` |
+| BullshitBench v2 | r `0.303` (p `0.025`), rho `0.480`, n `55` | r `0.118` (p `0.397`), n `54` | `average_game_cost`: r `0.428` (p `0.001`), rho `0.575`, n `56` | R2 `0.090` vs baseline `-0.017`, rank rho `0.472` |
+| DELEGATE-52 | r `0.381` (p `0.179`), rho `0.538`, n `14` | r `0.283` (p `0.327`), n `14` | `completion_tokens_black_per_move`: r `-0.630` (p `0.012`), rho `-0.464`, n `15` | R2 `-0.682` vs baseline `-0.146`, rank rho `0.246` |
+| Epoch ECI | r `0.757` (p `<0.001`), rho `0.744`, n `70` | r `0.551` (p `<0.001`), n `69` | `player_wins_percent`: r `0.689` (p `<0.001`), rho `0.791`, n `85` | R2 `0.527` vs baseline `-0.021`, rank rho `0.739` |
 
 ## Coverage
 

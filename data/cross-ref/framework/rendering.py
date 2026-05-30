@@ -43,6 +43,7 @@ def render_summary_html(summary: dict[str, object]) -> str:
     prediction = summary.get("prediction", {})
     verification = summary.get("verification", {})
     primary = relationships.get("raw_elo", {})
+    release_controlled = relationships.get("release_controlled_elo", {}) if isinstance(relationships, dict) else {}
     ols = prediction.get("ols", {}) if isinstance(prediction, dict) else {}
     feature_selection = ols.get("feature_selection", {}) if isinstance(ols, dict) else {}
     prediction_overview = {
@@ -175,8 +176,10 @@ def render_summary_html(summary: dict[str, object]) -> str:
     <section id=\"relationships\">
       <h2>Relationships</h2>
       {_table_from_dicts([primary], list(primary.keys()))}
+      <h3>Release-controlled Elo</h3>
+      {_table_from_dicts([release_controlled], ['n', 'pearson_r', 'pearson_p', 'spearman_r', 'spearman_p']) if release_controlled else '<p class="muted">Not available.</p>'}
       <h3>Selected metrics</h3>
-      {_table_from_dicts(relationships.get('selected_metrics', [])[:12], ['name', 'n', 'pearson_r', 'spearman_r', 'r2'])}
+      {_table_from_dicts(relationships.get('selected_metrics', [])[:12], ['name', 'n', 'pearson_r', 'pearson_p', 'spearman_r', 'spearman_p', 'r2'])}
     </section>
     <section id=\"prediction\">
       <h2>Prediction</h2>

@@ -108,14 +108,18 @@ def _relationship_snapshot(summary: dict[str, object]) -> dict[str, object]:
         "raw_elo": {
             "n": raw_elo.get("n"),
             "pearson_r": raw_elo.get("pearson_r"),
+            "pearson_p": raw_elo.get("pearson_p"),
             "spearman_r": raw_elo.get("spearman_r"),
+            "spearman_p": raw_elo.get("spearman_p"),
             "r2": raw_elo.get("r2"),
             "sample_stage_id": raw_elo.get("sample_stage_id"),
         },
         "release_controlled_elo": {
             "n": release_controlled.get("n"),
             "pearson_r": release_controlled.get("pearson_r"),
+            "pearson_p": release_controlled.get("pearson_p"),
             "spearman_r": release_controlled.get("spearman_r"),
+            "spearman_p": release_controlled.get("spearman_p"),
             "sample_stage_id": release_controlled.get("sample_stage_id"),
         },
         "strongest_non_elo_metric": strongest_metric,
@@ -339,6 +343,15 @@ def _format_number(value: object, digits: int = 3) -> str:
     return f"{number:.{digits}f}"
 
 
+def _format_p(value: object) -> str:
+    number = _float_or_none(value)
+    if number is None:
+        return "n/a"
+    if number < 0.001:
+        return "<0.001"
+    return f"{number:.3f}"
+
+
 def _format_status_counts(status_counts: dict[str, object]) -> str:
     if not status_counts:
         return "n/a"
@@ -399,9 +412,9 @@ def render_cross_eval_report_markdown(summary: dict[str, object]) -> str:
         lines.append(
             "| "
             f"{eval_summary.get('eval_label')} | "
-            f"r `{_format_number(raw_elo.get('pearson_r'))}`, rho `{_format_number(raw_elo.get('spearman_r'))}`, n `{_format_number(raw_elo.get('n'), digits=0)}` | "
-            f"r `{_format_number(release_controlled.get('pearson_r'))}`, n `{_format_number(release_controlled.get('n'), digits=0)}` | "
-            f"`{strongest_metric.get('name') or 'n/a'}`: r `{_format_number(strongest_metric.get('pearson_r'))}`, rho `{_format_number(strongest_metric.get('spearman_r'))}`, n `{_format_number(strongest_metric.get('n'), digits=0)}` | "
+            f"r `{_format_number(raw_elo.get('pearson_r'))}` (p `{_format_p(raw_elo.get('pearson_p'))}`), rho `{_format_number(raw_elo.get('spearman_r'))}`, n `{_format_number(raw_elo.get('n'), digits=0)}` | "
+            f"r `{_format_number(release_controlled.get('pearson_r'))}` (p `{_format_p(release_controlled.get('pearson_p'))}`), n `{_format_number(release_controlled.get('n'), digits=0)}` | "
+            f"`{strongest_metric.get('name') or 'n/a'}`: r `{_format_number(strongest_metric.get('pearson_r'))}` (p `{_format_p(strongest_metric.get('pearson_p'))}`), rho `{_format_number(strongest_metric.get('spearman_r'))}`, n `{_format_number(strongest_metric.get('n'), digits=0)}` | "
             f"R2 `{_format_number(ols.get('r2'))}` vs baseline `{_format_number(baseline.get('r2'))}`, rank rho `{_format_number(ols.get('rank_spearman'))}` |"
         )
 

@@ -35,26 +35,42 @@ sample are mid-Elo Claude models, while the highest-Elo OpenAI/Gemini reasoning 
 
 | Eval | Raw Elo | Release-controlled | Top chess metric | OLS CV |
 | --- | --- | --- | --- | --- |
-| Epoch ECI | Pearson `0.757`, Spearman `0.744`, `n=70` | Pearson `0.551`, `n=69` | `player_wins_percent`: Pearson `0.689`, Spearman `0.791`, `n=85` | `R2=0.527`; rank Spearman `0.739` |
-| ARC-AGI-2 | Pearson `0.584`, Spearman `0.660`, `n=57` | Pearson `0.412`, `n=57` | `average_game_cost`: Pearson `0.473`, Spearman `0.621`, `n=58` | `R2=-0.119`; rank Spearman `0.522` |
-| BullshitBench v2 | Pearson `0.303`, Spearman `0.480`, `n=55` | Pearson `0.118`, `n=54` | `average_game_cost`: Pearson `0.428`, Spearman `0.575`, `n=56` | `R2=0.090`; rank Spearman `0.472` |
-| DELEGATE-52 (RS@20) | Pearson `0.381`, Spearman `0.538`, `n=14` | Pearson `0.283`, `n=14` | `completion_tokens_black_per_move`: Pearson `-0.630`, Spearman `-0.464`, `n=15` | `R2=-0.682`; rank Spearman `0.246` |
+| Epoch ECI | Pearson `0.757` (p `<0.001`), Spearman `0.744`, `n=70` | Pearson `0.551` (p `<0.001`), `n=69` | `player_wins_percent`: Pearson `0.689` (p `<0.001`), Spearman `0.791`, `n=85` | `R2=0.527`; rank Spearman `0.739` |
+| ARC-AGI-2 | Pearson `0.584` (p `<0.001`), Spearman `0.660`, `n=57` | Pearson `0.412` (p `0.001`), `n=57` | `average_game_cost`: Pearson `0.473` (p `<0.001`), Spearman `0.621`, `n=58` | `R2=-0.119`; rank Spearman `0.522` |
+| BullshitBench v2 | Pearson `0.303` (p `0.025`), Spearman `0.480`, `n=55` | Pearson `0.118` (p `0.397`), `n=54` | `average_game_cost`: Pearson `0.428` (p `0.001`), Spearman `0.575`, `n=56` | `R2=0.090`; rank Spearman `0.472` |
+| DELEGATE-52 (RS@20) | Pearson `0.381` (p `0.179`), Spearman `0.538`, `n=14` | Pearson `0.283` (p `0.327`), `n=14` | `completion_tokens_black_per_move`: Pearson `-0.630` (p `0.012`), Spearman `-0.464`, `n=15` | `R2=-0.682`; rank Spearman `0.246` |
+
+p-values are two-sided Pearson tests on each correlation (`pearson_p` in the per-eval `*_summary.json`,
+now also carried in `cross_ref_summary.json` and the HTML reports). They are descriptive, not
+multiplicity-controlled: each eval tests ~11 chess metrics plus raw and release-controlled Elo, and
+the "Top chess metric" column is the strongest of those metrics by construction, so its p-value is
+optimistic — read it as "the leading metric clears the bar," not as a corrected significance claim.
+The max-dedupe selection (highest external score per player) and small samples (DELEGATE-52 `n=14`)
+also mean these p-values assume more than the design delivers. Where uncertainty matters most, the
+bootstrap 95% CIs in each eval's `raw_elo` block are the more honest read.
 
 Interpretation:
 
-- ECI: usable relationship. The signal survives release-month control, and fold-local OLS predicts
-  the index well above a trivial baseline.
+- ECI: usable relationship, and the only eval where the p-values reinforce rather than undercut the
+  headline. Raw Elo is `p<0.001` at `n=70`, and — the part that matters — the relationship still
+  clears `p<0.001` *after* release-month control (`r=0.551`, `n=69`). So ECI's link to chess Elo is
+  not just the chronology trend that the other evals mostly reduce to; `player_wins_percent` is the
+  strongest non-Elo metric and is also `p<0.001`. Fold-local OLS predicts the index well above a
+  trivial baseline. This is the eval to treat as a real signal.
 - ARC-AGI-2: weak relationship under prediction. Raw and rank correlation are moderate, but the
   calibrated OLS prediction is below the mean baseline (`R2=-0.119`), so treat ARC as a rank-order
   signal only.
 - BullshitBench: rank ordering is positive (`Spearman 0.480`) but the linear fit is low and the
   relationship mostly collapses under release-month control (`0.303` → `0.118`), meaning most of the
-  apparent association is chronology, not a model-capability link.
+  apparent association is chronology, not a model-capability link. The p-values make this concrete:
+  raw Elo is only marginal (`p=0.025`) and the release-controlled correlation is indistinguishable
+  from zero (`p=0.397`).
 - DELEGATE-52: weak-to-moderate at the long-horizon endpoint (`Pearson 0.381`, `Spearman 0.538`,
   `n=14`), partly deflated by release-month control (`0.381` → `0.283`), and OLS prediction is below
-  the mean baseline (`R2=-0.682`). Read it as a rank/degradation signal only. The `completion_tokens_
-  black_per_move` association is negative (`-0.630`): models that spend more tokens per chess move
-  tend to corrupt documents more — but at `n=15` this is fragile and exploratory.
+  the mean baseline (`R2=-0.682`). Read it as a rank/degradation signal only — and note the raw
+  endpoint correlation is not significant at this sample (`p=0.179`, `n=14`). The `completion_tokens_
+  black_per_move` association is negative (`-0.630`, `p=0.012`): models that spend more tokens per
+  chess move tend to corrupt documents more — but at `n=15` this is fragile and exploratory.
 - No shared headline metric: `player_wins_percent` is the strongest non-Elo chess metric for ECI, but
   ARC and BullshitBench lead with `average_game_cost`, and DELEGATE-52 leads with
   `completion_tokens_black_per_move`. The four evals do not agree on which chess behavior tracks
@@ -68,6 +84,9 @@ Interpretation:
 - Multiple external rows for one LLM Chess player are deduped by keeping the highest external score.
   For BullshitBench this collapses a model's reasoning-level rows to one model-level point.
 - Pearson `r` measures linear fit; Spearman `rho` measures rank-order fit.
+- Each correlation carries a two-sided p-value (`pearson_p`/`spearman_p`). They are per-test and
+  uncorrected for the many metrics tested, so use them to separate "clears the bar" from "no
+  distinguishable signal," not as a multiplicity-controlled significance verdict.
 - Raw Elo correlates external score directly with LLM Chess Elo.
 - Release-controlled Elo first predicts each side from release month, subtracts predicted from
   actual on both sides, then correlates the two residual lists.
