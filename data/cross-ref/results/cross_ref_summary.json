@@ -4,13 +4,13 @@
     "mode": "published_per_eval_summaries",
     "reran_evals": false,
     "results_dir": "data/cross-ref/results",
-    "summary_count": 3,
+    "summary_count": 4,
     "summaries": [
       {
         "eval_id": "arc_agi_2",
         "eval_label": "ARC-AGI-2",
         "summary_path": "data/cross-ref/results/arc_agi_2_summary.json",
-        "summary_sha256": "a1b32087e637e2e8a42f0726a9c196d6afbb61cfc4f2820606f6f19f7de7a034",
+        "summary_sha256": "fb0292f2e736bcb8b1691a96351a709a3f764b1ff0f20115fad3e1d85a8eb906",
         "report_path": "data/cross-ref/results/arc_agi_2.html",
         "coverage_path": "data/cross-ref/results/arc_agi_2_coverage.csv"
       },
@@ -18,15 +18,23 @@
         "eval_id": "bullshit_bench",
         "eval_label": "BullshitBench v2",
         "summary_path": "data/cross-ref/results/bullshit_bench_summary.json",
-        "summary_sha256": "0b1f993f8f16e64aa877fc5124198bfe2fec3ae0045e70418fa46b50eff9a22e",
+        "summary_sha256": "94771ba2e5e36a4986e40ed0b8a388261e7742b8d64ddeb42b1b5f50605e04d1",
         "report_path": "data/cross-ref/results/bullshit_bench.html",
         "coverage_path": "data/cross-ref/results/bullshit_bench_coverage.csv"
+      },
+      {
+        "eval_id": "delegate_52",
+        "eval_label": "DELEGATE-52",
+        "summary_path": "data/cross-ref/results/delegate_52_summary.json",
+        "summary_sha256": "b7fa123b7292df0ea018a8d64009fb6fd3ebadc34bf46b1f367f1bfe70b58c08",
+        "report_path": "data/cross-ref/results/delegate_52.html",
+        "coverage_path": "data/cross-ref/results/delegate_52_coverage.csv"
       },
       {
         "eval_id": "eci",
         "eval_label": "Epoch ECI",
         "summary_path": "data/cross-ref/results/eci_summary.json",
-        "summary_sha256": "b9f3491f7a7ed9fd314ba6653a2c4e87fdf8a0e41f827b21bbbb5c71f1de1651",
+        "summary_sha256": "7c079bc1cfd184a37ee7f1203cc88a28c0ce91ec9c7e4c5ffe5735381a5cde04",
         "report_path": "data/cross-ref/results/eci.html",
         "coverage_path": "data/cross-ref/results/eci_coverage.csv"
       }
@@ -40,7 +48,7 @@
     "consolidated_report_role": "durable_human_report",
     "generated_report_role": "runner_owned_supporting_artifact"
   },
-  "eval_count": 3,
+  "eval_count": 4,
   "evals": [
     {
       "eval_id": "arc_agi_2",
@@ -48,7 +56,7 @@
       "summary_tagline": "ARC Prize leaderboard rows normalized through the shared cross-ref contracts.",
       "target_score_column": "score_arc_agi_2",
       "source_summary_path": "data/cross-ref/results/arc_agi_2_summary.json",
-      "source_summary_sha256": "a1b32087e637e2e8a42f0726a9c196d6afbb61cfc4f2820606f6f19f7de7a034",
+      "source_summary_sha256": "fb0292f2e736bcb8b1691a96351a709a3f764b1ff0f20115fad3e1d85a8eb906",
       "published_artifacts": {
         "summary_json": "data/cross-ref/results/arc_agi_2_summary.json",
         "html": "data/cross-ref/results/arc_agi_2.html",
@@ -208,7 +216,7 @@
       "summary_tagline": "BullshitBench v2 nonsense-detection leaderboard normalized through the shared cross-ref contracts.",
       "target_score_column": "score_numeric",
       "source_summary_path": "data/cross-ref/results/bullshit_bench_summary.json",
-      "source_summary_sha256": "0b1f993f8f16e64aa877fc5124198bfe2fec3ae0045e70418fa46b50eff9a22e",
+      "source_summary_sha256": "94771ba2e5e36a4986e40ed0b8a388261e7742b8d64ddeb42b1b5f50605e04d1",
       "published_artifacts": {
         "summary_json": "data/cross-ref/results/bullshit_bench_summary.json",
         "html": "data/cross-ref/results/bullshit_bench.html",
@@ -362,12 +370,165 @@
       ]
     },
     {
+      "eval_id": "delegate_52",
+      "eval_label": "DELEGATE-52",
+      "summary_tagline": "DELEGATE-52 round-trip relay reconstruction-score curve normalized through the shared cross-ref contracts.",
+      "target_score_column": "rs_at_20",
+      "source_summary_path": "data/cross-ref/results/delegate_52_summary.json",
+      "source_summary_sha256": "b7fa123b7292df0ea018a8d64009fb6fd3ebadc34bf46b1f367f1bfe70b58c08",
+      "published_artifacts": {
+        "summary_json": "data/cross-ref/results/delegate_52_summary.json",
+        "html": "data/cross-ref/results/delegate_52.html",
+        "coverage_csv": "data/cross-ref/results/delegate_52_coverage.csv"
+      },
+      "source_note_path": "data/cross-ref/evals/delegate-52/SOURCE.md",
+      "coverage": {
+        "numeric_score_rows": 19,
+        "accepted_mapping_rows": 15,
+        "rows_joined_to_llm_chess_metric_rows": 15,
+        "metric_analysis_rows_max_dedupe": 15,
+        "rows_joined_to_llm_chess_elo": 14,
+        "elo_analysis_rows_max_dedupe": 14,
+        "external_rows_without_llm_chess_match": 4
+      },
+      "mapping": {
+        "qa_verdict": "reviewed_with_unresolved_debt",
+        "status_counts": {
+          "alias": 2,
+          "ambiguous": 2,
+          "unmatched": 2,
+          "variant-compatible": 13
+        },
+        "review_status_counts": {
+          "reviewed_2026_05": 19
+        },
+        "unresolved_high_impact_count": 4,
+        "unresolved_high_impact_examples": [
+          {
+            "eval_row_id": "delegate_52:0008:grok_4",
+            "eval_model_label": "Grok 4",
+            "rs_at_20": 59.3,
+            "mapping_status": "unmatched",
+            "confidence": "none",
+            "open_questions": "No plain grok-4 in elo_refined.csv; grok-4-20 is a different release and is not treated as the same model."
+          },
+          {
+            "eval_row_id": "delegate_52:0015:mistral_large_3",
+            "eval_model_label": "Mistral Large 3",
+            "rs_at_20": 35.5,
+            "mapping_status": "unmatched",
+            "confidence": "none",
+            "open_questions": null
+          },
+          {
+            "eval_row_id": "delegate_52:0016:oss_120b",
+            "eval_model_label": "OSS 120B",
+            "rs_at_20": 19.2,
+            "mapping_status": "ambiguous",
+            "confidence": "low",
+            "open_questions": "Reasoning level not stated by the paper; gpt-oss-120b tiers span a wide score range."
+          },
+          {
+            "eval_row_id": "delegate_52:0017:gpt_4o",
+            "eval_model_label": "GPT 4o",
+            "rs_at_20": 14.7,
+            "mapping_status": "ambiguous",
+            "confidence": "low",
+            "open_questions": "Snapshot date not given in paper Table 1."
+          }
+        ]
+      },
+      "relationships": {
+        "raw_elo": {
+          "n": 14,
+          "pearson_r": 0.3807715334877617,
+          "spearman_r": 0.5384615384615385,
+          "r2": 0.1449869607146216,
+          "sample_stage_id": "elo_analysis_rows_max_dedupe"
+        },
+        "release_controlled_elo": {
+          "n": 14,
+          "pearson_r": 0.282700820526323,
+          "spearman_r": 0.4945054945054946,
+          "sample_stage_id": "elo_analysis_rows_max_dedupe"
+        },
+        "strongest_non_elo_metric": {
+          "name": "completion_tokens_black_per_move",
+          "n": 15,
+          "pearson_r": -0.6304466777039219,
+          "pearson_p": 0.01174976105328987,
+          "spearman_r": -0.4642857142857142,
+          "spearman_p": 0.08125098075549499,
+          "slope": -113.85990178860209,
+          "intercept": 10059.955646207181,
+          "r2": 0.3974630134279127,
+          "linregress_p": 0.011749761053289887,
+          "slope_stderr": 38.88146532675877,
+          "partial_release_month": {
+            "n": 15,
+            "pearson_r": -0.653315322065251,
+            "pearson_p": 0.008264169250649054,
+            "spearman_r": -0.457142857142857,
+            "spearman_p": 0.08667812662416978
+          },
+          "sample_stage_id": "metric_analysis_rows_max_dedupe"
+        }
+      },
+      "prediction": {
+        "target": "DELEGATE-52 RS@20",
+        "status": "ok",
+        "sample_stage_id": "metric_analysis_rows_max_dedupe",
+        "sample_n": 15,
+        "features": [
+          "completion_tokens_black_per_move",
+          "material_diff_player_llm_minus_opponent",
+          "average_moves",
+          "player_draws_percent"
+        ],
+        "baseline_mean": {
+          "r2": -0.14563584947321462,
+          "rmse": 18.222590528120737,
+          "mae": 14.358518518518519,
+          "rank_spearman": -0.47380952380952374
+        },
+        "ols": {
+          "r2": -0.6818546680701718,
+          "rmse": 22.079083977502805,
+          "mae": 15.685415909872436,
+          "rank_spearman": 0.2463371166304443
+        },
+        "feature_selection": {
+          "method": "within_cv_training_folds",
+          "max_features_per_fold": 4,
+          "fold_count": 15,
+          "folds_without_features": 0
+        },
+        "selected_feature_counts": {
+          "average_game_cost": 3,
+          "average_moves": 8,
+          "average_time_per_game_seconds": 6,
+          "completion_tokens_black_per_move": 14,
+          "games_interrupted_percent": 5,
+          "material_diff_player_llm_minus_opponent": 10,
+          "player_draws_percent": 7,
+          "player_wins_percent": 7
+        }
+      },
+      "limitations": [
+        "Source is the paper's Table 1 (arXiv 2604.15597v1), transcribed by hand; DELEGATE-52 publishes no machine-readable results file.",
+        "Reconstruction Score measures one behavior (long-horizon delegated document-editing fidelity), not broad capability, and can diverge from chess Elo.",
+        "Per-model reasoning effort and exact API versions are in the paper's Appendix L (not machine-extractable); the mapping treats reasoning config as unspecified and applies the tier convention with a caveat.",
+        "rs_at_20 is the framework anchor; the reported result is the Elo correlation profile across all depths plus the degradation slope, not a single depth.",
+        "Correlations are exploratory and should not be over-interpreted when the matched sample is small or mapping status is unresolved."
+      ]
+    },
+    {
       "eval_id": "eci",
       "eval_label": "Epoch ECI",
       "summary_tagline": "Epoch ECI analysis computed directly in the shared cross-ref framework.",
       "target_score_column": "score_numeric",
       "source_summary_path": "data/cross-ref/results/eci_summary.json",
-      "source_summary_sha256": "b9f3491f7a7ed9fd314ba6653a2c4e87fdf8a0e41f827b21bbbb5c71f1de1651",
+      "source_summary_sha256": "7c079bc1cfd184a37ee7f1203cc88a28c0ce91ec9c7e4c5ffe5735381a5cde04",
       "published_artifacts": {
         "summary_json": "data/cross-ref/results/eci_summary.json",
         "html": "data/cross-ref/results/eci.html",

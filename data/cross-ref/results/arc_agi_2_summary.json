@@ -54,6 +54,7 @@
       "rows": 187,
       "columns": [
         "Player",
+        "min_game_date",
         "total_games",
         "player_wins",
         "opponent_wins",
@@ -103,6 +104,7 @@
       ],
       "required_columns": [
         "Player",
+        "min_game_date",
         "elo",
         "elo_moe_95",
         "total_games",
@@ -206,6 +208,14 @@
         }
       ]
     }
+  },
+  "mistake_stats": {
+    "mode": "excluded",
+    "trusted_after": "2025-03-16",
+    "repaired_metrics_enabled": [],
+    "clean_player_count": 121,
+    "pre_cutoff_player_count": 66,
+    "pre_cutoff_players_dropped": []
   },
   "mapping_source_of_truth": {
     "mapping_file": "data/cross-ref/mappings/arc_agi_2.csv",

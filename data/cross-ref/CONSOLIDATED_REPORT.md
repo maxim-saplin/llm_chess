@@ -4,16 +4,27 @@
 
 Epoch ECI is still the only external eval with a strong enough signal to treat as useful. ARC-AGI-2
 has a moderate raw and rank relationship to LLM Chess Elo but its calibrated prediction is no better
-than the mean baseline. BullshitBench v2 is the weakest of the three: a modest rank relationship
-that mostly disappears once release timing is controlled.
+than the mean baseline. DELEGATE-52 and BullshitBench v2 are the weakest: modest rank relationships
+that mostly disappear once release timing is controlled, and neither beats the mean baseline under
+cross-validated prediction.
 
-Do not sell this as broad benchmark validation. It is now a three-eval comparison with a large pile
-of unresolved identity debt, and the three evals disagree about which chess behaviors track external
+Do not sell this as broad benchmark validation. It is now a four-eval comparison with a large pile
+of unresolved identity debt, and the evals disagree about which chess behaviors track external
 capability.
 
 Figures reflect the current published snapshots against the current `elo_refined.csv`: the
-2026-05-29 ECI refresh (178 models), the 2026-05 ARC-AGI-2 refresh (152 rows), and the newly added
-BullshitBench v2 leaderboard (162 model/reasoning rows, upstream commit `88e06ae`, 2026-05-29).
+2026-05-29 ECI refresh (178 models), the 2026-05 ARC-AGI-2 refresh (152 rows), the BullshitBench v2
+leaderboard (162 model/reasoning rows, upstream commit `88e06ae`, 2026-05-29), and the newly added
+DELEGATE-52 (19 models, transcribed from the paper's Table 1, arXiv `2604.15597v1`, 2026-04-17).
+
+DELEGATE-52 measures long-horizon delegated document-editing fidelity (the Reconstruction Score after
+each of up to 20 interactions, higher = less corruption). Because each model is a curve rather than a
+single number, the analysis reports the Elo correlation at every interaction depth instead of one
+chosen depth. The distinctive finding is about *degradation*, not level: the Elo correlation rises
+with interaction depth (Pearson `+0.17` at RS@2 to `+0.38` at RS@20), and the degradation slope
+(RS@2 − RS@20) correlates negatively with Elo (Pearson `-0.45`) — higher-Elo models corrupt
+documents less over long workflows, even though their one-round-trip fidelity is only weakly tied to
+chess strength.
 
 BullshitBench measures one behavior — whether a model pushes back on a nonsense premise instead of
 playing along — on a 0-2 scale where higher is better. It is a deliberately different axis from a
@@ -27,6 +38,7 @@ sample are mid-Elo Claude models, while the highest-Elo OpenAI/Gemini reasoning 
 | Epoch ECI | Pearson `0.757`, Spearman `0.744`, `n=70` | Pearson `0.551`, `n=69` | `player_wins_percent`: Pearson `0.689`, Spearman `0.791`, `n=85` | `R2=0.527`; rank Spearman `0.739` |
 | ARC-AGI-2 | Pearson `0.584`, Spearman `0.660`, `n=57` | Pearson `0.412`, `n=57` | `average_game_cost`: Pearson `0.473`, Spearman `0.621`, `n=58` | `R2=-0.119`; rank Spearman `0.522` |
 | BullshitBench v2 | Pearson `0.303`, Spearman `0.480`, `n=55` | Pearson `0.118`, `n=54` | `average_game_cost`: Pearson `0.428`, Spearman `0.575`, `n=56` | `R2=0.090`; rank Spearman `0.472` |
+| DELEGATE-52 (RS@20) | Pearson `0.381`, Spearman `0.538`, `n=14` | Pearson `0.283`, `n=14` | `completion_tokens_black_per_move`: Pearson `-0.630`, Spearman `-0.464`, `n=15` | `R2=-0.682`; rank Spearman `0.246` |
 
 Interpretation:
 
@@ -35,13 +47,18 @@ Interpretation:
 - ARC-AGI-2: weak relationship under prediction. Raw and rank correlation are moderate, but the
   calibrated OLS prediction is below the mean baseline (`R2=-0.119`), so treat ARC as a rank-order
   signal only.
-- BullshitBench: weakest of the three. Rank ordering is positive (`Spearman 0.480`) but the linear
-  fit is low and the relationship mostly collapses under release-month control (`0.303` → `0.118`),
-  meaning most of the apparent association is chronology, not a model-capability link.
-- No shared headline metric anymore: `player_wins_percent` is the strongest non-Elo chess metric for
-  ECI, but for ARC and BullshitBench `average_game_cost` leads instead. For BullshitBench in
-  particular, `player_wins_percent` is essentially flat (Pearson `0.060`), so chess win rate does
-  not predict nonsense detection at all.
+- BullshitBench: rank ordering is positive (`Spearman 0.480`) but the linear fit is low and the
+  relationship mostly collapses under release-month control (`0.303` → `0.118`), meaning most of the
+  apparent association is chronology, not a model-capability link.
+- DELEGATE-52: weak-to-moderate at the long-horizon endpoint (`Pearson 0.381`, `Spearman 0.538`,
+  `n=14`), partly deflated by release-month control (`0.381` → `0.283`), and OLS prediction is below
+  the mean baseline (`R2=-0.682`). Read it as a rank/degradation signal only. The `completion_tokens_
+  black_per_move` association is negative (`-0.630`): models that spend more tokens per chess move
+  tend to corrupt documents more — but at `n=15` this is fragile and exploratory.
+- No shared headline metric: `player_wins_percent` is the strongest non-Elo chess metric for ECI, but
+  ARC and BullshitBench lead with `average_game_cost`, and DELEGATE-52 leads with
+  `completion_tokens_black_per_move`. The four evals do not agree on which chess behavior tracks
+  external capability.
 
 ## Method In One Screen
 
@@ -64,10 +81,27 @@ Interpretation:
 | Epoch ECI | 178 | 93 | 85 | 70 | 85 / 0 | 15 |
 | ARC-AGI-2 | 152 | 71 | 60 | 57 | 24 / 54 | 15 |
 | BullshitBench v2 | 162 | 66 | 58 | 55 | 90 / 6 | 15 |
+| DELEGATE-52 | 19 | 15 | 15 | 14 | 2 / 2 | 4 |
 
-The audit currently reports `reproducibility_status = pass`, `coverage_status = review-needed`, and
-`unresolved_row_count = 267` across the three external evals. All published per-eval artifacts
-reproduce cleanly (`evals_with_diff_count = 0`).
+The audit reports `reproducibility_status = pass` (all four per-eval artifacts reproduce cleanly,
+`evals_with_diff_count = 0`), `coverage_status = review-needed`, and `unresolved_row_count = 271`
+across the four external evals. The ECI, ARC-AGI-2, and BullshitBench baselines were republished
+alongside this change to pick up the `elo_refined.csv` `min_game_date` column and the `mistake_stats`
+summary block; that republish changed only recorded input metadata, no relationship, coverage, or
+prediction value.
+
+### DELEGATE-52 Mapping Shape
+
+The 19 Table-1 rows resolve to 13 `variant-compatible` and 2 `alias` mappings (15 mapped rows → 15
+unique LLM Chess players, 14 in the Elo sample after `claude-opus-4-6` drops for missing Elo), with 2
+`unmatched` (Mistral Large 3; the original Grok 4, distinct from the `grok-4-20*` revision in
+`elo_refined.csv`) and 2 `ambiguous` (an unspecified GPT-4o snapshot; `gpt-oss-120b` with an
+unspecified reasoning tier). The paper does not publish exact reasoning configs (Appendix L was not
+machine-extractable), so reasoning-capable base models are mapped with a config caveat following the
+shared tier convention (base GPT-5.x → `-medium`, mini/nano → `-high`). See
+`mapping-research/delegate_52.md`. The source is paper-transcribed, weaker provenance than the other
+three evals (which snapshot machine-readable upstream files); this is documented in
+`evals/delegate-52/SOURCE.md`.
 
 ### BullshitBench Mapping Shape
 
@@ -120,9 +154,11 @@ like a carefulness/discipline trait, not a capability one — a lead, not a vali
 - ECI summary: [results/eci_summary.json](results/eci_summary.json)
 - ARC summary: [results/arc_agi_2_summary.json](results/arc_agi_2_summary.json)
 - BullshitBench summary: [results/bullshit_bench_summary.json](results/bullshit_bench_summary.json)
+- DELEGATE-52 summary: [results/delegate_52_summary.json](results/delegate_52_summary.json)
 - ECI report: [results/eci.html](results/eci.html)
 - ARC report: [results/arc_agi_2.html](results/arc_agi_2.html)
 - BullshitBench report: [results/bullshit_bench.html](results/bullshit_bench.html)
-- Coverage: [results/eci_coverage.csv](results/eci_coverage.csv), [results/arc_agi_2_coverage.csv](results/arc_agi_2_coverage.csv), [results/bullshit_bench_coverage.csv](results/bullshit_bench_coverage.csv)
-- Mapping sources: [mappings/eci.csv](mappings/eci.csv), [mappings/arc_agi_2.csv](mappings/arc_agi_2.csv), [mappings/bullshit_bench.csv](mappings/bullshit_bench.csv)
-- Mapping rationale: [mapping-research/bullshit_bench.md](mapping-research/bullshit_bench.md)
+- DELEGATE-52 report: [results/delegate_52.html](results/delegate_52.html)
+- Coverage: [results/eci_coverage.csv](results/eci_coverage.csv), [results/arc_agi_2_coverage.csv](results/arc_agi_2_coverage.csv), [results/bullshit_bench_coverage.csv](results/bullshit_bench_coverage.csv), [results/delegate_52_coverage.csv](results/delegate_52_coverage.csv)
+- Mapping sources: [mappings/eci.csv](mappings/eci.csv), [mappings/arc_agi_2.csv](mappings/arc_agi_2.csv), [mappings/bullshit_bench.csv](mappings/bullshit_bench.csv), [mappings/delegate_52.csv](mappings/delegate_52.csv)
+- Mapping rationale: [mapping-research/bullshit_bench.md](mapping-research/bullshit_bench.md), [mapping-research/delegate_52.md](mapping-research/delegate_52.md)

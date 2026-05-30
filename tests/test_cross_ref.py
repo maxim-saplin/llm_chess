@@ -10,7 +10,7 @@ CROSS_REF_ROOT = REPO_ROOT / "data/cross-ref"
 if str(CROSS_REF_ROOT) not in sys.path:
     sys.path.insert(0, str(CROSS_REF_ROOT))
 
-from adapters import arc_agi_2, bullshit_bench, eci  # noqa: E402
+from adapters import arc_agi_2, bullshit_bench, delegate_52, eci  # noqa: E402
 from framework.data_quality import (  # noqa: E402
     MISTAKE_STATS_TRUSTED_AFTER,
     REPAIRABLE_MISTAKE_METRICS,
@@ -213,6 +213,8 @@ def test_mapping_csv_headers_keep_source_and_destination_columns_front_loaded():
     for mapping_path in [
         CROSS_REF_ROOT / "mappings" / "eci.csv",
         CROSS_REF_ROOT / "mappings" / "arc_agi_2.csv",
+        CROSS_REF_ROOT / "mappings" / "bullshit_bench.csv",
+        CROSS_REF_ROOT / "mappings" / "delegate_52.csv",
     ]:
         header = mapping_path.read_text(encoding="utf-8").splitlines()[0].split(",")
         assert header[: len(expected_prefix)] == expected_prefix
@@ -221,8 +223,8 @@ def test_mapping_csv_headers_keep_source_and_destination_columns_front_loaded():
 def test_mapping_review_builds_cross_eval_rows_and_supports_filters():
     review_rows, payload = build_mapping_review(CROSS_REF_ROOT / "mappings")
 
-    assert set(review_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench"}
-    assert payload["summary"]["eval_count"] == 3
+    assert set(review_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52"}
+    assert payload["summary"]["eval_count"] == 4
     assert payload["summary"]["row_count"] == len(review_rows)
     assert payload["summary"]["unresolved_row_count"] > 0
     assert {"provider_group_source", "provider_group_confidence"} <= set(review_rows.columns)
@@ -232,7 +234,7 @@ def test_mapping_review_builds_cross_eval_rows_and_supports_filters():
         player="gemini-3.1-pro-preview",
     )
 
-    assert set(gemini_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench"}
+    assert set(gemini_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52"}
     assert gemini_payload["summary"]["unique_llm_chess_players"] == 1
     assert gemini_payload["player_matrix_rows"][0]["llm_chess_player"] == "gemini-3.1-pro-preview"
 
@@ -251,7 +253,7 @@ def test_mapping_review_builds_cross_eval_rows_and_supports_filters():
     )
 
     assert not anthropic_rows.empty
-    assert set(anthropic_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench"}
+    assert set(anthropic_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52"}
     assert set(anthropic_rows["provider_group"].unique()) == {"Anthropic"}
     assert set(anthropic_payload["provider_counts"].keys()) == {"Anthropic"}
 
@@ -309,7 +311,7 @@ def test_mapping_review_writes_csv_and_html(tmp_path):
         "llm_chess_player",
     ]
     assert {"provider_group", "provider_group_source", "provider_group_confidence"} <= set(csv_rows.columns)
-    assert set(csv_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench"}
+    assert set(csv_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52"}
     assert "gemini-3.1-pro-preview" in set(csv_rows["llm_chess_player"])
     assert "Mapping Review" in html
     assert "gemini-3.1-pro-preview" in html
@@ -412,7 +414,7 @@ def test_cross_eval_defaults_to_scratch_outputs_without_mutating_published_aggre
 
 
 def test_audit_command_generates_single_status_surface(tmp_path):
-    results_dir = _write_current_eval_baseline(tmp_path / "results", "eci", "arc_agi_2", "bullshit_bench")
+    results_dir = _write_current_eval_baseline(tmp_path / "results", "eci", "arc_agi_2", "bullshit_bench", "delegate_52")
     summary_output = tmp_path / "audit_summary.json"
     report_output = tmp_path / "audit_report.md"
     parser = run_cross_ref.build_parser()
@@ -435,15 +437,15 @@ def test_audit_command_generates_single_status_surface(tmp_path):
     assert payload["summary_output"] == str(summary_output)
     assert payload["report_output"] == str(report_output)
     assert summary["artifact_kind"] == "cross_ref_audit"
-    assert summary["benchmarks"]["count"] == 4
-    assert summary["benchmarks"]["ids"] == ["llm_chess", "arc_agi_2", "bullshit_bench", "eci"]
+    assert summary["benchmarks"]["count"] == 5
+    assert summary["benchmarks"]["ids"] == ["llm_chess", "arc_agi_2", "bullshit_bench", "delegate_52", "eci"]
     assert summary["reproducibility_status"] == "pass"
     assert summary["reproducibility"]["rerun_diff_all_clean"] is True
     assert all(entry["has_diff"] is False for entry in summary["reproducibility"]["per_eval"])
     assert summary["coverage_status"] == "review-needed"
     assert summary["mapping_review"]["unresolved_row_count"] > 0
     assert "overall_status: review-needed" in report
-    assert "benchmarks: llm_chess, arc_agi_2, bullshit_bench, eci" in report
+    assert "benchmarks: llm_chess, arc_agi_2, bullshit_bench, delegate_52, eci" in report
     assert "This file is generated by `run_cross_ref.py audit`." in report
 
 
@@ -465,7 +467,7 @@ def test_audit_defaults_to_scratch_outputs_without_mutating_published_audit():
 
 
 def test_audit_threshold_can_promote_clean_reproducible_state(tmp_path):
-    results_dir = _write_current_eval_baseline(tmp_path / "results", "eci", "arc_agi_2", "bullshit_bench")
+    results_dir = _write_current_eval_baseline(tmp_path / "results", "eci", "arc_agi_2", "bullshit_bench", "delegate_52")
     summary_output = tmp_path / "audit_summary.json"
     parser = run_cross_ref.build_parser()
     args = parser.parse_args(
@@ -785,6 +787,7 @@ def test_eval_source_tree_contains_only_source_artifacts():
     assert {path.name for path in (evals_root / "eci").iterdir()} == {"SOURCE.md", "epoch_eci_may_2026.csv"}
     assert {path.name for path in (evals_root / "arc-agi-2").iterdir()} == {"SOURCE.md", "arc-agi-2-may-2026.csv"}
     assert {path.name for path in (evals_root / "bullshit-bench").iterdir()} == {"SOURCE.md", "bullshit_bench_v2_may_2026.csv"}
+    assert {path.name for path in (evals_root / "delegate-52").iterdir()} == {"SOURCE.md", "delegate-52-may-2026.csv"}
 
 
 def test_arc_mapping_covers_all_rows_and_summary_is_strict_json():
@@ -881,6 +884,61 @@ def test_bullshit_bench_mapping_covers_all_rows_and_summary_is_strict_json():
     # Key finding: nonsense detection is only weakly tied to chess Elo and well below ECI/ARC.
     assert 0.20 < summary["relationships"]["raw_elo"]["pearson_r"] < 0.40
     assert int(coverage["survived_elo_dedupe"].sum()) == summary["analysis_surfaces"]["elo_analysis"]["count"]
+
+
+def test_delegate_52_mapping_covers_all_rows_and_reports_depth_profile():
+    elo, metadata, _ = load_llm_chess_inputs(REPO_ROOT)
+    inventory = build_llm_chess_inventory(elo, metadata)
+    normalized, _ = delegate_52.normalize_source()
+    mapping = load_mapping_file(REPO_ROOT / "data/cross-ref/mappings/delegate_52.csv")
+    merged = apply_mapping(normalized, mapping)
+
+    assert len(normalized) == 19
+    assert len(merged) == len(normalized)
+    assert merged["mapping_status"].notna().all()
+    # The full RS curve is preserved, anchored on the long-horizon endpoint.
+    assert normalized["rs_at_20"].max() == 80.9
+    assert normalized["rs_at_20"].min() == 10.0
+
+    summary, _, coverage, _ = delegate_52.run_analysis(
+        inventory,
+        mapping,
+        verification={
+            "runner_command": "pytest",
+            "inventory_path": "data/cross-ref/model-identity/llm_chess_models.csv",
+            "mapping_file": "data/cross-ref/mappings/delegate_52.csv",
+            "verification_commands": ["pytest tests/test_cross_ref.py"],
+            "test_status": "running-under-pytest",
+            "mapping_qa_status": "pending",
+            "run_qa_status": "pending",
+            "known_limitations": [],
+        },
+    )
+    json.dumps(summary, allow_nan=False)
+
+    assert summary["target_score_column"] == "rs_at_20"
+    assert summary["inputs"]["source"]["numeric_parse_rates"]["rs_at_20"] == 1.0
+    assert summary["mapping_source_of_truth"]["mapping_file"] == "data/cross-ref/mappings/delegate_52.csv"
+    # Conservative reviewed mapping: 13 variant-compatible + 2 alias matched, 2 unmatched, 2 ambiguous.
+    status_counts = summary["mapping"]["mapping_file_status_counts"]
+    assert status_counts["variant-compatible"] == 13
+    assert status_counts["alias"] == 2
+    assert status_counts["unmatched"] == 2
+    assert status_counts["ambiguous"] == 2
+    # claude-opus-4-6 has no Elo, so 15 metric rows but 14 in the Elo sample.
+    assert summary["coverage"]["metric_analysis_rows_max_dedupe"] == 15
+    assert summary["coverage"]["elo_analysis_rows_max_dedupe"] == 14
+    assert summary["relationships"]["raw_elo"]["n"] == summary["analysis_surfaces"]["elo_analysis"]["count"]
+    # Multi-factor headline: Elo correlation reported at every interaction depth plus derived measures.
+    depth = summary["relationships"]["raw_elo"]["rs_depth_vs_elo"]
+    factors = {entry["factor"] for entry in depth}
+    assert {f"rs_at_{k}" for k in range(2, 21, 2)} <= factors
+    assert {"rs_mean", "rs_degradation"} <= factors
+    # Higher-Elo models degrade less over long horizons (slope correlates negatively with Elo).
+    degradation = next(entry for entry in depth if entry["factor"] == "rs_degradation")
+    assert degradation["pearson_r"] < 0
+    # Per-depth release-controlled correlations are emitted in the sensitivity block.
+    assert len(summary["sensitivity"]["rs_depth_release_controlled"]) == len(depth)
 
 
 def test_eci_summary_preserves_legacy_parity_slice():

@@ -14,9 +14,10 @@ Generated facts from published per-eval summaries. It does not rerun evals; rege
 
 | Eval | Summary | SHA256 | Coverage |
 | --- | --- | --- | --- |
-| arc_agi_2 | `data/cross-ref/results/arc_agi_2_summary.json` | `a1b32087e637` | `data/cross-ref/results/arc_agi_2_coverage.csv` |
-| bullshit_bench | `data/cross-ref/results/bullshit_bench_summary.json` | `0b1f993f8f16` | `data/cross-ref/results/bullshit_bench_coverage.csv` |
-| eci | `data/cross-ref/results/eci_summary.json` | `b9f3491f7a7e` | `data/cross-ref/results/eci_coverage.csv` |
+| arc_agi_2 | `data/cross-ref/results/arc_agi_2_summary.json` | `fb0292f2e736` | `data/cross-ref/results/arc_agi_2_coverage.csv` |
+| bullshit_bench | `data/cross-ref/results/bullshit_bench_summary.json` | `94771ba2e5e3` | `data/cross-ref/results/bullshit_bench_coverage.csv` |
+| delegate_52 | `data/cross-ref/results/delegate_52_summary.json` | `b7fa123b7292` | `data/cross-ref/results/delegate_52_coverage.csv` |
+| eci | `data/cross-ref/results/eci_summary.json` | `7c079bc1cfd1` | `data/cross-ref/results/eci_coverage.csv` |
 
 ## Signal
 
@@ -24,6 +25,7 @@ Generated facts from published per-eval summaries. It does not rerun evals; rege
 | --- | --- | --- | --- | --- |
 | ARC-AGI-2 | r `0.584`, rho `0.660`, n `57` | r `0.412`, n `57` | `average_game_cost`: r `0.473`, rho `0.621`, n `58` | R2 `-0.119` vs baseline `-0.028`, rank rho `0.522` |
 | BullshitBench v2 | r `0.303`, rho `0.480`, n `55` | r `0.118`, n `54` | `average_game_cost`: r `0.428`, rho `0.575`, n `56` | R2 `0.090` vs baseline `-0.017`, rank rho `0.472` |
+| DELEGATE-52 | r `0.381`, rho `0.538`, n `14` | r `0.283`, n `14` | `completion_tokens_black_per_move`: r `-0.630`, rho `-0.464`, n `15` | R2 `-0.682` vs baseline `-0.146`, rank rho `0.246` |
 | Epoch ECI | r `0.757`, rho `0.744`, n `70` | r `0.551`, n `69` | `player_wins_percent`: r `0.689`, rho `0.791`, n `85` | R2 `0.527` vs baseline `-0.021`, rank rho `0.739` |
 
 ## Coverage
@@ -32,6 +34,7 @@ Generated facts from published per-eval summaries. It does not rerun evals; rege
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | ARC-AGI-2 | 152 | 71 | 60 | 57 | 89 | 15 |
 | BullshitBench v2 | 162 | 66 | 58 | 55 | 96 | 15 |
+| DELEGATE-52 | 19 | 15 | 15 | 14 | 4 | 4 |
 | Epoch ECI | 178 | 93 | 85 | 70 | 85 | 15 |
 
 Primary human report: `data/cross-ref/CONSOLIDATED_REPORT.md`.

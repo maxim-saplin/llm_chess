@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 
-from adapters import arc_agi_2, bullshit_bench, eci
+from adapters import arc_agi_2, bullshit_bench, delegate_52, eci
 from framework.cross_eval import build_cross_eval_summary, render_cross_eval_report_markdown
 from framework.diffing import build_eval_diff_report, render_artifact_diff_markdown
 from framework.loading import load_llm_chess_inputs
@@ -26,6 +26,7 @@ ADAPTERS = {
     "eci": eci,
     "arc_agi_2": arc_agi_2,
     "bullshit_bench": bullshit_bench,
+    "delegate_52": delegate_52,
 }
 
 
