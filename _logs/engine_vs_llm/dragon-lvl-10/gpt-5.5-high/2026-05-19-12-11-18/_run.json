@@ -1,0 +1,52 @@
+{
+    "metadata": {
+        "time_started_formatted": "2026.05.19_12:11",
+        "log_folder_relative": "_logs/engine_vs_llm/dragon-lvl-10/gpt-5.5-high/2026-05-19-12-11-18",
+        "num_repetitions": 10,
+        "store_individual_logs": true,
+        "python_version": "3.13.7"
+    },
+    "player_types": {
+        "white_player_type": "CHESS_ENGINE_DRAGON",
+        "black_player_type": "LLM_BLACK"
+    },
+    "config": {
+        "enable_reflection": false,
+        "board_representation_mode": "UNICODE_ONLY",
+        "rotate_board_for_white": false,
+        "max_game_moves": 200,
+        "max_llm_turns": 10,
+        "max_failed_attempts": 3,
+        "throttle_delay": 7,
+        "dialog_turn_delay": 7,
+        "max_api_retries": 6,
+        "api_retry_delay": 5,
+        "random_print_board": false,
+        "visualize_board": false,
+        "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+    },
+    "chess_engines": {
+        "stockfish": {
+            "path": "/opt/homebrew/bin/stockfish",
+            "reset_history": true,
+            "level": 1,
+            "time_per_move": 0.1
+        },
+        "dragon": {
+            "path": "dragon/dragon-linux",
+            "reset_history": true,
+            "level": 10,
+            "time_per_move": 0.1
+        }
+    },
+    "llm_configs": {
+        "black": {
+            "model": "gpt-5.5",
+            "api_type": "azure",
+            "api_version": "2025-01-01-preview",
+            "api_key": "REDACTED",
+            "timeout": 1800,
+            "reasoning_effort": "high"
+        }
+    }
+}

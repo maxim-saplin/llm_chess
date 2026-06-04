@@ -1,0 +1,1181 @@
+{
+  "eval_id": "arc_agi_2",
+  "eval_label": "ARC-AGI-2",
+  "summary_tagline": "ARC Prize leaderboard rows normalized through the shared cross-ref contracts.",
+  "target_score_column": "score_arc_agi_2",
+  "inputs": {
+    "source": {
+      "file": "/home/user/src/llm_chess/data/cross-ref/evals/arc-agi-2/arc-agi-2-may-2026.csv",
+      "rows": 161,
+      "columns": [
+        "AI SYSTEM",
+        "AUTHOR",
+        "DATE",
+        "SYSTEM TYPE",
+        "ARC-AGI-1",
+        "ARC-AGI-2",
+        "ARC-AGI-3",
+        "COST/TASK",
+        "COST (V3)",
+        "CODE / PAPER"
+      ],
+      "required_columns": [
+        "AI SYSTEM",
+        "AUTHOR",
+        "DATE",
+        "SYSTEM TYPE",
+        "ARC-AGI-1",
+        "ARC-AGI-2",
+        "ARC-AGI-3",
+        "COST/TASK",
+        "COST (V3)",
+        "CODE / PAPER"
+      ],
+      "optional_columns_present": {},
+      "key_column": "AI SYSTEM",
+      "key_non_null": 161,
+      "duplicate_keys": 4,
+      "numeric_parse_rates": {
+        "score_arc_agi_1": 1.0,
+        "score_arc_agi_2": 1.0,
+        "score_arc_agi_3": 1.0,
+        "cost_per_task": 1.0,
+        "cost_v3": 0.0
+      }
+    },
+    "source_note_path": "data/cross-ref/evals/arc-agi-2/SOURCE.md",
+    "source_file_paths": [
+      "data/cross-ref/evals/arc-agi-2/arc-agi-2-may-2026.csv"
+    ]
+  },
+  "llm_chess_inputs": {
+    "elo_refined": {
+      "file": "/home/user/src/llm_chess/data/elo_refined.csv",
+      "rows": 187,
+      "columns": [
+        "Player",
+        "min_game_date",
+        "total_games",
+        "player_wins",
+        "opponent_wins",
+        "draws",
+        "player_wins_percent",
+        "player_draws_percent",
+        "average_moves",
+        "moe_average_moves",
+        "total_moves",
+        "player_wrong_actions",
+        "player_wrong_moves",
+        "wrong_actions_per_1000moves",
+        "wrong_moves_per_1000moves",
+        "mistakes_per_1000moves",
+        "moe_mistakes_per_1000moves",
+        "player_avg_material",
+        "opponent_avg_material",
+        "material_diff_player_llm_minus_opponent",
+        "moe_material_diff_llm_minus_rand",
+        "completion_tokens_black_per_move",
+        "moe_completion_tokens_black_per_move",
+        "moe_black_llm_win_rate",
+        "moe_draw_rate",
+        "moe_black_llm_loss_rate",
+        "win_loss",
+        "moe_win_loss",
+        "win_loss_non_interrupted",
+        "moe_win_loss_non_interrupted",
+        "game_duration",
+        "moe_game_duration",
+        "games_interrupted",
+        "games_interrupted_percent",
+        "moe_games_interrupted",
+        "games_not_interrupted",
+        "games_not_interrupted_percent",
+        "moe_games_not_interrupted",
+        "average_game_cost",
+        "moe_average_game_cost",
+        "price_per_1000_moves",
+        "moe_price_per_1000_moves",
+        "average_time_per_game_seconds",
+        "moe_average_time_per_game_seconds",
+        "elo",
+        "elo_moe_95",
+        "games_vs_random",
+        "games_vs_dragon"
+      ],
+      "required_columns": [
+        "Player",
+        "min_game_date",
+        "elo",
+        "elo_moe_95",
+        "total_games",
+        "player_wins_percent",
+        "player_draws_percent",
+        "games_interrupted_percent",
+        "wrong_moves_per_1000moves",
+        "mistakes_per_1000moves",
+        "average_moves",
+        "average_time_per_game_seconds",
+        "average_game_cost",
+        "completion_tokens_black_per_move",
+        "material_diff_player_llm_minus_opponent"
+      ],
+      "optional_columns_present": {},
+      "key_column": "Player",
+      "key_non_null": 187,
+      "duplicate_keys": 0,
+      "numeric_parse_rates": {
+        "elo": 1.0,
+        "elo_moe_95": 1.0,
+        "total_games": 1.0,
+        "average_game_cost": 1.0,
+        "average_time_per_game_seconds": 1.0
+      }
+    },
+    "models_metadata": {
+      "file": "/home/user/src/llm_chess/data/models_metadata.csv",
+      "rows": 267,
+      "columns": [
+        "model",
+        "1m_prompt",
+        "1m_completion",
+        "date_released",
+        "reasoning_status",
+        "comment"
+      ],
+      "required_columns": [
+        "model",
+        "1m_prompt",
+        "1m_completion",
+        "date_released",
+        "reasoning_status",
+        "comment"
+      ],
+      "optional_columns_present": {},
+      "key_column": "model",
+      "key_non_null": 267,
+      "duplicate_keys": 0,
+      "numeric_parse_rates": {
+        "1m_prompt": 1.0,
+        "1m_completion": 1.0
+      }
+    },
+    "join_coverage": {
+      "elo_players": 187,
+      "metadata_models": 267,
+      "joined_models": 184,
+      "elo_without_metadata": 3,
+      "metadata_without_elo": 83
+    },
+    "data_quality": {
+      "row_level_masks": [
+        {
+          "rule_id": "grok_token_and_cost_metrics_masked",
+          "scope": "row_level",
+          "reason": "Grok token accounting is not comparable across models, so token and derived cost metrics are masked for analysis instead of treated as real zeros.",
+          "row_selector": "Player startswith 'grok-'",
+          "affected_row_count": 11,
+          "masked_columns": [
+            "completion_tokens_black_per_move",
+            "moe_completion_tokens_black_per_move",
+            "average_game_cost",
+            "moe_average_game_cost",
+            "price_per_1000_moves",
+            "moe_price_per_1000_moves"
+          ],
+          "masked_non_null_counts": {
+            "completion_tokens_black_per_move": 11,
+            "moe_completion_tokens_black_per_move": 11,
+            "average_game_cost": 11,
+            "moe_average_game_cost": 11,
+            "price_per_1000_moves": 11,
+            "moe_price_per_1000_moves": 11
+          }
+        }
+      ],
+      "global_multifactor_metric_exclusions": [
+        {
+          "rule_id": "historical_wrong_action_metrics_excluded",
+          "scope": "global_metric_exclusion",
+          "reason": "Logs before 2025-03-16 underreported wrong actions and wrong moves, and the aggregate elo_refined.csv rows do not preserve enough run-date provenance to repair those metrics safely inside multifactor analysis.",
+          "metric_columns": [
+            "player_wrong_actions",
+            "player_wrong_moves",
+            "wrong_actions_per_1000moves",
+            "wrong_moves_per_1000moves",
+            "mistakes_per_1000moves",
+            "moe_mistakes_per_1000moves"
+          ]
+        }
+      ]
+    }
+  },
+  "mistake_stats": {
+    "mode": "excluded",
+    "trusted_after": "2025-03-16",
+    "repaired_metrics_enabled": [],
+    "clean_player_count": 121,
+    "pre_cutoff_player_count": 66,
+    "pre_cutoff_players_dropped": []
+  },
+  "mapping_source_of_truth": {
+    "mapping_file": "data/cross-ref/mappings/arc_agi_2.csv",
+    "mapping_basis": "Run-time source of truth is the mapping CSV. For ARC it is a reviewed row-level mapping from leaderboard labels into the current LLM Chess inventory.",
+    "source_seed_column": null,
+    "run_used_mapping_file_directly": true,
+    "fresh_review_status": "mapping-csv-reviewed",
+    "changed_source_bridge_matches": 0,
+    "changed_source_bridge_examples": []
+  },
+  "mapping": {
+    "mapping_file_status_counts": {
+      "accepted": 15,
+      "alias": 46,
+      "ambiguous": 54,
+      "excluded": 8,
+      "unmatched": 24,
+      "variant-compatible": 14
+    },
+    "mapping_review_status_counts": {
+      "qa_passed": 161
+    },
+    "accepted_count": 75,
+    "ambiguous_count": 54,
+    "unmatched_count": 24,
+    "excluded_count": 8,
+    "qa_verdict": "reviewed_with_unresolved_debt",
+    "unresolved_high_impact_rows": [
+      {
+        "eval_row_id": "arc_agi_2:0158:human_panel",
+        "eval_model_label": "Human Panel",
+        "score_arc_agi_2": 100.0,
+        "mapping_status": "excluded",
+        "confidence": "high",
+        "open_questions": null
+      },
+      {
+        "eval_row_id": "arc_agi_2:0008:gpt_5_5_xhigh",
+        "eval_model_label": "GPT-5.5 (xHigh)",
+        "score_arc_agi_2": 85.0,
+        "mapping_status": "unmatched",
+        "confidence": "high",
+        "open_questions": null
+      },
+      {
+        "eval_row_id": "arc_agi_2:0036:gemini_3_deep_think_2_26",
+        "eval_model_label": "Gemini 3 Deep Think (2/26)",
+        "score_arc_agi_2": 84.6,
+        "mapping_status": "ambiguous",
+        "confidence": "low",
+        "open_questions": "Needs stronger source evidence before collapsing variants."
+      },
+      {
+        "eval_row_id": "arc_agi_2:0002:gpt_5_5_pro_high",
+        "eval_model_label": "GPT-5.5 Pro (High)",
+        "score_arc_agi_2": 84.6,
+        "mapping_status": "unmatched",
+        "confidence": "high",
+        "open_questions": null
+      },
+      {
+        "eval_row_id": "arc_agi_2:0003:gpt_5_5_pro_xhigh",
+        "eval_model_label": "GPT-5.5 Pro (xHigh)",
+        "score_arc_agi_2": 84.2,
+        "mapping_status": "unmatched",
+        "confidence": "high",
+        "open_questions": null
+      },
+      {
+        "eval_row_id": "arc_agi_2:0030:gpt_5_4_pro_xhigh",
+        "eval_model_label": "GPT-5.4 Pro (xHigh)",
+        "score_arc_agi_2": 83.3,
+        "mapping_status": "ambiguous",
+        "confidence": "low",
+        "open_questions": "Needs stronger source evidence before collapsing variants."
+      },
+      {
+        "eval_row_id": "arc_agi_2:0012:claude_4_7_max",
+        "eval_model_label": "Claude 4.7 (Max)",
+        "score_arc_agi_2": 75.8,
+        "mapping_status": "unmatched",
+        "confidence": "high",
+        "open_questions": null
+      },
+      {
+        "eval_row_id": "arc_agi_2:0029:gpt_5_4_xhigh",
+        "eval_model_label": "GPT-5.4 (xHigh)",
+        "score_arc_agi_2": 74.0,
+        "mapping_status": "unmatched",
+        "confidence": "high",
+        "open_questions": null
+      },
+      {
+        "eval_row_id": "arc_agi_2:0042:gpt_5_2_refine",
+        "eval_model_label": "GPT-5.2 (Refine.)",
+        "score_arc_agi_2": 72.9,
+        "mapping_status": "ambiguous",
+        "confidence": "low",
+        "open_questions": "Needs stronger source evidence before collapsing variants."
+      },
+      {
+        "eval_row_id": "arc_agi_2:0001:gemini_3_5_flash_high",
+        "eval_model_label": "Gemini 3.5 Flash (High)",
+        "score_arc_agi_2": 72.1,
+        "mapping_status": "unmatched",
+        "confidence": "high",
+        "open_questions": null
+      },
+      {
+        "eval_row_id": "arc_agi_2:0040:claude_opus_4_6_120k_high",
+        "eval_model_label": "Claude Opus 4.6 (120K, High)",
+        "score_arc_agi_2": 69.2,
+        "mapping_status": "ambiguous",
+        "confidence": "low",
+        "open_questions": "Needs stronger source evidence before collapsing variants."
+      },
+      {
+        "eval_row_id": "arc_agi_2:0041:claude_opus_4_6_120k_max",
+        "eval_model_label": "Claude Opus 4.6 (120K, Max)",
+        "score_arc_agi_2": 68.8,
+        "mapping_status": "ambiguous",
+        "confidence": "low",
+        "open_questions": "Needs stronger source evidence before collapsing variants."
+      },
+      {
+        "eval_row_id": "arc_agi_2:0010:claude_4_7_medium",
+        "eval_model_label": "Claude 4.7 (Medium)",
+        "score_arc_agi_2": 67.5,
+        "mapping_status": "unmatched",
+        "confidence": "high",
+        "open_questions": null
+      },
+      {
+        "eval_row_id": "arc_agi_2:0039:claude_opus_4_6_120k_medium",
+        "eval_model_label": "Claude Opus 4.6 (120K, Medium)",
+        "score_arc_agi_2": 66.3,
+        "mapping_status": "ambiguous",
+        "confidence": "low",
+        "open_questions": "Needs stronger source evidence before collapsing variants."
+      },
+      {
+        "eval_row_id": "arc_agi_2:0038:claude_opus_4_6_120k_low",
+        "eval_model_label": "Claude Opus 4.6 (120K, Low)",
+        "score_arc_agi_2": 64.6,
+        "mapping_status": "ambiguous",
+        "confidence": "low",
+        "open_questions": "Needs stronger source evidence before collapsing variants."
+      }
+    ],
+    "mapping_file_path": "data/cross-ref/mappings/arc_agi_2.csv"
+  },
+  "coverage": {
+    "external_rows": 161,
+    "numeric_score_rows": 152,
+    "accepted_mapping_rows": 71,
+    "rows_joined_to_llm_chess_metric_rows": 63,
+    "unique_llm_chess_players_joined_to_metric_rows": 60,
+    "metric_analysis_rows_max_dedupe": 60,
+    "rows_joined_to_llm_chess_rows_with_non_null_elo": 60,
+    "unique_llm_chess_players_joined_to_elo": 57,
+    "elo_analysis_rows_max_dedupe": 57,
+    "mapped_to_llm_chess_rows": 63,
+    "matched_llm_chess_rows": 57,
+    "matched_unique_llm_chess_players": 57,
+    "external_rows_without_llm_chess_match": 89,
+    "external_rows_without_llm_chess_elo_join": 92,
+    "llm_chess_rows_without_eval_match": 77,
+    "duplicate_mapping_keys": 3,
+    "duplicate_elo_joined_player_rows": 3,
+    "system_type_counts": {
+      "Base LLM": 19,
+      "CoT": 126,
+      "CoT + Synthesis": 4,
+      "Custom": 3,
+      "Refinement": 4,
+      "missing": 5
+    }
+  },
+  "analysis_surfaces": {
+    "metric_analysis": {
+      "stage_id": "metric_analysis_rows_max_dedupe",
+      "count": 60,
+      "used_by": [
+        "relationships.selected_metrics",
+        "prediction"
+      ],
+      "description": "Deduped eval rows joined to LLM Chess metric rows, even when Elo is missing."
+    },
+    "elo_analysis": {
+      "stage_id": "elo_analysis_rows_max_dedupe",
+      "count": 57,
+      "used_by": [
+        "relationships.raw_elo",
+        "relationships.release_controlled_elo"
+      ],
+      "description": "Deduped eval rows joined to LLM Chess players with non-null Elo."
+    }
+  },
+  "funnel": {
+    "stages": [
+      {
+        "stage_id": "numeric_external_eval_rows",
+        "label": "External eval rows with a numeric score",
+        "branch": "base",
+        "filter_side": "eval",
+        "required_condition": "The eval row has a parsed numeric target score.",
+        "previous_stage_id": null,
+        "count": 152,
+        "dropped_from_previous": 0
+      },
+      {
+        "stage_id": "accepted_mapping_rows",
+        "label": "Numeric eval rows with an accepted mapping",
+        "branch": "base",
+        "filter_side": "mapping",
+        "required_condition": "The mapping status is accepted, alias, or variant-compatible, and a LLM Chess player is assigned.",
+        "previous_stage_id": "numeric_external_eval_rows",
+        "count": 71,
+        "dropped_from_previous": 81
+      },
+      {
+        "stage_id": "rows_joined_to_llm_chess_metric_rows",
+        "label": "Accepted eval rows joined to LLM Chess metric rows",
+        "branch": "base",
+        "filter_side": "chess",
+        "required_condition": "The mapped LLM Chess player exists in the current LLM Chess metrics table in data/elo_refined.csv.",
+        "previous_stage_id": "accepted_mapping_rows",
+        "count": 63,
+        "dropped_from_previous": 8
+      },
+      {
+        "stage_id": "metric_analysis_rows_max_dedupe",
+        "label": "Deduped metric-analysis rows",
+        "branch": "metric",
+        "filter_side": "dedupe",
+        "required_condition": "For each LLM Chess player, keep the highest-scoring eval row for metric-only analysis.",
+        "previous_stage_id": "rows_joined_to_llm_chess_metric_rows",
+        "count": 60,
+        "dropped_from_previous": 3
+      },
+      {
+        "stage_id": "rows_joined_to_llm_chess_rows_with_non_null_elo",
+        "label": "Accepted eval rows joined to LLM Chess rows with non-null Elo",
+        "branch": "elo",
+        "filter_side": "chess",
+        "required_condition": "The mapped LLM Chess player exists and has a non-null Elo.",
+        "previous_stage_id": "rows_joined_to_llm_chess_metric_rows",
+        "count": 60,
+        "dropped_from_previous": 3
+      },
+      {
+        "stage_id": "elo_analysis_rows_max_dedupe",
+        "label": "Deduped Elo-analysis rows",
+        "branch": "elo",
+        "filter_side": "dedupe",
+        "required_condition": "For each Elo-valid LLM Chess player, keep the highest-scoring eval row for Elo analysis.",
+        "previous_stage_id": "rows_joined_to_llm_chess_rows_with_non_null_elo",
+        "count": 57,
+        "dropped_from_previous": 3
+      }
+    ],
+    "analysis_split_note": {
+      "metric_analysis": "Selected metric relationships and prediction use the metric-analysis sample.",
+      "elo_analysis": "Raw Elo relationships and release-controlled Elo relationships use the Elo-analysis sample."
+    }
+  },
+  "relationships": {
+    "raw_elo": {
+      "name": "arc_agi_2_vs_elo",
+      "n": 57,
+      "pearson_r": 0.5840866342392731,
+      "pearson_p": 1.8455899127454896e-06,
+      "spearman_r": 0.6596146825072995,
+      "spearman_p": 2.4015432249970542e-08,
+      "slope": 13.72970219573114,
+      "intercept": 146.8252897600986,
+      "r2": 0.3411571962969623,
+      "linregress_p": 1.8455899127455014e-06,
+      "slope_stderr": 2.5727252418453537,
+      "sample_stage_id": "elo_analysis_rows_max_dedupe",
+      "bootstrap_95": {
+        "pearson_r": [
+          0.3122069290258604,
+          0.7627640898371507
+        ],
+        "spearman_r": [
+          0.4479248664606791,
+          0.8252602294319289
+        ],
+        "slope": [
+          7.5595061492215665,
+          19.760852319176678
+        ]
+      }
+    },
+    "release_controlled_elo": {
+      "n": 57,
+      "pearson_r": 0.4120628881617718,
+      "pearson_p": 0.0014481680249395308,
+      "spearman_r": 0.4197118735257538,
+      "spearman_p": 0.0011538430178703399,
+      "sample_stage_id": "elo_analysis_rows_max_dedupe"
+    },
+    "selected_metrics": [
+      {
+        "name": "elo",
+        "n": 57,
+        "pearson_r": 0.5840866342392731,
+        "pearson_p": 1.8455899127454896e-06,
+        "spearman_r": 0.6596146825072995,
+        "spearman_p": 2.4015432249970542e-08,
+        "slope": 13.72970219573114,
+        "intercept": 146.8252897600986,
+        "r2": 0.3411571962969623,
+        "linregress_p": 1.8455899127455014e-06,
+        "slope_stderr": 2.5727252418453537,
+        "partial_release_month": {
+          "n": 57,
+          "pearson_r": 0.4120628881617718,
+          "pearson_p": 0.0014481680249395308,
+          "spearman_r": 0.4197118735257538,
+          "spearman_p": 0.0011538430178703399
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "player_wins_percent",
+        "n": 60,
+        "pearson_r": 0.36726625063122564,
+        "pearson_p": 0.0038942162058108612,
+        "spearman_r": 0.5975772528904252,
+        "spearman_p": 4.633899688783497e-07,
+        "slope": 0.4463442659760863,
+        "intercept": 25.409613756617635,
+        "r2": 0.13488449885271833,
+        "linregress_p": 0.0038942162058108417,
+        "slope_stderr": 0.14842668526054936,
+        "partial_release_month": {
+          "n": 60,
+          "pearson_r": 0.257286432570033,
+          "pearson_p": 0.047193843339189266,
+          "spearman_r": 0.3175123664104496,
+          "spearman_p": 0.013434563269370892
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "player_draws_percent",
+        "n": 60,
+        "pearson_r": -0.25137423399482856,
+        "pearson_p": 0.05269520233639542,
+        "spearman_r": -0.2774333247826543,
+        "spearman_p": 0.031864480362878374,
+        "slope": -0.3361189418296486,
+        "intercept": 43.45236449064349,
+        "r2": 0.06318900551648679,
+        "linregress_p": 0.052695202336395526,
+        "slope_stderr": 0.16993554166411284,
+        "partial_release_month": {
+          "n": 60,
+          "pearson_r": -0.13146265509401361,
+          "pearson_p": 0.31671173877517694,
+          "spearman_r": -0.09695302428464057,
+          "spearman_p": 0.4611614722881784
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "games_interrupted_percent",
+        "n": 60,
+        "pearson_r": -0.19384914737320694,
+        "pearson_p": 0.1377876777632623,
+        "spearman_r": -0.4457398651676933,
+        "spearman_p": 0.0003581530557853297,
+        "slope": -0.2724249987959049,
+        "intercept": 19.073556444857505,
+        "r2": 0.03757749193731929,
+        "linregress_p": 0.1377876777632622,
+        "slope_stderr": 0.1810305835436469,
+        "partial_release_month": {
+          "n": 60,
+          "pearson_r": -0.08775177821135069,
+          "pearson_p": 0.5049563544912404,
+          "spearman_r": -0.08680539262546161,
+          "spearman_p": 0.5095787155286973
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "average_moves",
+        "n": 60,
+        "pearson_r": -0.1799083740983845,
+        "pearson_p": 0.16897586689106933,
+        "spearman_r": -0.31861081820866183,
+        "spearman_p": 0.013099108416701484,
+        "slope": -0.3945270267104042,
+        "intercept": 120.78026497393394,
+        "r2": 0.03236702307072425,
+        "linregress_p": 0.16897586689106933,
+        "slope_stderr": 0.2832479102388797,
+        "partial_release_month": {
+          "n": 60,
+          "pearson_r": -0.06565053872828816,
+          "pearson_p": 0.6182248895175081,
+          "spearman_r": -0.09086614642405236,
+          "spearman_p": 0.48989838379147904
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "average_time_per_game_seconds",
+        "n": 60,
+        "pearson_r": 0.39558516059267645,
+        "pearson_p": 0.0017575319775516417,
+        "spearman_r": 0.5943726778540935,
+        "spearman_p": 5.529631974499575e-07,
+        "slope": 65.2803169312421,
+        "intercept": 2758.9702148244655,
+        "r2": 0.15648761928113358,
+        "linregress_p": 0.0017575319775516517,
+        "slope_stderr": 19.900958606384318,
+        "partial_release_month": {
+          "n": 60,
+          "pearson_r": 0.3378227009572227,
+          "pearson_p": 0.00829505939848822,
+          "spearman_r": 0.4075360561024929,
+          "spearman_p": 0.0012296986443630963
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "average_game_cost",
+        "n": 58,
+        "pearson_r": 0.472894358740039,
+        "pearson_p": 0.00017785603419017107,
+        "spearman_r": 0.6208261710094385,
+        "spearman_p": 2.0035258740599698e-07,
+        "slope": 0.06662383607850614,
+        "intercept": 1.4390475603361441,
+        "r2": 0.22362907452815248,
+        "linregress_p": 0.00017785603419017196,
+        "slope_stderr": 0.01658846190243507,
+        "partial_release_month": {
+          "n": 58,
+          "pearson_r": 0.45608735274725937,
+          "pearson_p": 0.00032058035850790175,
+          "spearman_r": 0.6607395585882646,
+          "spearman_p": 1.6598030758280677e-08
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "completion_tokens_black_per_move",
+        "n": 58,
+        "pearson_r": 0.17805120855109452,
+        "pearson_p": 0.1811598862238427,
+        "spearman_r": 0.44211282741316704,
+        "spearman_p": 0.000511542154574735,
+        "slope": 22.94084473624577,
+        "intercept": 2021.9718523883396,
+        "r2": 0.03170223286650536,
+        "linregress_p": 0.1811598862238429,
+        "slope_stderr": 16.942400018552995,
+        "partial_release_month": {
+          "n": 58,
+          "pearson_r": 0.1343312057771083,
+          "pearson_p": 0.31473727237640314,
+          "spearman_r": 0.2614594239892756,
+          "spearman_p": 0.04742296537383749
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      },
+      {
+        "name": "material_diff_player_llm_minus_opponent",
+        "n": 60,
+        "pearson_r": 0.20475463686958983,
+        "pearson_p": 0.11656954849037124,
+        "spearman_r": 0.43980208801487514,
+        "spearman_p": 0.00043802939189000107,
+        "slope": 0.07377283830058796,
+        "intercept": 4.7203589846859195,
+        "r2": 0.041924461319597574,
+        "linregress_p": 0.11656954849037125,
+        "slope_stderr": 0.04630721113546708,
+        "partial_release_month": {
+          "n": 60,
+          "pearson_r": 0.15870066312133713,
+          "pearson_p": 0.22584795197249175,
+          "spearman_r": 0.2300830863581509,
+          "spearman_p": 0.07697124850169801
+        },
+        "sample_stage_id": "metric_analysis_rows_max_dedupe"
+      }
+    ]
+  },
+  "prediction": {
+    "target": "ARC-AGI-2 Score",
+    "sample_stage_id": "metric_analysis_rows_max_dedupe",
+    "sample_n": 60,
+    "status": "ok",
+    "n": 58,
+    "features": [
+      "average_game_cost",
+      "player_wins_percent",
+      "average_time_per_game_seconds",
+      "player_draws_percent"
+    ],
+    "candidate_metrics_considered": [
+      "player_wins_percent",
+      "player_draws_percent",
+      "games_interrupted_percent",
+      "average_moves",
+      "average_time_per_game_seconds",
+      "average_game_cost",
+      "completion_tokens_black_per_move",
+      "material_diff_player_llm_minus_opponent"
+    ],
+    "excluded_candidate_metrics": [
+      "wrong_moves_per_1000moves",
+      "mistakes_per_1000moves"
+    ],
+    "baseline_mean": {
+      "r2": -0.027554383428987084,
+      "rmse": 19.136956654004088,
+      "mae": 12.645140195859518,
+      "rank_spearman": -0.18593357073702949,
+      "top_prediction_misses": [
+        {
+          "row_index": 19,
+          "actual": 77.1,
+          "predicted": 9.492028985507247,
+          "prediction_sd": 0.11360797672270496,
+          "n_predictions": 3,
+          "llm_chess_player": "gemini-3.1-pro-preview",
+          "eval_model_label": "Gemini 3.1 Pro (Preview)",
+          "score_arc_agi_2": 77.1,
+          "elo": 1511.389,
+          "residual": 67.60797101449275,
+          "abs_error": 67.60797101449275
+        },
+        {
+          "row_index": 43,
+          "actual": 70.4,
+          "predicted": 9.269272278754238,
+          "prediction_sd": 0.7670860467545315,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-5.5-medium",
+          "eval_model_label": "GPT-5.5 (Medium)",
+          "score_arc_agi_2": 70.4,
+          "elo": 1532.163,
+          "residual": 61.13072772124577,
+          "abs_error": 61.13072772124577
+        },
+        {
+          "row_index": 6,
+          "actual": 68.3,
+          "predicted": 9.97536231884058,
+          "prediction_sd": 0.6248490681020503,
+          "n_predictions": 3,
+          "llm_chess_player": "claude-opus-4-7_adaptive-thinking-high",
+          "eval_model_label": "Claude 4.7 (High)",
+          "score_arc_agi_2": 68.3,
+          "elo": 691.058,
+          "residual": 58.324637681159416,
+          "abs_error": 58.324637681159416
+        },
+        {
+          "row_index": 11,
+          "actual": 60.4,
+          "predicted": 9.86168670983657,
+          "prediction_sd": 0.5238835749660758,
+          "n_predictions": 3,
+          "llm_chess_player": "claude-sonnet-4-6_thinking-high",
+          "eval_model_label": "Claude Sonnet 4.6 (High)",
+          "score_arc_agi_2": 60.4,
+          "elo": 189.675,
+          "residual": 50.53831329016343,
+          "abs_error": 50.53831329016343
+        },
+        {
+          "row_index": 39,
+          "actual": 55.4,
+          "predicted": 9.098889916743756,
+          "prediction_sd": 0.4885328182281484,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-5.4-medium",
+          "eval_model_label": "GPT-5.4 (Medium)",
+          "score_arc_agi_2": 55.4,
+          "elo": 1252.928,
+          "residual": 46.30111008325624,
+          "abs_error": 46.30111008325624
+        },
+        {
+          "row_index": 17,
+          "actual": 33.6,
+          "predicted": 10.746438482886218,
+          "prediction_sd": 0.8320702330110401,
+          "n_predictions": 3,
+          "llm_chess_player": "gemini-3-flash-preview",
+          "eval_model_label": "Gemini 3 Flash Preview (High)",
+          "score_arc_agi_2": 33.6,
+          "elo": -179.501,
+          "residual": 22.853561517113782,
+          "abs_error": 22.853561517113782
+        },
+        {
+          "row_index": 18,
+          "actual": 31.1,
+          "predicted": 9.927967930928153,
+          "prediction_sd": 1.1991970644363763,
+          "n_predictions": 3,
+          "llm_chess_player": "gemini-3-pro-preview",
+          "eval_model_label": "Gemini 3 Pro",
+          "score_arc_agi_2": 31.1,
+          "elo": 1033.727,
+          "residual": 21.172032069071847,
+          "abs_error": 21.172032069071847
+        },
+        {
+          "row_index": 38,
+          "actual": 29.2,
+          "predicted": 10.863043478260868,
+          "prediction_sd": 0.6703164898742635,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-5.4-low",
+          "eval_model_label": "GPT-5.4 (Low)",
+          "score_arc_agi_2": 29.2,
+          "elo": 347.899,
+          "residual": 18.336956521739133,
+          "abs_error": 18.336956521739133
+        },
+        {
+          "row_index": 37,
+          "actual": 26.7,
+          "predicted": 10.33740363860623,
+          "prediction_sd": 1.4088581353991017,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-5.2-medium",
+          "eval_model_label": "GPT-5.2 (Medium)",
+          "score_arc_agi_2": 26.7,
+          "elo": 1085.129,
+          "residual": 16.36259636139377,
+          "abs_error": 16.36259636139377
+        },
+        {
+          "row_index": 21,
+          "actual": 0.0,
+          "predicted": 11.425686093123652,
+          "prediction_sd": 0.7398181891893233,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-4.1-mini",
+          "eval_model_label": "GPT-4.1-Mini",
+          "score_arc_agi_2": 0.0,
+          "elo": -167.205,
+          "residual": -11.425686093123652,
+          "abs_error": 11.425686093123652
+        }
+      ]
+    },
+    "ols": {
+      "r2": -0.11930523199393295,
+      "rmse": 19.97306576281046,
+      "mae": 12.070161762734738,
+      "rank_spearman": 0.5222632310465188,
+      "top_prediction_misses": [
+        {
+          "row_index": 6,
+          "actual": 68.3,
+          "predicted": 6.664606844931163,
+          "prediction_sd": 2.1182706148089827,
+          "n_predictions": 3,
+          "llm_chess_player": "claude-opus-4-7_adaptive-thinking-high",
+          "eval_model_label": "Claude 4.7 (High)",
+          "score_arc_agi_2": 68.3,
+          "elo": 691.058,
+          "residual": 61.63539315506883,
+          "abs_error": 61.63539315506883
+        },
+        {
+          "row_index": 50,
+          "actual": 3.0,
+          "predicted": 63.52782603256761,
+          "prediction_sd": 12.409270117784262,
+          "n_predictions": 3,
+          "llm_chess_player": "o3-medium",
+          "eval_model_label": "o3 (Medium)",
+          "score_arc_agi_2": 3.0,
+          "elo": 777.637,
+          "residual": -60.52782603256761,
+          "abs_error": 60.52782603256761
+        },
+        {
+          "row_index": 19,
+          "actual": 77.1,
+          "predicted": 19.033716128222803,
+          "prediction_sd": 4.378136521629455,
+          "n_predictions": 3,
+          "llm_chess_player": "gemini-3.1-pro-preview",
+          "eval_model_label": "Gemini 3.1 Pro (Preview)",
+          "score_arc_agi_2": 77.1,
+          "elo": 1511.389,
+          "residual": 58.06628387177719,
+          "abs_error": 58.06628387177719
+        },
+        {
+          "row_index": 43,
+          "actual": 70.4,
+          "predicted": 22.125025558736766,
+          "prediction_sd": 1.5335731360279756,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-5.5-medium",
+          "eval_model_label": "GPT-5.5 (Medium)",
+          "score_arc_agi_2": 70.4,
+          "elo": 1532.163,
+          "residual": 48.27497444126324,
+          "abs_error": 48.27497444126324
+        },
+        {
+          "row_index": 11,
+          "actual": 60.4,
+          "predicted": 15.85140965383232,
+          "prediction_sd": 7.155296165145165,
+          "n_predictions": 3,
+          "llm_chess_player": "claude-sonnet-4-6_thinking-high",
+          "eval_model_label": "Claude Sonnet 4.6 (High)",
+          "score_arc_agi_2": 60.4,
+          "elo": 189.675,
+          "residual": 44.54859034616768,
+          "abs_error": 44.54859034616768
+        },
+        {
+          "row_index": 39,
+          "actual": 55.4,
+          "predicted": 17.88036279399932,
+          "prediction_sd": 1.0873647633697745,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-5.4-medium",
+          "eval_model_label": "GPT-5.4 (Medium)",
+          "score_arc_agi_2": 55.4,
+          "elo": 1252.928,
+          "residual": 37.51963720600068,
+          "abs_error": 37.51963720600068
+        },
+        {
+          "row_index": 26,
+          "actual": 7.5,
+          "predicted": 39.86499884502755,
+          "prediction_sd": 3.26545712803439,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-5-medium",
+          "eval_model_label": "GPT-5 (Medium)",
+          "score_arc_agi_2": 7.5,
+          "elo": 1086.438,
+          "residual": -32.36499884502755,
+          "abs_error": 32.36499884502755
+        },
+        {
+          "row_index": 49,
+          "actual": 2.0,
+          "predicted": 34.21527219901667,
+          "prediction_sd": 17.443212220159026,
+          "n_predictions": 3,
+          "llm_chess_player": "o3-low",
+          "eval_model_label": "o3 (Low)",
+          "score_arc_agi_2": 2.0,
+          "elo": 738.574,
+          "residual": -32.21527219901667,
+          "abs_error": 32.21527219901667
+        },
+        {
+          "row_index": 17,
+          "actual": 33.6,
+          "predicted": 1.837032041346805,
+          "prediction_sd": 1.6852302701460657,
+          "n_predictions": 3,
+          "llm_chess_player": "gemini-3-flash-preview",
+          "eval_model_label": "Gemini 3 Flash Preview (High)",
+          "score_arc_agi_2": 33.6,
+          "elo": -179.501,
+          "residual": 31.762967958653196,
+          "abs_error": 31.762967958653196
+        },
+        {
+          "row_index": 25,
+          "actual": 1.9,
+          "predicted": 24.38856532974925,
+          "prediction_sd": 5.058343111636071,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-5-low",
+          "eval_model_label": "GPT-5 (Low)",
+          "score_arc_agi_2": 1.9,
+          "elo": 858.189,
+          "residual": -22.488565329749253,
+          "abs_error": 22.488565329749253
+        }
+      ],
+      "features": [
+        "average_game_cost",
+        "player_wins_percent",
+        "average_time_per_game_seconds",
+        "player_draws_percent"
+      ],
+      "selected_feature_counts": {
+        "average_game_cost": 15,
+        "average_time_per_game_seconds": 12,
+        "completion_tokens_black_per_move": 2,
+        "games_interrupted_percent": 1,
+        "material_diff_player_llm_minus_opponent": 6,
+        "player_draws_percent": 9,
+        "player_wins_percent": 15
+      },
+      "feature_selection": {
+        "method": "within_cv_training_folds",
+        "max_features_per_fold": 4,
+        "fold_count": 15,
+        "folds_without_features": 0
+      }
+    }
+  },
+  "sensitivity": {
+    "mapping_status": [
+      {
+        "status_scope": "accepted_only",
+        "name": "arc_agi_2_vs_elo_accepted_only",
+        "n": 8,
+        "pearson_r": 0.8676570016873226,
+        "pearson_p": 0.005234902029191235,
+        "spearman_r": 0.8333333333333335,
+        "spearman_p": 0.010175540123456752,
+        "slope": 17.89129959627985,
+        "intercept": 256.9897493123284,
+        "r2": 0.7528286725770346,
+        "linregress_p": 0.005234902029191233,
+        "slope_stderr": 4.185209787006448
+      },
+      {
+        "status_scope": "accepted_alias_variant",
+        "name": "arc_agi_2_vs_elo_accepted_alias_variant",
+        "n": 57,
+        "pearson_r": 0.5840866342392731,
+        "pearson_p": 1.8455899127454896e-06,
+        "spearman_r": 0.6596146825072995,
+        "spearman_p": 2.4015432249970542e-08,
+        "slope": 13.72970219573114,
+        "intercept": 146.8252897600986,
+        "r2": 0.3411571962969623,
+        "linregress_p": 1.8455899127455014e-06,
+        "slope_stderr": 2.5727252418453537
+      }
+    ],
+    "min_total_games": [
+      {
+        "min_total_games": 0,
+        "name": "score_arc_agi_2_vs_elo_min_games_0",
+        "n": 57,
+        "pearson_r": 0.5840866342392731,
+        "pearson_p": 1.8455899127454896e-06,
+        "spearman_r": 0.6596146825072995,
+        "spearman_p": 2.4015432249970542e-08,
+        "slope": 13.72970219573114,
+        "intercept": 146.8252897600986,
+        "r2": 0.3411571962969623,
+        "linregress_p": 1.8455899127455014e-06,
+        "slope_stderr": 2.5727252418453537
+      },
+      {
+        "min_total_games": 20,
+        "name": "score_arc_agi_2_vs_elo_min_games_20",
+        "n": 57,
+        "pearson_r": 0.5840866342392731,
+        "pearson_p": 1.8455899127454896e-06,
+        "spearman_r": 0.6596146825072995,
+        "spearman_p": 2.4015432249970542e-08,
+        "slope": 13.72970219573114,
+        "intercept": 146.8252897600986,
+        "r2": 0.3411571962969623,
+        "linregress_p": 1.8455899127455014e-06,
+        "slope_stderr": 2.5727252418453537
+      },
+      {
+        "min_total_games": 30,
+        "name": "score_arc_agi_2_vs_elo_min_games_30",
+        "n": 55,
+        "pearson_r": 0.5707465925774167,
+        "pearson_p": 5.369829510273519e-06,
+        "spearman_r": 0.6364526022811718,
+        "spearman_p": 1.7634491144531026e-07,
+        "slope": 14.123803043492423,
+        "intercept": 150.59139035162377,
+        "r2": 0.3257516729387319,
+        "linregress_p": 5.369829510273483e-06,
+        "slope_stderr": 2.7911317004107854
+      },
+      {
+        "min_total_games": 40,
+        "name": "score_arc_agi_2_vs_elo_min_games_40",
+        "n": 43,
+        "pearson_r": 0.5671698348984452,
+        "pearson_p": 7.316944355322364e-05,
+        "spearman_r": 0.6273924572398881,
+        "spearman_p": 6.717349056824965e-06,
+        "slope": 17.39540477367313,
+        "intercept": 183.11785349478612,
+        "r2": 0.3216816216187297,
+        "linregress_p": 7.316944355322341e-05,
+        "slope_stderr": 3.9449933706959874
+      },
+      {
+        "min_total_games": 50,
+        "name": "score_arc_agi_2_vs_elo_min_games_50",
+        "n": 39,
+        "pearson_r": 0.5792407904961185,
+        "pearson_p": 0.00011170877646504079,
+        "spearman_r": 0.600680653315885,
+        "spearman_p": 5.2768149203142205e-05,
+        "slope": 16.53525054494554,
+        "intercept": 214.63335075992364,
+        "r2": 0.3355198933745679,
+        "linregress_p": 0.00011170877646504212,
+        "slope_stderr": 3.825531408249948
+      },
+      {
+        "min_total_games": 60,
+        "name": "score_arc_agi_2_vs_elo_min_games_60",
+        "n": 35,
+        "pearson_r": 0.6198677379099312,
+        "pearson_p": 7.150492761672494e-05,
+        "spearman_r": 0.6640944857754721,
+        "spearman_p": 1.363367549356767e-05,
+        "slope": 17.59864116638799,
+        "intercept": 215.4242145463806,
+        "r2": 0.3842360125015749,
+        "linregress_p": 7.150492761672527e-05,
+        "slope_stderr": 3.8782006594471565
+      }
+    ]
+  },
+  "verification": {
+    "runner_command": ".venv/bin/python data/cross-ref/run_cross_ref.py arc_agi_2",
+    "inventory_path": "data/cross-ref/model-identity/llm_chess_models.csv",
+    "mapping_file": "data/cross-ref/mappings/arc_agi_2.csv",
+    "verification_commands": [],
+    "verification_checks": [],
+    "test_status": "not-run",
+    "mapping_qa_status": "reviewed_with_unresolved_debt",
+    "run_qa_status": "publish_reproducible",
+    "known_limitations": [
+      "ARC leaderboard rows can represent systems or reasoning configurations rather than plain base models.",
+      "COST (V3) meaning was not defined in the official ARC sources located during this implementation.",
+      "Correlations are exploratory and should not be over-interpreted when the matched sample is small or mapping status is unresolved."
+    ],
+    "artifact_paths": {
+      "summary_json": "data/cross-ref/results/arc_agi_2_summary.json",
+      "html": "data/cross-ref/results/arc_agi_2.html",
+      "coverage_csv": "data/cross-ref/results/arc_agi_2_coverage.csv"
+    }
+  },
+  "limitations": [
+    "ARC leaderboard rows can represent systems or reasoning configurations rather than plain base models.",
+    "COST (V3) meaning was not defined in the official ARC sources located during this implementation.",
+    "Correlations are exploratory and should not be over-interpreted when the matched sample is small or mapping status is unresolved."
+  ]
+}
