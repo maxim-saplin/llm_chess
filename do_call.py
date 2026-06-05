@@ -1,61 +1,66 @@
+"""Probe black model (.env): AG2 vs raw HTTP, low/high reasoning_effort. uv run python do_call.py"""
+
 import json
 import os
+
 import requests
 from autogen import ConversableAgent
 from utils import get_llms
 
+PROMPT = "You play black. One action: get_current_board, get_legal_moves, or make_move e7e5."
+REASONING_EFFORTS = ("low", "high")
 
-def R(m):  # (has_reasoning, example_dict|None)
-    c = (m or {}).get("custom_content") or {}
-    for x in (c.get("state") or {}).get("claude_message_content") or []:
-        if isinstance(x, dict) and x.get("type") == "thinking":
-            s = x.get("signature")
-            if isinstance(s, str) and len(s) > 48:
-                s = s[:48] + "..."
-            e = {"type": "thinking", "thinking": x.get("thinking")}
-            if s is not None:
-                e["signature"] = s
-            return True, e
-    t = c.get("stages")
-    return (True, {"stages": t[:1]}) if isinstance(t, list) and t else (False, None)
 
-prompt = "4*8="
-
-_, cfg = get_llms(black_hyperparams={"reasoning_effort": "low"})
-a = ConversableAgent("test", llm_config=cfg, max_consecutive_auto_reply=2, human_input_mode="NEVER")
-print(a.generate_reply(messages=[{"role": "user", "content": prompt}]))
-print("AG2 custom reasoning:", "yes" if next((R(m)[0] for v in a._oai_messages.values() for m in reversed(v) if isinstance(m, dict) and m.get("role") == "assistant"), False) else "no")
-print("--- Raw HTTP ---")
-if os.getenv("MODEL_KIND_B") != "local":
-    print("skip: not local")
-elif not (u := os.getenv("LOCAL_BASE_URL_B", "").strip()) or not (k := os.getenv("LOCAL_API_KEY_B", "").strip()):
-    print("skip: no URL/key")
-else:
-    p = (cfg.get("config_list") or [{}])[0]
-    mt = p.get("max_tokens") or (65535 if "thinking" in os.getenv("LOCAL_MODEL_NAME_B", "").lower() else 4096)
-    try:
-        r = requests.post(
-            f"{u.rstrip('/')}/chat/completions?api-version=2024-02-01",
-            headers={"Api-Key": k, "Content-Type": "application/json"},
-            json={"messages": [{"role": "user", "content": prompt}], "max_tokens": int(mt)},
-            timeout=120,
-        )
-    except requests.RequestException as e:
-        print("HTTP error:", e)
+def fmt_usage(usage: dict) -> str:
+    p = usage.get("prompt_tokens", 0)
+    c = usage.get("completion_tokens", 0)
+    t = usage.get("total_tokens", 0)
+    r = (usage.get("completion_tokens_details") or {}).get("reasoning_tokens")
+    if r is None:
+        r = max(0, t - p - c)
+        tag = "hidden"
     else:
-        if r.status_code != 200:
-            print(r.status_code, r.text[:400])
-        else:
-            try:
-                d = r.json()
-            except json.JSONDecodeError:
-                print("bad json", r.text[:400])
-            else:
-                if d.get("error"):
-                    print(json.dumps(d["error"], indent=2))
-                else:
-                    ok, sn = R((d.get("choices") or [{}])[0].get("message"))
-                    print("reasoning:", "yes" if ok else "no")
-                    print(json.dumps(d["usage"])),
-                    if sn:
-                        print(json.dumps(sn, indent=2))
+        tag = "reasoning"
+    return f"prompt={p}  completion={c}  {tag}={r}  total={t}"
+
+
+def ag2_call(effort: str) -> None:
+    _, cfg = get_llms(black_hyperparams={"reasoning_effort": effort})
+    model = cfg["config_list"][0]["model"]
+    agent = ConversableAgent("probe", llm_config=cfg, human_input_mode="NEVER")
+    reply = agent.generate_reply(messages=[{"role": "user", "content": PROMPT}])
+    usage = next(v for k, v in agent.get_total_usage().items() if k != "total_cost")
+    print(f"  model={model}")
+    print(f"  reply: {(reply or '')[:120]}")
+    print(f"  {fmt_usage(usage)}")
+
+
+def http_call(effort: str) -> None:
+    get_llms()
+    base = os.environ["AZURE_OPENAI_ENDPOINT_B"].rstrip("/")
+    dep = os.environ["AZURE_OPENAI_DEPLOYMENT_B"]
+    url = f"{base}/openai/deployments/{dep}/chat/completions"
+    r = requests.post(
+        url,
+        params={"api-version": os.environ["AZURE_OPENAI_VERSION_B"]},
+        headers={"api-key": os.environ["AZURE_OPENAI_KEY_B"], "Content-Type": "application/json"},
+        json={"messages": [{"role": "user", "content": PROMPT}], "reasoning_effort": effort},
+        timeout=180,
+    )
+    r.raise_for_status()
+    data = r.json()
+    msg = (data.get("choices") or [{}])[0].get("message", {})
+    print(f"  model={dep}")
+    print(f"  reply: {(msg.get('content') or '')[:120]}")
+    print(f"  {fmt_usage(data.get('usage') or {})}")
+    details = (data.get("usage") or {}).get("completion_tokens_details")
+    if details:
+        print(f"  completion_tokens_details: {json.dumps(details)}")
+
+
+for effort in REASONING_EFFORTS:
+    print(f"\n=== reasoning_effort={effort} ===")
+    print("ag2:")
+    ag2_call(effort)
+    print("http:")
+    http_call(effort)
