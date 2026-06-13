@@ -140,48 +140,48 @@ let allRows = []; // Will store row objects for sorting/drawing
 
 const csvIndices = {
     player: 0,
-    total_games: 1,
-    player_wins: 2,
-    opponent_wins: 3,
-    draws: 4,
-    player_wins_percent: 5,
-    player_draws_percent: 6,
-    average_moves: 7,
-    moe_average_moves: 8,
-    total_moves: 9,
-    player_wrong_actions: 10,
-    player_wrong_moves: 11,
-    wrong_actions_per_1000moves: 12,
-    wrong_moves_per_1000moves: 13,
-    mistakes_per_1000moves: 14,
-    moe_mistakes_per_1000moves: 15,
-    player_avg_material: 16,
-    opponent_avg_material: 17,
-    material_diff_player_llm_minus_opponent: 18,
-    moe_material_diff_llm_minus_rand: 19,
-    completion_tokens_black_per_move: 20,
-    moe_completion_tokens_black_per_move: 21,
-    moe_black_llm_win_rate: 22,
-    moe_draw_rate: 23,
-    moe_black_llm_loss_rate: 24,
-    win_loss: 25,
-    moe_win_loss: 26,
-    win_loss_non_interrupted: 27,
-    moe_win_loss_non_interrupted: 28,
-    game_duration: 29,
-    moe_game_duration: 30,
-    games_interrupted: 31,
-    games_interrupted_percent: 32,
-    moe_games_interrupted: 33,
-    games_not_interrupted: 34,
-    games_not_interrupted_percent: 35,
-    moe_games_not_interrupted: 36,
-    average_game_cost: 37,
-    moe_average_game_cost: 38,
-    elo: 39,
-    elo_moe_95: 40,
-    games_vs_random: 41,
-    games_vs_dragon: 42
+    total_games: 2,
+    player_wins: 3,
+    opponent_wins: 4,
+    draws: 5,
+    player_wins_percent: 6,
+    player_draws_percent: 7,
+    average_moves: 8,
+    moe_average_moves: 9,
+    total_moves: 10,
+    player_wrong_actions: 11,
+    player_wrong_moves: 12,
+    wrong_actions_per_1000moves: 13,
+    wrong_moves_per_1000moves: 14,
+    mistakes_per_1000moves: 15,
+    moe_mistakes_per_1000moves: 16,
+    player_avg_material: 17,
+    opponent_avg_material: 18,
+    material_diff_player_llm_minus_opponent: 19,
+    moe_material_diff_llm_minus_rand: 20,
+    completion_tokens_black_per_move: 21,
+    moe_completion_tokens_black_per_move: 22,
+    moe_black_llm_win_rate: 23,
+    moe_draw_rate: 24,
+    moe_black_llm_loss_rate: 25,
+    win_loss: 26,
+    moe_win_loss: 27,
+    win_loss_non_interrupted: 28,
+    moe_win_loss_non_interrupted: 29,
+    game_duration: 30,
+    moe_game_duration: 31,
+    games_interrupted: 32,
+    games_interrupted_percent: 33,
+    moe_games_interrupted: 34,
+    games_not_interrupted: 35,
+    games_not_interrupted_percent: 36,
+    moe_games_not_interrupted: 37,
+    average_game_cost: 38,
+    moe_average_game_cost: 39,
+    elo: 44,
+    elo_moe_95: 45,
+    games_vs_random: 46,
+    games_vs_dragon: 47
 };
 
 let nextPrimarySortValue = 0; // Track the next available primarySort value
@@ -347,6 +347,50 @@ const columnDefinitions = {
             return aVal - bVal;
         }
     },
+    costPerElo: {
+        id: 'costPerElo',
+        title: 'Cost/Elo',
+        tooltip: 'Estimated cost per 1000 Elo points (Cost/Game divided by Elo, then scaled by 1000). Lower is more cost-efficient.',
+        getValue: (cols) => {
+            const idx = headerIndex('cost_per_1000_elo');
+            const tokensVal = parseFloat(cols[csvIndices.completion_tokens_black_per_move]);
+            if (isNaN(tokensVal) || tokensVal <= 0) return 'N/A';
+
+            // Prefer backend-provided metric if present
+            if (idx >= 0) {
+                const value = parseFloat(cols[idx]);
+                return isNaN(value) ? 'N/A' : `$${value.toFixed(5)}`;
+            }
+
+            // Fallback: derive from existing columns
+            const eloVal = parseFloat(cols[csvIndices.elo]);
+            const avgCostVal = parseFloat(cols[csvIndices.average_game_cost]);
+            if (isNaN(eloVal) || eloVal <= 0 || isNaN(avgCostVal)) return 'N/A';
+
+            const derived = (avgCostVal / eloVal) * 1000.0;
+            return isFinite(derived) ? `$${derived.toFixed(5)}` : 'N/A';
+        },
+        isNumeric: true,
+        compareFn: (a, b) => {
+            const idx = headerIndex('cost_per_1000_elo');
+
+            const getVal = (rowCols) => {
+                const tokensVal = parseFloat(rowCols[csvIndices.completion_tokens_black_per_move]);
+                if (isNaN(tokensVal) || tokensVal <= 0) return Infinity;
+                if (idx >= 0) {
+                    const v = parseFloat(rowCols[idx]);
+                    return isNaN(v) ? Infinity : v;
+                }
+                const eloVal = parseFloat(rowCols[csvIndices.elo]);
+                const avgCostVal = parseFloat(rowCols[csvIndices.average_game_cost]);
+                if (isNaN(eloVal) || eloVal <= 0 || isNaN(avgCostVal)) return Infinity;
+                const derived = (avgCostVal / eloVal) * 1000.0;
+                return isFinite(derived) ? derived : Infinity;
+            };
+
+            return getVal(a.cols) - getVal(b.cols);
+        }
+    },
     avgMoves: {
         id: 'avgMoves',
         title: 'Avg Moves',
@@ -459,12 +503,12 @@ const columnDefinitions = {
 
 // Define default columns for each table
 const tableColumnSets = {
-    [Screen.LEADERBOARD_NEW]: ['rank', 'player', 'elo', 'gameDuration', 'tokens', 'costPerGame'],
+    [Screen.LEADERBOARD_NEW]: ['rank', 'player', 'elo', 'gameDuration', 'tokens', 'costPerElo'],
     [Screen.LEADERBOARD_EXT]: ['rank', 'player', 'elo', 'winLoss', 'gameDuration', 'tokens', 'costPerGame', 'avgMoves']
 };
 
 // Define column preferences for extended table (will be loaded from localStorage)
-const EXTENDED_LB_VERSION = 'v2';
+const EXTENDED_LB_VERSION = 'v3';
 let extendedColumnPreferences = {
     available: Object.keys(columnDefinitions).filter(id => id !== 'rank' && id !== 'player'),
     selected: tableColumnSets[Screen.LEADERBOARD_EXT].filter(id => id !== 'rank' && id !== 'player'),
@@ -721,6 +765,41 @@ function showPlayerDetailsPopup(row, columns) {
     // Add cost information to popup
     document.getElementById('cost-per-game').innerHTML = `<span>Cost/Game:</span> $${parseFloat(averageGameCost).toFixed(4)} ± $${parseFloat(moeAverageGameCost).toFixed(4)}`;
 
+    const costPerEloEl = document.getElementById('cost-per-elo');
+    if (costPerEloEl) {
+        const idxCostPerElo = headerIndex('cost_per_1000_elo');
+        const idxMoeCostPerElo = headerIndex('moe_cost_per_1000_elo');
+
+        let costPerEloVal = idxCostPerElo >= 0 ? parseFloat(columns[idxCostPerElo]) : NaN;
+        let moeCostPerEloVal = idxMoeCostPerElo >= 0 ? parseFloat(columns[idxMoeCostPerElo]) : NaN;
+
+        // N/A when tokens are zero.
+        if (isNaN(parseFloat(completionTokensBlackPerMove)) || parseFloat(completionTokensBlackPerMove) <= 0) {
+            costPerEloVal = NaN;
+            moeCostPerEloVal = NaN;
+        }
+
+        // Fallback: derive if backend column is absent or incomplete
+        if (isNaN(costPerEloVal) || isNaN(moeCostPerEloVal)) {
+            if (!isNaN(elo) && elo > 0 && !isNaN(parseFloat(completionTokensBlackPerMove)) && parseFloat(completionTokensBlackPerMove) > 0) {
+                const costVal = parseFloat(averageGameCost) || 0;
+                const moeCostVal = parseFloat(moeAverageGameCost) || 0;
+
+                const term1 = moeCostVal / elo;
+                const term2 = (isNaN(eloMoe) ? 0 : (costVal * eloMoe) / (elo * elo));
+
+                costPerEloVal = (costVal / elo) * 1000.0;
+                moeCostPerEloVal = 1000.0 * Math.sqrt(term1 * term1 + term2 * term2);
+            }
+        }
+
+        if (isNaN(costPerEloVal) || isNaN(moeCostPerEloVal)) {
+            costPerEloEl.innerHTML = `<span>Cost/Elo:</span> N/A`;
+        } else {
+            costPerEloEl.innerHTML = `<span>Cost/Elo:</span> $${costPerEloVal.toFixed(5)} ± $${moeCostPerEloVal.toFixed(5)}`;
+        }
+    }
+
     const rect = row.getBoundingClientRect();
     if (window.innerWidth < 1350) {
         popup.style.top = `${rect.bottom + window.scrollY}px`;
@@ -862,6 +941,12 @@ function sortTable(columnIndex = null, newOrder = null) {
     const sortOrderObj = sortOrderState[currentScreen];
     const activeColumns = getActiveColumns();
 
+    // Guard against stale saved sort indexes when the column set changes.
+    if (columnIndex !== null && (!activeColumns[columnIndex] || columnIndex < 0)) {
+        columnIndex = null;
+        newOrder = null;
+    }
+
     // If columnIndex is provided, handle sort order toggling
     if (columnIndex !== null) {
         const currentOrder = sortOrderObj[columnIndex] || 'asc';
@@ -927,9 +1012,11 @@ function sortTable(columnIndex = null, newOrder = null) {
         });
 
         const sortedHeaderCell = document.querySelectorAll('#leaderboard th')[columnIndex];
-        const baseText = sortedHeaderCell.textContent.replace(/[▲▼]/g, '').trim();
-        const indicator = sortOrderObj[columnIndex] === 'asc' ? '▲' : '▼';
-        sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
+        if (sortedHeaderCell) {
+            const baseText = sortedHeaderCell.textContent.replace(/[▲▼]/g, '').trim();
+            const indicator = sortOrderObj[columnIndex] === 'asc' ? '▲' : '▼';
+            sortedHeaderCell.innerHTML = `${baseText}${indicator ? '&nbsp;' + indicator : '&nbsp;&nbsp;'}`;
+        }
     }
 }
 

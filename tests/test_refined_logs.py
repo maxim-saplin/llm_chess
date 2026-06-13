@@ -334,6 +334,28 @@ class TestAggrToRefined(unittest.TestCase):
             self.assertIn("elo_moe_95", sample)
             self.assertIn("games_vs_random", sample)
             self.assertIn("games_vs_dragon", sample)
+
+            # Cost/Elo fields present
+            self.assertIn("cost_per_1000_elo", sample)
+            self.assertIn("moe_cost_per_1000_elo", sample)
+
+            # N/A (blank) when Elo <= 0 or tokens are zero
+            for r in rows:
+                elo_str = (r.get("elo") or "").strip()
+                if not elo_str or elo_str.lower() == "nan":
+                    continue
+
+                elo_val = float(elo_str)
+                tokens_val = float(r.get("completion_tokens_black_per_move") or 0)
+                cost_per_1000_elo = (r.get("cost_per_1000_elo") or "").strip()
+                moe_cost_per_1000_elo = (r.get("moe_cost_per_1000_elo") or "").strip()
+
+                if elo_val <= 0 or tokens_val <= 0:
+                    self.assertIn(cost_per_1000_elo, ["", "N/A"])
+                    self.assertIn(moe_cost_per_1000_elo, ["", "N/A"])
+                else:
+                    self.assertNotEqual(cost_per_1000_elo, "")
+                    self.assertNotEqual(moe_cost_per_1000_elo, "")
         finally:
             # Restore original values
             grc.GAME_MODE = orig_game_mode
@@ -344,6 +366,48 @@ class TestAggrToRefined(unittest.TestCase):
             grc.FILTER_OUT_BELOW_N_RANDOM = orig_filter_out_below_n_random
             grc.FILTER_OUT_BELOW_N_MISC = orig_filter_out_below_n_misc
             grc.ELO_DRAGON_ONLY_MIN_GAMES = orig_elo_dragon_only_min_games
+
+    def test_cost_per_1000_elo_is_blank_when_tokens_zero(self):
+        tmp_dir = tempfile.mkdtemp(prefix="cost_per_1000_elo_test_")
+        try:
+            in_csv = os.path.join(tmp_dir, "elo.csv")
+            with open(in_csv, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(
+                    f,
+                    fieldnames=[
+                        "Player",
+                        "elo",
+                        "elo_moe_95",
+                        "average_game_cost",
+                        "moe_average_game_cost",
+                        "completion_tokens_black_per_move",
+                        "cost_per_elo",
+                        "moe_cost_per_elo",
+                    ],
+                )
+                writer.writeheader()
+                writer.writerow(
+                    {
+                        "Player": "zero-token-model",
+                        "elo": "500",
+                        "elo_moe_95": "10",
+                        "average_game_cost": "0",
+                        "moe_average_game_cost": "0",
+                        "completion_tokens_black_per_move": "0",
+                        "cost_per_elo": "123",
+                        "moe_cost_per_elo": "456",
+                    }
+                )
+
+            grc.ensure_elo_refined_cost_per_1000_elo_columns(in_csv)
+
+            with open(in_csv, "r", encoding="utf-8") as f:
+                row = next(csv.DictReader(f))
+
+            self.assertEqual((row.get("cost_per_1000_elo") or "").strip(), "")
+            self.assertEqual((row.get("moe_cost_per_1000_elo") or "").strip(), "")
+        finally:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
 class TestDragonVsLLMRefined(unittest.TestCase):
