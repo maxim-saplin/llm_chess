@@ -1,1 +1,0 @@
-Treating errors as model errors as timeouts happened suggesting the model failed to return response within a reasonable ammount of time

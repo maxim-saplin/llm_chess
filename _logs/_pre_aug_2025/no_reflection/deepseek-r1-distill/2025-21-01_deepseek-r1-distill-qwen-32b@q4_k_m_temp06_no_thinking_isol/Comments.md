@@ -1,2 +1,0 @@
-Trying  temperature 0.6 per model card recomendation:
-"NOTE: We recommend setting an appropriate temperature (between 0.5 and 0.7) when running these models, otherwise you may encounter issues with endless repetition or incoherent output."

@@ -751,6 +751,50 @@ class TestAggregateResults(_MockServerTestCaseBase):
         self.assertEqual(data["total_games"], 2)
         self.assertIn("white_wins", data)
         self.assertIn("black_wins", data)
+        self.assertIn("win_loss_pct", data)
+        self.assertIsInstance(data["win_loss_pct"], float)
+        self.assertGreaterEqual(data["win_loss_pct"], -100.0)
+        self.assertLessEqual(data["win_loss_pct"], 100.0)
+
+    def test_session_file_created_and_updated(self):
+        """Verify _session.json is created at launch and updated to completed."""
+        rmg.NUM_REPETITIONS = 2
+        rmg.LOG_FOLDER = self.temp_dir
+        rmg.STORE_INDIVIDUAL_LOGS = False
+        llm_chess.max_game_moves = 2
+        rmg.run_games()
+
+        session_path = os.path.join(self.temp_dir, "_session.json")
+        self.assertTrue(os.path.exists(session_path), "_session.json not created")
+        with open(session_path, "r") as f:
+            session = json.load(f)
+        self.assertEqual(session["status"], "completed")
+        self.assertEqual(session["games_completed"], 2)
+        self.assertEqual(session["num_repetitions"], 2)
+        self.assertIn("launched_at", session)
+        self.assertIn("log_folder", session)
+
+    def test_final_aggregate_has_all_fields(self):
+        """Verify _aggregate_results.json after completion has all post-loop fields."""
+        rmg.NUM_REPETITIONS = 3
+        rmg.LOG_FOLDER = self.temp_dir
+        rmg.STORE_INDIVIDUAL_LOGS = False
+        llm_chess.max_game_moves = 2
+        rmg.run_games()
+
+        agg_path = os.path.join(self.temp_dir, "_aggregate_results.json")
+        self.assertTrue(os.path.exists(agg_path), "_aggregate_results.json not created")
+        with open(agg_path, "r") as f:
+            data = json.load(f)
+        # After completion, should have all 3 games
+        self.assertEqual(data["total_games"], 3)
+        # Check that post-loop computed fields are present
+        self.assertIn("average_moves", data)
+        self.assertIn("std_dev_moves", data)
+        self.assertIn("win_loss_pct", data)
+        # Verify run_metadata was attached (not left as empty dict)
+        self.assertIsInstance(data["run_metadata"], dict)
+        self.assertIn("metadata", data["run_metadata"])
 
 if __name__ == "__main__":
     unittest.main()

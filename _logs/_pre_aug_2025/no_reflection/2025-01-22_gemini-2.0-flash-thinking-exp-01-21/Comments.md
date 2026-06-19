@@ -1,1 +1,0 @@
-Unlike previous thinking model which  scrored losses due to invalid replies this model has odd occasional errors at around 50 moves returning empty messages.

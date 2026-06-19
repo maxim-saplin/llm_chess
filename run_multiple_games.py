@@ -137,6 +137,23 @@ def run_games():
 
     setup_console_logging(LOG_FOLDER)  # save raw console output to output.txt
 
+    # Write _session.json launch file to signal that a run has started.
+    # If the run is interrupted, this file remains with status "running"
+    # and records how many games completed, making it easy to detect partial runs.
+    session_path = os.path.join(LOG_FOLDER, "_session.json")
+    session_data = {
+        "status": "running",
+        "launched_at": datetime.datetime.now().strftime("%Y.%m.%d_%H:%M"),
+        "log_folder": LOG_FOLDER,
+        "num_repetitions": NUM_REPETITIONS,
+        "games_completed": 0,
+    }
+    try:
+        with open(session_path, "w", encoding="utf-8") as sf:
+            json.dump(session_data, sf, indent=4)
+    except Exception as _sess_err:
+        print(f"[session] Error writing launch file: {_sess_err}")
+
     # Create _run.json metadata file (once, before the first game starts)
 
     _run_metadata = None
@@ -184,6 +201,9 @@ def run_games():
             "reflections_used_before_board": 0,
         },
     }
+    # Attach metadata to aggregate immediately so incremental saves include it.
+    if _run_metadata:
+        aggregate_data["run_metadata"] = _run_metadata
 
     moves_list = []  # List to track moves for each game
 
@@ -234,6 +254,23 @@ def run_games():
         _update_player_side(aggregate_data, "player_white", player_white, game_stats)
         _update_player_side(aggregate_data, "player_black", player_black, game_stats)
 
+        # Write incremental aggregate after each game so interrupted runs
+        # still produce a valid _aggregate_results.json covering completed games.
+        aggregate_filename = os.path.join(LOG_FOLDER, "_aggregate_results.json")
+        try:
+            with open(aggregate_filename, "w", encoding="utf-8") as af:
+                json.dump(aggregate_data, af, indent=4)
+        except Exception as _agg_err:
+            print(f"[aggregate] Error writing incremental aggregate: {_agg_err}")
+
+        # Update session file with current progress
+        session_data["games_completed"] = aggregate_data["total_games"]
+        try:
+            with open(session_path, "w", encoding="utf-8") as sf:
+                json.dump(session_data, sf, indent=4)
+        except Exception as _sess_err:
+            print(f"[session] Error updating progress: {_sess_err}")
+
     # Calculate average moves
     aggregate_data["average_moves"] = (
         aggregate_data["total_moves"] / aggregate_data["total_games"]
@@ -256,15 +293,26 @@ def run_games():
         aggregate_data["player_black"]["material_list"]
     )
 
-    # Persist run metadata into aggregate results
-    if _run_metadata:
-        aggregate_data["run_metadata"] = _run_metadata
+    # Compute win_loss percentage: positive = white advantage, negative = black advantage
+    aggregate_data["win_loss_pct"] = round(
+        (aggregate_data["white_wins"] - aggregate_data["black_wins"])
+        / aggregate_data["total_games"] * 100, 1
+    )
 
     aggregate_filename = os.path.join(LOG_FOLDER, "_aggregate_results.json")
     del aggregate_data["player_white"]["material_list"]
     del aggregate_data["player_black"]["material_list"]
     with open(aggregate_filename, "w", encoding="utf-8") as aggregate_file:
         json.dump(aggregate_data, aggregate_file, indent=4)
+
+    # Mark run as completed in session file
+    session_data["status"] = "completed"
+    session_data["games_completed"] = aggregate_data["total_games"]
+    try:
+        with open(session_path, "w", encoding="utf-8") as sf:
+            json.dump(session_data, sf, indent=4)
+    except Exception as _sess_err:
+        print(f"[session] Error finalizing session: {_sess_err}")
 
     print("\n\n\033[92m" + json.dumps(aggregate_data, indent=4) + "\033[0m")
 
