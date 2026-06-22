@@ -142,8 +142,8 @@
                 haluscinating moves or actions. 50% means that on average the model boroke the game loop mid-game
                 (making an average 100 moves out of max 200 allowed)<br>
                 <strong>- Tokens:</strong> Completion tokens per move; verbosity/efficiency signal.<br>
-                <strong>- Cost:</strong> Estimated cost per game based on token usage and model pricing.
-                <br><br>
+                <strong>- Cost/Elo (main):</strong> Estimated cost per 1000 Elo points (Cost/Game divided by Elo, then scaled by 1000). Lower is more cost-efficient.<br>
+                <strong>- Cost/Game (extended):</strong> Estimated cost per game based on token usage and model pricing.<br><br>
                 <strong>ARRANGEMENT & SOURCES:</strong><br><br>
                 - Primary sorting: Elo (DESC), then Game Duration (DESC), Tokens (ASC).<br>
                 - Data sources mix Random-vs-LLM and Dragon-vs-LLM games. Dragon levels map to Elo and provide the
@@ -291,6 +291,7 @@ Move made, switching player
         <p id="mistakes-per-1000moves"></p>
         <p id="completion-tokens-black-per-move"></p>
         <p id="cost-per-game"></p>
+        <p id="cost-per-elo"></p>
     </div>
 </body>
 

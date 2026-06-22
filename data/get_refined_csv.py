@@ -127,6 +127,12 @@ REFINED_CSV = os.path.join(OUTPUT_DIR, "refined.csv")
 
 # Elo mode constants and outputs
 ELO_REFINED_CSV = os.path.join(OUTPUT_DIR, "elo_refined.csv")
+DEFAULT_ELO_REFINED_CSV = ELO_REFINED_CSV
+
+# Docs output used by the public leaderboard web UI
+REPO_ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+DOCS_DATA_JS = os.path.join(REPO_ROOT_DIR, "docs", "data.js")
+
 ELO_WHITE_ADVANTAGE = 35.0
 # If >0 and a model has at least this many Dragon games, compute Elo from Dragon-only blocks.
 # If set to 0, always mix Random and Dragon blocks when Random is calibrated.
@@ -1091,6 +1097,9 @@ ELO_REFINED_HEADERS = REFINED_HEADERS + [
     "elo_moe_95",
     "games_vs_random",
     "games_vs_dragon",
+    # Cost-efficiency metric: cost per 1000 Elo points (N/A when Elo <= 0)
+    "cost_per_1000_elo",
+    "moe_cost_per_1000_elo",
 ]
 
 
@@ -1289,6 +1298,120 @@ def write_elo_refined_csv(rows, output_file):
             writer.writerow(out_row)
 
 
+def ensure_elo_refined_cost_per_1000_elo_columns(elo_csv_path: str) -> bool:
+    """Ensure `cost_per_1000_elo` and `moe_cost_per_1000_elo` exist in data/elo_refined.csv.
+
+    This is a lightweight post-processing step so the leaderboard can stay in
+    sync even if full log regeneration is not performed.
+
+    Returns: True if the CSV was modified, False otherwise.
+    """
+    if not os.path.exists(elo_csv_path):
+        raise FileNotFoundError(f"Missing elo-refined CSV: {elo_csv_path}")
+
+    with open(elo_csv_path, "r", encoding="utf-8") as f_in:
+        reader = csv.DictReader(f_in)
+        fieldnames = list(reader.fieldnames or [])
+        rows = list(reader)
+
+    old_cost_fields = ("cost_per_elo", "moe_cost_per_elo")
+    new_cost_fields = ("cost_per_1000_elo", "moe_cost_per_1000_elo")
+    has_old_fields = any(name in fieldnames for name in old_cost_fields)
+    has_new_fields = all(name in fieldnames for name in new_cost_fields)
+
+    # Replace legacy field names with the new canonical names at the end to keep
+    # the UI-friendly ordering stable.
+    fieldnames = [fn for fn in fieldnames if fn not in old_cost_fields]
+    if "cost_per_1000_elo" not in fieldnames:
+        fieldnames.append("cost_per_1000_elo")
+    if "moe_cost_per_1000_elo" not in fieldnames:
+        fieldnames.append("moe_cost_per_1000_elo")
+
+    def to_float(v):
+        try:
+            if v is None:
+                return float("nan")
+            s = str(v).strip()
+            if s == "" or s.lower() == "nan":
+                return float("nan")
+            return float(s)
+        except (TypeError, ValueError):
+            return float("nan")
+
+    def fmt_or_blank(x: float) -> str | float:
+        if not math.isfinite(x):
+            return ""
+        return round(float(x), 6)
+
+    modified = True
+    for r in rows:
+        elo = to_float(r.get("elo"))
+        tokens_per_move = to_float(r.get("completion_tokens_black_per_move"))
+        if not math.isfinite(elo) or elo <= 0 or not math.isfinite(tokens_per_move) or tokens_per_move <= 0:
+            r["cost_per_1000_elo"] = ""
+            r["moe_cost_per_1000_elo"] = ""
+            continue
+
+        avg_cost = to_float(r.get("average_game_cost"))
+        moe_avg_cost = to_float(r.get("moe_average_game_cost"))
+        elo_moe_95 = to_float(r.get("elo_moe_95"))
+
+        if not math.isfinite(avg_cost):
+            r["cost_per_1000_elo"] = ""
+            r["moe_cost_per_1000_elo"] = ""
+            continue
+
+        cost_per_1000_elo_val = (avg_cost / elo) * 1000.0
+        r["cost_per_1000_elo"] = fmt_or_blank(cost_per_1000_elo_val)
+
+        if not math.isfinite(elo_moe_95) or not math.isfinite(moe_avg_cost):
+            r["moe_cost_per_1000_elo"] = ""
+            continue
+
+        # Approximate uncertainty propagation (independence assumption):
+        # moe(cost/1000elo) ≈ 1000 * sqrt( (moe_cost/elo)^2 + (cost*moe_elo/elo^2)^2 )
+        moe_cost_per_1000_elo_val = 1000.0 * math.sqrt((moe_avg_cost / elo) ** 2 + (avg_cost * elo_moe_95 / (elo**2)) ** 2)
+        r["moe_cost_per_1000_elo"] = fmt_or_blank(moe_cost_per_1000_elo_val)
+
+    tmp_path = f"{elo_csv_path}.tmp"
+    with open(tmp_path, "w", newline="", encoding="utf-8") as f_out:
+        writer = csv.DictWriter(f_out, fieldnames=fieldnames)
+        writer.writeheader()
+        for r in rows:
+            # Ensure all fields are present
+            out_row = {k: r.get(k, "") for k in fieldnames}
+            out_row["Player"] = r.get("Player", "")
+            writer.writerow(out_row)
+
+    os.replace(tmp_path, elo_csv_path)
+    return modified
+
+
+def write_docs_data_js_from_csv(csv_path: str, js_path: str = DOCS_DATA_JS) -> None:
+    """Update docs/data.js from a CSV file by embedding it as `const data = `...``."""
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(f"Missing CSV to embed: {csv_path}")
+
+    os.makedirs(os.path.dirname(js_path), exist_ok=True)
+
+    with open(csv_path, "r", encoding="utf-8") as f_in:
+        csv_text = f_in.read().rstrip("\n")
+
+    js_content = f"const data = `\n{csv_text}\n`;\n"
+    # Keep repo diff readable: write full file.
+    with open(js_path, "w", encoding="utf-8") as f_out:
+        f_out.write(js_content)
+
+
+def sync_public_leaderboard_data_js() -> None:
+    """Sync docs/data.js from the canonical data/elo_refined.csv."""
+    if os.path.abspath(ELO_REFINED_CSV) != os.path.abspath(DEFAULT_ELO_REFINED_CSV):
+        # Avoid updating the public web assets during unit tests that patch ELO_REFINED_CSV.
+        return
+    ensure_elo_refined_cost_per_1000_elo_columns(ELO_REFINED_CSV)
+    write_docs_data_js_from_csv(ELO_REFINED_CSV)
+
+
 # --------------------- Elo helpers ---------------------
 
 
@@ -1362,8 +1485,6 @@ def estimate_elo_from_blocks(
     if fa * fb > 0:
         return float("nan"), float("nan")
 
-    # Lazy import: scipy.optimize alone adds ~0.5-1s of interpreter startup, which only
-    # matters here (ELO mode with non-empty blocks). Dragon/Random modes never pay it.
     from scipy.optimize import root_scalar
 
     root = root_scalar(f, bracket=(a, b), method="brentq").root
@@ -1752,6 +1873,14 @@ def main():
         print("\n=== DRAGON vs LLM LEADERBOARD ===\n")
         print_leaderboard(output_csv)
     elif GAME_MODE == GameMode.ELO:
+        # Lightweight mode for updating public web assets without re-running
+        # the full log aggregation (which is expensive).
+        sync_only = os.getenv("SYNC_ONLY", "0") == "1"
+        if sync_only:
+            sync_public_leaderboard_data_js()
+            print("Synced data/elo_refined.csv -> docs/data.js (SYNC_ONLY=1)")
+            return
+
         print("Building ELO-refined rows (combining Random and Dragon logs)")
 
         # 0) Calibrate Random Elo vs Dragon
@@ -1858,14 +1987,47 @@ def main():
                         blocks.append((float(random_elo), int(rw), int(rd), int(rl)))
 
             R, se = estimate_elo_from_blocks(blocks, white_advantage=ELO_WHITE_ADVANTAGE)
+
             row["elo"] = f"{R:.3f}" if isinstance(R, float) and not math.isnan(R) else ""
-            row["elo_moe_95"] = f"{(1.96 * se):.3f}" if isinstance(se, float) and not math.isnan(se) else ""
+
+            elo_moe_95_val = (1.96 * se) if isinstance(se, float) and not math.isnan(se) else float("nan")
+            row["elo_moe_95"] = f"{elo_moe_95_val:.3f}" if math.isfinite(elo_moe_95_val) else ""
+
+            # Cost/Elo: derived from average_game_cost and Elo, scaled to cost per 1000 Elo points.
+            # If Elo <= 0 or completion tokens are zero, output N/A.
+            tokens_per_move = float(row.get("completion_tokens_black_per_move", 0) or 0)
+            if isinstance(R, float) and not math.isnan(R) and R > 0 and tokens_per_move > 0:
+                try:
+                    avg_cost = float(row.get("average_game_cost", 0) or 0)
+                except (TypeError, ValueError):
+                    avg_cost = 0.0
+
+                try:
+                    moe_avg_cost = float(row.get("moe_average_game_cost", 0) or 0)
+                except (TypeError, ValueError):
+                    moe_avg_cost = 0.0
+
+                cost_per_1000_elo_val = (avg_cost / R) * 1000.0
+                row["cost_per_1000_elo"] = round(cost_per_1000_elo_val, 6)
+
+                if math.isfinite(elo_moe_95_val):
+                    # Propagate uncertainty approximately (treating average_game_cost and elo as independent):
+                    # d(cost/1000elo) ≈ 1000 * sqrt((moe_cost/elo)^2 + (cost*moe_elo/elo^2)^2)
+                    moe_cost_per_1000_elo_val = 1000.0 * math.sqrt((moe_avg_cost / R) ** 2 + (avg_cost * elo_moe_95_val / (R**2)) ** 2)
+                    row["moe_cost_per_1000_elo"] = round(moe_cost_per_1000_elo_val, 6) if math.isfinite(moe_cost_per_1000_elo_val) else ""
+                else:
+                    row["moe_cost_per_1000_elo"] = ""
+            else:
+                row["cost_per_1000_elo"] = ""
+                row["moe_cost_per_1000_elo"] = ""
+
             row["games_vs_random"] = str(games_vs_random.get(name, 0))
             row["games_vs_dragon"] = str(games_vs_dragon.get(name, 0))
             out_rows.append(row)
 
         write_elo_refined_csv(out_rows, ELO_REFINED_CSV)
         print(f"Wrote ELO refined CSV: {ELO_REFINED_CSV}")
+        sync_public_leaderboard_data_js()
         print("\n=== ELO LEADERBOARD ===\n")
         print_elo_leaderboard(ELO_REFINED_CSV)
     else:
