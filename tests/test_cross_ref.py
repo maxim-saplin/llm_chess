@@ -231,12 +231,12 @@ def test_mapping_review_builds_cross_eval_rows_and_supports_filters():
 
     gemini_rows, gemini_payload = build_mapping_review(
         CROSS_REF_ROOT / "mappings",
-        player="gemini-3.1-pro-preview",
+        player="gemini-3.1-pro-preview-high",
     )
 
     assert set(gemini_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52"}
     assert gemini_payload["summary"]["unique_llm_chess_players"] == 1
-    assert gemini_payload["player_matrix_rows"][0]["llm_chess_player"] == "gemini-3.1-pro-preview"
+    assert gemini_payload["player_matrix_rows"][0]["llm_chess_player"] == "gemini-3.1-pro-preview-high"
 
     unmatched_rows, unmatched_payload = build_mapping_review(
         CROSS_REF_ROOT / "mappings",
@@ -290,7 +290,7 @@ def test_mapping_review_writes_csv_and_html(tmp_path):
         command="mapping-review",
         mapping_dir=CROSS_REF_ROOT / "mappings",
         filter_eval_id=None,
-        filter_player="gemini-3.1-pro-preview",
+        filter_player="gemini-3.1-pro-preview-high",
         filter_status=None,
         filter_provider=None,
         csv_output=csv_output,
@@ -312,9 +312,9 @@ def test_mapping_review_writes_csv_and_html(tmp_path):
     ]
     assert {"provider_group", "provider_group_source", "provider_group_confidence"} <= set(csv_rows.columns)
     assert set(csv_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52"}
-    assert "gemini-3.1-pro-preview" in set(csv_rows["llm_chess_player"])
+    assert "gemini-3.1-pro-preview-high" in set(csv_rows["llm_chess_player"])
     assert "Mapping Review" in html
-    assert "gemini-3.1-pro-preview" in html
+    assert "gemini-3.1-pro-preview-high" in html
 
 
 def test_mapping_review_defaults_to_scratch_outputs_without_mutating_published_review():
