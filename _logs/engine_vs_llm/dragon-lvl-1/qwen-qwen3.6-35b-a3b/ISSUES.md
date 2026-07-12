@@ -1,0 +1,1 @@
+The model can barely pass the game, 1 day for one log, netx log stuck in retrie - the issues is that as the gae progresses the models start filling alomt entirely 256k context which is super slow for s single move (even at 100-120 tok/s) and often models overflows the context window and errors.
