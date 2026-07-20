@@ -7,7 +7,7 @@
 - time_started: 2026.07.05_20:08
 - moves: 29
 - winner: NONE
-- model: agents-a1
+- model: agents-a1@q4_k_m
 
 Context (`output.txt` lines 42100-42120):
 
