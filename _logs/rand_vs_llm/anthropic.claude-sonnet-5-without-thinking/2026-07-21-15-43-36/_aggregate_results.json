@@ -1,0 +1,73 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2026.07.21_15:43",
+            "log_folder_relative": "_logs/rand_vs_llm/anthropic.claude-sonnet-5-without-thinking/2026-07-21-15-43-36",
+            "num_repetitions": 10,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 7,
+            "dialog_turn_delay": 7,
+            "max_api_retries": 6,
+            "api_retry_delay": 1800,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "anthropic.claude-sonnet-5-without-thinking",
+                "api_type": "oai_comp_endpoint",
+                "api_key": "REDACTED",
+                "timeout": 1800
+            }
+        }
+    },
+    "total_games": 10,
+    "white_wins": 0,
+    "black_wins": 7,
+    "draws": 3,
+    "total_moves": 1257,
+    "reasons": {
+        "Max moves reached": 1,
+        "Stalemate": 1,
+        "Checkmate": 7,
+        "Insufficient material": 1
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 34,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 3.4,
+        "std_dev_material": 5.872724145478731
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "anthropic.claude-sonnet-5-without-thinking",
+        "total_material": 197,
+        "wrong_moves": 20,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 19.7,
+        "std_dev_material": 11.116054455905957
+    },
+    "average_moves": 125.7,
+    "std_dev_moves": 54.365123624127506
+}

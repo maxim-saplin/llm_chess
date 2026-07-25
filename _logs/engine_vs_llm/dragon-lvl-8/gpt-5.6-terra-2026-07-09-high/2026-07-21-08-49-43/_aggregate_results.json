@@ -1,0 +1,87 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2026.07.21_08:49",
+            "log_folder_relative": "_logs/engine_vs_llm/dragon-lvl-8/gpt-5.6-terra-2026-07-09-high/2026-07-21-08-49-43",
+            "num_repetitions": 10,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "CHESS_ENGINE_DRAGON",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 7,
+            "dialog_turn_delay": 7,
+            "max_api_retries": 6,
+            "api_retry_delay": 1800,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "chess_engines": {
+            "stockfish": {
+                "path": "/opt/homebrew/bin/stockfish",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            },
+            "dragon": {
+                "path": "dragon/dragon-linux",
+                "reset_history": true,
+                "level": 8,
+                "time_per_move": 0.1
+            }
+        },
+        "llm_configs": {
+            "black": {
+                "model": "gpt-5.6-terra-2026-07-09",
+                "api_type": "oai_comp_endpoint",
+                "api_key": "REDACTED",
+                "timeout": 1800,
+                "reasoning_effort": "high"
+            }
+        }
+    },
+    "total_games": 10,
+    "white_wins": 1,
+    "black_wins": 5,
+    "draws": 4,
+    "total_moves": 1396,
+    "reasons": {
+        "Max moves reached": 2,
+        "Checkmate": 6,
+        "Fivefold repetition": 2
+    },
+    "player_white": {
+        "name": "Chess_Engine_Dragon_White",
+        "model": "",
+        "total_material": 22,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 2.2,
+        "std_dev_material": 4.391911757866827
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "gpt-5.6-terra-2026-07-09",
+        "total_material": 151,
+        "wrong_moves": 3,
+        "wrong_actions": 5,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 15.1,
+        "std_dev_material": 9.290975310602338
+    },
+    "average_moves": 139.6,
+    "std_dev_moves": 55.317668465368676
+}
