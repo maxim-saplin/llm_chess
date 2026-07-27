@@ -175,14 +175,17 @@ FILTER_OUT_MODELS = [
     "qwen2.5-vl-72b-instruct",
     "gpt-4-32k-0314",  # too few runs
     "gpt-oss:20b-low",  # too few runs
-    # "gpt-5.1-codex-mini-high",  ## TBD, t0o few runs
     "gpt-5.1-codex-mini-medium",
-    # "gpt-5.4-high", # too few logs, failing to get many logs due to slow responses
-    # "gpt-5.4-medium", # too few logs
-    # "claude-sonnet-4-6_thinking-high",
     "chess-4b-thinking-1218",  ## RL experiment, to be ignored
     "cursor_cli_sonnet_4.5",  # was necessary as a reference to prove the CLI approach to test Composer-1 is valid
-    "claude-opus-4-7@default", # Google Cloud is not definitive regarcing reasoning defaults
+    "claude-opus-4-7@default", # Google Cloud is not definitive regarding reasoning defaults
+    "anthropic.claude-sonnet-5", # too few runs
+    "anthropic.claude-sonnet-5-without-thinking", # add along with reasoning model
+    "anthropic.claude-opus-5", # too few logs
+    "gemini-3.6-flash", # too few logs
+    "gpt-5.6-luna-2026-07-09-xhigh", # too few logs
+    "gpt-5.6-sol-2026-07-09-xhigh", # too few logs
+    "gpt-5.6-terra-2026-07-09-xhigh", # too few logs
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
 ]
 
