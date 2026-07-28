@@ -1,16 +1,20 @@
 import json
+import shutil
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CROSS_REF_ROOT = REPO_ROOT / "data/cross-ref"
+RESULTS_DIR = CROSS_REF_ROOT / "results"
+MAPPINGS_DIR = CROSS_REF_ROOT / "mappings"
 if str(CROSS_REF_ROOT) not in sys.path:
     sys.path.insert(0, str(CROSS_REF_ROOT))
 
-from adapters import arc_agi_2, bullshit_bench, delegate_52, eci  # noqa: E402
+from adapters import arc_agi_2, bullshit_bench, delegate_52, eci, vals_index  # noqa: E402
 from framework.data_quality import (  # noqa: E402
     MISTAKE_STATS_TRUSTED_AFTER,
     REPAIRABLE_MISTAKE_METRICS,
@@ -19,7 +23,11 @@ from framework.data_quality import (  # noqa: E402
 )
 from framework.diffing import compare_csv_files  # noqa: E402
 from framework.loading import load_llm_chess_inputs  # noqa: E402
-from framework.mapping import apply_mapping, load_mapping_file  # noqa: E402
+from framework.mapping import (  # noqa: E402
+    ACCEPTED_MAPPING_STATUSES,
+    apply_mapping,
+    load_mapping_file,
+)
 from framework.mapping_review import build_mapping_review  # noqa: E402
 from framework.model_identity import build_llm_chess_inventory, inventory_summary  # noqa: E402
 from framework.normalization import parse_currency, parse_day_month_year, parse_percent  # noqa: E402
@@ -32,7 +40,21 @@ def _artifact_diffs_by_id(diff_payload: dict[str, object]) -> dict[str, dict[str
     return {entry["artifact_id"]: entry for entry in diff_payload["artifact_diffs"]}
 
 
-def _write_current_eval_baseline(results_dir: Path, *eval_ids: str) -> Path:
+def _snapshot_mappings(tmp_path: Path) -> Path:
+    """Freeze the mapping CSVs for the duration of a test.
+
+    The checked-in mappings are shared mutable input. A test that regenerates a baseline and then
+    reruns against it spans minutes, and any write landing in that window shows up as a spurious
+    artifact diff, so tests that assert reproducibility must read one pinned copy throughout.
+    """
+    mapping_dir = tmp_path / "pinned_mappings"
+    mapping_dir.mkdir(parents=True, exist_ok=True)
+    for mapping_path in MAPPINGS_DIR.glob("*.csv"):
+        shutil.copy2(mapping_path, mapping_dir / mapping_path.name)
+    return mapping_dir
+
+
+def _write_current_eval_baseline(results_dir: Path, *eval_ids: str, mapping_dir: Path | None = None) -> Path:
     results_dir.mkdir(parents=True, exist_ok=True)
     parser = run_cross_ref.build_parser()
     for eval_id in eval_ids:
@@ -47,6 +69,7 @@ def _write_current_eval_baseline(results_dir: Path, *eval_ids: str) -> Path:
                 str(results_dir / f"{eval_id}.html"),
                 "--coverage-output",
                 str(results_dir / f"{eval_id}_coverage.csv"),
+                *(["--mapping-path", str(mapping_dir / f"{eval_id}.csv")] if mapping_dir else []),
             ]
         )
         run_cross_ref.run_eval(args)
@@ -112,6 +135,10 @@ def test_normalization_helpers_parse_arc_formats():
     assert parse_percent("N/A") is None
     assert parse_currency("$10.51") == 10.51
     assert parse_currency("—") is None
+    # COST (V3) uses a thousands shorthand that the ARC-AGI-1/2 cost column never does.
+    assert parse_currency("$15.2K") == 15200.0
+    assert parse_currency("$10.0k") == 10000.0
+    assert parse_currency("K") is None
     assert parse_day_month_year("23.04.2026") == "2026-04-23"
 
 
@@ -215,6 +242,7 @@ def test_mapping_csv_headers_keep_source_and_destination_columns_front_loaded():
         CROSS_REF_ROOT / "mappings" / "arc_agi_2.csv",
         CROSS_REF_ROOT / "mappings" / "bullshit_bench.csv",
         CROSS_REF_ROOT / "mappings" / "delegate_52.csv",
+        CROSS_REF_ROOT / "mappings" / "vals_index.csv",
     ]:
         header = mapping_path.read_text(encoding="utf-8").splitlines()[0].split(",")
         assert header[: len(expected_prefix)] == expected_prefix
@@ -223,8 +251,8 @@ def test_mapping_csv_headers_keep_source_and_destination_columns_front_loaded():
 def test_mapping_review_builds_cross_eval_rows_and_supports_filters():
     review_rows, payload = build_mapping_review(CROSS_REF_ROOT / "mappings")
 
-    assert set(review_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52"}
-    assert payload["summary"]["eval_count"] == 4
+    assert set(review_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52", "vals_index"}
+    assert payload["summary"]["eval_count"] == 5
     assert payload["summary"]["row_count"] == len(review_rows)
     assert payload["summary"]["unresolved_row_count"] > 0
     assert {"provider_group_source", "provider_group_confidence"} <= set(review_rows.columns)
@@ -234,7 +262,7 @@ def test_mapping_review_builds_cross_eval_rows_and_supports_filters():
         player="gemini-3.1-pro-preview-high",
     )
 
-    assert set(gemini_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52"}
+    assert set(gemini_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52", "vals_index"}
     assert gemini_payload["summary"]["unique_llm_chess_players"] == 1
     assert gemini_payload["player_matrix_rows"][0]["llm_chess_player"] == "gemini-3.1-pro-preview-high"
 
@@ -253,7 +281,7 @@ def test_mapping_review_builds_cross_eval_rows_and_supports_filters():
     )
 
     assert not anthropic_rows.empty
-    assert set(anthropic_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52"}
+    assert set(anthropic_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52", "vals_index"}
     assert set(anthropic_rows["provider_group"].unique()) == {"Anthropic"}
     assert set(anthropic_payload["provider_counts"].keys()) == {"Anthropic"}
 
@@ -311,7 +339,7 @@ def test_mapping_review_writes_csv_and_html(tmp_path):
         "llm_chess_player",
     ]
     assert {"provider_group", "provider_group_source", "provider_group_confidence"} <= set(csv_rows.columns)
-    assert set(csv_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52"}
+    assert set(csv_rows["eval_id"].unique()) == {"eci", "arc_agi_2", "bullshit_bench", "delegate_52", "vals_index"}
     assert "gemini-3.1-pro-preview-high" in set(csv_rows["llm_chess_player"])
     assert "Mapping Review" in html
     assert "gemini-3.1-pro-preview-high" in html
@@ -361,6 +389,9 @@ def test_cross_eval_command_generates_summary_and_report_from_published_summarie
             "--results-dir",
             str(results_dir),
             "--publish",
+            # This test is about aggregate generation, so it opts out of the publish gate's mapping
+            # check rather than tracking whatever mapping debt the repo happens to carry.
+            "--allow-metadata-only",
         ]
     )
 
@@ -414,7 +445,10 @@ def test_cross_eval_defaults_to_scratch_outputs_without_mutating_published_aggre
 
 
 def test_audit_command_generates_single_status_surface(tmp_path):
-    results_dir = _write_current_eval_baseline(tmp_path / "results", "eci", "arc_agi_2", "bullshit_bench", "delegate_52")
+    mapping_dir = _snapshot_mappings(tmp_path)
+    results_dir = _write_current_eval_baseline(
+        tmp_path / "results", "eci", "arc_agi_2", "bullshit_bench", "delegate_52", "vals_index", mapping_dir=mapping_dir
+    )
     summary_output = tmp_path / "audit_summary.json"
     report_output = tmp_path / "audit_report.md"
     parser = run_cross_ref.build_parser()
@@ -423,6 +457,8 @@ def test_audit_command_generates_single_status_surface(tmp_path):
             "audit",
             "--results-dir",
             str(results_dir),
+            "--mapping-dir",
+            str(mapping_dir),
             "--summary-output",
             str(summary_output),
             "--report-output",
@@ -437,26 +473,43 @@ def test_audit_command_generates_single_status_surface(tmp_path):
     assert payload["summary_output"] == str(summary_output)
     assert payload["report_output"] == str(report_output)
     assert summary["artifact_kind"] == "cross_ref_audit"
-    assert summary["benchmarks"]["count"] == 5
-    assert summary["benchmarks"]["ids"] == ["llm_chess", "arc_agi_2", "bullshit_bench", "delegate_52", "eci"]
+    assert summary["benchmarks"]["count"] == 6
+    assert summary["benchmarks"]["ids"] == [
+        "llm_chess",
+        "arc_agi_2",
+        "bullshit_bench",
+        "delegate_52",
+        "eci",
+        "vals_index",
+    ]
+    assert summary["benchmarks"]["external_eval_count"] == 5
     assert summary["reproducibility_status"] == "pass"
     assert summary["reproducibility"]["rerun_diff_all_clean"] is True
     assert all(entry["has_diff"] is False for entry in summary["reproducibility"]["per_eval"])
     assert summary["coverage_status"] == "review-needed"
     assert summary["mapping_review"]["unresolved_row_count"] > 0
     assert "overall_status: review-needed" in report
-    assert "benchmarks: llm_chess, arc_agi_2, bullshit_bench, delegate_52, eci" in report
+    assert "benchmarks: llm_chess, arc_agi_2, bullshit_bench, delegate_52, eci, vals_index" in report
     assert "This file is generated by `run_cross_ref.py audit`." in report
 
 
-def test_audit_defaults_to_scratch_outputs_without_mutating_published_audit():
+def test_audit_defaults_to_scratch_outputs_without_mutating_published_audit(tmp_path):
     published_paths = [
         CROSS_REF_ROOT / "results" / "audit_summary.json",
         CROSS_REF_ROOT / "results" / "audit_report.md",
     ]
     before = _snapshot_files(published_paths)
+    # audit rerun-diffs every registered adapter, so it needs a baseline covering all of them. Read
+    # one from a fixture rather than from results/: a newly registered eval has no published summary
+    # until someone runs --publish, and this test is about where a default run *writes*, not about
+    # whether results/ is currently complete. No output flags are passed, so the scratch-default
+    # routing under assertion is still exactly what runs.
+    mapping_dir = _snapshot_mappings(tmp_path)
+    results_dir = _write_current_eval_baseline(
+        tmp_path / "results", *sorted(run_cross_ref.ADAPTERS), mapping_dir=mapping_dir
+    )
     parser = run_cross_ref.build_parser()
-    args = parser.parse_args(["audit"])
+    args = parser.parse_args(["audit", "--results-dir", str(results_dir), "--mapping-dir", str(mapping_dir)])
 
     payload = run_cross_ref.run_audit(args)
 
@@ -467,7 +520,10 @@ def test_audit_defaults_to_scratch_outputs_without_mutating_published_audit():
 
 
 def test_audit_threshold_can_promote_clean_reproducible_state(tmp_path):
-    results_dir = _write_current_eval_baseline(tmp_path / "results", "eci", "arc_agi_2", "bullshit_bench", "delegate_52")
+    mapping_dir = _snapshot_mappings(tmp_path)
+    results_dir = _write_current_eval_baseline(
+        tmp_path / "results", "eci", "arc_agi_2", "bullshit_bench", "delegate_52", "vals_index", mapping_dir=mapping_dir
+    )
     summary_output = tmp_path / "audit_summary.json"
     parser = run_cross_ref.build_parser()
     args = parser.parse_args(
@@ -475,6 +531,8 @@ def test_audit_threshold_can_promote_clean_reproducible_state(tmp_path):
             "audit",
             "--results-dir",
             str(results_dir),
+            "--mapping-dir",
+            str(mapping_dir),
             "--summary-output",
             str(summary_output),
             "--max-unresolved-rows",
@@ -493,7 +551,337 @@ def test_audit_threshold_can_promote_clean_reproducible_state(tmp_path):
     assert summary["reproducibility_status"] == "pass"
 
 
-def test_rerun_diff_reports_no_diff_for_published_eci_artifacts(tmp_path):
+def _metadata_only_player() -> str:
+    """A model known to models_metadata.csv but with no row in elo_refined.csv."""
+    elo, metadata, _ = load_llm_chess_inputs(REPO_ROOT)
+    candidates = sorted(set(metadata["model"].dropna()) - set(elo["Player"].dropna()))
+    assert candidates, "expected at least one metadata-only model to build the fixture from"
+    return candidates[0]
+
+
+def _mappings_with_metadata_only_row(tmp_path: Path, eval_id: str = "eci") -> tuple[Path, str]:
+    """Pin the mappings, then repoint one accepted row at a model that has no chess games.
+
+    The fixture is built rather than borrowed from the checked-in mappings on purpose: whether the
+    repo currently carries this kind of debt changes as mappings are repointed, and the semantics
+    under test must not depend on that.
+    """
+    mapping_dir = _snapshot_mappings(tmp_path)
+    player = _metadata_only_player()
+    mapping_path = mapping_dir / f"{eval_id}.csv"
+    mapping = pd.read_csv(mapping_path)
+    accepted = mapping[mapping["mapping_status"].isin(sorted(ACCEPTED_MAPPING_STATUSES))]
+    assert not accepted.empty, f"{mapping_path} has no accepted rows to repoint"
+    mapping.loc[int(accepted.index[0]), "llm_chess_player"] = player
+    mapping.to_csv(mapping_path, index=False)
+    return mapping_dir, player
+
+
+def _write_self_consistent_publish(tmp_path: Path, *eval_ids: str, mapping_dir: Path | None = None) -> Path:
+    """Build a results dir whose per-eval artifacts and aggregate summary all agree with each other."""
+    results_dir = _write_current_eval_baseline(
+        tmp_path / "results", *eval_ids, mapping_dir=mapping_dir or _snapshot_mappings(tmp_path)
+    )
+    parser = run_cross_ref.build_parser()
+    run_cross_ref.run_cross_eval(
+        parser.parse_args(
+            [
+                "cross-eval",
+                "--results-dir",
+                str(results_dir),
+                "--summary-output",
+                str(results_dir / "cross_ref_summary.json"),
+                "--report-output",
+                str(results_dir / "cross_ref_report.md"),
+            ]
+        )
+    )
+    return results_dir
+
+
+def _run_verify(results_dir: Path, summary_output: Path, *extra_args: str) -> dict[str, object]:
+    parser = run_cross_ref.build_parser()
+    args = parser.parse_args(
+        [
+            "verify",
+            "--results-dir",
+            str(results_dir),
+            "--summary-output",
+            str(summary_output),
+            *extra_args,
+        ]
+    )
+    return run_cross_ref.run_verify(args)
+
+
+def test_verify_passes_on_self_consistent_publish_when_metadata_only_is_allowed(tmp_path):
+    mapping_dir, player = _mappings_with_metadata_only_row(tmp_path)
+    results_dir = _write_self_consistent_publish(tmp_path, "eci", "arc_agi_2", mapping_dir=mapping_dir)
+    summary_output = tmp_path / "verify_summary.json"
+
+    # --allow-metadata-only isolates artifact consistency from mapping debt, so this asserts the
+    # artifact checks are satisfiable rather than always-red.
+    payload = _run_verify(
+        results_dir, summary_output, "--mapping-dir", str(mapping_dir), "--allow-metadata-only"
+    )
+    summary = json.loads(summary_output.read_text(encoding="utf-8"))
+
+    assert payload["overall_status"] == "pass"
+    assert payload["failed_check_ids"] == []
+    assert set(payload["check_status"]) == {
+        "published_summary_sha256",
+        "recorded_llm_chess_input_rows",
+        "artifact_player_agreement",
+        "mapping_player_resolution",
+    }
+    assert all(status == "pass" for status in payload["check_status"].values())
+    assert summary["artifact_kind"] == "cross_ref_verify"
+    assert summary["allow_metadata_only"] is True
+    assert payload["dangling_player_row_count"] == 0
+    assert payload["unresolved_player_row_count"] == 0
+    # The metadata-only subset stays visible even when it is not counted as a failure.
+    assert payload["metadata_only_player_row_count"] >= 1
+    assert player in summary["metadata_only_players"]["players"]
+
+
+def test_verify_detects_stale_summary_hash_recorded_rows_and_player_disagreement(tmp_path):
+    results_dir = _write_self_consistent_publish(tmp_path, "eci")
+    summary_path = results_dir / "eci_summary.json"
+    published_summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    # Simulate the drift the published artifacts carry: a summary regenerated against inputs that
+    # the sibling coverage CSV and the aggregate sha256 record never saw.
+    published_summary["llm_chess_inputs"]["elo_refined"]["rows"] = 1
+    summary_path.write_text(json.dumps(published_summary, indent=2) + "\n", encoding="utf-8")
+    coverage_path = results_dir / "eci_coverage.csv"
+    coverage = pd.read_csv(coverage_path)
+    dropped_player = str(
+        coverage.loc[coverage["survived_elo_dedupe"] == True, "llm_chess_player"].dropna().iloc[0]
+    )
+    coverage.loc[coverage["llm_chess_player"] == dropped_player, "llm_chess_player"] = pd.NA
+    coverage.to_csv(coverage_path, index=False)
+
+    # --allow-metadata-only holds the mapping debt constant so the failing set is exactly the three
+    # artifact checks this test tampered with.
+    payload = _run_verify(results_dir, tmp_path / "verify_summary.json", "--allow-metadata-only")
+    summary = json.loads((tmp_path / "verify_summary.json").read_text(encoding="utf-8"))
+
+    assert payload["overall_status"] == "fail"
+    assert set(payload["failed_check_ids"]) == {
+        "published_summary_sha256",
+        "recorded_llm_chess_input_rows",
+        "artifact_player_agreement",
+    }
+    row_failure = summary["checks"]["recorded_llm_chess_input_rows"]["failures"][0]
+    assert row_failure["recorded_rows"] == 1
+    assert row_failure["actual_rows"] == summary["llm_chess_input_rows"]["elo_refined"]
+    player_failure = summary["checks"]["artifact_player_agreement"]["failures"][0]
+    assert dropped_player in player_failure["summary_players_missing_from_coverage"]
+
+
+def test_verify_reports_clean_mapping_player_resolution_for_checked_in_mappings(tmp_path):
+    # The complement of the two fixture-driven failure tests: no accepted row in the checked-in
+    # mappings may point at a player without a row in data/elo_refined.csv. Only this check is
+    # asserted, because the published artifacts in results/ carry their own separate drift.
+    payload = _run_verify(RESULTS_DIR, tmp_path / "verify_summary.json")
+    summary = json.loads((tmp_path / "verify_summary.json").read_text(encoding="utf-8"))
+
+    assert payload["check_status"]["mapping_player_resolution"] == "pass"
+    assert payload["dangling_player_row_count"] == 0
+    assert payload["metadata_only_player_row_count"] == 0
+    assert payload["unresolved_player_row_count"] == 0
+    resolution = summary["checks"]["mapping_player_resolution"]
+    assert resolution["checked_count"] == len(run_cross_ref.ADAPTERS)
+    assert resolution["failure_count"] == 0
+    assert all(entry["matches"] for entry in resolution["rows"])
+
+
+def test_verify_reports_dangling_mapping_targets_and_refuses_to_publish_them(tmp_path):
+    results_dir = _write_self_consistent_publish(tmp_path, "eci")
+    mapping_dir = tmp_path / "mappings"
+    mapping_dir.mkdir()
+    for mapping_path in MAPPINGS_DIR.glob("*.csv"):
+        mapping = pd.read_csv(mapping_path)
+        if mapping_path.stem == "eci":
+            accepted_index = int(mapping[mapping["mapping_status"] == "accepted"].index[0])
+            mapping.loc[accepted_index, "llm_chess_player"] = "model-the-repo-never-heard-of"
+        mapping.to_csv(mapping_dir / mapping_path.name, index=False)
+
+    payload = _run_verify(
+        results_dir, tmp_path / "verify_summary.json", "--mapping-dir", str(mapping_dir)
+    )
+    summary = json.loads((tmp_path / "verify_summary.json").read_text(encoding="utf-8"))
+
+    assert payload["overall_status"] == "fail"
+    assert "mapping_player_resolution" in payload["failed_check_ids"]
+    # A name in neither elo_refined.csv nor models_metadata.csv is dangling, not metadata-only, so
+    # --allow-metadata-only cannot excuse it.
+    assert payload["dangling_player_row_count"] == 1
+    assert payload["metadata_only_player_row_count"] == 0
+    assert summary["dangling_players"]["players"] == ["model-the-repo-never-heard-of"]
+    eci_row = next(row for row in summary["checks"]["mapping_player_resolution"]["rows"] if row["eval_id"] == "eci")
+    assert eci_row["dangling_row_count"] == 1
+    assert eci_row["metadata_only_row_count"] == 0
+
+    lenient_payload = _run_verify(
+        results_dir,
+        tmp_path / "lenient_verify.json",
+        "--mapping-dir",
+        str(mapping_dir),
+        "--allow-metadata-only",
+    )
+    assert lenient_payload["check_status"]["mapping_player_resolution"] == "fail"
+    assert lenient_payload["unresolved_player_row_count"] == 1
+
+    parser = run_cross_ref.build_parser()
+    publish_args = parser.parse_args(
+        [
+            "verify",
+            "--results-dir",
+            str(results_dir),
+            "--mapping-dir",
+            str(mapping_dir),
+            "--summary-output",
+            str(tmp_path / "published_verify_summary.json"),
+            "--publish",
+        ]
+    )
+
+    with pytest.raises(ValueError, match="must not be published"):
+        run_cross_ref.run_verify(publish_args)
+    assert not (tmp_path / "published_verify_summary.json").exists()
+
+
+def test_verify_fails_by_default_on_accepted_rows_without_elo_coverage(tmp_path):
+    mapping_dir, player = _mappings_with_metadata_only_row(tmp_path)
+    results_dir = _write_self_consistent_publish(tmp_path, "eci", mapping_dir=mapping_dir)
+    summary_output = tmp_path / "default_verify.json"
+
+    default_payload = _run_verify(results_dir, summary_output, "--mapping-dir", str(mapping_dir))
+    summary = json.loads(summary_output.read_text(encoding="utf-8"))
+    lenient_payload = _run_verify(
+        results_dir,
+        tmp_path / "lenient_verify.json",
+        "--mapping-dir",
+        str(mapping_dir),
+        "--allow-metadata-only",
+    )
+
+    # Absence from data/elo_refined.csv is the failure condition, whether or not the name survives
+    # in data/models_metadata.csv. Only that check fails here, so the artifact checks stay honest.
+    assert default_payload["overall_status"] == "fail"
+    assert default_payload["failed_check_ids"] == ["mapping_player_resolution"]
+    assert summary["allow_metadata_only"] is False
+    assert default_payload["dangling_player_row_count"] == 0
+    assert default_payload["metadata_only_player_row_count"] >= 1
+    assert default_payload["unresolved_player_row_count"] == default_payload["metadata_only_player_row_count"]
+    # The failing mapping file is reported with its own row counts, and the metadata-only subset is
+    # still broken out separately rather than collapsed into an opaque failure.
+    failures = {entry["eval_id"]: entry for entry in summary["checks"]["mapping_player_resolution"]["failures"]}
+    assert "eci" in failures
+    assert failures["eci"]["metadata_only_row_count"] >= 1
+    assert failures["eci"]["dangling_row_count"] == 0
+    assert player in {row["llm_chess_player"] for row in failures["eci"]["metadata_only"]}
+    assert player in summary["metadata_only_players"]["players"]
+
+    assert lenient_payload["check_status"]["mapping_player_resolution"] == "pass"
+    assert lenient_payload["metadata_only_player_row_count"] == default_payload["metadata_only_player_row_count"]
+    assert lenient_payload["unresolved_player_row_count"] == 0
+
+
+def test_publish_gate_refuses_accepted_rows_without_elo_coverage(tmp_path):
+    mapping_dir, _ = _mappings_with_metadata_only_row(tmp_path)
+    parser = run_cross_ref.build_parser()
+    refused_output = tmp_path / "refused_summary.json"
+    publish_args = parser.parse_args(
+        [
+            "eci",
+            "--publish",
+            "--mapping-path",
+            str(mapping_dir / "eci.csv"),
+            "--summary-output",
+            str(refused_output),
+            "--html-output",
+            str(tmp_path / "refused.html"),
+            "--coverage-output",
+            str(tmp_path / "refused_coverage.csv"),
+            "--inventory-output",
+            str(tmp_path / "refused_inventory.csv"),
+        ]
+    )
+
+    with pytest.raises(ValueError, match="no row in data/elo_refined.csv"):
+        run_cross_ref.run_eval(publish_args)
+    # The refusal happens before any output path is resolved, so nothing is written.
+    assert not refused_output.exists()
+    assert not (tmp_path / "refused_inventory.csv").exists()
+
+
+def test_verify_defaults_to_scratch_outputs_and_requires_publish_for_results_dir():
+    published_path = RESULTS_DIR / "verify_summary.json"
+    before = _snapshot_files([published_path])
+    parser = run_cross_ref.build_parser()
+
+    payload = run_cross_ref.run_verify(parser.parse_args(["verify"]))
+
+    assert payload["output_mode"] == "review"
+    _assert_outside_cross_ref(payload["summary_output"])
+    _assert_snapshot_unchanged(before)
+
+    publish_args = parser.parse_args(["verify", "--summary-output", str(published_path)])
+    with pytest.raises(ValueError, match="require --publish"):
+        run_cross_ref.run_verify(publish_args)
+    _assert_snapshot_unchanged(before)
+
+
+def test_named_corr_and_bootstrap_corr_guard_zero_variance_inputs():
+    constant = pd.Series([1.0, 1.0, 1.0, 1.0])
+    varying = pd.Series([1.0, 2.0, 3.0, 4.0])
+
+    # The guard is load-bearing: scipy raises rather than returning nan on constant x.
+    with pytest.raises(ValueError, match="all x values are identical"):
+        statistics.stats.linregress(constant, varying)
+
+    assert statistics.named_corr("constant_x", constant, varying) == {"name": "constant_x", "n": 4}
+    assert statistics.named_corr("constant_y", varying, constant) == {"name": "constant_y", "n": 4}
+    assert statistics.bootstrap_corr(constant, varying) is None
+    assert statistics.bootstrap_corr(varying, constant) is None
+    # A non-degenerate sample still produces intervals.
+    assert statistics.named_corr("ok", varying, varying)["pearson_r"] == pytest.approx(1.0)
+    assert statistics.bootstrap_corr(varying, varying) is not None
+
+
+def test_partial_corr_release_month_spends_a_degree_of_freedom_on_the_covariate():
+    # Residualizing on release month estimates an intercept and a slope per variable, so the
+    # reference distribution loses a degree of freedom relative to a plain correlation. scipy's
+    # pearsonr/spearmanr on the residual vectors would test against df = n - 2 and report a p
+    # that is too small; the correct df is n - 3.
+    rng = np.random.default_rng(7)
+    n = 40
+    month = pd.Series(np.arange(n, dtype=float))
+    score = pd.Series(month * 0.5 + rng.normal(size=n))
+    metric = pd.Series(month * 0.3 + rng.normal(size=n))
+
+    result = statistics.partial_corr_release_month(score, metric, month)
+
+    assert result["n"] == n
+    assert result["controlled_variables"] == 1
+    assert result["df"] == n - 3
+    for stat_key, p_key in (("pearson_r", "pearson_p"), ("spearman_r", "spearman_p")):
+        r = result[stat_key]
+        expected = statistics._partial_corr_p_value(r, n, 1)
+        uncorrected = statistics._partial_corr_p_value(r, n, 0)
+        assert result[p_key] == pytest.approx(expected)
+        # The correction is conservative and non-trivial: it always raises the p.
+        assert result[p_key] > uncorrected
+
+    # And the helper reduces to scipy exactly when nothing is controlled, so df is the only change.
+    plain = statistics.stats.pearsonr(score, metric)
+    assert statistics._partial_corr_p_value(plain.statistic, n, 0) == pytest.approx(plain.pvalue)
+
+
+def test_rerun_diff_reports_no_diff_when_baseline_regenerated_from_current_inputs(tmp_path):
+    # The baseline here is regenerated from current code and inputs, so this only proves the
+    # rerun-diff machinery is deterministic. Input drift is covered by the RESULTS_DIR test below.
     payload, diff_payload, diff_markdown = _run_rerun_diff(tmp_path, "eci")
     artifact_diffs = _artifact_diffs_by_id(diff_payload)
 
@@ -503,6 +891,29 @@ def test_rerun_diff_reports_no_diff_for_published_eci_artifacts(tmp_path):
     assert artifact_diffs["summary_json"]["changed"] is False
     assert artifact_diffs["coverage_csv"]["changed"] is False
     assert "No differences detected between baseline and rerun candidate artifacts." in diff_markdown
+
+
+def test_rerun_diff_against_published_results_dir_detects_recorded_input_drift(tmp_path):
+    published_summary_path = RESULTS_DIR / "eci_summary.json"
+    recorded_elo_rows = json.loads(published_summary_path.read_text(encoding="utf-8"))[
+        "llm_chess_inputs"
+    ]["elo_refined"]["rows"]
+    elo, _, _ = load_llm_chess_inputs(REPO_ROOT)
+
+    payload, diff_payload, _ = _run_rerun_diff(tmp_path, "eci", baseline_results_dir=RESULTS_DIR)
+    artifact_diffs = _artifact_diffs_by_id(diff_payload)
+
+    # The baseline must be the checked-in publish itself, not one regenerated from current inputs,
+    # otherwise the diff can never report drift.
+    assert payload["baseline_artifacts"]["summary_json"] == "data/cross-ref/results/eci_summary.json"
+    # A publish that recorded a different elo_refined row count than the current authoritative input
+    # cannot reproduce, because that row count is part of the summary being compared.
+    if recorded_elo_rows == len(elo):
+        assert diff_payload["has_diff"] is False
+        assert artifact_diffs["summary_json"]["changed"] is False
+    else:
+        assert diff_payload["has_diff"] is True
+        assert artifact_diffs["summary_json"]["changed"] is True
 
 
 def test_eval_defaults_to_scratch_outputs_without_mutating_published_artifacts():
@@ -552,7 +963,7 @@ def test_rerun_diff_defaults_diff_outputs_to_scratch_space(tmp_path):
 
 def test_rerun_diff_detects_changed_source_override(tmp_path):
     source_path = tmp_path / "epoch_eci_changed.csv"
-    source_df = pd.read_csv(CROSS_REF_ROOT / "evals" / "eci" / "epoch_eci_may_2026.csv")
+    source_df = pd.read_csv(CROSS_REF_ROOT / "evals" / "eci" / "epoch_eci_jul_2026.csv")
     changed_index = int(source_df[source_df["llm_chess_model"].notna()].index[0])
     source_df.loc[changed_index, "Score"] = float(source_df.loc[changed_index, "Score"]) + 1.0
     source_df.to_csv(source_path, index=False)
@@ -633,15 +1044,22 @@ def test_compare_csv_files_reports_duplicate_key_validation_error(tmp_path):
 
 def test_consolidated_report_contains_cross_eval_findings():
     consolidated_report = (CROSS_REF_ROOT / "CONSOLIDATED_REPORT.md").read_text(encoding="utf-8")
+    # Prose assertions below match against a whitespace-collapsed copy: the claim has to be present,
+    # but where a markdown reflow happens to wrap the line is not a property worth failing on.
+    report_prose = " ".join(consolidated_report.split())
 
     assert "## Bottom Line" in consolidated_report
     assert "## Signal Table" in consolidated_report
     assert "## Method In One Screen" in consolidated_report
     assert "## Coverage Debt" in consolidated_report
     assert "## What Raises Signal" in consolidated_report
-    assert "ECI: usable relationship" in consolidated_report
-    assert "ARC-AGI-2: weak relationship" in consolidated_report
-    assert "Feature selection happens inside each training fold" in consolidated_report
+    assert "**ECI**: usable relationship" in report_prose
+    # Every registered eval must carry a named interpretation, not just a table row. Pinning a
+    # verdict phrase per eval is deliberately avoided here: ARC's used to read "weak relationship"
+    # and stopped being true when its CV R2 flipped sign, which is a data move, not a report bug.
+    for eval_label in ("ECI", "ARC-AGI-2", "Vals Index", "DELEGATE-52", "BullshitBench"):
+        assert f"- **{eval_label}**:" in report_prose
+    assert "Feature selection happens inside each training fold" in report_prose
     assert "pointer_only" not in consolidated_report
 
 
@@ -784,10 +1202,11 @@ def test_eval_source_tree_contains_only_source_artifacts():
     assert not (CROSS_REF_ROOT / "eci").exists()
     assert not (CROSS_REF_ROOT / "arc-agi-2").exists()
     assert list(evals_root.rglob("*.py")) == []
-    assert {path.name for path in (evals_root / "eci").iterdir()} == {"SOURCE.md", "epoch_eci_may_2026.csv"}
-    assert {path.name for path in (evals_root / "arc-agi-2").iterdir()} == {"SOURCE.md", "arc-agi-2-may-2026.csv"}
+    assert {path.name for path in (evals_root / "eci").iterdir()} == {"SOURCE.md", "epoch_eci_jul_2026.csv"}
+    assert {path.name for path in (evals_root / "arc-agi-2").iterdir()} == {"SOURCE.md", "arc-agi-2-jul-2026.csv"}
     assert {path.name for path in (evals_root / "bullshit-bench").iterdir()} == {"SOURCE.md", "bullshit_bench_v2_may_2026.csv"}
     assert {path.name for path in (evals_root / "delegate-52").iterdir()} == {"SOURCE.md", "delegate-52-may-2026.csv"}
+    assert {path.name for path in (evals_root / "vals-index").iterdir()} == {"SOURCE.md", "vals_index_v1_2_july_2026.csv"}
 
 
 def test_arc_mapping_covers_all_rows_and_summary_is_strict_json():
@@ -816,12 +1235,17 @@ def test_arc_mapping_covers_all_rows_and_summary_is_strict_json():
     )
     json.dumps(summary, allow_nan=False)
     assert summary["inputs"]["source"]["numeric_parse_rates"]["score_arc_agi_2"] > 0
-    assert summary["inputs"]["source"]["numeric_parse_rates"]["cost_v3"] == 0.0
+    # The 2026-07 refresh rebuilt the snapshot from arcprize.org's JSON and taught parse_currency the
+    # leaderboard's "$15.2K" shorthand, so COST (V3) now parses fully instead of at 0.0.
+    assert summary["inputs"]["source"]["numeric_parse_rates"]["cost_v3"] == 1.0
     assert summary["mapping_source_of_truth"]["mapping_file"] == "data/cross-ref/mappings/arc_agi_2.csv"
     assert summary["relationships"]["raw_elo"]["sample_stage_id"] == "elo_analysis_rows_max_dedupe"
     assert summary["relationships"]["raw_elo"]["n"] == summary["analysis_surfaces"]["elo_analysis"]["count"]
     assert summary["prediction"]["sample_stage_id"] == "metric_analysis_rows_max_dedupe"
+    # Two distinct counts. "sample_n" is the metric-analysis sample handed to the prediction block;
+    # "n" is what survived dropna and was actually cross-validated. The CV scores belong to "n".
     assert summary["prediction"]["sample_n"] == summary["analysis_surfaces"]["metric_analysis"]["count"]
+    assert summary["prediction"]["n"] <= summary["prediction"]["sample_n"]
     assert "elo" not in summary["prediction"]["features"]
     assert summary["coverage"]["matched_llm_chess_rows"] == summary["relationships"]["raw_elo"]["n"]
     assert summary["coverage"]["external_rows_without_llm_chess_match"] == (
@@ -868,18 +1292,22 @@ def test_bullshit_bench_mapping_covers_all_rows_and_summary_is_strict_json():
     assert summary["inputs"]["source"]["numeric_parse_rates"]["score_numeric"] == 1.0
     assert summary["mapping_source_of_truth"]["mapping_file"] == "data/cross-ref/mappings/bullshit_bench.csv"
     assert summary["mapping_source_of_truth"]["source_seed_column"] is None
-    # The reviewed mapping resolves a known set of model identities.
+    # The reviewed mapping resolves a known set of model identities. The repointed mapping moved 5
+    # rows from unmatched to variant-compatible, keeping the 162-row total.
     status_counts = summary["mapping"]["mapping_file_status_counts"]
     assert status_counts["accepted"] == 6
     assert status_counts["alias"] == 21
-    assert status_counts["variant-compatible"] == 39
+    assert status_counts["variant-compatible"] == 44
     assert status_counts["ambiguous"] == 6
-    assert status_counts["unmatched"] == 90
+    assert status_counts["unmatched"] == 85
+    assert sum(status_counts.values()) == len(normalized)
     # Analysis surfaces reconcile with the relationship samples.
     assert summary["relationships"]["raw_elo"]["sample_stage_id"] == "elo_analysis_rows_max_dedupe"
     assert summary["relationships"]["raw_elo"]["n"] == summary["analysis_surfaces"]["elo_analysis"]["count"]
-    assert summary["coverage"]["elo_analysis_rows_max_dedupe"] == 55
-    assert summary["coverage"]["metric_analysis_rows_max_dedupe"] == 58
+    # Both samples gained a net 6 players from the repointing: 7 newly resolved to an elo-backed
+    # player and gpt-5.4-medium was repointed to gpt-5.4-high.
+    assert summary["coverage"]["elo_analysis_rows_max_dedupe"] == 59
+    assert summary["coverage"]["metric_analysis_rows_max_dedupe"] == 62
     assert "elo" not in summary["prediction"]["features"]
     # Key finding: nonsense detection is only weakly tied to chess Elo and well below ECI/ARC.
     assert 0.20 < summary["relationships"]["raw_elo"]["pearson_r"] < 0.40
@@ -941,6 +1369,139 @@ def test_delegate_52_mapping_covers_all_rows_and_reports_depth_profile():
     assert len(summary["sensitivity"]["rs_depth_release_controlled"]) == len(depth)
 
 
+def test_vals_index_snapshot_matches_published_composite_formula():
+    """The v1.2 index is a published weighted composite of the five component columns.
+
+    Recomputing it from those columns is the one check on this snapshot that does not go through the
+    anchor column itself, so it catches a mis-decoded Astro props blob (see evals/vals-index/SOURCE.md)
+    rather than merely restating it.
+    """
+    normalized, contract = vals_index.normalize_source()
+
+    assert len(normalized) == 40
+    coding = (
+        0.25 * normalized["swebench"] + 0.25 * normalized["terminal_bench_2_1"] + 0.5 * normalized["vibe_code_bench"]
+    )
+    finance = normalized[["corp_fin_v2", "finance_agent"]].mean(axis=1)
+    recomputed = (2.0 * finance + 1.4 * coding) / 3.4
+    # Published anchors are rounded to three decimals, so agreement is exact to within that rounding.
+    assert (recomputed - normalized["vals_index"]).abs().max() < 0.001
+
+    # Scores arrive already on a 0-100 scale; nothing rescales them.
+    assert normalized["vals_index"].max() == pytest.approx(75.145)
+    assert normalized["vals_index"].min() == pytest.approx(30.041)
+    assert contract["numeric_parse_rates"]["vals_index"] == 1.0
+
+    # Identity is the upstream provider/slug model_key; the payload publishes no display name.
+    assert normalized["eval_model_label"].iloc[0] == "anthropic/claude-fable-5"
+    assert normalized["eval_model_label"].is_unique
+    # Effort is stated in reasoning_effort for most vendors and compute_effort for Anthropic.
+    assert normalized["stated_effort"].notna().sum() == 24
+    anthropic_opus_4_8 = normalized.loc[normalized["eval_model_label"] == "anthropic/claude-opus-4-8"].iloc[0]
+    assert pd.isna(anthropic_opus_4_8["reasoning_effort"])
+    assert anthropic_opus_4_8["stated_effort"] == "max"
+
+
+def test_vals_index_mapping_covers_all_rows_and_reports_task_profile():
+    elo, metadata, _ = load_llm_chess_inputs(REPO_ROOT)
+    inventory = build_llm_chess_inventory(elo, metadata)
+    normalized, _ = vals_index.normalize_source()
+    mapping = load_mapping_file(REPO_ROOT / "data/cross-ref/mappings/vals_index.csv")
+    merged = apply_mapping(normalized, mapping)
+
+    assert len(merged) == len(normalized) == 40
+    assert merged["mapping_status"].notna().all()
+
+    summary, _, coverage, _ = vals_index.run_analysis(
+        inventory,
+        mapping,
+        verification={
+            "runner_command": "pytest",
+            "inventory_path": "data/cross-ref/model-identity/llm_chess_models.csv",
+            "mapping_file": "data/cross-ref/mappings/vals_index.csv",
+            "verification_commands": ["pytest tests/test_cross_ref.py"],
+            "test_status": "running-under-pytest",
+            "mapping_qa_status": "pending",
+            "run_qa_status": "pending",
+            "known_limitations": [],
+        },
+    )
+    json.dumps(summary, allow_nan=False)
+
+    assert summary["target_score_column"] == "vals_index"
+    assert summary["mapping_source_of_truth"]["mapping_file"] == "data/cross-ref/mappings/vals_index.csv"
+    # Reviewed mapping: 4 accepted + 1 alias + 12 variant-compatible matched, 23 with no counterpart.
+    status_counts = summary["mapping"]["mapping_file_status_counts"]
+    assert status_counts["accepted"] == 4
+    assert status_counts["alias"] == 1
+    assert status_counts["variant-compatible"] == 12
+    assert status_counts["unmatched"] == 23
+    # Every matched row resolves to an Elo-backed player, so the funnel is lossless after mapping.
+    assert summary["coverage"]["accepted_mapping_rows"] == 17
+    assert summary["coverage"]["metric_analysis_rows_max_dedupe"] == 17
+    assert summary["coverage"]["elo_analysis_rows_max_dedupe"] == 17
+    assert summary["coverage"]["duplicate_mapping_keys"] == 0
+    assert summary["coverage"]["external_rows_without_llm_chess_match"] == 23
+    assert summary["relationships"]["raw_elo"]["n"] == summary["analysis_surfaces"]["elo_analysis"]["count"]
+    # Stated-effort coverage is surfaced because the mapping's clause choice depends on it.
+    assert summary["coverage"]["stated_effort_counts"]["unstated"] == 16
+
+    # Multi-factor headline: the composite is reported alongside each component task and both buckets,
+    # so no single sub-benchmark silently drives the conclusion.
+    tasks = summary["relationships"]["raw_elo"]["vals_task_vs_elo"]
+    factors = {entry["factor"] for entry in tasks}
+    assert {"corp_fin_v2", "finance_agent", "swebench", "terminal_bench_2_1", "vibe_code_bench"} <= factors
+    assert {"finance_bucket", "coding_bucket"} <= factors
+    assert len(summary["sensitivity"]["vals_task_release_controlled"]) == len(tasks)
+
+    # Every row the mapping leaves unmatched stays visible in coverage rather than being dropped.
+    assert len(coverage) == 40
+    assert int(coverage["joined_llm_chess_metric_row"].sum()) == 17
+
+
+def test_vals_index_mapping_records_the_reasoning_clause_on_every_resolved_row():
+    """Vals states an effort tier more often than the other evals, but above LLM Chess's ceiling.
+
+    Its tier vocabulary includes max and xhigh, which LLM Chess has for no model, so better evidence
+    routes rows into clause 3 rather than clause 2. Each resolved row must name the clause it used.
+    """
+    mapping = load_mapping_file(REPO_ROOT / "data/cross-ref/mappings/vals_index.csv")
+    matched = mapping[mapping["mapping_status"].isin(sorted(ACCEPTED_MAPPING_STATUSES))]
+
+    assert len(matched) == 17
+    assert matched["reasoning_rule_applied"].notna().all()
+    assert matched["reasoning_rule_applied"].value_counts().to_dict() == {
+        "nearest-tier": 10,
+        "effort_to_effort": 5,
+        "assume-highest": 2,
+    }
+    # No matched row may point at a max/xhigh chess tier, because none exists.
+    assert not matched["llm_chess_player"].str.contains("xhigh|-max", regex=True).any()
+
+    by_label = matched.set_index("eval_model_label")
+    # Clause 3 substitutes upward when the stated tier is above everything LLM Chess offers.
+    sol = by_label.loc["openai/gpt-5.6-sol"]
+    assert sol["eval_reasoning_effort"] == "max"
+    assert sol["llm_chess_player"] == "gpt-5.6-sol-2026-07-09-high"
+    assert sol["reasoning_rule_applied"] == "nearest-tier"
+    # Forced substitution against the stated direction must record the conflict, not imply agreement.
+    flash = by_label.loc["google/gemini-3.5-flash"]
+    assert flash["eval_reasoning_effort"] == "high"
+    assert flash["llm_chess_player"] == "gemini-3.5-flash-medium"
+    assert "Forced substitution" in flash["open_questions"]
+    # reasoning=True picks the thinking run over the non-thinking sibling.
+    sonnet = by_label.loc["anthropic/claude-sonnet-4-6"]
+    assert sonnet["llm_chess_player"] == "claude-sonnet-4-6_thinking-high"
+
+    # Same-family-different-version rows stay unmatched with a reason, and never borrow a sibling.
+    unmatched = mapping[mapping["mapping_status"] == "unmatched"].set_index("eval_model_label")
+    for label in ["kimi/kimi-k3", "zai/glm-5.2", "alibaba/qwen3.7-max", "minimax/MiniMax-M3"]:
+        assert label in unmatched.index
+        assert pd.isna(unmatched.loc[label, "llm_chess_player"])
+        assert unmatched.loc[label, "rationale"].strip()
+    assert "claude-fable-5" in " ".join(unmatched.index)
+
+
 def test_eci_summary_preserves_legacy_parity_slice():
     elo, metadata, _ = load_llm_chess_inputs(REPO_ROOT)
     inventory = build_llm_chess_inventory(elo, metadata)
@@ -970,7 +1531,9 @@ def test_eci_summary_preserves_legacy_parity_slice():
     assert summary["relationships"]["raw_elo"]["sample_stage_id"] == "elo_analysis_rows_max_dedupe"
     assert summary["relationships"]["raw_elo"]["n"] == summary["analysis_surfaces"]["elo_analysis"]["count"]
     assert summary["prediction"]["sample_stage_id"] == "metric_analysis_rows_max_dedupe"
+    # Two distinct counts; see the arc_agi_2 test above. The CV scores belong to "n", not "sample_n".
     assert summary["prediction"]["sample_n"] == summary["analysis_surfaces"]["metric_analysis"]["count"]
+    assert summary["prediction"]["n"] <= summary["prediction"]["sample_n"]
     assert "elo" not in summary["prediction"]["features"]
     assert summary["coverage"]["external_rows_without_llm_chess_elo_join"] == (
         summary["coverage"]["numeric_score_rows"] - summary["coverage"]["rows_joined_to_llm_chess_elo"]
@@ -1026,11 +1589,11 @@ def test_coverage_outputs_reconcile_with_funnel_and_explain_missing_elo_and_dedu
     assert int(arc_coverage["survived_elo_dedupe"].sum()) == arc_summary["analysis_surfaces"]["elo_analysis"]["count"]
 
     dedupe_loser = arc_coverage.loc[
-        arc_coverage["eval_row_id"] == "arc_agi_2:0045:gemini_3_flash_preview_low"
+        arc_coverage["eval_row_id"] == "arc_agi_2:0071:gemini_3_flash_preview_low"
     ].iloc[0]
     assert not dedupe_loser["survived_metric_dedupe"]
     assert dedupe_loser["metric_drop_side"] == "dedupe"
-    assert dedupe_loser["metric_dedupe_kept_eval_row_id"] == "arc_agi_2:0047:gemini_3_flash_preview_high"
+    assert dedupe_loser["metric_dedupe_kept_eval_row_id"] == "arc_agi_2:0073:gemini_3_flash_preview_high"
     assert dedupe_loser["first_failed_stage"] == "metric_analysis_rows_max_dedupe"
 
 

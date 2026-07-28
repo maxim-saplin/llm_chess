@@ -1,0 +1,285 @@
+{
+  "artifact_kind": "cross_ref_verify",
+  "overall_status": "pass",
+  "allow_metadata_only": false,
+  "results_dir": "data/cross-ref/results",
+  "mapping_dir": "data/cross-ref/mappings",
+  "llm_chess_input_rows": {
+    "elo_refined": 201,
+    "models_metadata": 293
+  },
+  "failed_check_ids": [],
+  "checks": {
+    "published_summary_sha256": {
+      "check_id": "published_summary_sha256",
+      "description": "each results/*_summary.json hashes to the sha256 recorded for it in cross_ref_summary.json",
+      "passed": true,
+      "checked_count": 5,
+      "failure_count": 0,
+      "failures": [],
+      "rows": [
+        {
+          "eval_id": "arc_agi_2",
+          "summary_path": "data/cross-ref/results/arc_agi_2_summary.json",
+          "recorded_sha256": "6bfbf64576c502c58e0806d133c953a875714980a6f4a8c8e6e71530612138c0",
+          "actual_sha256": "6bfbf64576c502c58e0806d133c953a875714980a6f4a8c8e6e71530612138c0",
+          "matches": true
+        },
+        {
+          "eval_id": "bullshit_bench",
+          "summary_path": "data/cross-ref/results/bullshit_bench_summary.json",
+          "recorded_sha256": "e78f95c0987701f81418fca02646f332560cbb134b1a58285af4236aaa6ce78b",
+          "actual_sha256": "e78f95c0987701f81418fca02646f332560cbb134b1a58285af4236aaa6ce78b",
+          "matches": true
+        },
+        {
+          "eval_id": "delegate_52",
+          "summary_path": "data/cross-ref/results/delegate_52_summary.json",
+          "recorded_sha256": "daf993587cc27c0166ab079a344635158baba0bd69b491f29ad3854a47ba4bd5",
+          "actual_sha256": "daf993587cc27c0166ab079a344635158baba0bd69b491f29ad3854a47ba4bd5",
+          "matches": true
+        },
+        {
+          "eval_id": "eci",
+          "summary_path": "data/cross-ref/results/eci_summary.json",
+          "recorded_sha256": "04e17d517e0c1c56e4cb7df6ca8f43e00bbf0e5da8686fbc27e37d4327f09a21",
+          "actual_sha256": "04e17d517e0c1c56e4cb7df6ca8f43e00bbf0e5da8686fbc27e37d4327f09a21",
+          "matches": true
+        },
+        {
+          "eval_id": "vals_index",
+          "summary_path": "data/cross-ref/results/vals_index_summary.json",
+          "recorded_sha256": "ca87fd853be3a18555ebd5b5a270b9a135906b2d827b9ec132dfb78d006c5a26",
+          "actual_sha256": "ca87fd853be3a18555ebd5b5a270b9a135906b2d827b9ec132dfb78d006c5a26",
+          "matches": true
+        }
+      ]
+    },
+    "recorded_llm_chess_input_rows": {
+      "check_id": "recorded_llm_chess_input_rows",
+      "description": "each published summary's llm_chess_inputs row counts match the current authoritative inputs",
+      "passed": true,
+      "checked_count": 10,
+      "failure_count": 0,
+      "failures": [],
+      "rows": [
+        {
+          "eval_id": "arc_agi_2",
+          "summary_path": "data/cross-ref/results/arc_agi_2_summary.json",
+          "input_id": "elo_refined",
+          "recorded_rows": 201,
+          "actual_rows": 201,
+          "matches": true
+        },
+        {
+          "eval_id": "arc_agi_2",
+          "summary_path": "data/cross-ref/results/arc_agi_2_summary.json",
+          "input_id": "models_metadata",
+          "recorded_rows": 293,
+          "actual_rows": 293,
+          "matches": true
+        },
+        {
+          "eval_id": "bullshit_bench",
+          "summary_path": "data/cross-ref/results/bullshit_bench_summary.json",
+          "input_id": "elo_refined",
+          "recorded_rows": 201,
+          "actual_rows": 201,
+          "matches": true
+        },
+        {
+          "eval_id": "bullshit_bench",
+          "summary_path": "data/cross-ref/results/bullshit_bench_summary.json",
+          "input_id": "models_metadata",
+          "recorded_rows": 293,
+          "actual_rows": 293,
+          "matches": true
+        },
+        {
+          "eval_id": "delegate_52",
+          "summary_path": "data/cross-ref/results/delegate_52_summary.json",
+          "input_id": "elo_refined",
+          "recorded_rows": 201,
+          "actual_rows": 201,
+          "matches": true
+        },
+        {
+          "eval_id": "delegate_52",
+          "summary_path": "data/cross-ref/results/delegate_52_summary.json",
+          "input_id": "models_metadata",
+          "recorded_rows": 293,
+          "actual_rows": 293,
+          "matches": true
+        },
+        {
+          "eval_id": "eci",
+          "summary_path": "data/cross-ref/results/eci_summary.json",
+          "input_id": "elo_refined",
+          "recorded_rows": 201,
+          "actual_rows": 201,
+          "matches": true
+        },
+        {
+          "eval_id": "eci",
+          "summary_path": "data/cross-ref/results/eci_summary.json",
+          "input_id": "models_metadata",
+          "recorded_rows": 293,
+          "actual_rows": 293,
+          "matches": true
+        },
+        {
+          "eval_id": "vals_index",
+          "summary_path": "data/cross-ref/results/vals_index_summary.json",
+          "input_id": "elo_refined",
+          "recorded_rows": 201,
+          "actual_rows": 201,
+          "matches": true
+        },
+        {
+          "eval_id": "vals_index",
+          "summary_path": "data/cross-ref/results/vals_index_summary.json",
+          "input_id": "models_metadata",
+          "recorded_rows": 293,
+          "actual_rows": 293,
+          "matches": true
+        }
+      ]
+    },
+    "artifact_player_agreement": {
+      "check_id": "artifact_player_agreement",
+      "description": "llm_chess_player values agree across the summary_json, coverage_csv and html of one publish",
+      "passed": true,
+      "checked_count": 5,
+      "failure_count": 0,
+      "failures": [],
+      "rows": [
+        {
+          "eval_id": "arc_agi_2",
+          "summary_path": "data/cross-ref/results/arc_agi_2_summary.json",
+          "coverage_path": "data/cross-ref/results/arc_agi_2_coverage.csv",
+          "html_path": "data/cross-ref/results/arc_agi_2.html",
+          "summary_player_count": 15,
+          "coverage_player_count": 70,
+          "html_player_count": 0,
+          "summary_players_missing_from_coverage": [],
+          "html_players_missing_from_coverage": [],
+          "matches": true
+        },
+        {
+          "eval_id": "bullshit_bench",
+          "summary_path": "data/cross-ref/results/bullshit_bench_summary.json",
+          "coverage_path": "data/cross-ref/results/bullshit_bench_coverage.csv",
+          "html_path": "data/cross-ref/results/bullshit_bench.html",
+          "summary_player_count": 15,
+          "coverage_player_count": 62,
+          "html_player_count": 5,
+          "summary_players_missing_from_coverage": [],
+          "html_players_missing_from_coverage": [],
+          "matches": true
+        },
+        {
+          "eval_id": "delegate_52",
+          "summary_path": "data/cross-ref/results/delegate_52_summary.json",
+          "coverage_path": "data/cross-ref/results/delegate_52_coverage.csv",
+          "html_path": "data/cross-ref/results/delegate_52.html",
+          "summary_player_count": 14,
+          "coverage_player_count": 15,
+          "html_player_count": 0,
+          "summary_players_missing_from_coverage": [],
+          "html_players_missing_from_coverage": [],
+          "matches": true
+        },
+        {
+          "eval_id": "eci",
+          "summary_path": "data/cross-ref/results/eci_summary.json",
+          "coverage_path": "data/cross-ref/results/eci_coverage.csv",
+          "html_path": "data/cross-ref/results/eci.html",
+          "summary_player_count": 21,
+          "coverage_player_count": 97,
+          "html_player_count": 19,
+          "summary_players_missing_from_coverage": [],
+          "html_players_missing_from_coverage": [],
+          "matches": true
+        },
+        {
+          "eval_id": "vals_index",
+          "summary_path": "data/cross-ref/results/vals_index_summary.json",
+          "coverage_path": "data/cross-ref/results/vals_index_coverage.csv",
+          "html_path": "data/cross-ref/results/vals_index.html",
+          "summary_player_count": 13,
+          "coverage_player_count": 17,
+          "html_player_count": 0,
+          "summary_players_missing_from_coverage": [],
+          "html_players_missing_from_coverage": [],
+          "matches": true
+        }
+      ]
+    },
+    "mapping_player_resolution": {
+      "check_id": "mapping_player_resolution",
+      "description": "every accepted mapping row resolves to a llm_chess_player with a row in data/elo_refined.csv",
+      "passed": true,
+      "checked_count": 5,
+      "failure_count": 0,
+      "failures": [],
+      "rows": [
+        {
+          "eval_id": "arc_agi_2",
+          "mapping_file": "data/cross-ref/mappings/arc_agi_2.csv",
+          "dangling_row_count": 0,
+          "metadata_only_row_count": 0,
+          "dangling": [],
+          "metadata_only": [],
+          "matches": true
+        },
+        {
+          "eval_id": "bullshit_bench",
+          "mapping_file": "data/cross-ref/mappings/bullshit_bench.csv",
+          "dangling_row_count": 0,
+          "metadata_only_row_count": 0,
+          "dangling": [],
+          "metadata_only": [],
+          "matches": true
+        },
+        {
+          "eval_id": "delegate_52",
+          "mapping_file": "data/cross-ref/mappings/delegate_52.csv",
+          "dangling_row_count": 0,
+          "metadata_only_row_count": 0,
+          "dangling": [],
+          "metadata_only": [],
+          "matches": true
+        },
+        {
+          "eval_id": "eci",
+          "mapping_file": "data/cross-ref/mappings/eci.csv",
+          "dangling_row_count": 0,
+          "metadata_only_row_count": 0,
+          "dangling": [],
+          "metadata_only": [],
+          "matches": true
+        },
+        {
+          "eval_id": "vals_index",
+          "mapping_file": "data/cross-ref/mappings/vals_index.csv",
+          "dangling_row_count": 0,
+          "metadata_only_row_count": 0,
+          "dangling": [],
+          "metadata_only": [],
+          "matches": true
+        }
+      ]
+    }
+  },
+  "metadata_only_players": {
+    "row_count": 0,
+    "player_count": 0,
+    "players": [],
+    "note": "known to data/models_metadata.csv but absent from data/elo_refined.csv, so these rows contribute to no statistic; counted as failures unless --allow-metadata-only is set"
+  },
+  "dangling_players": {
+    "row_count": 0,
+    "players": [],
+    "note": "absent from both data/elo_refined.csv and data/models_metadata.csv; always a failure"
+  }
+}

@@ -17,8 +17,13 @@ those rows; if the two disagree, the CSV is authoritative and this note must be 
 
 - **Reasoning config is unspecified by the paper.** Where a clear same-family counterpart exists, map
   it `variant-compatible` and record the config caveat rather than inventing an effort level.
-- **Tier convention** (shared with ECI/BullshitBench): base GPT-5.x → `-medium`; `mini`/`nano` →
-  `-high`; `o1`/`o3` base → `-medium` representative tier.
+- **Effort resolution** (shared with ECI/BullshitBench): the paper states no effort, so clause 1 of
+  the rule in [../README.md](../README.md) ("Stage Ownership") applies — `assume-highest`, mapping to
+  the highest tier LLM Chess has for that model. That gives `GPT 5.4` → `gpt-5.4-high`,
+  `mini`/`nano` → `-high`, and `GPT 5.2`/`GPT 5.1`/`GPT 5`/`o1`/`o3` → `-medium`, which is the
+  highest tier those families currently have rather than a "representative" one. This replaces the
+  retired "base GPT-5.x → `-medium`" convention: these rows move up as soon as a higher tier is
+  added, which is exactly what happened to `GPT 5.4` when `gpt-5.4-high` appeared.
 - **Aliases** (`name_alias`): non-reasoning models whose display name maps to exactly one elo id with
   no tier ambiguity → `gpt-4.1`, `gpt-5-chat`.
 - **Hold uncertain identities.** Unspecified snapshot/tier or absent family stays `ambiguous` or

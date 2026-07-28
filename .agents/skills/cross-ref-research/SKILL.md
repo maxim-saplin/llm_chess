@@ -12,14 +12,23 @@ Do not use this skill for ad hoc leaderboard commentary, fuzzy one-off model mat
 
 1. Read `data/cross-ref/README.md` for the research workspace shape, artifact roles, and trust boundaries.
 2. Read `data/cross-ref/CONSOLIDATED_REPORT.md` when the task touches published findings or unresolved mapping caveats.
-3. Choose the narrow task path: output review, mapping row review, command execution, publication, or methodology change.
-4. Work from the repository root with `.venv` active. Non-publish commands default to review outputs outside `data/cross-ref/`; use `--publish` only when intentionally updating checked-in generated artifacts.
+3. Run `run_cross_ref.py verify` before trusting anything in `data/cross-ref/results/`: it checks whether the checked-in artifacts still correspond to current inputs, and exits non-zero when they do not.
+4. Choose the narrow task path: output review, mapping row review, command execution, publication, or methodology change.
+5. Work from the repository root. `.venv` is gitignored, so create it with `uv sync` if the checkout has none. Non-publish commands default to review outputs outside `data/cross-ref/`; use `--publish` only when intentionally updating checked-in generated artifacts.
+
+## Who Owns What
+
+The script owns every derived number; the agent owns every judgment. See "Stage Ownership" in `data/cross-ref/README.md` for the stage-by-stage table.
+
+- Agent-owned: `mapping_status` and `llm_chess_player` decisions plus their `rationale`/`open_questions`/`evidence_refs`, `evals/*/SOURCE.md`, `CONSOLIDATED_REPORT.md`, reviewing generated output, and the choice to `--publish`.
+- Script-owned: normalization, score parsing, the mapping merge, status filtering, the join to `elo_refined.csv`, dedupe, all statistics, coverage and drop reasons, artifact writing, and provenance hashes.
+- Everything you decide lands in a mapping CSV or a `.md` file. Nothing you decide is written into `data/cross-ref/results/`.
 
 ## Procedure
 
 1. Anchor the task in the smallest controlled surface: source snapshot, mapping CSV, adapter, generated result, report section, or failing command.
 2. Preserve the workspace contract: source snapshots, mappings, mapping rationale, generated results, and code live in separate folders.
-3. Treat model identity as research, in both directions. Map a model when the evidence is clear — a counterpart that exists in `elo_refined.csv` and fits the established tier convention belongs in the comparison. Hold a row as `ambiguous`, `unmatched`, or `excluded` when identity, configuration, or tier is genuinely uncertain. The goal is the mapping that reflects the evidence: neither inventing matches nor withholding obvious ones.
+3. Treat model identity as research, in both directions. Map a model when the evidence is clear — a counterpart that exists in `elo_refined.csv` and fits the reasoning-effort rule belongs in the comparison. Hold a row as `ambiguous`, `unmatched`, or `excluded` when *identity* is genuinely uncertain; a mismatched or unclear reasoning effort is not grounds to hold, because effort resolves coverage-first by direction-aware nearest-tier substitution. The goal is the mapping that reflects the evidence: neither inventing matches nor withholding obvious ones.
 4. Run the cheapest check that can disprove the current change before expanding scope. For mapping or adapter edits, that is usually a focused `run_cross_ref.py` command with explicit `/tmp` outputs or `tests/test_cross_ref.py`.
 5. Publish generated artifacts only through `data/cross-ref/run_cross_ref.py --publish`. Do not hand-edit files under `data/cross-ref/results/`.
 6. Update `data/cross-ref/CONSOLIDATED_REPORT.md` only from generated summaries and reports, then keep caveats explicit when unresolved rows constrain conclusions.
@@ -59,7 +68,7 @@ Refreshing an existing eval's source snapshot with newer upstream data has its o
 
 1. Fetch upstream into a scratch file and keep the snapshot schema identical to the prior file. Record the canonical machine-readable URL in the eval's `SOURCE.md` so the next refresh starts from it (for ECI it is `https://epoch.ai/data/eci_scores.csv`, the published overall index; the leaderboard page renders that data dynamically and offers no direct download).
 2. Re-key the mapping to the new rows. The mapping joins on `(eval_row_id, eval_model_label)`, and `eval_row_id` is the row position assigned at normalize time, so a changed row set or order needs a fresh key. Index the existing mapping by `eval_model_label`, carry each retained model's reviewed decision onto its new position, and drop rows for models upstream no longer lists.
-3. Reconcile the mapping with current data. Map new upstream models that have a clear LLM Chess counterpart, following the established tier convention (base GPT-5.x → `-medium`; mini/nano → `-high`; the reasoning run rather than the chat or non-reasoning variant). Revisit inherited mappings too, since a newly added LLM Chess model can be the better match — for example `GPT-5.4` moves to `gpt-5.4-medium` once that run exists. Keep a row `unmatched` when identity is genuinely uncertain or no counterpart exists, note why in `open_questions`, and raise true identity conflicts with the maintainer.
+3. Reconcile the mapping with current data. Map new upstream models that have a clear LLM Chess counterpart, following the reasoning-effort rule in `README.md`: an exact effort match wins; unstated or unclear external effort assumes the highest (`assume-highest`); a stated effort absent from LLM Chess takes the nearest available tier in the same direction (`nearest-tier`), so high/xhigh/max go up, low/minimal go down, and medium breaks ties upward. Name the clause in `reasoning_rule_applied`. Revisit inherited mappings too, since a newly added LLM Chess model can be the better match — for example `GPT-5.4` moves to `gpt-5.4-high` once that run exists. Keep a row `unmatched` when identity is genuinely uncertain or no counterpart exists, note why in `open_questions`, and raise true identity conflicts with the maintainer.
 4. Update the snapshot name and its references. Snapshots are date-named, so rename to the new date and update the adapter `SOURCE_PATH`, `SOURCE.md`, the `README.md` artifact map, `mapping-research/<eval>.md`, and any filename assertions in `tests/test_cross_ref.py`.
 5. Separate the data effect from any code change. Checked-in `results/` baselines may predate the current code (signs: `llm_chess_inputs.data_quality` is null, or `prediction.ols.in_sample` is present). For a clean data-only diff, regenerate the baseline by running current code on the previous inputs — check the old snapshot and mapping out to `/tmp` — then diff the new run against that baseline.
 6. Read the test results in context. `tests/test_cross_ref.py` pins dataset-derived counts and correlations, so a refresh will move several of them; refresh those expectations as part of the change and confirm the structural assertions still hold.

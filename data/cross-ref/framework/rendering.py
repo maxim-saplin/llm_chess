@@ -50,6 +50,8 @@ def render_summary_html(summary: dict[str, object]) -> str:
       "status": prediction.get("status") if isinstance(prediction, dict) else None,
       "sample_stage_id": prediction.get("sample_stage_id") if isinstance(prediction, dict) else None,
       "sample_n": prediction.get("sample_n") if isinstance(prediction, dict) else None,
+      # Distinct from sample_n: the rows that survived dropna and were cross-validated.
+      "cv_n": prediction.get("n") if isinstance(prediction, dict) else None,
       "features": ", ".join(prediction.get("features", [])) if isinstance(prediction.get("features"), list) else None,
       "feature_selection": feature_selection.get("method") if isinstance(feature_selection, dict) else None,
     }

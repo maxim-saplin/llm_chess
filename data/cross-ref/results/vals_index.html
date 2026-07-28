@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vals Index</title>
+  <style>
+    :root {
+      --bg: #f2efe7;
+      --panel: #fffdf7;
+      --ink: #1f1f1b;
+      --muted: #676252;
+      --line: #d8d1c3;
+      --accent: #15546f;
+      --accent-soft: #dbeef3;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: radial-gradient(circle at top left, #fffef9, var(--bg)); color: var(--ink); font: 15px/1.5 Georgia, Cambria, serif; }
+    header { padding: 32px max(24px, calc((100vw - 1100px) / 2)); border-bottom: 1px solid var(--line); }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    h1, h2, h3 { line-height: 1.15; margin: 0; }
+    h1 { font-size: clamp(2rem, 5vw, 3.8rem); letter-spacing: -0.03em; }
+    h2 { font-size: 1.4rem; margin-bottom: 12px; }
+    p { margin: 0; }
+    nav { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+    nav a { color: var(--accent); background: var(--accent-soft); padding: 6px 10px; border-radius: 999px; text-decoration: none; font-size: 0.9rem; }
+    section { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin: 18px 0; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .card { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: color-mix(in srgb, var(--panel) 90%, var(--accent-soft)); }
+    .card .label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .card .value { font-size: 1.5rem; font-weight: 700; margin-top: 8px; }
+    .muted { color: var(--muted); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--accent-soft); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    tr:last-child td { border-bottom: 0; }
+    pre { overflow-x: auto; background: #f7f3ea; border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+    @media (max-width: 900px) { .cards { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Vals Index</h1>
+    <p class="muted">Vals Index v1.2 weighted finance-and-coding composite normalized through the shared cross-ref contracts.</p>
+    <nav>
+      <a href="#overview">Overview</a>
+      <a href="#mapping-source">Mapping Source</a>
+      <a href="#funnel">Funnel</a>
+      <a href="#mapping">Mapping</a>
+      <a href="#coverage">Coverage</a>
+      <a href="#relationships">Relationships</a>
+      <a href="#prediction">Prediction</a>
+      <a href="#verification">Verification</a>
+    </nav>
+  </header>
+  <main>
+    <section id="overview">
+      <h2>Overview</h2>
+      <div class="cards">
+        <div class="card"><div class="label">Metric analysis sample</div><div class="value">17</div></div>
+        <div class="card"><div class="label">Elo analysis sample</div><div class="value">17</div></div>
+        <div class="card"><div class="label">Numeric external rows</div><div class="value">40</div></div>
+        <div class="card"><div class="label">Pearson r vs Elo</div><div class="value">0.622</div></div>
+      </div>
+      <p class="muted">Selected metric relationships and prediction use the metric-analysis sample.</p>
+      <p class="muted">Raw Elo relationships and release-controlled Elo relationships use the Elo-analysis sample.</p>
+    </section>
+    <section id="mapping-source">
+      <h2>Mapping Source Of Truth</h2>
+      <div class="table-wrap"><table><thead><tr><th>mapping_file</th><th>mapping_basis</th><th>source_seed_column</th><th>run_used_mapping_file_directly</th><th>fresh_review_status</th><th>changed_source_bridge_matches</th></tr></thead><tbody><tr><td>data/cross-ref/mappings/vals_index.csv</td><td>Run-time source of truth is the mapping CSV. For the Vals Index it is a reviewed row-level mapping from the leaderboard&#x27;s own provider/slug model_key into the current LLM Chess inventory; most rows state an effort tier (reasoning_effort, or compute_effort for Anthropic), so the reasoning-effort rule usually resolves by exact match or by direction-aware nearest-tier rather than by assumption.</td><td>n/a</td><td>True</td><td>mapping-csv-reviewed</td><td>0</td></tr></tbody></table></div>
+      <h3>Source-bridge changes</h3>
+      <p class="muted">No rows.</p>
+    </section>
+    <section id="funnel">
+      <h2>Analysis Funnel</h2>
+      <div class="table-wrap"><table><thead><tr><th>label</th><th>branch</th><th>count</th><th>filter_side</th><th>required_condition</th><th>dropped_from_previous</th></tr></thead><tbody><tr><td>External eval rows with a numeric score</td><td>base</td><td>40</td><td>eval</td><td>The eval row has a parsed numeric target score.</td><td>0</td></tr><tr><td>Numeric eval rows with an accepted mapping</td><td>base</td><td>17</td><td>mapping</td><td>The mapping status is accepted, alias, or variant-compatible, and a LLM Chess player is assigned.</td><td>23</td></tr><tr><td>Accepted eval rows joined to LLM Chess metric rows</td><td>base</td><td>17</td><td>chess</td><td>The mapped LLM Chess player exists in the current LLM Chess metrics table in data/elo_refined.csv.</td><td>0</td></tr><tr><td>Deduped metric-analysis rows</td><td>metric</td><td>17</td><td>dedupe</td><td>For each LLM Chess player, keep the highest-scoring eval row for metric-only analysis.</td><td>0</td></tr><tr><td>Accepted eval rows joined to LLM Chess rows with non-null Elo</td><td>elo</td><td>17</td><td>chess</td><td>The mapped LLM Chess player exists and has a non-null Elo.</td><td>0</td></tr><tr><td>Deduped Elo-analysis rows</td><td>elo</td><td>17</td><td>dedupe</td><td>For each Elo-valid LLM Chess player, keep the highest-scoring eval row for Elo analysis.</td><td>0</td></tr></tbody></table></div>
+      <h3>Analysis Surfaces</h3>
+      <div class="table-wrap"><table><thead><tr><th>stage_id</th><th>count</th><th>used_by</th><th>description</th></tr></thead><tbody><tr><td>metric_analysis_rows_max_dedupe</td><td>17</td><td>relationships.selected_metrics, prediction</td><td>Deduped eval rows joined to LLM Chess metric rows, even when Elo is missing.</td></tr><tr><td>elo_analysis_rows_max_dedupe</td><td>17</td><td>relationships.raw_elo, relationships.release_controlled_elo</td><td>Deduped eval rows joined to LLM Chess players with non-null Elo.</td></tr></tbody></table></div>
+    </section>
+    <section id="mapping">
+      <h2>Mapping</h2>
+      <p class="muted">QA verdict: reviewed_with_unresolved_debt</p>
+      <div class="table-wrap"><table><thead><tr><th>accepted</th><th>alias</th><th>unmatched</th><th>variant-compatible</th></tr></thead><tbody><tr><td>4</td><td>1</td><td>23</td><td>12</td></tr></tbody></table></div>
+      <h3>Unresolved high-impact rows</h3>
+      <div class="table-wrap"><table><thead><tr><th>eval_row_id</th><th>eval_model_label</th><th>vals_index</th><th>mapping_status</th><th>confidence</th><th>open_questions</th></tr></thead><tbody><tr><td>vals_index:0000:anthropic_claude_fable_5</td><td>anthropic/claude-fable-5</td><td>75.145</td><td>unmatched</td><td>none</td><td>Top-ranked Vals row (75.145) is absent from the comparison, so the matched sample is truncated at its high end.</td></tr><tr><td>vals_index:0001:anthropic_claude_opus_5</td><td>anthropic/claude-opus-5</td><td>74.82</td><td>unmatched</td><td>none</td><td>Second-ranked Vals row is absent from the comparison.</td></tr><tr><td>vals_index:0002:kimi_kimi_k3</td><td>kimi/kimi-k3</td><td>74.7</td><td>unmatched</td><td>none</td><td>Third-ranked Vals row is absent from the comparison.</td></tr><tr><td>vals_index:0006:anthropic_claude_sonnet_5</td><td>anthropic/claude-sonnet-5</td><td>68.608</td><td>unmatched</td><td>none</td><td>n/a</td></tr><tr><td>vals_index:0007:meta_muse_spark_1_1</td><td>meta/muse_spark_1_1</td><td>68.405</td><td>unmatched</td><td>none</td><td>n/a</td></tr><tr><td>vals_index:0010:grok_grok_4_5</td><td>grok/grok-4.5</td><td>65.299</td><td>unmatched</td><td>none</td><td>n/a</td></tr><tr><td>vals_index:0012:zai_glm_5_2</td><td>zai/glm-5.2</td><td>65.017</td><td>unmatched</td><td>none</td><td>zai.glm-5 carries no minor version, so it cannot be shown to be either 5.1 or 5.2.</td></tr><tr><td>vals_index:0016:minimax_minimax_m3</td><td>minimax/MiniMax-M3</td><td>58.939</td><td>unmatched</td><td>none</td><td>n/a</td></tr><tr><td>vals_index:0017:alibaba_qwen3_7_max</td><td>alibaba/qwen3.7-max</td><td>57.487</td><td>unmatched</td><td>none</td><td>qwen-max carries no version, so which Qwen generation it ran is unrecorded.</td></tr><tr><td>vals_index:0018:deepseek_deepseek_v4_pro</td><td>deepseek/deepseek-v4-pro</td><td>55.615</td><td>unmatched</td><td>none</td><td>n/a</td></tr><tr><td>vals_index:0019:kimi_kimi_k2_6</td><td>kimi/kimi-k2.6</td><td>55.166</td><td>unmatched</td><td>none</td><td>n/a</td></tr><tr><td>vals_index:0021:zai_glm_5_1</td><td>zai/glm-5.1</td><td>52.452</td><td>unmatched</td><td>none</td><td>zai.glm-5 carries no minor version, so it cannot be shown to be either 5.1 or 5.2.</td></tr><tr><td>vals_index:0023:alibaba_qwen3_7_plus</td><td>alibaba/qwen3.7-plus</td><td>52.331</td><td>unmatched</td><td>none</td><td>qwen-plus carries no version, so which Qwen generation it ran is unrecorded.</td></tr><tr><td>vals_index:0024:xiaomi_mimo_v2_5</td><td>xiaomi/mimo-v2.5</td><td>51.57</td><td>unmatched</td><td>none</td><td>n/a</td></tr><tr><td>vals_index:0025:google_gemini_3_5_flash_lite</td><td>google/gemini-3.5-flash-lite</td><td>50.997</td><td>unmatched</td><td>none</td><td>n/a</td></tr></tbody></table></div>
+    </section>
+    <section id="coverage">
+      <h2>Coverage</h2>
+      <div class="table-wrap"><table><thead><tr><th>external_rows</th><th>numeric_score_rows</th><th>accepted_mapping_rows</th><th>rows_joined_to_llm_chess_metric_rows</th><th>unique_llm_chess_players_joined_to_metric_rows</th><th>metric_analysis_rows_max_dedupe</th><th>rows_joined_to_llm_chess_rows_with_non_null_elo</th><th>unique_llm_chess_players_joined_to_elo</th><th>elo_analysis_rows_max_dedupe</th><th>mapped_to_llm_chess_rows</th><th>matched_llm_chess_rows</th><th>matched_unique_llm_chess_players</th><th>external_rows_without_llm_chess_match</th><th>external_rows_without_llm_chess_elo_join</th><th>llm_chess_rows_without_eval_match</th><th>duplicate_mapping_keys</th><th>duplicate_elo_joined_player_rows</th><th>provider_counts</th><th>stated_effort_counts</th></tr></thead><tbody><tr><td>40</td><td>40</td><td>17</td><td>17</td><td>17</td><td>17</td><td>17</td><td>17</td><td>17</td><td>17</td><td>17</td><td>17</td><td>23</td><td>23</td><td>131</td><td>0</td><td>0</td><td>{&#x27;Alibaba&#x27;: 3, &#x27;Anthropic&#x27;: 7, &#x27;DeepSeek&#x27;: 1, &#x27;Google&#x27;: 6, &#x27;Meta&#x27;: 1, &#x27;MiniMax&#x27;: 2, &#x27;Mistral AI&#x27;: 1, &#x27;Moonshot AI&#x27;: 2, &#x27;Nvidia&#x27;: 1, &#x27;OpenAI&#x27;: 6, &#x27;Poolside&#x27;: 2, &#x27;SpaceXAI&#x27;: 3, &#x27;Thinkingmachines&#x27;: 1, &#x27;Xiaomi&#x27;: 2, &#x27;Zhipu AI&#x27;: 2}</td><td>{&#x27;0.99&#x27;: 1, &#x27;high&#x27;: 11, &#x27;max&#x27;: 8, &#x27;unstated&#x27;: 16, &#x27;xhigh&#x27;: 4}</td></tr></tbody></table></div>
+    </section>
+    <section id="relationships">
+      <h2>Relationships</h2>
+      <div class="table-wrap"><table><thead><tr><th>name</th><th>n</th><th>pearson_r</th><th>pearson_p</th><th>spearman_r</th><th>spearman_p</th><th>slope</th><th>intercept</th><th>r2</th><th>linregress_p</th><th>slope_stderr</th><th>sample_stage_id</th><th>bootstrap_95</th><th>vals_task_vs_elo</th></tr></thead><tbody><tr><td>vals_index_vs_elo</td><td>17</td><td>0.6217220836979663</td><td>0.0077112565223118636</td><td>0.6691176470588236</td><td>0.0033098132428843446</td><td>30.025159739213233</td><td>-1028.1899333646916</td><td>0.3865383493577409</td><td>0.007711256522311895</td><td>9.766458581823224</td><td>elo_analysis_rows_max_dedupe</td><td>{&#x27;pearson_r&#x27;: [0.2556069121092138, 0.8704362555577689], &#x27;spearman_r&#x27;: [0.24253585896290494, 0.8915272260465916], &#x27;slope&#x27;: [11.808438672861595, 47.138855354837624]}</td><td>[{&#x27;name&#x27;: &#x27;corp_fin_v2_vs_elo&#x27;, &#x27;n&#x27;: 17, &#x27;pearson_r&#x27;: 0.302887503739548, &#x27;pearson_p&#x27;: 0.23731344647393196, &#x27;spearman_r&#x27;: 0.15573270860912616, &#x27;spearman_p&#x27;: 0.550604924395751, &#x27;slope&#x27;: 62.22150008260193, &#x27;intercept&#x27;: -3385.875414947264, &#x27;r2&#x27;: 0.0917408399215747, &#x27;linregress_p&#x27;: 0.237313446473932, &#x27;slope_stderr&#x27;: 50.54967700846043, &#x27;factor&#x27;: &#x27;corp_fin_v2&#x27;}, {&#x27;name&#x27;: &#x27;finance_agent_vs_elo&#x27;, &#x27;n&#x27;: 17, &#x27;pearson_r&#x27;: 0.5273927104533338, &#x27;pearson_p&#x27;: 0.02958629995485393, &#x27;spearman_r&#x27;: 0.625, &#x27;spearman_p&#x27;: 0.007304262768989965, &#x27;slope&#x27;: 30.827917495276175, &#x27;intercept&#x27;: -743.7402519543698, &#x27;r2&#x27;: 0.2781430710393141, &#x27;linregress_p&#x27;: 0.029586299954853873, &#x27;slope_stderr&#x27;: 12.823010577529482, &#x27;factor&#x27;: &#x27;finance_agent&#x27;}, {&#x27;name&#x27;: &#x27;swebench_vs_elo&#x27;, &#x27;n&#x27;: 17, &#x27;pearson_r&#x27;: 0.5736037798392866, &#x27;pearson_p&#x27;: 0.016064584454851868, &#x27;spearman_r&#x27;: 0.6196323682732519, &#x27;spearman_p&#x27;: 0.007980060187774043, &#x27;slope&#x27;: 30.356239942503482, &#x27;intercept&#x27;: -1624.2196568864424, &#x27;r2&#x27;: 0.32902129624591675, &#x27;linregress_p&#x27;: 0.016064584454851868, &#x27;slope_stderr&#x27;: 11.192953796351876, &#x27;factor&#x27;: &#x27;swebench&#x27;}, {&#x27;name&#x27;: &#x27;terminal_bench_2_1_vs_elo&#x27;, &#x27;n&#x27;: 17, &#x27;pearson_r&#x27;: 0.7908750393514823, &#x27;pearson_p&#x27;: 0.0001567943522287914, &#x27;spearman_r&#x27;: 0.8210784313725491, &#x27;spearman_p&#x27;: 5.346351701144895e-05, &#x27;slope&#x27;: 28.339791644001128, &#x27;intercept&#x27;: -1069.5228424543511, &#x27;r2&#x27;: 0.6254833278692083, &#x27;linregress_p&#x27;: 0.00015679435222879241, &#x27;slope_stderr&#x27;: 5.662115604614424, &#x27;factor&#x27;: &#x27;terminal_bench_2_1&#x27;}, {&#x27;name&#x27;: &#x27;vibe_code_bench_vs_elo&#x27;, &#x27;n&#x27;: 17, &#x27;pearson_r&#x27;: 0.5750050151233249, &#x27;pearson_p&#x27;: 0.015748729233504684, &#x27;spearman_r&#x27;: 0.607843137254902, &#x27;spearman_p&#x27;: 0.009640347735497313, &#x27;slope&#x27;: 10.637755978197525, &#x27;intercept&#x27;: 164.78018802764296, &#x27;r2&#x27;: 0.3306307674169752, &#x27;linregress_p&#x27;: 0.01574872923350462, &#x27;slope_stderr&#x27;: 3.90809970190608, &#x27;factor&#x27;: &#x27;vibe_code_bench&#x27;}, {&#x27;name&#x27;: &#x27;finance_bucket_vs_elo&#x27;, &#x27;n&#x27;: 17, &#x27;pearson_r&#x27;: 0.5540718490721694, &#x27;pearson_p&#x27;: 0.021007676736922252, &#x27;spearman_r&#x27;: 0.6666666666666667, &#x27;spearman_p&#x27;: 0.0034699602434103993, &#x27;slope&#x27;: 58.49282151092274, &#x27;intercept&#x27;: -2578.9114469387196, &#x27;r2&#x27;: 0.3069956139342532, &#x27;linregress_p&#x27;: 0.021007676736922224, &#x27;slope_stderr&#x27;: 22.691272308716854, &#x27;factor&#x27;: &#x27;finance_bucket&#x27;}, {&#x27;name&#x27;: &#x27;coding_bucket_vs_elo&#x27;, &#x27;n&#x27;: 17, &#x27;pearson_r&#x27;: 0.6308913314414741, &#x27;pearson_p&#x27;: 0.0066161651299162854, &#x27;spearman_r&#x27;: 0.6838235294117648, &#x27;spearman_p&#x27;: 0.0024702894922090136, &#x27;slope&#x27;: 16.74633607937585, &#x27;intercept&#x27;: -301.2749741886489, &#x27;r2&#x27;: 0.39802387208799594, &#x27;linregress_p&#x27;: 0.006616165129916282, &#x27;slope_stderr&#x27;: 5.317521415280087, &#x27;factor&#x27;: &#x27;coding_bucket&#x27;}]</td></tr></tbody></table></div>
+      <h3>Release-controlled Elo</h3>
+      <div class="table-wrap"><table><thead><tr><th>n</th><th>pearson_r</th><th>pearson_p</th><th>spearman_r</th><th>spearman_p</th></tr></thead><tbody><tr><td>17</td><td>0.4109489818108215</td><td>0.11382042725203335</td><td>0.2720588235294118</td><td>0.3080348436865232</td></tr></tbody></table></div>
+      <h3>Selected metrics</h3>
+      <div class="table-wrap"><table><thead><tr><th>name</th><th>n</th><th>pearson_r</th><th>pearson_p</th><th>spearman_r</th><th>spearman_p</th><th>r2</th></tr></thead><tbody><tr><td>elo</td><td>17</td><td>0.6217220836979663</td><td>0.0077112565223118636</td><td>0.6691176470588236</td><td>0.0033098132428843446</td><td>0.3865383493577409</td></tr><tr><td>player_wins_percent</td><td>17</td><td>0.5117580866261391</td><td>0.03573580909023657</td><td>0.5171568627450981</td><td>0.03351135213888932</td><td>0.26189633922724687</td></tr><tr><td>player_draws_percent</td><td>17</td><td>-0.1930066207226078</td><td>0.4579699440735639</td><td>-0.11029411764705883</td><td>0.6734589975422938</td><td>0.03725155564276058</td></tr><tr><td>games_interrupted_percent</td><td>17</td><td>-0.27783171508924215</td><td>0.2802702505485074</td><td>-0.4637851354542258</td><td>0.0607664649501745</td><td>0.07719046190942988</td></tr><tr><td>average_moves</td><td>17</td><td>-0.12856312433508416</td><td>0.6228943403336835</td><td>-0.09068627450980393</td><td>0.729235337448989</td><td>0.0165284769387983</td></tr><tr><td>average_time_per_game_seconds</td><td>17</td><td>0.059433617913922945</td><td>0.8207464483349258</td><td>0.13725490196078433</td><td>0.5993690521648235</td><td>0.003532354938338178</td></tr><tr><td>average_game_cost</td><td>15</td><td>0.40172974690591634</td><td>0.13773254124890685</td><td>0.4678571428571427</td><td>0.07863023115438063</td><td>0.1613867895490916</td></tr><tr><td>completion_tokens_black_per_move</td><td>15</td><td>-0.05905317542466749</td><td>0.8344081471192967</td><td>-0.18928571428571428</td><td>0.4992630332385453</td><td>0.0034872775277365506</td></tr><tr><td>material_diff_player_llm_minus_opponent</td><td>17</td><td>0.4096589147724624</td><td>0.10246614657019165</td><td>0.27450980392156865</td><td>0.28629837865879204</td><td>0.16782042645255157</td></tr></tbody></table></div>
+    </section>
+    <section id="prediction">
+      <h2>Prediction</h2>
+      <div class="table-wrap"><table><thead><tr><th>status</th><th>sample_stage_id</th><th>sample_n</th><th>cv_n</th><th>features</th><th>feature_selection</th></tr></thead><tbody><tr><td>ok</td><td>metric_analysis_rows_max_dedupe</td><td>17</td><td>15</td><td>player_wins_percent, average_game_cost, material_diff_player_llm_minus_opponent, games_interrupted_percent</td><td>within_cv_training_folds</td></tr></tbody></table></div>
+      <h3>Baseline</h3>
+      <div class="table-wrap"><table><thead><tr><th>r2</th><th>rmse</th><th>mae</th><th>rank_spearman</th></tr></thead><tbody><tr><td>-0.15822537847352436</td><td>11.782663624886448</td><td>10.085470370370368</td><td>-0.5071428571428571</td></tr></tbody></table></div>
+      <h3>OLS</h3>
+      <div class="table-wrap"><table><thead><tr><th>r2</th><th>rmse</th><th>mae</th><th>rank_spearman</th></tr></thead><tbody><tr><td>-1.2004335676666469</td><td>16.240562675305224</td><td>12.93384762146134</td><td>-0.10019821625000386</td></tr></tbody></table></div>
+    </section>
+    <section id="verification">
+      <h2>Verification</h2>
+      <div class="table-wrap"><table><thead><tr><th>runner_command</th><th>inventory_path</th><th>mapping_file</th><th>verification_commands</th><th>verification_checks</th><th>test_status</th><th>mapping_qa_status</th><th>run_qa_status</th><th>known_limitations</th></tr></thead><tbody><tr><td>.venv/bin/python data/cross-ref/run_cross_ref.py vals_index</td><td>data/cross-ref/model-identity/llm_chess_models.csv</td><td>data/cross-ref/mappings/vals_index.csv</td><td>[]</td><td>[]</td><td>not-run</td><td>reviewed_with_unresolved_debt</td><td>publish_reproducible</td><td>[]</td></tr></tbody></table></div>
+    </section>
+    <section>
+      <h2>Machine Summary</h2>
+      <pre>{
+  &quot;eval_id&quot;: &quot;vals_index&quot;,
+  &quot;eval_label&quot;: &quot;Vals Index&quot;,
+  &quot;target_score_column&quot;: &quot;vals_index&quot;,
+  &quot;summary_json&quot;: null,
+  &quot;coverage_csv&quot;: null
+}</pre>
+    </section>
+  </main>
+</body>
+</html>

@@ -134,7 +134,10 @@ def _prediction_snapshot(summary: dict[str, object]) -> dict[str, object]:
         "target": prediction.get("target"),
         "status": prediction.get("status"),
         "sample_stage_id": prediction.get("sample_stage_id"),
+        # Both counts travel together: "sample_n" is the metric-analysis sample, "n" is the rows
+        # that survived dropna and were actually cross-validated. The r2/rmse/mae below are "n".
         "sample_n": prediction.get("sample_n"),
+        "n": prediction.get("n"),
         "features": list(prediction.get("features", [])) if isinstance(prediction.get("features"), list) else [],
         "baseline_mean": {
             "r2": baseline.get("r2"),
@@ -297,6 +300,9 @@ def build_cross_eval_summary(
             prediction.get("r2"),
             "r2",
             extra={
+                # "n" is the count the r2 was computed on; "sample_n" is the wider metric sample it
+                # was drawn from. Report the first next to the figure, and keep the second visible.
+                "n": _as_dict(best_prediction.get("prediction")).get("n"),
                 "sample_n": _as_dict(best_prediction.get("prediction")).get("sample_n"),
                 "rank_spearman": prediction.get("rank_spearman"),
             },
@@ -415,7 +421,7 @@ def render_cross_eval_report_markdown(summary: dict[str, object]) -> str:
             f"r `{_format_number(raw_elo.get('pearson_r'))}` (p `{_format_p(raw_elo.get('pearson_p'))}`), rho `{_format_number(raw_elo.get('spearman_r'))}`, n `{_format_number(raw_elo.get('n'), digits=0)}` | "
             f"r `{_format_number(release_controlled.get('pearson_r'))}` (p `{_format_p(release_controlled.get('pearson_p'))}`), n `{_format_number(release_controlled.get('n'), digits=0)}` | "
             f"`{strongest_metric.get('name') or 'n/a'}`: r `{_format_number(strongest_metric.get('pearson_r'))}` (p `{_format_p(strongest_metric.get('pearson_p'))}`), rho `{_format_number(strongest_metric.get('spearman_r'))}`, n `{_format_number(strongest_metric.get('n'), digits=0)}` | "
-            f"R2 `{_format_number(ols.get('r2'))}` vs baseline `{_format_number(baseline.get('r2'))}`, rank rho `{_format_number(ols.get('rank_spearman'))}` |"
+            f"R2 `{_format_number(ols.get('r2'))}` vs baseline `{_format_number(baseline.get('r2'))}`, rank rho `{_format_number(ols.get('rank_spearman'))}`, n `{_format_number(prediction.get('n'), digits=0)}` |"
         )
 
     lines.extend(

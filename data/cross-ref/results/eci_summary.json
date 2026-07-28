@@ -5,8 +5,8 @@
   "target_score_column": "score_numeric",
   "inputs": {
     "source": {
-      "file": "/home/user/src/llm_chess/data/cross-ref/evals/eci/epoch_eci_may_2026.csv",
-      "rows": 178,
+      "file": "/home/user/src/llm_chess/data/cross-ref/evals/eci/epoch_eci_jul_2026.csv",
+      "rows": 213,
       "columns": [
         "Model",
         "Score",
@@ -21,7 +21,7 @@
       ],
       "optional_columns_present": {},
       "key_column": "Model",
-      "key_non_null": 178,
+      "key_non_null": 213,
       "duplicate_keys": 0,
       "numeric_parse_rates": {
         "score_numeric": 1.0,
@@ -32,13 +32,13 @@
     },
     "source_note_path": "data/cross-ref/evals/eci/SOURCE.md",
     "source_file_paths": [
-      "data/cross-ref/evals/eci/epoch_eci_may_2026.csv"
+      "data/cross-ref/evals/eci/epoch_eci_jul_2026.csv"
     ]
   },
   "llm_chess_inputs": {
     "elo_refined": {
       "file": "/home/user/src/llm_chess/data/elo_refined.csv",
-      "rows": 187,
+      "rows": 201,
       "columns": [
         "Player",
         "min_game_date",
@@ -87,7 +87,9 @@
         "elo",
         "elo_moe_95",
         "games_vs_random",
-        "games_vs_dragon"
+        "games_vs_dragon",
+        "cost_per_1000_elo",
+        "moe_cost_per_1000_elo"
       ],
       "required_columns": [
         "Player",
@@ -108,7 +110,7 @@
       ],
       "optional_columns_present": {},
       "key_column": "Player",
-      "key_non_null": 187,
+      "key_non_null": 201,
       "duplicate_keys": 0,
       "numeric_parse_rates": {
         "elo": 1.0,
@@ -120,7 +122,7 @@
     },
     "models_metadata": {
       "file": "/home/user/src/llm_chess/data/models_metadata.csv",
-      "rows": 267,
+      "rows": 293,
       "columns": [
         "model",
         "1m_prompt",
@@ -139,7 +141,7 @@
       ],
       "optional_columns_present": {},
       "key_column": "model",
-      "key_non_null": 267,
+      "key_non_null": 293,
       "duplicate_keys": 0,
       "numeric_parse_rates": {
         "1m_prompt": 1.0,
@@ -147,11 +149,11 @@
       }
     },
     "join_coverage": {
-      "elo_players": 187,
-      "metadata_models": 267,
-      "joined_models": 184,
+      "elo_players": 201,
+      "metadata_models": 293,
+      "joined_models": 198,
       "elo_without_metadata": 3,
-      "metadata_without_elo": 83
+      "metadata_without_elo": 95
     },
     "data_quality": {
       "row_level_masks": [
@@ -160,7 +162,7 @@
           "scope": "row_level",
           "reason": "Grok token accounting is not comparable across models, so token and derived cost metrics are masked for analysis instead of treated as real zeros.",
           "row_selector": "Player startswith 'grok-'",
-          "affected_row_count": 11,
+          "affected_row_count": 12,
           "masked_columns": [
             "completion_tokens_black_per_move",
             "moe_completion_tokens_black_per_move",
@@ -170,12 +172,12 @@
             "moe_price_per_1000_moves"
           ],
           "masked_non_null_counts": {
-            "completion_tokens_black_per_move": 11,
-            "moe_completion_tokens_black_per_move": 11,
-            "average_game_cost": 11,
-            "moe_average_game_cost": 11,
-            "price_per_1000_moves": 11,
-            "moe_price_per_1000_moves": 11
+            "completion_tokens_black_per_move": 12,
+            "moe_completion_tokens_black_per_move": 12,
+            "average_game_cost": 12,
+            "moe_average_game_cost": 12,
+            "price_per_1000_moves": 12,
+            "moe_price_per_1000_moves": 12
           }
         }
       ],
@@ -200,7 +202,7 @@
     "mode": "excluded",
     "trusted_after": "2025-03-16",
     "repaired_metrics_enabled": [],
-    "clean_player_count": 121,
+    "clean_player_count": 135,
     "pre_cutoff_player_count": 66,
     "pre_cutoff_players_dropped": []
   },
@@ -210,17 +212,38 @@
     "source_seed_column": "llm_chess_model",
     "run_used_mapping_file_directly": true,
     "fresh_review_status": "source-bridge-seeded-qa-passed",
-    "changed_source_bridge_matches": 2,
+    "changed_source_bridge_matches": 5,
     "changed_source_bridge_examples": [
       {
-        "eval_row_id": "eci:0006",
+        "eval_row_id": "eci:0008",
         "eval_model_label": "GPT-5.4",
         "source_llm_chess_model": "gpt-5.4-low",
-        "llm_chess_player": "gpt-5.4-medium",
+        "llm_chess_player": "gpt-5.4-high",
         "mapping_status": "accepted"
       },
       {
-        "eval_row_id": "eci:0028",
+        "eval_row_id": "eci:0014",
+        "eval_model_label": "Gemini 3.1 Pro",
+        "source_llm_chess_model": "gemini-3.1-pro-preview",
+        "llm_chess_player": "gemini-3.1-pro-preview-high",
+        "mapping_status": "accepted"
+      },
+      {
+        "eval_row_id": "eci:0021",
+        "eval_model_label": "Gemini 3 Pro",
+        "source_llm_chess_model": "gemini-3-pro-preview",
+        "llm_chess_player": "gemini-3-pro-preview-high",
+        "mapping_status": "accepted"
+      },
+      {
+        "eval_row_id": "eci:0022",
+        "eval_model_label": "Claude Sonnet 4.6",
+        "source_llm_chess_model": "claude-sonnet-4-6",
+        "llm_chess_player": "claude-sonnet-4-6_thinking-high",
+        "mapping_status": "accepted"
+      },
+      {
+        "eval_row_id": "eci:0043",
         "eval_model_label": "Grok 4",
         "source_llm_chess_model": "grok-4-20-reasoning",
         "llm_chess_player": null,
@@ -230,30 +253,48 @@
   },
   "mapping": {
     "mapping_file_status_counts": {
-      "accepted": 93,
-      "unmatched": 85
+      "accepted": 104,
+      "unmatched": 109
     },
     "mapping_review_status_counts": {
-      "needs_review": 9,
-      "qa_passed": 162,
-      "reviewed_2026_05_refresh": 7
+      "needs_review": 8,
+      "qa_passed": 152,
+      "reviewed_2026_05_refresh": 5,
+      "reviewed_2026_07_eci_refresh": 43,
+      "reviewed_2026_07_reasoning_rule": 5
     },
-    "accepted_count": 93,
+    "accepted_count": 104,
     "ambiguous_count": 0,
-    "unmatched_count": 85,
+    "unmatched_count": 109,
     "excluded_count": 0,
     "qa_verdict": "reviewed_with_unresolved_debt",
     "unresolved_high_impact_rows": [
       {
-        "eval_row_id": "eci:0000",
+        "eval_row_id": "eci:0001",
         "eval_model_label": "GPT-5.5 Pro",
-        "score_numeric": 159,
+        "score_numeric": 161,
         "mapping_status": "unmatched",
         "confidence": "none",
         "open_questions": "No gpt-5.5-pro tier in elo_refined.csv (only gpt-5.5-medium, mapped to base GPT-5.5). Pro is a distinct product tier; left unmatched."
       },
       {
         "eval_row_id": "eci:0002",
+        "eval_model_label": "Claude Fable 5",
+        "score_numeric": 161,
+        "mapping_status": "unmatched",
+        "confidence": "none",
+        "open_questions": "No Claude Fable 5 run in LLM Chess; the Anthropic inventory reaches claude-opus-4-8."
+      },
+      {
+        "eval_row_id": "eci:0003",
+        "eval_model_label": "Claude Opus 5",
+        "score_numeric": 159,
+        "mapping_status": "unmatched",
+        "confidence": "none",
+        "open_questions": "No Claude Opus 5 run in LLM Chess; the Anthropic inventory reaches claude-opus-4-8."
+      },
+      {
+        "eval_row_id": "eci:0007",
         "eval_model_label": "GPT-5.4 Pro",
         "score_numeric": 158,
         "mapping_status": "unmatched",
@@ -261,63 +302,71 @@
         "open_questions": "No legacy bridge value present."
       },
       {
-        "eval_row_id": "eci:0004",
-        "eval_model_label": "Gemini 3.5 Flash",
+        "eval_row_id": "eci:0010",
+        "eval_model_label": "Kimi K3",
         "score_numeric": 156,
         "mapping_status": "unmatched",
         "confidence": "none",
-        "open_questions": "No Gemini 3.5 Flash entry in elo_refined.csv."
+        "open_questions": "LLM Chess has kimi-k2-instruct and kimi-k2.5; same family, different version is not a match."
       },
       {
-        "eval_row_id": "eci:0005",
-        "eval_model_label": "Claude Opus 4.7",
-        "score_numeric": 156,
-        "mapping_status": "unmatched",
-        "confidence": "low",
-        "open_questions": "No legacy bridge value present."
-      },
-      {
-        "eval_row_id": "eci:0009",
-        "eval_model_label": "Muse Spark",
+        "eval_row_id": "eci:0015",
+        "eval_model_label": "GPT-5.2 Pro",
         "score_numeric": 155,
         "mapping_status": "unmatched",
         "confidence": "low",
         "open_questions": "No legacy bridge value present."
       },
       {
-        "eval_row_id": "eci:0011",
-        "eval_model_label": "GPT-5.2 Pro",
+        "eval_row_id": "eci:0017",
+        "eval_model_label": "Muse Spark",
         "score_numeric": 154,
         "mapping_status": "unmatched",
         "confidence": "low",
         "open_questions": "No legacy bridge value present."
       },
       {
-        "eval_row_id": "eci:0015",
+        "eval_row_id": "eci:0019",
+        "eval_model_label": "Grok 4.5",
+        "score_numeric": 154,
+        "mapping_status": "unmatched",
+        "confidence": "none",
+        "open_questions": "LLM Chess has grok-4.3-high, grok-4-20-*, grok-4-fast-* and grok-4-1-fast-*; no Grok 4.5 run."
+      },
+      {
+        "eval_row_id": "eci:0020",
+        "eval_model_label": "Claude Sonnet 5",
+        "score_numeric": 153,
+        "mapping_status": "unmatched",
+        "confidence": "none",
+        "open_questions": "No Claude Sonnet 5 run in LLM Chess; the Anthropic inventory reaches claude-sonnet-4-6."
+      },
+      {
+        "eval_row_id": "eci:0023",
+        "eval_model_label": "Qwen3.7-Max",
+        "score_numeric": 153,
+        "mapping_status": "unmatched",
+        "confidence": "none",
+        "open_questions": "No Qwen3.7 entry in LLM Chess. qwen-max is Qwen2.5-Max and is already mapped to Epoch's Qwen2.5-Max row."
+      },
+      {
+        "eval_row_id": "eci:0025",
+        "eval_model_label": "GLM-5.2",
+        "score_numeric": 151,
+        "mapping_status": "unmatched",
+        "confidence": "none",
+        "open_questions": "LLM Chess has zai.glm-5 (GLM-5); same family, different version is not a match."
+      },
+      {
+        "eval_row_id": "eci:0026",
         "eval_model_label": "Kimi K2.6",
-        "score_numeric": 152,
+        "score_numeric": 151,
         "mapping_status": "unmatched",
         "confidence": "none",
         "open_questions": "No Kimi K2.6 entry in elo_refined.csv (only kimi-k2-instruct, kimi-k2.5)."
       },
       {
-        "eval_row_id": "eci:0017",
-        "eval_model_label": "GPT-5 Pro",
-        "score_numeric": 150,
-        "mapping_status": "unmatched",
-        "confidence": "low",
-        "open_questions": "No legacy bridge value present."
-      },
-      {
-        "eval_row_id": "eci:0018",
-        "eval_model_label": "Qwen 3.6 Max (Preview)",
-        "score_numeric": 150,
-        "mapping_status": "unmatched",
-        "confidence": "none",
-        "open_questions": "elo_refined.csv only has qwen3.6-27b@q4_k_s (27B Q4 local), not the hosted Qwen 3.6 Max; different model, left unmatched."
-      },
-      {
-        "eval_row_id": "eci:0020",
+        "eval_row_id": "eci:0028",
         "eval_model_label": "GLM-5.1",
         "score_numeric": 150,
         "mapping_status": "unmatched",
@@ -325,58 +374,55 @@
         "open_questions": "No GLM-5.1 entry in elo_refined.csv (only zai.glm-5, glm-4.7-flash@q4)."
       },
       {
-        "eval_row_id": "eci:0023",
-        "eval_model_label": "Qwen 3.6 Plus",
-        "score_numeric": 149,
-        "mapping_status": "unmatched",
-        "confidence": "none",
-        "open_questions": "elo_refined.csv only has qwen3.6-27b@q4_k_s (27B Q4 local), not hosted Qwen 3.6 Plus; left unmatched."
-      },
-      {
-        "eval_row_id": "eci:0026",
-        "eval_model_label": "o3-pro",
-        "score_numeric": 148,
+        "eval_row_id": "eci:0029",
+        "eval_model_label": "GPT-5 Pro",
+        "score_numeric": 150,
         "mapping_status": "unmatched",
         "confidence": "low",
         "open_questions": "No legacy bridge value present."
       },
       {
-        "eval_row_id": "eci:0028",
-        "eval_model_label": "Grok 4",
-        "score_numeric": 147,
+        "eval_row_id": "eci:0032",
+        "eval_model_label": "Kimi K2.7 Code",
+        "score_numeric": 150,
         "mapping_status": "unmatched",
         "confidence": "none",
-        "open_questions": "No LLM Chess entry for base Grok 4 (only grok-4-20, grok-4-fast, grok-4-1-fast variants)."
-      },
-      {
-        "eval_row_id": "eci:0034",
-        "eval_model_label": "DeepSeek-V3.2",
-        "score_numeric": 146,
-        "mapping_status": "unmatched",
-        "confidence": "low",
-        "open_questions": "No legacy bridge value present."
-      },
-      {
-        "eval_row_id": "eci:0036",
-        "eval_model_label": "Qwen 3.5 Plus (hosted 397B-A17B)",
-        "score_numeric": 146,
-        "mapping_status": "unmatched",
-        "confidence": "none",
-        "open_questions": "elo_refined.csv only has qwen3.5-9b@q8_0 (9B local), not the hosted 397B model; left unmatched."
+        "open_questions": "LLM Chess reaches kimi-k2.5; K2.7 is both a later version and a distinct Code product variant."
       }
     ],
     "mapping_file_path": "data/cross-ref/mappings/eci.csv",
-    "legacy_bridge_non_null": 89,
+    "legacy_bridge_non_null": 88,
     "legacy_bridge_changed_matches": [
       {
-        "eval_row_id": "eci:0006",
+        "eval_row_id": "eci:0008",
         "eval_model_label": "GPT-5.4",
         "source_llm_chess_model": "gpt-5.4-low",
-        "llm_chess_player": "gpt-5.4-medium",
+        "llm_chess_player": "gpt-5.4-high",
         "mapping_status": "accepted"
       },
       {
-        "eval_row_id": "eci:0028",
+        "eval_row_id": "eci:0014",
+        "eval_model_label": "Gemini 3.1 Pro",
+        "source_llm_chess_model": "gemini-3.1-pro-preview",
+        "llm_chess_player": "gemini-3.1-pro-preview-high",
+        "mapping_status": "accepted"
+      },
+      {
+        "eval_row_id": "eci:0021",
+        "eval_model_label": "Gemini 3 Pro",
+        "source_llm_chess_model": "gemini-3-pro-preview",
+        "llm_chess_player": "gemini-3-pro-preview-high",
+        "mapping_status": "accepted"
+      },
+      {
+        "eval_row_id": "eci:0022",
+        "eval_model_label": "Claude Sonnet 4.6",
+        "source_llm_chess_model": "claude-sonnet-4-6",
+        "llm_chess_player": "claude-sonnet-4-6_thinking-high",
+        "mapping_status": "accepted"
+      },
+      {
+        "eval_row_id": "eci:0043",
         "eval_model_label": "Grok 4",
         "source_llm_chess_model": "grok-4-20-reasoning",
         "llm_chess_player": null,
@@ -385,27 +431,27 @@
     ]
   },
   "coverage": {
-    "external_rows": 178,
-    "numeric_score_rows": 178,
-    "accepted_mapping_rows": 93,
-    "rows_joined_to_llm_chess_metric_rows": 93,
-    "unique_llm_chess_players_joined_to_metric_rows": 85,
-    "metric_analysis_rows_max_dedupe": 85,
-    "rows_joined_to_llm_chess_rows_with_non_null_elo": 78,
-    "unique_llm_chess_players_joined_to_elo": 70,
-    "elo_analysis_rows_max_dedupe": 70,
-    "rows_joined_to_llm_chess_elo": 78,
-    "regression_rows_max_dedupe": 70,
-    "external_rows_without_llm_chess_elo_join": 100,
-    "external_rows_without_llm_chess_metric_join": 85,
-    "llm_chess_rows_without_eval_match": 64,
-    "duplicate_metric_joined_player_rows": 8,
-    "duplicate_joined_player_rows": 8
+    "external_rows": 213,
+    "numeric_score_rows": 213,
+    "accepted_mapping_rows": 104,
+    "rows_joined_to_llm_chess_metric_rows": 104,
+    "unique_llm_chess_players_joined_to_metric_rows": 97,
+    "metric_analysis_rows_max_dedupe": 97,
+    "rows_joined_to_llm_chess_rows_with_non_null_elo": 88,
+    "unique_llm_chess_players_joined_to_elo": 81,
+    "elo_analysis_rows_max_dedupe": 81,
+    "rows_joined_to_llm_chess_elo": 88,
+    "regression_rows_max_dedupe": 81,
+    "external_rows_without_llm_chess_elo_join": 125,
+    "external_rows_without_llm_chess_metric_join": 109,
+    "llm_chess_rows_without_eval_match": 67,
+    "duplicate_metric_joined_player_rows": 7,
+    "duplicate_joined_player_rows": 7
   },
   "analysis_surfaces": {
     "metric_analysis": {
       "stage_id": "metric_analysis_rows_max_dedupe",
-      "count": 85,
+      "count": 97,
       "used_by": [
         "relationships.selected_metrics",
         "prediction"
@@ -414,7 +460,7 @@
     },
     "elo_analysis": {
       "stage_id": "elo_analysis_rows_max_dedupe",
-      "count": 70,
+      "count": 81,
       "used_by": [
         "relationships.raw_elo",
         "relationships.release_controlled_elo"
@@ -431,7 +477,7 @@
         "filter_side": "eval",
         "required_condition": "The eval row has a parsed numeric target score.",
         "previous_stage_id": null,
-        "count": 178,
+        "count": 213,
         "dropped_from_previous": 0
       },
       {
@@ -441,8 +487,8 @@
         "filter_side": "mapping",
         "required_condition": "The mapping status is accepted, alias, or variant-compatible, and a LLM Chess player is assigned.",
         "previous_stage_id": "numeric_external_eval_rows",
-        "count": 93,
-        "dropped_from_previous": 85
+        "count": 104,
+        "dropped_from_previous": 109
       },
       {
         "stage_id": "rows_joined_to_llm_chess_metric_rows",
@@ -451,7 +497,7 @@
         "filter_side": "chess",
         "required_condition": "The mapped LLM Chess player exists in the current LLM Chess metrics table in data/elo_refined.csv.",
         "previous_stage_id": "accepted_mapping_rows",
-        "count": 93,
+        "count": 104,
         "dropped_from_previous": 0
       },
       {
@@ -461,8 +507,8 @@
         "filter_side": "dedupe",
         "required_condition": "For each LLM Chess player, keep the highest-scoring eval row for metric-only analysis.",
         "previous_stage_id": "rows_joined_to_llm_chess_metric_rows",
-        "count": 85,
-        "dropped_from_previous": 8
+        "count": 97,
+        "dropped_from_previous": 7
       },
       {
         "stage_id": "rows_joined_to_llm_chess_rows_with_non_null_elo",
@@ -471,8 +517,8 @@
         "filter_side": "chess",
         "required_condition": "The mapped LLM Chess player exists and has a non-null Elo.",
         "previous_stage_id": "rows_joined_to_llm_chess_metric_rows",
-        "count": 78,
-        "dropped_from_previous": 15
+        "count": 88,
+        "dropped_from_previous": 16
       },
       {
         "stage_id": "elo_analysis_rows_max_dedupe",
@@ -481,8 +527,8 @@
         "filter_side": "dedupe",
         "required_condition": "For each Elo-valid LLM Chess player, keep the highest-scoring eval row for Elo analysis.",
         "previous_stage_id": "rows_joined_to_llm_chess_rows_with_non_null_elo",
-        "count": 70,
-        "dropped_from_previous": 8
+        "count": 81,
+        "dropped_from_previous": 7
       }
     ],
     "analysis_split_note": {
@@ -493,294 +539,314 @@
   "relationships": {
     "raw_elo": {
       "name": "eci_vs_elo",
-      "n": 70,
-      "pearson_r": 0.7572923846322877,
-      "pearson_p": 3.295011546878971e-14,
-      "spearman_r": 0.7443020526708465,
-      "spearman_p": 1.532288139201843e-13,
-      "slope": 39.85517595370809,
-      "intercept": -5474.562875705772,
-      "r2": 0.5734917558220564,
-      "linregress_p": 3.295011546879055e-14,
-      "slope_stderr": 4.168025813916829,
+      "n": 81,
+      "pearson_r": 0.7816045530185267,
+      "pearson_p": 7.287548016033148e-18,
+      "spearman_r": 0.7879543342514231,
+      "spearman_p": 2.594627437207231e-18,
+      "slope": 41.70167721379918,
+      "intercept": -5737.892857516055,
+      "r2": 0.6109056772992918,
+      "linregress_p": 7.287548016032469e-18,
+      "slope_stderr": 3.744383675366827,
       "sample_stage_id": "elo_analysis_rows_max_dedupe",
       "weighted_fit": {
-        "slope": 33.90244342935731,
-        "intercept": -4576.355213339483,
-        "weighted_r2": 0.5079958727471858
+        "slope": 34.76768780608269,
+        "intercept": -4690.536596426964,
+        "weighted_r2": 0.5529689249551368
       },
       "bootstrap_95": {
         "pearson_r": [
-          0.6600571077350993,
-          0.8338734996774211
+          0.7046069454364177,
+          0.8422906200535786
         ],
         "spearman_r": [
-          0.5972457365787167,
-          0.8455627442233719
+          0.6748799156401066,
+          0.862026378066723
         ],
         "slope": [
-          30.440484029969813,
-          48.747002598468754
+          33.86204852493862,
+          49.379212207256636
         ]
       },
       "leave_one_out_top_influence": [
         {
+          "llm_chess_model": "gpt-5.6-sol-2026-07-09-high",
+          "pearson_delta": -0.012934707408073676,
+          "slope_delta": -1.3036608917838066
+        },
+        {
           "llm_chess_model": "gemini-3-flash-preview",
-          "pearson_delta": 0.016878844358534373,
-          "slope_delta": 1.1876188703427744
+          "pearson_delta": 0.012731732440509846,
+          "slope_delta": 0.8308123426266789
+        },
+        {
+          "llm_chess_model": "kimi-k2-instruct",
+          "pearson_delta": 0.00906095676985541,
+          "slope_delta": -0.08785265217879612
         },
         {
           "llm_chess_model": "zai.glm-5",
-          "pearson_delta": 0.013735784417728603,
-          "slope_delta": 0.718326548166786
-        },
-        {
-          "llm_chess_model": "gpt-5.5-medium",
-          "pearson_delta": -0.013630961569192857,
-          "slope_delta": -1.9442022906276222
+          "pearson_delta": 0.008707961477650628,
+          "slope_delta": 0.3624087344060527
         },
         {
           "llm_chess_model": "llama3.1-8b",
-          "pearson_delta": -0.011857671247952895,
-          "slope_delta": 0.2041125276318283
+          "pearson_delta": -0.008298513303480748,
+          "slope_delta": 0.4584321885803533
         },
         {
-          "llm_chess_model": "gemini-3.1-pro-preview-high",
-          "pearson_delta": -0.011613487355640495,
-          "slope_delta": -1.8775464690721577
+          "llm_chess_model": "gpt-5.6-terra-2026-07-09-high",
+          "pearson_delta": -0.008171355310049755,
+          "slope_delta": -0.7029398838770149
         },
         {
-          "llm_chess_model": "gpt-5.4-medium",
-          "pearson_delta": -0.011175971080890523,
-          "slope_delta": -1.2322730686659398
-        },
-        {
-          "llm_chess_model": "gpt-5.3-codex-medium",
-          "pearson_delta": -0.010540776470642998,
-          "slope_delta": -0.7495232874218871
-        },
-        {
-          "llm_chess_model": "claude-sonnet-4-6",
-          "pearson_delta": 0.009088761947821378,
-          "slope_delta": 0.9977844558396924
-        },
-        {
-          "llm_chess_model": "gemini-2.5-pro",
-          "pearson_delta": 0.008798984034580681,
-          "slope_delta": 0.5585066462747079
+          "llm_chess_model": "gpt-5.5-high",
+          "pearson_delta": -0.007432165687707992,
+          "slope_delta": -1.3236822013763643
         },
         {
           "llm_chess_model": "claude-opus-4-6_thinking-high",
-          "pearson_delta": 0.008736830866882483,
-          "slope_delta": 1.139480730054899
+          "pearson_delta": 0.007054035153261973,
+          "slope_delta": 0.840091277420612
         },
         {
-          "llm_chess_model": "gpt-5.2-medium",
-          "pearson_delta": -0.008524689764457971,
-          "slope_delta": -0.8865547946496477
+          "llm_chess_model": "gpt-5.3-codex-medium",
+          "pearson_delta": -0.006208194375206366,
+          "slope_delta": -0.48866505071382704
         },
         {
-          "llm_chess_model": "gemini-3-pro-preview-high",
-          "pearson_delta": -0.007335899745098962,
-          "slope_delta": -0.7988767097192451
+          "llm_chess_model": "gpt-5.4-high",
+          "pearson_delta": -0.0060080931526309556,
+          "slope_delta": -0.9493719112010695
+        },
+        {
+          "llm_chess_model": "gemini-2.5-pro",
+          "pearson_delta": 0.005395645158132956,
+          "slope_delta": 0.27760768501439514
+        },
+        {
+          "llm_chess_model": "gemini-3.5-flash-medium",
+          "pearson_delta": -0.005229349839561248,
+          "slope_delta": -0.3614567118645695
         }
       ]
     },
     "release_controlled_elo": {
-      "n": 69,
-      "pearson_r": 0.5509883465443483,
-      "pearson_p": 9.305270510589716e-07,
-      "spearman_r": 0.5414984387985694,
-      "spearman_p": 1.5510814583206659e-06,
+      "n": 80,
+      "controlled_variables": 1,
+      "df": 77,
+      "pearson_r": 0.583870945443911,
+      "pearson_p": 1.623302665519611e-08,
+      "spearman_r": 0.5687461543157263,
+      "spearman_p": 4.544924411671388e-08,
       "sample_stage_id": "elo_analysis_rows_max_dedupe"
     },
     "selected_metrics": [
       {
         "name": "elo",
-        "n": 70,
-        "pearson_r": 0.7572923846322877,
-        "pearson_p": 3.295011546878971e-14,
-        "spearman_r": 0.7443020526708465,
-        "spearman_p": 1.532288139201843e-13,
-        "slope": 39.85517595370809,
-        "intercept": -5474.562875705772,
-        "r2": 0.5734917558220564,
-        "linregress_p": 3.295011546879055e-14,
-        "slope_stderr": 4.168025813916829,
+        "n": 81,
+        "pearson_r": 0.7816045530185267,
+        "pearson_p": 7.287548016033148e-18,
+        "spearman_r": 0.7879543342514231,
+        "spearman_p": 2.594627437207231e-18,
+        "slope": 41.70167721379918,
+        "intercept": -5737.892857516055,
+        "r2": 0.6109056772992918,
+        "linregress_p": 7.287548016032469e-18,
+        "slope_stderr": 3.744383675366827,
         "partial_release_month": {
-          "n": 69,
-          "pearson_r": 0.5509883465443483,
-          "pearson_p": 9.305270510589716e-07,
-          "spearman_r": 0.5414984387985694,
-          "spearman_p": 1.5510814583206659e-06
+          "n": 80,
+          "controlled_variables": 1,
+          "df": 77,
+          "pearson_r": 0.583870945443911,
+          "pearson_p": 1.623302665519611e-08,
+          "spearman_r": 0.5687461543157263,
+          "spearman_p": 4.544924411671388e-08
         },
         "sample_stage_id": "metric_analysis_rows_max_dedupe"
       },
       {
         "name": "player_wins_percent",
-        "n": 85,
-        "pearson_r": 0.6890682883491794,
-        "pearson_p": 3.0924693436373004e-13,
-        "spearman_r": 0.790931011219175,
-        "spearman_p": 2.1614172607919634e-19,
-        "slope": 1.4021269734932227,
-        "intercept": -172.4528388825618,
-        "r2": 0.4748151060084685,
-        "linregress_p": 3.0924693436371257e-13,
-        "slope_stderr": 0.16186097317601628,
+        "n": 97,
+        "pearson_r": 0.6923653987780786,
+        "pearson_p": 3.999505753069968e-15,
+        "spearman_r": 0.793323156517417,
+        "spearman_p": 3.4279100231477654e-22,
+        "slope": 1.3669851212651007,
+        "intercept": -168.56227632471308,
+        "r2": 0.4793698454251284,
+        "linregress_p": 3.999505753069837e-15,
+        "slope_stderr": 0.14616092690518057,
         "partial_release_month": {
-          "n": 84,
-          "pearson_r": 0.5073081135399449,
-          "pearson_p": 8.442567324332784e-07,
-          "spearman_r": 0.5752287223303993,
-          "spearman_p": 1.0457185721371457e-08
+          "n": 96,
+          "controlled_variables": 1,
+          "df": 93,
+          "pearson_r": 0.5360081115487866,
+          "pearson_p": 2.1711844151611614e-08,
+          "spearman_r": 0.5859609502612324,
+          "spearman_p": 4.4292892585151814e-10
         },
         "sample_stage_id": "metric_analysis_rows_max_dedupe"
       },
       {
         "name": "player_draws_percent",
-        "n": 85,
-        "pearson_r": 0.059253810179844844,
-        "pearson_p": 0.5901089256193176,
-        "spearman_r": 0.09887290556638975,
-        "spearman_p": 0.36797403844168247,
-        "slope": 0.15608395022442567,
-        "intercept": 13.530465674616455,
-        "r2": 0.0035110140208290935,
-        "linregress_p": 0.5901089256193167,
-        "slope_stderr": 0.28862847262641766,
+        "n": 97,
+        "pearson_r": 0.056473853678185644,
+        "pearson_p": 0.5827094890117533,
+        "spearman_r": 0.11617715646578079,
+        "spearman_p": 0.2571213323399668,
+        "slope": 0.13920393350785268,
+        "intercept": 14.767141630895544,
+        "r2": 0.0031892961492651192,
+        "linregress_p": 0.582709489011754,
+        "slope_stderr": 0.2524925839931196,
         "partial_release_month": {
-          "n": 84,
-          "pearson_r": 0.20544621775438007,
-          "pearson_p": 0.060822458081195595,
-          "spearman_r": 0.22181159137040257,
-          "spearman_p": 0.04257955354375098
+          "n": 96,
+          "controlled_variables": 1,
+          "df": 93,
+          "pearson_r": 0.2117391664243385,
+          "pearson_p": 0.039410470923924315,
+          "spearman_r": 0.21739823450147655,
+          "spearman_p": 0.03432221098138883
         },
         "sample_stage_id": "metric_analysis_rows_max_dedupe"
       },
       {
         "name": "games_interrupted_percent",
-        "n": 85,
-        "pearson_r": -0.6131528242338624,
-        "pearson_p": 4.43438416120547e-10,
-        "spearman_r": -0.6098345140616132,
-        "spearman_p": 5.832873707313661e-10,
-        "slope": -2.0200285146974535,
-        "intercept": 314.34641543846715,
-        "r2": 0.37595638586596153,
-        "linregress_p": 4.4343841612055417e-10,
-        "slope_stderr": 0.285665104653731,
+        "n": 97,
+        "pearson_r": -0.6411858200450717,
+        "pearson_p": 1.4964215913665131e-12,
+        "spearman_r": -0.6587362894448862,
+        "spearman_p": 2.2323781030958155e-13,
+        "slope": -2.044134021645931,
+        "intercept": 318.49789981232703,
+        "r2": 0.41111925582687114,
+        "linregress_p": 1.4964215913664998e-12,
+        "slope_stderr": 0.25100208632220755,
         "partial_release_month": {
-          "n": 84,
-          "pearson_r": -0.523563255001548,
-          "pearson_p": 3.21709692309163e-07,
-          "spearman_r": -0.484408779384283,
-          "spearman_p": 3.028396723118852e-06
+          "n": 96,
+          "controlled_variables": 1,
+          "df": 93,
+          "pearson_r": -0.5204940396114819,
+          "pearson_p": 6.423582352746212e-08,
+          "spearman_r": -0.4737254456725317,
+          "spearman_p": 1.2421037623443155e-06
         },
         "sample_stage_id": "metric_analysis_rows_max_dedupe"
       },
       {
         "name": "average_moves",
-        "n": 85,
-        "pearson_r": 0.22378258349794677,
-        "pearson_p": 0.0395120727009614,
-        "spearman_r": 0.11690042679701157,
-        "spearman_p": 0.28666374319051713,
-        "slope": 1.0736083067223445,
-        "intercept": -44.46063430361082,
-        "r2": 0.0500786446770155,
-        "linregress_p": 0.039512072700961465,
-        "slope_stderr": 0.5132445650527362,
+        "n": 97,
+        "pearson_r": 0.23405640782066883,
+        "pearson_p": 0.021029478857480365,
+        "spearman_r": 0.12871755461656884,
+        "spearman_p": 0.20892715186620478,
+        "slope": 1.0562119420474416,
+        "intercept": -43.4396853621768,
+        "r2": 0.05478240204191527,
+        "linregress_p": 0.021029478857480327,
+        "slope_stderr": 0.4501265551235518,
         "partial_release_month": {
-          "n": 84,
-          "pearson_r": 0.3343360309181979,
-          "pearson_p": 0.0018817097040764055,
-          "spearman_r": 0.26447494344799344,
-          "spearman_p": 0.015053489501057135
+          "n": 96,
+          "controlled_variables": 1,
+          "df": 93,
+          "pearson_r": 0.3183558310345618,
+          "pearson_p": 0.0016659832110889482,
+          "spearman_r": 0.23876122529745372,
+          "spearman_p": 0.019797827210743784
         },
         "sample_stage_id": "metric_analysis_rows_max_dedupe"
       },
       {
         "name": "average_time_per_game_seconds",
-        "n": 85,
-        "pearson_r": 0.6127401420315733,
-        "pearson_p": 4.5889593887643157e-10,
-        "spearman_r": 0.8024563122884919,
-        "spearman_p": 2.644220774571825e-20,
-        "slope": 162.17212847708677,
-        "intercept": -19767.2121472465,
-        "r2": 0.37545048165687284,
-        "linregress_p": 4.5889593887642346e-10,
-        "slope_stderr": 22.958540528793776,
+        "n": 97,
+        "pearson_r": 0.5919340187157046,
+        "pearson_p": 1.7094301214494656e-10,
+        "spearman_r": 0.7940687519216543,
+        "spearman_p": 2.942082701005606e-22,
+        "slope": 161.59918331872652,
+        "intercept": -19722.01073990742,
+        "r2": 0.35038588251292413,
+        "linregress_p": 1.7094301214494832e-10,
+        "slope_stderr": 22.575209351112385,
         "partial_release_month": {
-          "n": 84,
-          "pearson_r": 0.38576332171031885,
-          "pearson_p": 0.0002901520953612104,
-          "spearman_r": 0.46821547621770565,
-          "spearman_p": 7.07936988053286e-06
+          "n": 96,
+          "controlled_variables": 1,
+          "df": 93,
+          "pearson_r": 0.4020370471389807,
+          "pearson_p": 5.379905850210914e-05,
+          "spearman_r": 0.45784391693843873,
+          "spearman_p": 3.085602311592329e-06
         },
         "sample_stage_id": "metric_analysis_rows_max_dedupe"
       },
       {
         "name": "average_game_cost",
-        "n": 80,
-        "pearson_r": 0.3498721056603472,
-        "pearson_p": 0.0014662238587213208,
-        "spearman_r": 0.6907387270765694,
-        "spearman_p": 1.3399956260792597e-12,
-        "slope": 0.11244331085953264,
-        "intercept": -13.309290221476818,
-        "r2": 0.12241049031920524,
-        "linregress_p": 0.001466223858721309,
-        "slope_stderr": 0.0340896636560511,
+        "n": 91,
+        "pearson_r": 0.3658332760008808,
+        "pearson_p": 0.0003624189346512226,
+        "spearman_r": 0.695568493113054,
+        "spearman_p": 1.9886165946108056e-14,
+        "slope": 0.11169063766043111,
+        "intercept": -13.288459484891286,
+        "r2": 0.13383398582953648,
+        "linregress_p": 0.00036241893465122305,
+        "slope_stderr": 0.03011890166704373,
         "partial_release_month": {
-          "n": 79,
-          "pearson_r": 0.4313272235319943,
-          "pearson_p": 7.230822153085615e-05,
-          "spearman_r": 0.6339441678053019,
-          "spearman_p": 3.5776803341845035e-10
+          "n": 90,
+          "controlled_variables": 1,
+          "df": 87,
+          "pearson_r": 0.4486755795791948,
+          "pearson_p": 1.0347992066823672e-05,
+          "spearman_r": 0.6337698902851987,
+          "spearman_p": 2.6248934179160017e-11
         },
         "sample_stage_id": "metric_analysis_rows_max_dedupe"
       },
       {
         "name": "completion_tokens_black_per_move",
-        "n": 80,
-        "pearson_r": 0.521753501433507,
-        "pearson_p": 6.940581489917775e-07,
-        "spearman_r": 0.7086283462945269,
-        "spearman_p": 1.929988509044659e-13,
-        "slope": 95.69334128014245,
-        "intercept": -11534.16821426469,
-        "r2": 0.27222671625812456,
-        "linregress_p": 6.940581489917814e-07,
-        "slope_stderr": 17.716058255249685,
+        "n": 91,
+        "pearson_r": 0.510645680653317,
+        "pearson_p": 2.3241042415150537e-07,
+        "spearman_r": 0.7033616651403718,
+        "spearman_p": 7.609710939903633e-15,
+        "slope": 88.29182868570395,
+        "intercept": -10615.101654796925,
+        "r2": 0.26075901116988914,
+        "linregress_p": 2.3241042415150934e-07,
+        "slope_stderr": 15.757919064372075,
         "partial_release_month": {
-          "n": 79,
-          "pearson_r": 0.28267934193143895,
-          "pearson_p": 0.011597170826924076,
-          "spearman_r": 0.32619848993921674,
-          "spearman_p": 0.0033483649503821297
+          "n": 90,
+          "controlled_variables": 1,
+          "df": 87,
+          "pearson_r": 0.3195123404841195,
+          "pearson_p": 0.0022725443476510924,
+          "spearman_r": 0.35831117642755816,
+          "spearman_p": 0.0005652954233254091
         },
         "sample_stage_id": "metric_analysis_rows_max_dedupe"
       },
       {
         "name": "material_diff_player_llm_minus_opponent",
-        "n": 85,
-        "pearson_r": 0.5799987773890574,
-        "pearson_p": 5.9876280372929285e-09,
-        "spearman_r": 0.6106624626435156,
-        "spearman_p": 5.448886704304948e-10,
-        "slope": 0.33463225195953633,
-        "intercept": -42.48337806491591,
-        "r2": 0.3363985817728011,
-        "linregress_p": 5.9876280372930096e-09,
-        "slope_stderr": 0.05158878795859463,
+        "n": 97,
+        "pearson_r": 0.5264896567598377,
+        "pearson_p": 3.0420188684079674e-08,
+        "spearman_r": 0.5771452252034797,
+        "spearman_p": 6.09660034792771e-10,
+        "slope": 0.2961268986338531,
+        "intercept": -37.85401978257758,
+        "r2": 0.27719135867509176,
+        "linregress_p": 3.042018868408003e-08,
+        "slope_stderr": 0.04906116763262628,
         "partial_release_month": {
-          "n": 84,
-          "pearson_r": 0.3878934112540834,
-          "pearson_p": 0.0002666984711281103,
-          "spearman_r": 0.4385843239285147,
-          "spearman_p": 3.0069655165434924e-05
+          "n": 96,
+          "controlled_variables": 1,
+          "df": 93,
+          "pearson_r": 0.4494170934688321,
+          "pearson_p": 4.9103825620849e-06,
+          "spearman_r": 0.45683550845647114,
+          "spearman_p": 3.264144368538711e-06
         },
         "sample_stage_id": "metric_analysis_rows_max_dedupe"
       }
@@ -789,14 +855,14 @@
   "prediction": {
     "target": "Epoch Score",
     "sample_stage_id": "metric_analysis_rows_max_dedupe",
-    "sample_n": 85,
+    "sample_n": 97,
     "status": "ok",
-    "n": 80,
+    "n": 91,
     "features": [
       "average_time_per_game_seconds",
       "games_interrupted_percent",
-      "material_diff_player_llm_minus_opponent",
-      "player_wins_percent"
+      "player_wins_percent",
+      "material_diff_player_llm_minus_opponent"
     ],
     "candidate_metrics_considered": [
       "player_wins_percent",
@@ -813,290 +879,291 @@
       "mistakes_per_1000moves"
     ],
     "baseline_mean": {
-      "r2": -0.020974285424722128,
-      "rmse": 12.483285700287404,
-      "mae": 10.27890625,
-      "rank_spearman": -0.1756418844283799,
+      "r2": -0.03434818090893188,
+      "rmse": 13.036271242231058,
+      "mae": 10.846224234922865,
+      "rank_spearman": -0.22782215004450238,
       "top_prediction_misses": [
         {
-          "row_index": 60,
-          "actual": 98.0,
-          "predicted": 136.6875,
-          "prediction_sd": 0.5094325120906595,
+          "row_index": 70,
+          "actual": 99.0,
+          "predicted": 138.4441273465246,
+          "prediction_sd": 0.7194196484256367,
           "n_predictions": 3,
           "llm_chess_player": "llama-2-7b-chat",
           "eval_model_label": "Llama 2-7B",
-          "score_numeric": 98,
+          "score_numeric": 99,
           "elo": null,
-          "residual": -38.6875,
-          "abs_error": 38.6875
+          "residual": -39.444127346524596,
+          "abs_error": 39.444127346524596
         },
         {
-          "row_index": 36,
+          "row_index": 42,
           "actual": 113.0,
-          "predicted": 137.140625,
-          "prediction_sd": 0.078125,
+          "predicted": 138.57198122780315,
+          "prediction_sd": 0.6039276825478889,
           "n_predictions": 3,
           "llm_chess_player": "gpt-35-turbo-0613",
           "eval_model_label": "GPT-3.5 Turbo (Jun 2023)",
           "score_numeric": 113,
           "elo": null,
-          "residual": -24.140625,
-          "abs_error": 24.140625
+          "residual": -25.57198122780315,
+          "abs_error": 25.57198122780315
         },
         {
-          "row_index": 35,
+          "row_index": 65,
+          "actual": 162.0,
+          "predicted": 137.0962709284627,
+          "prediction_sd": 1.1986825022989063,
+          "n_predictions": 3,
+          "llm_chess_player": "gpt-5.6-sol-2026-07-09-high",
+          "eval_model_label": "GPT-5.6 Sol",
+          "score_numeric": 162,
+          "elo": 1548.47,
+          "residual": 24.9037290715373,
+          "abs_error": 24.9037290715373
+        },
+        {
+          "row_index": 41,
           "actual": 114.0,
-          "predicted": 136.46354166666666,
-          "prediction_sd": 0.3584680584910343,
+          "predicted": 137.7590055809234,
+          "prediction_sd": 0.4720781391555342,
           "n_predictions": 3,
           "llm_chess_player": "gpt-35-turbo-0125",
           "eval_model_label": "GPT-3.5 Turbo (Jan 2024)",
           "score_numeric": 114,
           "elo": null,
-          "residual": -22.463541666666657,
-          "abs_error": 22.463541666666657
+          "residual": -23.7590055809234,
+          "abs_error": 23.7590055809234
         },
         {
-          "row_index": 57,
-          "actual": 158.0,
-          "predicted": 136.453125,
-          "prediction_sd": 0.46113608010542834,
-          "n_predictions": 3,
-          "llm_chess_player": "gpt-5.5-medium",
-          "eval_model_label": "GPT-5.5",
-          "score_numeric": 158,
-          "elo": 1532.163,
-          "residual": 21.546875,
-          "abs_error": 21.546875
-        },
-        {
-          "row_index": 31,
-          "actual": 157.0,
-          "predicted": 136.13541666666666,
-          "prediction_sd": 0.5422422822948584,
-          "n_predictions": 3,
-          "llm_chess_player": "gemini-3.1-pro-preview-high",
-          "eval_model_label": "Gemini 3.1 Pro",
-          "score_numeric": 157,
-          "elo": 1511.389,
-          "residual": 20.864583333333343,
-          "abs_error": 20.864583333333343
-        },
-        {
-          "row_index": 65,
-          "actual": 116.0,
-          "predicted": 136.4375,
-          "prediction_sd": 0.4736720747257537,
+          "row_index": 75,
+          "actual": 115.0,
+          "predicted": 138.37563419583967,
+          "prediction_sd": 0.769373090418812,
           "n_predictions": 3,
           "llm_chess_player": "llama3.1-8b",
           "eval_model_label": "Llama 3.1-8B",
-          "score_numeric": 116,
+          "score_numeric": 115,
           "elo": -795.614,
-          "residual": -20.4375,
-          "abs_error": 20.4375
+          "residual": -23.375634195839666,
+          "abs_error": 23.375634195839666
         },
         {
-          "row_index": 64,
+          "row_index": 74,
           "actual": 116.0,
-          "predicted": 136.265625,
-          "prediction_sd": 0.8029790723455998,
+          "predicted": 137.7590055809234,
+          "prediction_sd": 0.49307629832773936,
           "n_predictions": 3,
           "llm_chess_player": "llama3-8b-8192",
           "eval_model_label": "Llama 3-8B",
           "score_numeric": 116,
           "elo": null,
-          "residual": -20.265625,
-          "abs_error": 20.265625
+          "residual": -21.7590055809234,
+          "abs_error": 21.7590055809234
         },
         {
-          "row_index": 53,
-          "actual": 156.0,
-          "predicted": 135.98958333333334,
-          "prediction_sd": 0.7484249955461995,
+          "row_index": 15,
+          "actual": 158.0,
+          "predicted": 136.73655504819888,
+          "prediction_sd": 0.7242559027847219,
           "n_predictions": 3,
-          "llm_chess_player": "gpt-5.3-codex-medium",
-          "eval_model_label": "GPT-5.3 Codex",
-          "score_numeric": 156,
-          "elo": 1053.1,
-          "residual": 20.010416666666657,
-          "abs_error": 20.010416666666657
+          "llm_chess_player": "claude-opus-4-8_adaptive-thinking-high",
+          "eval_model_label": "Claude Opus 4.8",
+          "score_numeric": 158,
+          "elo": 449.807,
+          "residual": 21.26344495180112,
+          "abs_error": 21.26344495180112
         },
         {
-          "row_index": 54,
-          "actual": 156.0,
-          "predicted": 135.99479166666666,
-          "prediction_sd": 0.3744570722503915,
+          "row_index": 7,
+          "actual": 118.0,
+          "predicted": 138.5171867072552,
+          "prediction_sd": 0.6764813688207398,
           "n_predictions": 3,
-          "llm_chess_player": "gpt-5.4-medium",
-          "eval_model_label": "GPT-5.4",
-          "score_numeric": 156,
-          "elo": 1252.928,
-          "residual": 20.005208333333343,
-          "abs_error": 20.005208333333343
+          "llm_chess_player": "claude-3-haiku",
+          "eval_model_label": "Claude 3 Haiku",
+          "score_numeric": 118,
+          "elo": null,
+          "residual": -20.517186707255206,
+          "abs_error": 20.517186707255206
         },
         {
-          "row_index": 12,
-          "actual": 155.0,
-          "predicted": 135.78645833333334,
-          "prediction_sd": 0.3226225138739303,
+          "row_index": 66,
+          "actual": 158.0,
+          "predicted": 137.57534246575344,
+          "prediction_sd": 0.7872840024931984,
           "n_predictions": 3,
-          "llm_chess_player": "claude-opus-4-6_thinking-high",
-          "eval_model_label": "Claude Opus 4.6",
-          "score_numeric": 155,
-          "elo": 198.192,
-          "residual": 19.213541666666657,
-          "abs_error": 19.213541666666657
+          "llm_chess_player": "gpt-5.6-terra-2026-07-09-high",
+          "eval_model_label": "GPT-5.6 Terra",
+          "score_numeric": 158,
+          "elo": 1210.738,
+          "residual": 20.424657534246563,
+          "abs_error": 20.424657534246563
+        },
+        {
+          "row_index": 79,
+          "actual": 118.0,
+          "predicted": 138.1324200913242,
+          "prediction_sd": 0.24517614171064211,
+          "n_predictions": 3,
+          "llm_chess_player": "mistral-nemo-12b-instruct",
+          "eval_model_label": "Mistral NeMo",
+          "score_numeric": 118,
+          "elo": null,
+          "residual": -20.132420091324207,
+          "abs_error": 20.132420091324207
         }
       ]
     },
     "ols": {
-      "r2": 0.5271779128772349,
-      "rmse": 8.495136979867095,
-      "mae": 7.054148858802572,
-      "rank_spearman": 0.7388979694315129,
+      "r2": 0.5571424018787499,
+      "rmse": 8.530059504936698,
+      "mae": 7.082320658206835,
+      "rank_spearman": 0.7623907447513861,
       "top_prediction_misses": [
         {
-          "row_index": 60,
-          "actual": 98.0,
-          "predicted": 126.09146981908879,
-          "prediction_sd": 1.3076965743822273,
+          "row_index": 70,
+          "actual": 99.0,
+          "predicted": 126.642592356188,
+          "prediction_sd": 0.28076570432379105,
           "n_predictions": 3,
           "llm_chess_player": "llama-2-7b-chat",
           "eval_model_label": "Llama 2-7B",
-          "score_numeric": 98,
+          "score_numeric": 99,
           "elo": null,
-          "residual": -28.091469819088786,
-          "abs_error": 28.091469819088786
+          "residual": -27.642592356188004,
+          "abs_error": 27.642592356188004
         },
         {
-          "row_index": 67,
+          "row_index": 78,
           "actual": 147.0,
-          "predicted": 123.52858720024715,
-          "prediction_sd": 0.6679479841116657,
+          "predicted": 123.92710757146803,
+          "prediction_sd": 1.1552134284335074,
           "n_predictions": 3,
           "llm_chess_player": "minimax.minimax-m2.5",
           "eval_model_label": "MiniMax-M2.5",
           "score_numeric": 147,
           "elo": null,
-          "residual": 23.471412799752855,
-          "abs_error": 23.471412799752855
+          "residual": 23.072892428531972,
+          "abs_error": 23.072892428531972
         },
         {
-          "row_index": 29,
+          "row_index": 33,
           "actual": 151.0,
-          "predicted": 133.96213852649612,
-          "prediction_sd": 1.6389230269166573,
+          "predicted": 132.94651163815766,
+          "prediction_sd": 1.669357734511181,
           "n_predictions": 3,
           "llm_chess_player": "gemini-3-flash-preview",
           "eval_model_label": "Gemini 3 Flash",
           "score_numeric": 151,
           "elo": -179.501,
-          "residual": 17.03786147350388,
-          "abs_error": 17.03786147350388
-        },
-        {
-          "row_index": 79,
-          "actual": 147.0,
-          "predicted": 130.56310824464194,
-          "prediction_sd": 0.7201513074698854,
-          "n_predictions": 3,
-          "llm_chess_player": "zai.glm-5",
-          "eval_model_label": "GLM-5",
-          "score_numeric": 147,
-          "elo": -299.22,
-          "residual": 16.43689175535806,
-          "abs_error": 16.43689175535806
-        },
-        {
-          "row_index": 12,
-          "actual": 155.0,
-          "predicted": 139.9295506251989,
-          "prediction_sd": 0.34545417556670055,
-          "n_predictions": 3,
-          "llm_chess_player": "claude-opus-4-6_thinking-high",
-          "eval_model_label": "Claude Opus 4.6",
-          "score_numeric": 155,
-          "elo": 198.192,
-          "residual": 15.070449374801086,
-          "abs_error": 15.070449374801086
+          "residual": 18.05348836184234,
+          "abs_error": 18.05348836184234
         },
         {
           "row_index": 15,
-          "actual": 153.0,
-          "predicted": 138.6504187548534,
-          "prediction_sd": 0.049708548957383185,
+          "actual": 158.0,
+          "predicted": 142.55016756266636,
+          "prediction_sd": 0.41028102120125914,
           "n_predictions": 3,
-          "llm_chess_player": "claude-sonnet-4-6",
-          "eval_model_label": "Claude Sonnet 4.6",
-          "score_numeric": 153,
-          "elo": 110.636,
-          "residual": 14.349581245146595,
-          "abs_error": 14.349581245146595
+          "llm_chess_player": "claude-opus-4-8_adaptive-thinking-high",
+          "eval_model_label": "Claude Opus 4.8",
+          "score_numeric": 158,
+          "elo": 449.807,
+          "residual": 15.44983243733364,
+          "abs_error": 15.44983243733364
         },
         {
-          "row_index": 36,
+          "row_index": 90,
+          "actual": 146.0,
+          "predicted": 131.60405845789808,
+          "prediction_sd": 0.7776177412924113,
+          "n_predictions": 3,
+          "llm_chess_player": "zai.glm-5",
+          "eval_model_label": "GLM-5",
+          "score_numeric": 146,
+          "elo": -299.22,
+          "residual": 14.395941542101923,
+          "abs_error": 14.395941542101923
+        },
+        {
+          "row_index": 14,
+          "actual": 156.0,
+          "predicted": 142.0659363573147,
+          "prediction_sd": 0.5228053861799627,
+          "n_predictions": 3,
+          "llm_chess_player": "claude-opus-4-7_adaptive-thinking-high",
+          "eval_model_label": "Claude Opus 4.7",
+          "score_numeric": 156,
+          "elo": 691.058,
+          "residual": 13.934063642685288,
+          "abs_error": 13.934063642685288
+        },
+        {
+          "row_index": 42,
           "actual": 113.0,
-          "predicted": 126.49245763866907,
-          "prediction_sd": 0.20504407310961978,
+          "predicted": 126.61285572401086,
+          "prediction_sd": 0.3308904977704442,
           "n_predictions": 3,
           "llm_chess_player": "gpt-35-turbo-0613",
           "eval_model_label": "GPT-3.5 Turbo (Jun 2023)",
           "score_numeric": 113,
           "elo": null,
-          "residual": -13.492457638669066,
-          "abs_error": 13.492457638669066
+          "residual": -13.612855724010856,
+          "abs_error": 13.612855724010856
         },
         {
-          "row_index": 11,
-          "actual": 150.0,
-          "predicted": 138.37379368507132,
-          "prediction_sd": 1.0540673361923178,
+          "row_index": 68,
+          "actual": 140.0,
+          "predicted": 126.55951939969744,
+          "prediction_sd": 0.2500068610957668,
           "n_predictions": 3,
-          "llm_chess_player": "claude-opus-4-5-20251101_thinking_16000",
-          "eval_model_label": "Claude Opus 4.5",
-          "score_numeric": 150,
-          "elo": 446.064,
-          "residual": 11.62620631492868,
-          "abs_error": 11.62620631492868
+          "llm_chess_player": "kimi-k2-instruct",
+          "eval_model_label": "Kimi K2 (Jul 2025)",
+          "score_numeric": 140,
+          "elo": -689.333,
+          "residual": 13.440480600302564,
+          "abs_error": 13.440480600302564
         },
         {
-          "row_index": 24,
-          "actual": 136.0,
-          "predicted": 124.5486631914318,
-          "prediction_sd": 1.9223014655749247,
+          "row_index": 56,
+          "actual": 141.0,
+          "predicted": 154.08898089616733,
+          "prediction_sd": 0.7346073028736382,
           "n_predictions": 3,
-          "llm_chess_player": "gemini-2.0-flash-thinking-exp-01-21",
-          "eval_model_label": "Gemini 2.0 Flash Thinking (Jan 2025)",
-          "score_numeric": 136,
-          "elo": null,
-          "residual": 11.4513368085682,
-          "abs_error": 11.4513368085682
+          "llm_chess_player": "gpt-5-nano-high",
+          "eval_model_label": "GPT-5 nano",
+          "score_numeric": 141,
+          "elo": 682.959,
+          "residual": -13.088980896167328,
+          "abs_error": 13.088980896167328
         },
         {
-          "row_index": 69,
-          "actual": 143.0,
-          "predicted": 153.9934503573411,
-          "prediction_sd": 0.9713356846108778,
+          "row_index": 13,
+          "actual": 155.0,
+          "predicted": 142.03845915916477,
+          "prediction_sd": 1.25135852708471,
           "n_predictions": 3,
-          "llm_chess_player": "o1-medium",
-          "eval_model_label": "o1",
-          "score_numeric": 143,
-          "elo": 280.076,
-          "residual": -10.99345035734109,
-          "abs_error": 10.99345035734109
+          "llm_chess_player": "claude-opus-4-6_thinking-high",
+          "eval_model_label": "Claude Opus 4.6",
+          "score_numeric": 155,
+          "elo": 198.192,
+          "residual": 12.961540840835227,
+          "abs_error": 12.961540840835227
         }
       ],
       "features": [
         "average_time_per_game_seconds",
         "games_interrupted_percent",
-        "material_diff_player_llm_minus_opponent",
-        "player_wins_percent"
+        "player_wins_percent",
+        "material_diff_player_llm_minus_opponent"
       ],
       "selected_feature_counts": {
         "average_time_per_game_seconds": 15,
+        "completion_tokens_black_per_move": 3,
         "games_interrupted_percent": 15,
-        "material_diff_player_llm_minus_opponent": 15,
+        "material_diff_player_llm_minus_opponent": 12,
         "player_wins_percent": 15
       },
       "feature_selection": {
@@ -1112,151 +1179,151 @@
       {
         "method": "max",
         "name": "eci_vs_elo_max",
-        "n": 70,
-        "pearson_r": 0.7572923846322877,
-        "pearson_p": 3.295011546878971e-14,
-        "spearman_r": 0.7443020526708465,
-        "spearman_p": 1.532288139201843e-13,
-        "slope": 39.85517595370809,
-        "intercept": -5474.562875705772,
-        "r2": 0.5734917558220564,
-        "linregress_p": 3.295011546879055e-14,
-        "slope_stderr": 4.168025813916829
+        "n": 81,
+        "pearson_r": 0.7816045530185267,
+        "pearson_p": 7.287548016033148e-18,
+        "spearman_r": 0.7879543342514231,
+        "spearman_p": 2.594627437207231e-18,
+        "slope": 41.70167721379918,
+        "intercept": -5737.892857516055,
+        "r2": 0.6109056772992918,
+        "linregress_p": 7.287548016032469e-18,
+        "slope_stderr": 3.744383675366827
       },
       {
         "method": "min",
         "name": "eci_vs_elo_min",
-        "n": 70,
-        "pearson_r": 0.7621528686186912,
-        "pearson_p": 1.8083722409722148e-14,
-        "spearman_r": 0.7647874900871441,
-        "spearman_p": 1.298507791844811e-14,
-        "slope": 38.98696187872086,
-        "intercept": -5341.602086982867,
-        "r2": 0.5808769951436998,
-        "linregress_p": 1.8083722409722306e-14,
-        "slope_stderr": 4.015999018704323
+        "n": 81,
+        "pearson_r": 0.7843473783131649,
+        "pearson_p": 4.6848934741097566e-18,
+        "spearman_r": 0.8018985586911389,
+        "spearman_p": 2.361100100380191e-19,
+        "slope": 40.80010835460663,
+        "intercept": -5600.193842500192,
+        "r2": 0.6152008098667349,
+        "linregress_p": 4.684893474109826e-18,
+        "slope_stderr": 3.63041603058704
       },
       {
         "method": "mean",
         "name": "eci_vs_elo_mean",
-        "n": 70,
-        "pearson_r": 0.7616595677084232,
-        "pearson_p": 1.9231580650162374e-14,
-        "spearman_r": 0.757498497681844,
-        "spearman_p": 3.213151409110482e-14,
-        "slope": 39.54656900651013,
-        "intercept": -5425.150683182051,
-        "r2": 0.5801252970817825,
-        "linregress_p": 1.9231580650161803e-14,
-        "slope_stderr": 4.079935593728439
+        "n": 81,
+        "pearson_r": 0.7840389499866183,
+        "pearson_p": 4.925106509217855e-18,
+        "spearman_r": 0.7960839714724338,
+        "spearman_p": 6.561116959426253e-19,
+        "slope": 41.35632539687274,
+        "intercept": -5683.837246185389,
+        "r2": 0.6147170750961193,
+        "linregress_p": 4.925106509217667e-18,
+        "slope_stderr": 3.683669352512378
       },
       {
         "method": "median",
         "name": "eci_vs_elo_median",
-        "n": 70,
-        "pearson_r": 0.7627620149495472,
-        "pearson_p": 1.6756955008610466e-14,
-        "spearman_r": 0.7609352738676424,
-        "spearman_p": 2.1044616662759498e-14,
-        "slope": 39.525903955765614,
-        "intercept": -5421.514788229619,
-        "r2": 0.5818058914498936,
-        "linregress_p": 1.6756955008610135e-14,
-        "slope_stderr": 4.063752525996181
+        "n": 81,
+        "pearson_r": 0.7840389499866183,
+        "pearson_p": 4.925106509217855e-18,
+        "spearman_r": 0.7960839714724338,
+        "spearman_p": 6.561116959426253e-19,
+        "slope": 41.35632539687274,
+        "intercept": -5683.837246185389,
+        "r2": 0.6147170750961193,
+        "linregress_p": 4.925106509217667e-18,
+        "slope_stderr": 3.683669352512378
       }
     ],
     "min_total_games": [
       {
         "min_total_games": 0,
         "name": "score_numeric_vs_elo_min_games_0",
-        "n": 70,
-        "pearson_r": 0.7572923846322877,
-        "pearson_p": 3.295011546878971e-14,
-        "spearman_r": 0.7443020526708465,
-        "spearman_p": 1.532288139201843e-13,
-        "slope": 39.85517595370809,
-        "intercept": -5474.562875705772,
-        "r2": 0.5734917558220564,
-        "linregress_p": 3.295011546879055e-14,
-        "slope_stderr": 4.168025813916829
+        "n": 81,
+        "pearson_r": 0.7816045530185267,
+        "pearson_p": 7.287548016033148e-18,
+        "spearman_r": 0.7879543342514231,
+        "spearman_p": 2.594627437207231e-18,
+        "slope": 41.70167721379918,
+        "intercept": -5737.892857516055,
+        "r2": 0.6109056772992918,
+        "linregress_p": 7.287548016032469e-18,
+        "slope_stderr": 3.744383675366827
       },
       {
         "min_total_games": 20,
         "name": "score_numeric_vs_elo_min_games_20",
-        "n": 70,
-        "pearson_r": 0.7572923846322877,
-        "pearson_p": 3.295011546878971e-14,
-        "spearman_r": 0.7443020526708465,
-        "spearman_p": 1.532288139201843e-13,
-        "slope": 39.85517595370809,
-        "intercept": -5474.562875705772,
-        "r2": 0.5734917558220564,
-        "linregress_p": 3.295011546879055e-14,
-        "slope_stderr": 4.168025813916829
+        "n": 81,
+        "pearson_r": 0.7816045530185267,
+        "pearson_p": 7.287548016033148e-18,
+        "spearman_r": 0.7879543342514231,
+        "spearman_p": 2.594627437207231e-18,
+        "slope": 41.70167721379918,
+        "intercept": -5737.892857516055,
+        "r2": 0.6109056772992918,
+        "linregress_p": 7.287548016032469e-18,
+        "slope_stderr": 3.744383675366827
       },
       {
         "min_total_games": 30,
         "name": "score_numeric_vs_elo_min_games_30",
-        "n": 68,
-        "pearson_r": 0.7497088657229828,
-        "pearson_p": 1.893898117832332e-13,
-        "spearman_r": 0.7364120951550309,
-        "spearman_p": 8.265099313293676e-13,
-        "slope": 39.5482649801121,
-        "intercept": -5435.465406783292,
-        "r2": 0.5620633833436419,
-        "linregress_p": 1.893898117832239e-13,
-        "slope_stderr": 4.297030639079747
+        "n": 78,
+        "pearson_r": 0.769532799633594,
+        "pearson_p": 1.85308892838815e-16,
+        "spearman_r": 0.775778500219608,
+        "spearman_p": 7.400584172321271e-17,
+        "slope": 40.137744488623916,
+        "intercept": -5530.233195533649,
+        "r2": 0.5921807297119173,
+        "linregress_p": 1.8530889283880903e-16,
+        "slope_stderr": 3.820787673787192
       },
       {
         "min_total_games": 40,
         "name": "score_numeric_vs_elo_min_games_40",
-        "n": 51,
-        "pearson_r": 0.7534339157577152,
-        "pearson_p": 1.774065527412476e-10,
-        "spearman_r": 0.7180016165774236,
-        "spearman_p": 3.01955851523346e-09,
-        "slope": 43.28969894398654,
-        "intercept": -5956.300153249241,
-        "r2": 0.5676626654140041,
-        "linregress_p": 1.7740655274124643e-10,
-        "slope_stderr": 5.397003874839475
+        "n": 56,
+        "pearson_r": 0.7605964881422577,
+        "pearson_p": 1.038565448541955e-11,
+        "spearman_r": 0.746480568382247,
+        "spearman_p": 3.9946095651584136e-11,
+        "slope": 42.8321942014732,
+        "intercept": -5892.839892655176,
+        "r2": 0.578507017774336,
+        "linregress_p": 1.0385654485419293e-11,
+        "slope_stderr": 4.975243044737202
       },
       {
         "min_total_games": 50,
         "name": "score_numeric_vs_elo_min_games_50",
-        "n": 36,
-        "pearson_r": 0.8263773198679606,
-        "pearson_p": 5.379430203240204e-10,
-        "spearman_r": 0.7978873319347117,
-        "spearman_p": 5.629527111287949e-09,
-        "slope": 46.67767567567568,
-        "intercept": -6308.627853603604,
-        "r2": 0.6828994747921536,
-        "linregress_p": 5.379430203240137e-10,
-        "slope_stderr": 5.454938453409074
+        "n": 39,
+        "pearson_r": 0.8119616449724703,
+        "pearson_p": 3.5407893248811257e-10,
+        "spearman_r": 0.788949277487668,
+        "spearman_p": 2.429702772931229e-09,
+        "slope": 45.928356160206036,
+        "intercept": -6216.332348197346,
+        "r2": 0.6592817129064001,
+        "linregress_p": 3.54078932488105e-10,
+        "slope_stderr": 5.428030093655616
       },
       {
         "min_total_games": 60,
         "name": "score_numeric_vs_elo_min_games_60",
-        "n": 31,
-        "pearson_r": 0.8438599106669211,
-        "pearson_p": 2.4787904843012324e-09,
-        "spearman_r": 0.853105470922991,
-        "spearman_p": 1.0890008222496533e-09,
-        "slope": 48.07956925239412,
-        "intercept": -6487.190696809362,
-        "r2": 0.7120995488307843,
-        "linregress_p": 2.4787904843012146e-09,
-        "slope_stderr": 5.6769149346666214
+        "n": 33,
+        "pearson_r": 0.8329239214218339,
+        "pearson_p": 1.8214788126842876e-09,
+        "spearman_r": 0.8415252100495093,
+        "spearman_p": 8.551717615821748e-10,
+        "slope": 47.538304152482006,
+        "intercept": -6418.318840946879,
+        "r2": 0.6937622588767257,
+        "linregress_p": 1.8214788126842698e-09,
+        "slope_stderr": 5.672661372018034
       }
     ],
     "legacy_parity": {
-      "matched_sample_max_dedupe": 70,
-      "raw_direct_matches": 78,
-      "pearson_r": 0.7572923846322877,
-      "r2": 0.5734917558220564
+      "matched_sample_max_dedupe": 81,
+      "raw_direct_matches": 88,
+      "pearson_r": 0.7816045530185267,
+      "r2": 0.6109056772992918
     }
   },
   "verification": {

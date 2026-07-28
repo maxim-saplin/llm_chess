@@ -53,6 +53,42 @@ def load_mapping_file(mapping_path: Path) -> pd.DataFrame:
     return reorder_mapping_columns(mapping)
 
 
+def check_player_resolution(
+    mapping: pd.DataFrame,
+    inventory: pd.DataFrame,
+) -> dict[str, list[dict[str, object]]]:
+    """Classify every accepted mapping row's ``llm_chess_player`` against the llm_chess inventory.
+
+    ``inventory`` is the elo union metadata frame from ``build_llm_chess_inventory``, so its
+    ``review_status`` already records which side of the union each name came from.
+
+    ``dangling`` targets are absent from both data/elo_refined.csv and data/models_metadata.csv:
+    the mapping points at a name the repo no longer knows, which is never publishable.
+    ``metadata_only`` targets are known models that simply have no chess games yet, which is a
+    reportable state rather than a broken mapping.
+    """
+    elo_backed = set(
+        inventory.loc[inventory["review_status"].isin(["exact-match", "elo-only"]), "llm_chess_player"].dropna()
+    )
+    known = set(inventory["llm_chess_player"].dropna())
+    accepted = mapping[mapping["mapping_status"].isin(ACCEPTED_MAPPING_STATUSES)]
+    dangling: list[dict[str, object]] = []
+    metadata_only: list[dict[str, object]] = []
+    for row in accepted.itertuples(index=False):
+        player = "" if pd.isna(row.llm_chess_player) else str(row.llm_chess_player).strip()
+        if not player or player in elo_backed:
+            continue
+        record = {
+            "eval_id": row.eval_id,
+            "eval_row_id": row.eval_row_id,
+            "eval_model_label": row.eval_model_label,
+            "llm_chess_player": player,
+            "mapping_status": row.mapping_status,
+        }
+        (metadata_only if player in known else dangling).append(record)
+    return {"dangling": dangling, "metadata_only": metadata_only}
+
+
 def apply_mapping(normalized: pd.DataFrame, mapping: pd.DataFrame) -> pd.DataFrame:
     duplicate_eval_rows = mapping["eval_row_id"].duplicated(keep=False)
     if duplicate_eval_rows.any():

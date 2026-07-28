@@ -1,5 +1,6 @@
 llm_chess_player,review_status,provider_or_family,date_released,reasoning_status,reasoning_kind_inferred,reasoning_effort_inferred
 DeepSeek-V3.2-Speciale,metadata-only,DeepSeek-V3,2025-12,reasoning,reasoning,
+agents-a1@q4_k_m,exact-match,agents,2026-07,reasoning,reasoning,
 amazon.nova-lite-v1,exact-match,amazon,2024-12,not_reasoning,not_reasoning,
 amazon.nova-premier,exact-match,amazon,2025-10,reasoning,reasoning,
 amazon.nova-pro-v1,exact-match,amazon,2024-12,not_reasoning,not_reasoning,
@@ -31,13 +32,17 @@ claude-opus-4-6,exact-match,claude,2026-02,not_reasoning,not_reasoning,
 claude-opus-4-6_thinking-high,exact-match,claude,2026-02,reasoning,reasoning,high
 claude-opus-4-7@default,metadata-only,claude,2026-04,unknown,unknown,
 claude-opus-4-7_adaptive-thinking-high,exact-match,claude,2026-04,reasoning,reasoning,high
+claude-opus-4-8_adaptive-thinking-high,exact-match,claude,2026-05,reasoning,reasoning,high
 claude-opus-4_thinking_16000,exact-match,claude,2025-05,reasoning,reasoning,thinking_16000
+claude-opus-5_adaptive-thinking-high,metadata-only,claude,2026-04,reasoning,reasoning,high
 claude-sonnet-4,exact-match,claude,2025-05,not_reasoning,not_reasoning,
 claude-sonnet-4-5,exact-match,claude,2025-09,not_reasoning,not_reasoning,
 claude-sonnet-4-5_thinking_16000,exact-match,claude,2025-09,reasoning,reasoning,thinking_16000
 claude-sonnet-4-6,exact-match,claude,2026-02,not_reasoning,not_reasoning,
 claude-sonnet-4-6_thinking-high,exact-match,claude,2026-02,reasoning,reasoning,high
 claude-sonnet-4_thinking_16000,exact-match,claude,2025-05,reasoning,reasoning,thinking_16000
+claude-sonnet-5,metadata-only,claude,2026-02,not_reasoning,not_reasoning,
+claude-sonnet-5_thinking_high,metadata-only,claude,2026-02,reasoning,reasoning,high
 claude-v3-5-sonnet-v1,metadata-only,claude,2024-07,not_reasoning,not_reasoning,
 claude-v3-5-sonnet-v2,metadata-only,claude,2024-10,not_reasoning,not_reasoning,
 claude-v3-7-sonnet-thinking,metadata-only,claude,2025-02,reasoning,reasoning,
@@ -75,9 +80,16 @@ gemini-2.5-pro,exact-match,gemini-2,2025-06,reasoning,reasoning,
 gemini-2.5-pro-preview-03-25,exact-match,gemini-2,2025-04,reasoning,reasoning,
 gemini-2.5-pro-preview-05-06,exact-match,gemini-2,2025-05,reasoning,reasoning,
 gemini-3-flash-preview,exact-match,gemini,2025-12, reasoning,reasoning,
-gemini-3-pro-preview,exact-match,gemini,2025-11, reasoning,reasoning,
+gemini-3-pro-preview,metadata-only,gemini,2025-11, reasoning,reasoning,
+gemini-3-pro-preview-high,exact-match,gemini,2025-11, reasoning,reasoning,high
 gemini-3.1-flash-lite-preview,exact-match,gemini-3,2026-03,reasoning,reasoning,
-gemini-3.1-pro-preview,exact-match,gemini-3,2026-02,reasoning,reasoning,
+gemini-3.1-pro-preview,metadata-only,gemini-3,2026-02,reasoning,reasoning,
+gemini-3.1-pro-preview-high,exact-match,gemini-3,2026-02,reasoning,reasoning,high
+gemini-3.5-flash,metadata-only,gemini-3,2026-05,reasoning,reasoning,
+gemini-3.5-flash-medium,exact-match,gemini-3,2026-05,reasoning,reasoning,medium
+gemini-3.6-flash,metadata-only,gemini-3,2026-05,reasoning,reasoning,
+gemini-3.6-flash-high,exact-match,gemini-3,2026-05,reasoning,reasoning,high
+gemini-3.6-flash-medium,metadata-only,gemini-3,2026-05,reasoning,reasoning,medium
 gemma-2-27b-it@q6_k_l,exact-match,gemma,2024-06,not_reasoning,not_reasoning,
 gemma-2-9b-it-8bit,exact-match,gemma,2024-06,not_reasoning,not_reasoning,
 gemma-3-4b-it@iq4_qs,exact-match,gemma,2025-03,not_reasoning,not_reasoning,
@@ -134,16 +146,28 @@ gpt-5.2-medium,exact-match,gpt-5,2025-12,reasoning,reasoning,medium
 gpt-5.3-codex-high,metadata-only,gpt-5,2026-02,reasoning,reasoning,high
 gpt-5.3-codex-low,metadata-only,gpt-5,2026-02,reasoning,reasoning,low
 gpt-5.3-codex-medium,exact-match,gpt-5,2026-02,reasoning,reasoning,medium
-gpt-5.4-high,metadata-only,gpt-5,2026-03,reasoning,reasoning,high
+gpt-5.4-high,exact-match,gpt-5,2026-03,reasoning,reasoning,high
 gpt-5.4-low,exact-match,gpt-5,2026-03,reasoning,reasoning,low
 gpt-5.4-medium,exact-match,gpt-5,2026-03,reasoning,reasoning,medium
 gpt-5.4-mini-high,exact-match,gpt-5,2026-03,reasoning,reasoning,high
 gpt-5.4-mini-low,exact-match,gpt-5,2026-03,reasoning,reasoning,low
 gpt-5.4-mini-medium,metadata-only,gpt-5,2026-03,reasoning,reasoning,medium
 gpt-5.4-nano-high,exact-match,gpt-5,2026-03,reasoning,reasoning,high
-gpt-5.5-high,metadata-only,gpt-5,2026-04,reasoning,reasoning,high
+gpt-5.5-high,exact-match,gpt-5,2026-04,reasoning,reasoning,high
 gpt-5.5-low,metadata-only,gpt-5,2026-04,reasoning,reasoning,low
 gpt-5.5-medium,exact-match,gpt-5,2026-04,reasoning,reasoning,medium
+gpt-5.6-luna-2026-07-09-high,exact-match,gpt-5,2026-07,reasoning,reasoning,high
+gpt-5.6-luna-2026-07-09-low,metadata-only,gpt-5,2026-07,reasoning,reasoning,low
+gpt-5.6-luna-2026-07-09-medium,exact-match,gpt-5,2026-07,reasoning,reasoning,medium
+gpt-5.6-luna-2026-07-09-xhigh,metadata-only,gpt-5,2026-07,reasoning,reasoning,xhigh
+gpt-5.6-sol-2026-07-09-high,exact-match,gpt-5,2026-07,reasoning,reasoning,high
+gpt-5.6-sol-2026-07-09-low,metadata-only,gpt-5,2026-07,reasoning,reasoning,low
+gpt-5.6-sol-2026-07-09-medium,exact-match,gpt-5,2026-07,reasoning,reasoning,medium
+gpt-5.6-sol-2026-07-09-xhigh,metadata-only,gpt-5,2026-07,reasoning,reasoning,xhigh
+gpt-5.6-terra-2026-07-09-high,exact-match,gpt-5,2026-07,reasoning,reasoning,high
+gpt-5.6-terra-2026-07-09-low,metadata-only,gpt-5,2026-07,reasoning,reasoning,low
+gpt-5.6-terra-2026-07-09-medium,exact-match,gpt-5,2026-07,reasoning,reasoning,medium
+gpt-5.6-terra-2026-07-09-xhigh,metadata-only,gpt-5,2026-07,reasoning,reasoning,xhigh
 gpt-oss-120b,metadata-only,gpt,2025-08,reasoning,reasoning,
 gpt-oss-120b-high,exact-match,gpt,2025-08,reasoning,reasoning,high
 gpt-oss-120b-low,exact-match,gpt,2025-08,reasoning,reasoning,low
@@ -168,6 +192,7 @@ grok-4-20-non-reasoning,exact-match,grok,2026-03,not_reasoning,not_reasoning,
 grok-4-20-reasoning,exact-match,grok,2026-03,reasoning,reasoning,
 grok-4-fast-non-reasoning,exact-match,grok,2025-07,not_reasoning,not_reasoning,
 grok-4-fast-reasoning,exact-match,grok,2025-07,reasoning,reasoning,
+grok-4.3-high,exact-match,grok-4,2026-05, Azure pricing,unknown,high
 internlm3-8b-instruct,exact-match,internlm3,2025-01,not_reasoning,not_reasoning,
 k2-think@iq4_xs,exact-match,k2,2025-09,reasoning,reasoning,
 kimi-k2-instruct,exact-match,kimi,2025-07,not_reasoning,not_reasoning,
@@ -262,6 +287,7 @@ qwen3-30b-a3b-thinking@q4_k_m,exact-match,qwen3,2025-07,reasoning,reasoning,
 qwen3-32b-cerebras,metadata-only,qwen3,2025-04,reasoning,reasoning,
 qwen3-4b-thinking@q8,exact-match,qwen3,2025-07,reasoning,reasoning,
 qwen3-next-80b-a3b,exact-match,qwen3,2025-09,not_reasoning,not_reasoning,
+qwen3.5-35b-a3b@q4_k_m,exact-match,qwen3,2026-02,reasoning,reasoning,
 qwen3.5-9b@q8_0,exact-match,qwen3,2026-03,not_reasoning,not_reasoning,
 qwen3.6-27b@q4_k_s,exact-match,qwen3,2026-04,reasoning,reasoning,
 qwq-32b,exact-match,qwq,2025-03,reasoning,reasoning,

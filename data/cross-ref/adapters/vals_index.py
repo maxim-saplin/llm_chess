@@ -14,23 +14,25 @@ from framework.statistics import (
     partial_corr_release_month,
 )
 
-EVAL_ID = "delegate_52"
-EVAL_LABEL = "DELEGATE-52"
+EVAL_ID = "vals_index"
+EVAL_LABEL = "Vals Index"
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CROSS_REF_ROOT = Path(__file__).resolve().parents[1]
-SOURCE_DIR = CROSS_REF_ROOT / "evals" / "delegate-52"
-SOURCE_PATH = SOURCE_DIR / "delegate-52-may-2026.csv"
+SOURCE_DIR = CROSS_REF_ROOT / "evals" / "vals-index"
+SOURCE_PATH = SOURCE_DIR / "vals_index_v1_2_july_2026.csv"
 SOURCE_NOTE_PATH = SOURCE_DIR / "SOURCE.md"
 
-# DELEGATE-52 reports a Reconstruction Score curve (RS@k) per model, not one number. We keep every
-# interaction depth and report the Elo relationship at each, plus two derived robustness measures.
-# rs_at_20 is the framework's required single anchor column: it is the paper's headline long-horizon
-# endpoint and the deepest depth measured, not the widest-spread one (its stdev is second-lowest of
-# the ten depths). The anchor does not limit the reported analysis.
-RS_DEPTH_COLUMNS = [f"rs_at_{k}" for k in range(2, 21, 2)]
-ANCHOR_COLUMN = "rs_at_20"
-DERIVED_COLUMNS = ["rs_mean", "rs_degradation"]
-FACTOR_COLUMNS = [*RS_DEPTH_COLUMNS, *DERIVED_COLUMNS]
+# The Vals Index is itself a composite: the published v1.2 formula is
+#   Coding     = 0.25*SWE_Bench + 0.25*TBench + 0.5*VibeCodeBench
+#   Vals_Index = (2.0 * AVG(CorpFin, FinanceAgent) + 1.4 * Coding) / 3.4
+# vals_index is the framework's required single anchor column: it is the leaderboard's own headline
+# number, the one the page ranks on. The five component task scores travel with it so the reported
+# analysis can show whether the anchor's Elo relationship is carried by the finance side, the coding
+# side, or neither, rather than resting on one aggregate whose weights we did not choose.
+TASK_COLUMNS = ["corp_fin_v2", "finance_agent", "swebench", "terminal_bench_2_1", "vibe_code_bench"]
+ANCHOR_COLUMN = "vals_index"
+DERIVED_COLUMNS = ["finance_bucket", "coding_bucket"]
+FACTOR_COLUMNS = [*TASK_COLUMNS, *DERIVED_COLUMNS]
 
 
 def _parse_rate(source: pd.Series, parsed: pd.Series) -> float:
@@ -40,19 +42,18 @@ def _parse_rate(source: pd.Series, parsed: pd.Series) -> float:
 
 
 def _relationship_extras(sample: pd.DataFrame, target_column: str) -> dict[str, object]:
-    # Multi-factor headline: Elo correlation at every interaction depth plus the mean curve level and
-    # the degradation slope (rs_at_2 - rs_at_20), so no single arbitrarily chosen depth drives the
-    # conclusion.
-    depth_relationships = []
+    # Multi-factor headline: Elo correlation for the composite anchor plus each component task and
+    # each weighted bucket, so no single sub-benchmark silently drives the conclusion.
+    task_relationships = []
     for column in FACTOR_COLUMNS:
         if column not in sample.columns:
             continue
         relationship = named_corr(f"{column}_vs_elo", sample[column], sample["elo"])
         relationship["factor"] = column
-        depth_relationships.append(relationship)
+        task_relationships.append(relationship)
     return {
         "bootstrap_95": bootstrap_corr(sample[target_column], sample["elo"]),
-        "rs_depth_vs_elo": depth_relationships,
+        "vals_task_vs_elo": task_relationships,
     }
 
 
@@ -83,6 +84,17 @@ def _coverage_extras(config: EvalAnalysisConfig, context: dict[str, object]) -> 
             key: int(value)
             for key, value in normalized["provider"].fillna("missing").value_counts().sort_index().items()
         },
+        # Vals states an effort tier per row in reasoning_effort (most vendors) or compute_effort
+        # (Anthropic), which is stronger tier evidence than the other evals carry. Surface how much
+        # of the snapshot actually states one, since the mapping's clause choice depends on it.
+        "stated_effort_counts": {
+            key: int(value)
+            for key, value in normalized["stated_effort"]
+            .fillna("unstated")
+            .value_counts()
+            .sort_index()
+            .items()
+        },
     }
 
 
@@ -98,14 +110,14 @@ def _sensitivity(config: EvalAnalysisConfig, context: dict[str, object]) -> dict
     metadata = context["metadata"]
     elo_sample = context["samples"]["elo_analysis_sample"]
 
-    # Per-depth release-controlled Elo: does each interaction depth still track Elo once the linear
+    # Per-task release-controlled Elo: does each component still track Elo once the linear
     # release-month trend is removed from both sides?
-    depth_release_controlled = []
+    task_release_controlled = []
     for column in FACTOR_COLUMNS:
         if column not in elo_sample.columns or "release_month_index" not in elo_sample.columns:
             continue
         partial = partial_corr_release_month(elo_sample[column], elo_sample["elo"], elo_sample["release_month_index"])
-        depth_release_controlled.append({"factor": column, "partial_release_month": partial})
+        task_release_controlled.append({"factor": column, "partial_release_month": partial})
 
     status_sensitivity = []
     for label, statuses in [
@@ -127,11 +139,11 @@ def _sensitivity(config: EvalAnalysisConfig, context: dict[str, object]) -> dict
         status_sensitivity.append(
             {
                 "status_scope": label,
-                **named_corr(f"delegate_52_vs_elo_{label}", sample[config.target_score_column], sample["elo"]),
+                **named_corr(f"vals_index_vs_elo_{label}", sample[config.target_score_column], sample["elo"]),
             }
         )
     return {
-        "rs_depth_release_controlled": depth_release_controlled,
+        "vals_task_release_controlled": task_release_controlled,
         "mapping_status": status_sensitivity,
         "min_total_games": standard_game_threshold_sensitivity(config, context),
     }
@@ -140,28 +152,29 @@ def _sensitivity(config: EvalAnalysisConfig, context: dict[str, object]) -> dict
 CONFIG = EvalAnalysisConfig(
     eval_id=EVAL_ID,
     eval_label=EVAL_LABEL,
-    summary_tagline="DELEGATE-52 round-trip relay reconstruction-score curve normalized through the shared cross-ref contracts.",
+    summary_tagline="Vals Index v1.2 weighted finance-and-coding composite normalized through the shared cross-ref contracts.",
     target_score_column=ANCHOR_COLUMN,
-    prediction_target="DELEGATE-52 RS@20",
+    prediction_target="Vals Index v1.2 score",
     repo_root=REPO_ROOT,
     source_note_path=SOURCE_NOTE_PATH,
     default_source_path=SOURCE_PATH,
-    default_mapping_path=CROSS_REF_ROOT / "mappings" / "delegate_52.csv",
-    mapping_basis="Run-time source of truth is the mapping CSV. For DELEGATE-52 it is a reviewed row-level mapping from paper Table 1 display names into the current LLM Chess inventory; reasoning configs are unspecified by the paper so the established tier convention is applied with a config caveat.",
+    default_mapping_path=CROSS_REF_ROOT / "mappings" / "vals_index.csv",
+    mapping_basis="Run-time source of truth is the mapping CSV. For the Vals Index it is a reviewed row-level mapping from the leaderboard's own provider/slug model_key into the current LLM Chess inventory; most rows state an effort tier (reasoning_effort, or compute_effort for Anthropic), so the reasoning-effort rule usually resolves by exact match or by direction-aware nearest-tier rather than by assumption.",
     source_seed_column=None,
     fresh_review_status="mapping-csv-reviewed",
-    relationship_name="delegate_52_vs_elo",
+    relationship_name="vals_index_vs_elo",
     accepted_row_filter=_accepted_row_filter,
     relationship_extras=_relationship_extras,
     coverage_extras=_coverage_extras,
     coverage_output_transform=_coverage_output_transform,
     sensitivity_builder=_sensitivity,
     limitations=[
-        "Source is the paper's Table 1 (arXiv 2604.15597v1), transcribed by hand; DELEGATE-52 publishes no machine-readable results file.",
-        "Reconstruction Score measures one behavior (long-horizon delegated document-editing fidelity), not broad capability, and can diverge from chess Elo.",
-        "Per-model reasoning effort and exact API versions are in the paper's Appendix L (not machine-extractable); the mapping treats reasoning config as unspecified and applies the tier convention with a caveat.",
-        "rs_at_20 is the framework anchor; the reported result is the Elo correlation profile across all depths plus the degradation slope, not a single depth.",
-        "Correlations are exploratory and should not be over-interpreted when the matched sample is small or mapping status is unresolved.",
+        "Source is an undocumented Astro props blob embedded in https://www.vals.ai/benchmarks/vals_index, not a published data file; Vals offers no CSV, JSON API, or sitemap, so the retrieval path can break without notice.",
+        "The snapshot is pinned to Vals Index v1.2. The composite's definition changed three times in 2026 (Terminal-Bench 2.1 swap, Finance Agent v2, Vibe Code Bench added and the Law/CaseLaw sector dropped with the denominator rebalanced 3.7 to 3.4), so scores are not comparable across index versions.",
+        "The index measures weighted finance and coding task performance, not broad capability, and can diverge from chess Elo.",
+        "The payload carries no display-name field, so model identity is keyed on the provider/slug model_key; model_slug is derived from it mechanically and is presentational only.",
+        "vals_index is the framework anchor; the reported result is the Elo correlation profile across the composite plus its five component tasks and two weighted buckets, not a single sub-benchmark.",
+        "The matched sample is small (17 of 40 rows), so correlations are exploratory and a single row can move them materially.",
     ],
 )
 
@@ -172,27 +185,32 @@ def normalize_source(source_path: Path | None = None) -> tuple[pd.DataFrame, dic
     normalized = raw.reset_index(names="source_row_index").copy()
     normalized["eval_id"] = EVAL_ID
     normalized["eval_row_id"] = normalized.apply(
-        lambda row: f"{EVAL_ID}:{row['source_row_index']:04d}:{slugify_label(row['model'])}",
+        lambda row: f"{EVAL_ID}:{row['source_row_index']:04d}:{slugify_label(row['model_key'])}",
         axis=1,
     )
-    normalized["eval_model_label"] = normalized["model"].astype(str).str.strip()
+    normalized["eval_model_label"] = normalized["model_key"].astype(str).str.strip()
     normalized["eval_variant_label"] = normalized["eval_model_label"]
     normalized["provider"] = normalized["provider"].astype(str).str.strip()
-    for column in RS_DEPTH_COLUMNS:
+    for column in [ANCHOR_COLUMN, *TASK_COLUMNS]:
         normalized[column] = raw[column].map(safe_float)
-    normalized["rs_mean"] = normalized[RS_DEPTH_COLUMNS].mean(axis=1, skipna=False)
-    normalized["rs_degradation"] = normalized["rs_at_2"] - normalized["rs_at_20"]
+    normalized["finance_bucket"] = normalized[["corp_fin_v2", "finance_agent"]].mean(axis=1, skipna=False)
+    normalized["coding_bucket"] = (
+        0.25 * normalized["swebench"] + 0.25 * normalized["terminal_bench_2_1"] + 0.5 * normalized["vibe_code_bench"]
+    )
+    # Vals records the effort tier in reasoning_effort for most vendors and in compute_effort for
+    # Anthropic rows; neither column alone tells you whether a row stated one.
+    normalized["stated_effort"] = raw["reasoning_effort"].fillna(raw["compute_effort"])
     normalized["score_numeric"] = normalized[ANCHOR_COLUMN]
-    normalized["score_label"] = "DELEGATE-52 RS@20"
+    normalized["score_label"] = "Vals Index v1.2"
     contract = summarize_input_contract(
         df=raw,
         file_path=actual_source_path,
-        required_columns=["model", "provider", *RS_DEPTH_COLUMNS],
-        key_column="model",
+        required_columns=["model_key", "provider", ANCHOR_COLUMN, *TASK_COLUMNS],
+        key_column="model_key",
         numeric_columns=[],
     )
     contract["numeric_parse_rates"] = {
-        column: _parse_rate(raw[column], normalized[column]) for column in RS_DEPTH_COLUMNS
+        column: _parse_rate(raw[column], normalized[column]) for column in [ANCHOR_COLUMN, *TASK_COLUMNS]
     }
     return normalized, contract
 

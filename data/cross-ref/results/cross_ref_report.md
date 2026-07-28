@@ -14,28 +14,31 @@ Generated facts from published per-eval summaries. It does not rerun evals; rege
 
 | Eval | Summary | SHA256 | Coverage |
 | --- | --- | --- | --- |
-| arc_agi_2 | `data/cross-ref/results/arc_agi_2_summary.json` | `fb0292f2e736` | `data/cross-ref/results/arc_agi_2_coverage.csv` |
-| bullshit_bench | `data/cross-ref/results/bullshit_bench_summary.json` | `94771ba2e5e3` | `data/cross-ref/results/bullshit_bench_coverage.csv` |
-| delegate_52 | `data/cross-ref/results/delegate_52_summary.json` | `b7fa123b7292` | `data/cross-ref/results/delegate_52_coverage.csv` |
-| eci | `data/cross-ref/results/eci_summary.json` | `7c079bc1cfd1` | `data/cross-ref/results/eci_coverage.csv` |
+| arc_agi_2 | `data/cross-ref/results/arc_agi_2_summary.json` | `6bfbf64576c5` | `data/cross-ref/results/arc_agi_2_coverage.csv` |
+| bullshit_bench | `data/cross-ref/results/bullshit_bench_summary.json` | `e78f95c09877` | `data/cross-ref/results/bullshit_bench_coverage.csv` |
+| delegate_52 | `data/cross-ref/results/delegate_52_summary.json` | `daf993587cc2` | `data/cross-ref/results/delegate_52_coverage.csv` |
+| eci | `data/cross-ref/results/eci_summary.json` | `04e17d517e0c` | `data/cross-ref/results/eci_coverage.csv` |
+| vals_index | `data/cross-ref/results/vals_index_summary.json` | `ca87fd853be3` | `data/cross-ref/results/vals_index_coverage.csv` |
 
 ## Signal
 
 | Eval | Raw Elo | Release-controlled | Top chess metric | OLS CV |
 | --- | --- | --- | --- | --- |
-| ARC-AGI-2 | r `0.584` (p `<0.001`), rho `0.660`, n `57` | r `0.412` (p `0.001`), n `57` | `average_game_cost`: r `0.473` (p `<0.001`), rho `0.621`, n `58` | R2 `-0.119` vs baseline `-0.028`, rank rho `0.522` |
-| BullshitBench v2 | r `0.303` (p `0.025`), rho `0.480`, n `55` | r `0.118` (p `0.397`), n `54` | `average_game_cost`: r `0.428` (p `0.001`), rho `0.575`, n `56` | R2 `0.090` vs baseline `-0.017`, rank rho `0.472` |
-| DELEGATE-52 | r `0.381` (p `0.179`), rho `0.538`, n `14` | r `0.283` (p `0.327`), n `14` | `completion_tokens_black_per_move`: r `-0.630` (p `0.012`), rho `-0.464`, n `15` | R2 `-0.682` vs baseline `-0.146`, rank rho `0.246` |
-| Epoch ECI | r `0.757` (p `<0.001`), rho `0.744`, n `70` | r `0.551` (p `<0.001`), n `69` | `player_wins_percent`: r `0.689` (p `<0.001`), rho `0.791`, n `85` | R2 `0.527` vs baseline `-0.021`, rank rho `0.739` |
+| ARC-AGI-2 | r `0.730` (p `<0.001`), rho `0.773`, n `67` | r `0.520` (p `<0.001`), n `67` | `player_wins_percent`: r `0.511` (p `<0.001`), rho `0.674`, n `70` | R2 `0.250` vs baseline `-0.030`, rank rho `0.704`, n `68` |
+| BullshitBench v2 | r `0.291` (p `0.025`), rho `0.471`, n `59` | r `0.078` (p `0.565`), n `58` | `games_interrupted_percent`: r `-0.407` (p `0.001`), rho `-0.476`, n `62` | R2 `0.046` vs baseline `-0.032`, rank rho `0.477`, n `59` |
+| DELEGATE-52 | r `0.386` (p `0.172`), rho `0.538`, n `14` | r `0.285` (p `0.345`), n `14` | `completion_tokens_black_per_move`: r `-0.583` (p `0.023`), rho `-0.418`, n `15` | R2 `-0.928` vs baseline `-0.146`, rank rho `0.234`, n `15` |
+| Epoch ECI | r `0.782` (p `<0.001`), rho `0.788`, n `81` | r `0.584` (p `<0.001`), n `80` | `player_wins_percent`: r `0.692` (p `<0.001`), rho `0.793`, n `97` | R2 `0.557` vs baseline `-0.034`, rank rho `0.762`, n `91` |
+| Vals Index | r `0.622` (p `0.008`), rho `0.669`, n `17` | r `0.411` (p `0.114`), n `17` | `player_wins_percent`: r `0.512` (p `0.036`), rho `0.517`, n `17` | R2 `-1.200` vs baseline `-0.158`, rank rho `-0.100`, n `15` |
 
 ## Coverage
 
 | Eval | Numeric rows | Mapped rows | Metric sample | Elo sample | Unmatched external | High-impact unresolved |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| ARC-AGI-2 | 152 | 71 | 60 | 57 | 89 | 15 |
-| BullshitBench v2 | 162 | 66 | 58 | 55 | 96 | 15 |
+| ARC-AGI-2 | 177 | 93 | 70 | 67 | 84 | 15 |
+| BullshitBench v2 | 162 | 71 | 62 | 59 | 91 | 15 |
 | DELEGATE-52 | 19 | 15 | 15 | 14 | 4 | 4 |
-| Epoch ECI | 178 | 93 | 85 | 70 | 85 | 15 |
+| Epoch ECI | 213 | 104 | 97 | 81 | 109 | 15 |
+| Vals Index | 40 | 17 | 17 | 17 | 23 | 15 |
 
 Primary human report: `data/cross-ref/CONSOLIDATED_REPORT.md`.
 Primary machine-readable artifact: `data/cross-ref/results/cross_ref_summary.json`.

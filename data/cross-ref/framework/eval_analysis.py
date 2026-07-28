@@ -116,6 +116,10 @@ def _prediction_summary(
     candidate_metrics: list[str],
     allowed_repaired: frozenset[str] | set[str] = frozenset(),
 ) -> dict[str, object]:
+    # "sample_n" is the metric-analysis sample this prediction block was handed; "n" (set by
+    # build_prediction_summary) is the row count that actually reached cross-validation, after
+    # dropping rows missing the target or any candidate feature. Every prediction score below is
+    # computed on "n", never on "sample_n". Keep both, and never read one as the other.
     return {
         "target": target_label,
         "sample_stage_id": METRIC_STAGE_ID,

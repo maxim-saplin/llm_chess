@@ -1,15 +1,24 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
+import re
 import tempfile
+import warnings
 
-from adapters import arc_agi_2, bullshit_bench, delegate_52, eci
-from framework.cross_eval import build_cross_eval_summary, render_cross_eval_report_markdown
+import pandas as pd
+
+from adapters import arc_agi_2, bullshit_bench, delegate_52, eci, vals_index
+from framework.cross_eval import (
+    EXCLUDED_SUMMARY_FILES,
+    build_cross_eval_summary,
+    render_cross_eval_report_markdown,
+)
 from framework.diffing import build_eval_diff_report, render_artifact_diff_markdown
 from framework.loading import load_llm_chess_inputs
-from framework.mapping import load_mapping_file
+from framework.mapping import check_player_resolution, load_mapping_file
 from framework.mapping_review import build_mapping_review
 from framework.model_identity import build_llm_chess_inventory, inventory_summary
 from framework.rendering import render_mapping_review_html
@@ -27,7 +36,14 @@ ADAPTERS = {
     "arc_agi_2": arc_agi_2,
     "bullshit_bench": bullshit_bench,
     "delegate_52": delegate_52,
+    "vals_index": vals_index,
 }
+
+ALLOW_METADATA_ONLY_HELP = (
+    "Let the publish gate accept accepted mapping rows whose llm_chess_player is known to "
+    "data/models_metadata.csv but has no row in data/elo_refined.csv. Off by default: absence "
+    "from elo_refined.csv is a failure because such a row contributes to no statistic."
+)
 
 
 def _scratch_output_dir(label: str) -> Path:
@@ -57,6 +73,143 @@ def _ensure_publish_allowed(paths: list[Path | None], publish: bool) -> None:
 
 def _output_mode(publish: bool) -> str:
     return "publish" if publish else "review"
+
+
+def _llm_chess_inventory() -> pd.DataFrame:
+    return build_llm_chess_inventory(*load_llm_chess_inputs(REPO_ROOT)[:2])
+
+
+def _player_resolution_by_eval(
+    mapping_dir: Path,
+    inventory: pd.DataFrame,
+    eval_ids: list[str] | None = None,
+) -> dict[str, dict[str, list[dict[str, object]]]]:
+    resolution = {}
+    for eval_id in sorted(eval_ids or ADAPTERS):
+        mapping_path = mapping_dir / f"{eval_id}.csv"
+        if not mapping_path.exists():
+            continue
+        resolution[eval_id] = check_player_resolution(load_mapping_file(mapping_path), inventory)
+    return resolution
+
+
+def _resolution_rows(
+    resolution: dict[str, dict[str, list[dict[str, object]]]],
+    kind: str,
+) -> list[dict[str, object]]:
+    return [row for entry in resolution.values() for row in entry[kind]]
+
+
+def _unresolved_player_kinds(allow_metadata_only: bool) -> tuple[str, ...]:
+    """Which resolution buckets count as unresolved.
+
+    Absence from data/elo_refined.csv is the failure condition: such a row contributes to no
+    statistic, so whether the name is unknown entirely or merely metadata-only does not change
+    that. ``allow_metadata_only`` restores the older leniency for the rare case that wants it.
+    """
+    return ("dangling",) if allow_metadata_only else ("dangling", "metadata_only")
+
+
+def _unresolved_player_rows(
+    resolution: dict[str, dict[str, list[dict[str, object]]]],
+    *,
+    allow_metadata_only: bool = False,
+) -> list[dict[str, object]]:
+    return [
+        row
+        for kind in _unresolved_player_kinds(allow_metadata_only)
+        for row in _resolution_rows(resolution, kind)
+    ]
+
+
+def _describe_unresolved_players(rows: list[dict[str, object]]) -> str:
+    names = sorted({str(row["llm_chess_player"]) for row in rows})
+    return f"{len(rows)} accepted mapping rows ({', '.join(names)})"
+
+
+def _ensure_player_resolution_publishable(
+    resolution: dict[str, dict[str, list[dict[str, object]]]],
+    publish: bool,
+    *,
+    allow_metadata_only: bool = False,
+) -> None:
+    if not publish:
+        return
+    unresolved = _unresolved_player_rows(resolution, allow_metadata_only=allow_metadata_only)
+    if unresolved:
+        raise ValueError(
+            f"{_describe_unresolved_players(unresolved)} point at llm_chess_player values with no "
+            "row in data/elo_refined.csv and must not be published; repoint the mapping CSVs first"
+        )
+
+
+def _warn_unresolved_players(
+    resolution: dict[str, dict[str, list[dict[str, object]]]],
+    *,
+    allow_metadata_only: bool = False,
+) -> None:
+    unresolved = _unresolved_player_rows(resolution, allow_metadata_only=allow_metadata_only)
+    if unresolved:
+        warnings.warn(
+            f"{_describe_unresolved_players(unresolved)} point at llm_chess_player values with no "
+            "row in data/elo_refined.csv; this state cannot be published",
+            stacklevel=2,
+        )
+
+
+def _actual_llm_chess_input_rows() -> dict[str, int]:
+    elo, metadata, _ = load_llm_chess_inputs(REPO_ROOT)
+    return {"elo_refined": int(len(elo)), "models_metadata": int(len(metadata))}
+
+
+# verify's own artifact matches the *_summary.json glob but is not a per-eval summary, so it must
+# not be checked as one once it has been published into results/.
+NON_EVAL_SUMMARY_FILES = EXCLUDED_SUMMARY_FILES | {"verify_summary.json"}
+
+
+def _published_summary_paths(results_dir: Path) -> list[Path]:
+    return sorted(
+        path
+        for path in results_dir.glob("*_summary.json")
+        if path.is_file() and path.name not in NON_EVAL_SUMMARY_FILES
+    )
+
+
+def _recorded_input_row_checks(results_dir: Path, actual_rows: dict[str, int]) -> list[dict[str, object]]:
+    checks = []
+    for summary_path in _published_summary_paths(results_dir):
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+        recorded = summary.get("llm_chess_inputs") if isinstance(summary, dict) else None
+        recorded = recorded if isinstance(recorded, dict) else {}
+        for input_id, actual in actual_rows.items():
+            input_contract = recorded.get(input_id)
+            recorded_rows = input_contract.get("rows") if isinstance(input_contract, dict) else None
+            checks.append(
+                {
+                    "eval_id": summary.get("eval_id") if isinstance(summary, dict) else None,
+                    "summary_path": _report_path(summary_path),
+                    "input_id": input_id,
+                    "recorded_rows": recorded_rows,
+                    "actual_rows": actual,
+                    "matches": recorded_rows == actual,
+                }
+            )
+    return checks
+
+
+def _ensure_recorded_input_rows_publishable(checks: list[dict[str, object]], publish: bool) -> None:
+    if not publish:
+        return
+    stale = [check for check in checks if not check["matches"]]
+    if stale:
+        details = ", ".join(
+            f"{check['summary_path']}:{check['input_id']} recorded {check['recorded_rows']} vs actual {check['actual_rows']}"
+            for check in stale[:6]
+        )
+        raise ValueError(
+            f"{len(stale)} published summaries record llm_chess input row counts that disagree with the "
+            f"current authoritative inputs and must not be published: {details}"
+        )
 
 
 def _load_verification_outputs(
@@ -149,6 +302,12 @@ def run_eval(args: argparse.Namespace) -> dict[str, object]:
             "mistake_stats=clean_only is a research-only mode and must not be published; "
             "drop --publish and use explicit scratch outputs instead"
         )
+    allow_metadata_only = bool(getattr(args, "allow_metadata_only", False))
+    mapping_path = args.mapping_path or MAPPINGS_DIR / f"{args.eval_id}.csv"
+    inventory = _llm_chess_inventory()
+    resolution = {args.eval_id: check_player_resolution(load_mapping_file(mapping_path), inventory)}
+    _ensure_player_resolution_publishable(resolution, publish, allow_metadata_only=allow_metadata_only)
+    _warn_unresolved_players(resolution, allow_metadata_only=allow_metadata_only)
     scratch_dir = None if publish else _scratch_output_dir(args.eval_id)
     source_path = getattr(args, "source_path", None)
     inventory_output = args.inventory_output or (
@@ -177,8 +336,6 @@ def run_eval(args: argparse.Namespace) -> dict[str, object]:
         publish,
     )
     inventory_path, inventory_info = refresh_inventory(inventory_output, publish=publish)
-    inventory = build_llm_chess_inventory(*load_llm_chess_inputs(REPO_ROOT)[:2])
-    mapping_path = args.mapping_path or MAPPINGS_DIR / f"{args.eval_id}.csv"
     mapping = load_mapping_file(mapping_path)
     verification = _build_verification_record(args, inventory_path, inventory_info, mapping_path)
     summary, normalized_output, coverage_output, html_output = adapter.run_analysis(
@@ -264,6 +421,12 @@ def run_mapping_review(args: argparse.Namespace) -> dict[str, object]:
 def run_cross_eval(args: argparse.Namespace) -> dict[str, object]:
     publish = bool(getattr(args, "publish", False))
     results_dir = args.results_dir or RESULTS_DIR
+    _ensure_publish_state_clean(
+        results_dir,
+        MAPPINGS_DIR,
+        publish,
+        allow_metadata_only=bool(getattr(args, "allow_metadata_only", False)),
+    )
     if args.summary_output is None and args.report_output is None:
         output_dir = results_dir if publish else _scratch_output_dir("cross_eval")
         summary_output = output_dir / "cross_ref_summary.json"
@@ -393,19 +556,20 @@ def render_audit_markdown(summary: dict[str, object]) -> str:
             f"- rerun diffs with changes: {summary['reproducibility']['evals_with_diff_count']}",
             "",
             "per-eval reproducibility:",
-            "| eval | rerun_diff | metric_rows | elo_rows | raw_elo_r | prediction_r2 | unresolved_high_impact |",
-            "| --- | --- | ---: | ---: | ---: | ---: | ---: |",
+            "| eval | rerun_diff | metric_rows | elo_rows | raw_elo_r | prediction_r2 | prediction_n | unresolved_high_impact |",
+            "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
         ]
     )
     for entry in summary["reproducibility"]["per_eval"]:
         lines.append(
-            "| {eval_id} | {status} | {metric_rows} | {elo_rows} | {raw_elo_r} | {prediction_r2} | {unresolved_high_impact} |".format(
+            "| {eval_id} | {status} | {metric_rows} | {elo_rows} | {raw_elo_r} | {prediction_r2} | {prediction_n} | {unresolved_high_impact} |".format(
                 eval_id=entry["eval_id"],
                 status="clean" if not entry["has_diff"] else "diff",
                 metric_rows=entry["metric_rows"],
                 elo_rows=entry["elo_rows"],
                 raw_elo_r=entry["raw_elo_pearson_r"],
                 prediction_r2=entry["prediction_r2"],
+                prediction_n=entry["prediction_n"],
                 unresolved_high_impact=entry["unresolved_high_impact_count"],
             )
         )
@@ -432,6 +596,12 @@ def run_audit(args: argparse.Namespace) -> dict[str, object]:
     publish = bool(getattr(args, "publish", False))
     results_dir = args.results_dir or RESULTS_DIR
     mapping_dir = args.mapping_dir or MAPPINGS_DIR
+    _ensure_publish_state_clean(
+        results_dir,
+        mapping_dir,
+        publish,
+        allow_metadata_only=bool(getattr(args, "allow_metadata_only", False)),
+    )
     summary_output = args.summary_output
     report_output = args.report_output
     if summary_output is None and report_output is None:
@@ -462,7 +632,10 @@ def run_audit(args: argparse.Namespace) -> dict[str, object]:
                     target=eval_id,
                     baseline_results_dir=results_dir,
                     scratch_dir=tmp_dir / f"{eval_id}_scratch",
-                    mapping_path=None,
+                    # Honour --mapping-dir for the reruns too. Falling back to the global
+                    # MAPPINGS_DIR here let the rerun read different mapping bytes than the
+                    # baseline, which turns a concurrent mapping edit into a spurious diff.
+                    mapping_path=mapping_dir / f"{eval_id}.csv",
                     source_path=None,
                     diff_json_output=tmp_dir / f"{eval_id}_diff.json",
                     diff_md_output=tmp_dir / f"{eval_id}_diff.md",
@@ -477,6 +650,8 @@ def run_audit(args: argparse.Namespace) -> dict[str, object]:
                     "elo_rows": eval_summary["coverage"].get("elo_analysis_rows_max_dedupe"),
                     "raw_elo_pearson_r": eval_summary["relationships"]["raw_elo"].get("pearson_r"),
                     "prediction_r2": eval_summary["prediction"]["ols"].get("r2"),
+                    # The CV row count the r2 above was computed on, not the wider metric sample.
+                    "prediction_n": eval_summary["prediction"].get("n"),
                     "unresolved_high_impact_count": eval_summary["mapping"].get("unresolved_high_impact_count"),
                 }
             )
@@ -576,6 +751,249 @@ def run_audit(args: argparse.Namespace) -> dict[str, object]:
     }
 
 
+def _ensure_publish_state_clean(
+    results_dir: Path,
+    mapping_dir: Path,
+    publish: bool,
+    *,
+    allow_metadata_only: bool = False,
+) -> None:
+    """Refuse to cement a state the verify checks already know is broken."""
+    if not publish:
+        return
+    _ensure_player_resolution_publishable(
+        _player_resolution_by_eval(mapping_dir, _llm_chess_inventory()),
+        publish,
+        allow_metadata_only=allow_metadata_only,
+    )
+    _ensure_recorded_input_rows_publishable(
+        _recorded_input_row_checks(results_dir, _actual_llm_chess_input_rows()), publish
+    )
+
+
+def _summary_player_names(payload: object) -> set[str]:
+    names: set[str] = set()
+    if isinstance(payload, dict):
+        for key, value in payload.items():
+            if key == "llm_chess_player" and isinstance(value, str) and value.strip():
+                names.add(value.strip())
+            else:
+                names.update(_summary_player_names(value))
+    elif isinstance(payload, list):
+        for value in payload:
+            names.update(_summary_player_names(value))
+    return names
+
+
+def _coverage_player_names(coverage_path: Path) -> set[str]:
+    coverage = pd.read_csv(coverage_path)
+    if "llm_chess_player" not in coverage.columns:
+        return set()
+    return {
+        str(value).strip()
+        for value in coverage["llm_chess_player"].dropna()
+        if str(value).strip()
+    }
+
+
+def _html_player_names(html: str, candidates: set[str]) -> set[str]:
+    # Rendered reports are free text, so names can only be recognised from a candidate list. The
+    # trailing guard stops `gemini-3-pro-preview` matching inside `gemini-3-pro-preview-high`.
+    return {
+        candidate
+        for candidate in candidates
+        if re.search(re.escape(candidate) + r"(?![-\w.])", html)
+    }
+
+
+def _artifact_player_agreement_checks(results_dir: Path) -> list[dict[str, object]]:
+    checks = []
+    for summary_path in _published_summary_paths(results_dir):
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+        if not isinstance(summary, dict) or not summary.get("eval_id"):
+            continue
+        eval_id = str(summary["eval_id"])
+        coverage_path = results_dir / f"{eval_id}_coverage.csv"
+        html_path = results_dir / f"{eval_id}.html"
+        summary_players = _summary_player_names(summary)
+        coverage_players = _coverage_player_names(coverage_path) if coverage_path.exists() else set()
+        html_players = (
+            _html_player_names(html_path.read_text(encoding="utf-8"), summary_players | coverage_players)
+            if html_path.exists()
+            else set()
+        )
+        # The coverage CSV is the row-level ledger of a publish, so every player named by the other
+        # artifacts of the same publish has to appear in it.
+        summary_missing = sorted(summary_players - coverage_players)
+        html_missing = sorted(html_players - coverage_players)
+        checks.append(
+            {
+                "eval_id": eval_id,
+                "summary_path": _report_path(summary_path),
+                "coverage_path": _report_path(coverage_path) if coverage_path.exists() else None,
+                "html_path": _report_path(html_path) if html_path.exists() else None,
+                "summary_player_count": len(summary_players),
+                "coverage_player_count": len(coverage_players),
+                "html_player_count": len(html_players),
+                "summary_players_missing_from_coverage": summary_missing,
+                "html_players_missing_from_coverage": html_missing,
+                "matches": not summary_missing and not html_missing,
+            }
+        )
+    return checks
+
+
+def _published_summary_sha256_checks(results_dir: Path) -> list[dict[str, object]]:
+    cross_eval_path = results_dir / "cross_ref_summary.json"
+    if not cross_eval_path.exists():
+        return [
+            {
+                "eval_id": None,
+                "summary_path": _report_path(cross_eval_path),
+                "recorded_sha256": None,
+                "actual_sha256": None,
+                "matches": False,
+                "note": "aggregate cross_ref_summary.json is missing, so no recorded sha256 exists to check",
+            }
+        ]
+    cross_eval_summary = json.loads(cross_eval_path.read_text(encoding="utf-8"))
+    recorded = {
+        entry.get("eval_id"): entry.get("summary_sha256")
+        for entry in cross_eval_summary.get("generated_from", {}).get("summaries", [])
+        if isinstance(entry, dict)
+    }
+    checks = []
+    for summary_path in _published_summary_paths(results_dir):
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+        eval_id = summary.get("eval_id") if isinstance(summary, dict) else None
+        actual_sha256 = hashlib.sha256(summary_path.read_bytes()).hexdigest()
+        recorded_sha256 = recorded.get(eval_id)
+        checks.append(
+            {
+                "eval_id": eval_id,
+                "summary_path": _report_path(summary_path),
+                "recorded_sha256": recorded_sha256,
+                "actual_sha256": actual_sha256,
+                "matches": recorded_sha256 == actual_sha256,
+            }
+        )
+    return checks
+
+
+def _check_block(check_id: str, description: str, rows: list[dict[str, object]]) -> dict[str, object]:
+    failures = [row for row in rows if not row["matches"]]
+    return {
+        "check_id": check_id,
+        "description": description,
+        "passed": not failures,
+        "checked_count": len(rows),
+        "failure_count": len(failures),
+        "failures": failures,
+        "rows": rows,
+    }
+
+
+def run_verify(args: argparse.Namespace) -> dict[str, object]:
+    publish = bool(getattr(args, "publish", False))
+    results_dir = args.results_dir or RESULTS_DIR
+    mapping_dir = args.mapping_dir or MAPPINGS_DIR
+    allow_metadata_only = bool(getattr(args, "allow_metadata_only", False))
+
+    inventory = _llm_chess_inventory()
+    resolution = _player_resolution_by_eval(mapping_dir, inventory)
+    actual_rows = _actual_llm_chess_input_rows()
+    input_row_checks = _recorded_input_row_checks(results_dir, actual_rows)
+    _ensure_player_resolution_publishable(resolution, publish, allow_metadata_only=allow_metadata_only)
+    _ensure_recorded_input_rows_publishable(input_row_checks, publish)
+
+    summary_output = args.summary_output or (
+        RESULTS_DIR / "verify_summary.json"
+        if publish
+        else _scratch_output_dir("verify") / "verify_summary.json"
+    )
+    _ensure_publish_allowed([summary_output], publish)
+
+    dangling = _resolution_rows(resolution, "dangling")
+    metadata_only = _resolution_rows(resolution, "metadata_only")
+    resolution_rows = [
+        {
+            "eval_id": eval_id,
+            "mapping_file": _report_path(mapping_dir / f"{eval_id}.csv"),
+            "dangling_row_count": len(entry["dangling"]),
+            "metadata_only_row_count": len(entry["metadata_only"]),
+            "dangling": entry["dangling"],
+            "metadata_only": entry["metadata_only"],
+            "matches": not _unresolved_player_rows(
+                {eval_id: entry}, allow_metadata_only=allow_metadata_only
+            ),
+        }
+        for eval_id, entry in resolution.items()
+    ]
+
+    checks = [
+        _check_block(
+            "published_summary_sha256",
+            "each results/*_summary.json hashes to the sha256 recorded for it in cross_ref_summary.json",
+            _published_summary_sha256_checks(results_dir),
+        ),
+        _check_block(
+            "recorded_llm_chess_input_rows",
+            "each published summary's llm_chess_inputs row counts match the current authoritative inputs",
+            input_row_checks,
+        ),
+        _check_block(
+            "artifact_player_agreement",
+            "llm_chess_player values agree across the summary_json, coverage_csv and html of one publish",
+            _artifact_player_agreement_checks(results_dir),
+        ),
+        _check_block(
+            "mapping_player_resolution",
+            "every accepted mapping row resolves to a known llm_chess_player"
+            if allow_metadata_only
+            else "every accepted mapping row resolves to a llm_chess_player with a row in data/elo_refined.csv",
+            resolution_rows,
+        ),
+    ]
+    failed_check_ids = [check["check_id"] for check in checks if not check["passed"]]
+
+    verify_summary = {
+        "artifact_kind": "cross_ref_verify",
+        "overall_status": "fail" if failed_check_ids else "pass",
+        "allow_metadata_only": allow_metadata_only,
+        "results_dir": _report_path(results_dir),
+        "mapping_dir": _report_path(mapping_dir),
+        "llm_chess_input_rows": actual_rows,
+        "failed_check_ids": failed_check_ids,
+        "checks": {check["check_id"]: check for check in checks},
+        "metadata_only_players": {
+            "row_count": len(metadata_only),
+            "player_count": len({str(row["llm_chess_player"]) for row in metadata_only}),
+            "players": sorted({str(row["llm_chess_player"]) for row in metadata_only}),
+            "note": "known to data/models_metadata.csv but absent from data/elo_refined.csv, so these "
+            "rows contribute to no statistic; counted as failures unless --allow-metadata-only is set",
+        },
+        "dangling_players": {
+            "row_count": len(dangling),
+            "players": sorted({str(row["llm_chess_player"]) for row in dangling}),
+            "note": "absent from both data/elo_refined.csv and data/models_metadata.csv; always a failure",
+        },
+    }
+    _write_json(summary_output, verify_summary)
+    return {
+        "output_mode": _output_mode(publish),
+        "summary_output": _report_path(summary_output),
+        "overall_status": verify_summary["overall_status"],
+        "failed_check_ids": failed_check_ids,
+        "check_status": {check["check_id"]: "pass" if check["passed"] else "fail" for check in checks},
+        "failure_counts": {check["check_id"]: check["failure_count"] for check in checks},
+        "dangling_player_row_count": len(dangling),
+        "metadata_only_player_row_count": len(metadata_only),
+        "unresolved_player_row_count": len(
+            _unresolved_player_rows(resolution, allow_metadata_only=allow_metadata_only)
+        ),
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run generalized cross-reference analyses.")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -603,6 +1021,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     cross_eval_parser.add_argument("--results-dir", type=Path, default=RESULTS_DIR)
     cross_eval_parser.add_argument("--publish", action="store_true", help="Write checked-in aggregate artifacts.")
+    cross_eval_parser.add_argument("--allow-metadata-only", action="store_true", help=ALLOW_METADATA_ONLY_HELP)
     cross_eval_parser.add_argument("--summary-output", type=Path)
     cross_eval_parser.add_argument("--report-output", type=Path)
 
@@ -613,9 +1032,26 @@ def build_parser() -> argparse.ArgumentParser:
     audit_parser.add_argument("--results-dir", type=Path, default=RESULTS_DIR)
     audit_parser.add_argument("--mapping-dir", type=Path, default=MAPPINGS_DIR)
     audit_parser.add_argument("--publish", action="store_true", help="Write checked-in audit artifacts.")
+    audit_parser.add_argument("--allow-metadata-only", action="store_true", help=ALLOW_METADATA_ONLY_HELP)
     audit_parser.add_argument("--summary-output", type=Path)
     audit_parser.add_argument("--report-output", type=Path)
     audit_parser.add_argument("--max-unresolved-rows", type=int, default=0)
+
+    verify_parser = subparsers.add_parser(
+        "verify",
+        help="Check the internal consistency the published artifacts already record. Exits non-zero on failure.",
+    )
+    verify_parser.add_argument("--results-dir", type=Path, default=RESULTS_DIR)
+    verify_parser.add_argument("--mapping-dir", type=Path, default=MAPPINGS_DIR)
+    verify_parser.add_argument("--publish", action="store_true", help="Write the checked-in verify artifact.")
+    verify_parser.add_argument("--summary-output", type=Path)
+    verify_parser.add_argument(
+        "--allow-metadata-only",
+        action="store_true",
+        help="Relax mapping_player_resolution to accept rows whose llm_chess_player is known to "
+        "data/models_metadata.csv but has no row in data/elo_refined.csv. Off by default: absence "
+        "from elo_refined.csv is a failure because such a row contributes to no statistic.",
+    )
 
     rerun_diff_parser = subparsers.add_parser(
         "rerun-diff",
@@ -632,6 +1068,7 @@ def build_parser() -> argparse.ArgumentParser:
     for eval_id in ADAPTERS:
         eval_parser = subparsers.add_parser(eval_id, help=f"Run the {eval_id} cross-reference analysis.")
         eval_parser.add_argument("--publish", action="store_true", help="Write checked-in per-eval artifacts.")
+        eval_parser.add_argument("--allow-metadata-only", action="store_true", help=ALLOW_METADATA_ONLY_HELP)
         eval_parser.add_argument("--inventory-output", type=Path)
         eval_parser.add_argument("--mapping-path", type=Path)
         eval_parser.add_argument("--source-path", type=Path)
@@ -673,6 +1110,12 @@ def main(argv: list[str] | None = None) -> None:
         return
     if args.command == "audit":
         print(json.dumps(run_audit(args), indent=2))
+        return
+    if args.command == "verify":
+        payload = run_verify(args)
+        print(json.dumps(payload, indent=2))
+        if payload["overall_status"] != "pass":
+            raise SystemExit(1)
         return
     if args.command == "rerun-diff":
         print(json.dumps(run_rerun_diff(args), indent=2))

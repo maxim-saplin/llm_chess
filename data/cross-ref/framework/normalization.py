@@ -39,8 +39,12 @@ def parse_currency(value: object) -> float | None:
     if not text or text.upper() in {"N/A", "NA", "NONE"} or text == "—":
         return None
     text = text.replace("$", "").replace(",", "")
+    # The ARC leaderboard renders large per-task costs with a K suffix ("$15.2K").
+    multiplier = 1.0
+    if text[-1:].upper() == "K":
+        text, multiplier = text[:-1], 1000.0
     try:
-        return float(text)
+        return float(text) * multiplier
     except ValueError:
         return None
 

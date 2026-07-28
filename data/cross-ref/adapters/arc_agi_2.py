@@ -19,7 +19,7 @@ EVAL_LABEL = "ARC-AGI-2"
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CROSS_REF_ROOT = Path(__file__).resolve().parents[1]
 SOURCE_DIR = CROSS_REF_ROOT / "evals" / "arc-agi-2"
-SOURCE_PATH = SOURCE_DIR / "arc-agi-2-may-2026.csv"
+SOURCE_PATH = SOURCE_DIR / "arc-agi-2-jul-2026.csv"
 SOURCE_NOTE_PATH = SOURCE_DIR / "SOURCE.md"
 
 
@@ -127,7 +127,7 @@ CONFIG = EvalAnalysisConfig(
     sensitivity_builder=_sensitivity,
     limitations=[
         "ARC leaderboard rows can represent systems or reasoning configurations rather than plain base models.",
-        "COST (V3) meaning was not defined in the official ARC sources located during this implementation.",
+        "COST (V3) is the ARC-AGI-3 per-task cost. parse_currency now expands the leaderboard's $X.XK shorthand, so cost_v3 parses at 1.0, but the leaderboard rounds it to one decimal of a thousand dollars and only 26 of 187 rows carry a value; the column feeds no statistic.",
         "Correlations are exploratory and should not be over-interpreted when the matched sample is small or mapping status is unresolved.",
     ],
 )

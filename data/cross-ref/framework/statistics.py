@@ -23,9 +23,13 @@ DEFAULT_GAME_THRESHOLDS = [0, 20, 30, 40, 50, 60]
 DEFAULT_CV_SEEDS = [11, 23, 37]
 
 
+def _has_zero_variance(valid: pd.DataFrame) -> bool:
+    return bool(valid["x"].std(ddof=0) == 0 or valid["y"].std(ddof=0) == 0)
+
+
 def named_corr(name: str, x: pd.Series, y: pd.Series) -> dict[str, float | int | str]:
     valid = pd.DataFrame({"x": x, "y": y}).dropna()
-    if len(valid) < 3:
+    if len(valid) < 3 or _has_zero_variance(valid):
         return {"name": name, "n": int(len(valid))}
     pearson = stats.pearsonr(valid["x"], valid["y"])
     spearman = stats.spearmanr(valid["x"], valid["y"])
@@ -43,6 +47,23 @@ def named_corr(name: str, x: pd.Series, y: pd.Series) -> dict[str, float | int |
         "linregress_p": float(p_value),
         "slope_stderr": float(stderr),
     }
+
+
+def _partial_corr_p_value(r: float, n: int, n_controlled: int) -> float:
+    """Two-sided p for a partial correlation, with the covariate's degree of freedom removed.
+
+    ``scipy``'s ``pearsonr``/``spearmanr`` p-values assume the two inputs are raw observations, so
+    they test against df = n - 2. Residualizing on ``n_controlled`` covariates estimates that many
+    extra parameters per variable, leaving df = n - 2 - n_controlled. Feeding residuals to scipy
+    and reading its p-value therefore understates the p.
+    """
+    df = n - 2 - n_controlled
+    if df < 1:
+        return float("nan")
+    if abs(r) >= 1.0:
+        return 0.0
+    t = r * np.sqrt(df / (1.0 - r**2))
+    return float(2.0 * stats.t.sf(abs(t), df))
 
 
 def partial_corr_release_month(
@@ -66,12 +87,15 @@ def partial_corr_release_month(
     metric_resid = valid["metric"].to_numpy(dtype=float) - x.dot(metric_beta)
     pearson = stats.pearsonr(score_resid, metric_resid)
     spearman = stats.spearmanr(score_resid, metric_resid)
+    n = int(len(valid))
     return {
-        "n": int(len(valid)),
+        "n": n,
+        "controlled_variables": 1,
+        "df": n - 3,
         "pearson_r": float(pearson.statistic),
-        "pearson_p": float(pearson.pvalue),
+        "pearson_p": _partial_corr_p_value(float(pearson.statistic), n, 1),
         "spearman_r": float(spearman.statistic),
-        "spearman_p": float(spearman.pvalue),
+        "spearman_p": _partial_corr_p_value(float(spearman.statistic), n, 1),
     }
 
 
@@ -93,7 +117,7 @@ def add_release_month_columns(df: pd.DataFrame, date_column: str = "date_release
 
 def bootstrap_corr(x: pd.Series, y: pd.Series, *, seed: int = 0, n_bootstrap: int = 2000) -> dict[str, list[float]] | None:
     valid = pd.DataFrame({"x": x, "y": y}).dropna()
-    if len(valid) < 4:
+    if len(valid) < 4 or _has_zero_variance(valid):
         return None
     rng = np.random.default_rng(seed)
     pearson_samples = []
@@ -102,9 +126,14 @@ def bootstrap_corr(x: pd.Series, y: pd.Series, *, seed: int = 0, n_bootstrap: in
     for _ in range(n_bootstrap):
         sample_idx = rng.integers(0, len(valid), len(valid))
         sample = valid.iloc[sample_idx]
+        # A resample can be degenerate even when the full sample is not; linregress raises on it.
+        if _has_zero_variance(sample):
+            continue
         pearson_samples.append(stats.pearsonr(sample["x"], sample["y"]).statistic)
         spearman_samples.append(stats.spearmanr(sample["x"], sample["y"]).statistic)
         slope_samples.append(stats.linregress(sample["x"], sample["y"]).slope)
+    if not slope_samples:
+        return None
     return {
         "pearson_r": [float(np.quantile(pearson_samples, 0.025)), float(np.quantile(pearson_samples, 0.975))],
         "spearman_r": [float(np.quantile(spearman_samples, 0.025)), float(np.quantile(spearman_samples, 0.975))],
