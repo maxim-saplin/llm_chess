@@ -1,0 +1,100 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2026.08.03_12:35",
+            "log_folder_relative": "_logs/rand_vs_llm/qwen3.5-2b-bf16/2026-08-03-12-35-04",
+            "num_repetitions": 33,
+            "store_individual_logs": true,
+            "python_version": "3.13.12"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 0,
+            "dialog_turn_delay": 0,
+            "max_api_retries": 3,
+            "api_retry_delay": 5,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "qwen3.5-2b@bf16",
+                "api_type": "local",
+                "api_key": "REDACTED",
+                "timeout": 1800
+            }
+        },
+        "evaluation_provenance": {
+            "profile": "qwen3.5-official-bf16-v1",
+            "checkpoint": {
+                "repository": "Qwen/Qwen3.5-2B",
+                "revision": "15852e8c16360a2fea060d615a32b45270f8a8fc",
+                "weights": "official safetensors"
+            },
+            "inference": {
+                "backend": "vllm",
+                "version": "0.26.1rc1.dev274+g8ba87e018",
+                "dtype": "bfloat16",
+                "quantization": null,
+                "max_model_len": 32768,
+                "language_model_only": true,
+                "reasoning_parser": null,
+                "gpu_memory_utilization": 0.9,
+                "sampler_backend": "vllm-native",
+                "environment": {
+                    "VLLM_USE_FLASHINFER_SAMPLER": "0"
+                }
+            },
+            "chat_template": {
+                "enable_thinking": false
+            },
+            "generation": {
+                "configuration": "vllm OpenAI-compatible API defaults",
+                "benchmark_overrides": {}
+            }
+        }
+    },
+    "total_games": 32,
+    "white_wins": 32,
+    "black_wins": 0,
+    "draws": 0,
+    "total_moves": 74,
+    "reasons": {
+        "Max turns in single dialog": 12,
+        "Too many wrong actions": 20
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 1248,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 39.0,
+        "std_dev_material": 0.0
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "qwen3.5-2b@bf16",
+        "total_material": 1248,
+        "wrong_moves": 3,
+        "wrong_actions": 76,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 39.0,
+        "std_dev_material": 0.0
+    },
+    "average_moves": 2.3125,
+    "std_dev_moves": 0.7378040652569471
+}
