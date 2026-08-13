@@ -345,6 +345,11 @@ ALIASES: dict[str, str] = {
     "claude-haiku-4-5-20251001": "claude-haiku-4-5",
     "claude-haiku-4-5-20251001_thinking_16000": "claude-haiku-4-5_thinking_16000",
 
+    # Claude 5 Bedrock: mislabeled medium / DIAL deployment id in early logs
+    "claude-sonnet-5_adaptive-thinking-medium": "claude-sonnet-5_adaptive-thinking-high",
+    "claude-opus-5_adaptive-thinking-medium": "claude-opus-5_adaptive-thinking-high",
+    "anthropic.claude-opus-5-high": "claude-opus-5_adaptive-thinking-high",
+
     # Qwen / Mistral / Grok / Gemini (single-snapshot with mmYY / MMDD / YYYY-MM-DD tails)
     "qwen-max-2025-01-25": "qwen-max",
     "qwen-plus-2025-01-25": "qwen-plus",
