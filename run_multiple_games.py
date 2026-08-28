@@ -13,7 +13,7 @@ import llm_chess
 NUM_REPETITIONS = 10
 REASONING_EFFORT = "high"
 WHITE_PLAYER_TYPE = llm_chess.PlayerType.CHESS_ENGINE_DRAGON
-ENGINE_LEVEL = 10
+ENGINE_LEVEL = 2
 
 
 def run_games():
