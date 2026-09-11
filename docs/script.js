@@ -178,6 +178,8 @@ const csvIndices = {
     moe_games_not_interrupted: 37,
     average_game_cost: 38,
     moe_average_game_cost: 39,
+    price_per_1000_moves: 40,
+    moe_price_per_1000_moves: 41,
     elo: 44,
     elo_moe_95: 45,
     games_vs_random: 46,
@@ -503,7 +505,7 @@ const columnDefinitions = {
 
 // Define default columns for each table
 const tableColumnSets = {
-    [Screen.LEADERBOARD_NEW]: ['rank', 'player', 'elo', 'gameDuration', 'tokens', 'costPerElo'],
+    [Screen.LEADERBOARD_NEW]: ['rank', 'player', 'elo', 'gameDuration', 'tokens', 'costPerGame'],
     [Screen.LEADERBOARD_EXT]: ['rank', 'player', 'elo', 'winLoss', 'gameDuration', 'tokens', 'costPerGame', 'avgMoves']
 };
 
@@ -726,6 +728,8 @@ function showPlayerDetailsPopup(row, columns) {
     // Add cost metrics
     const averageGameCost = columns[csvIndices.average_game_cost];
     const moeAverageGameCost = columns[csvIndices.moe_average_game_cost];
+    const pricePer1000Moves = columns[csvIndices.price_per_1000_moves];
+    const moePricePer1000Moves = columns[csvIndices.moe_price_per_1000_moves];
 
     // Elo in popup (robust to missing columns)
     const eIdx = headerIndex('elo');
@@ -764,6 +768,17 @@ function showPlayerDetailsPopup(row, columns) {
 
     // Add cost information to popup
     document.getElementById('cost-per-game').innerHTML = `<span>Cost/Game:</span> $${parseFloat(averageGameCost).toFixed(4)} ± $${parseFloat(moeAverageGameCost).toFixed(4)}`;
+
+    const costPer100MovesEl = document.getElementById('cost-per-100-moves');
+    if (costPer100MovesEl) {
+        const costPer100MovesVal = parseFloat(pricePer1000Moves) / 10;
+        const moeCostPer100MovesVal = parseFloat(moePricePer1000Moves) / 10;
+        if (isNaN(costPer100MovesVal) || isNaN(moeCostPer100MovesVal)) {
+            costPer100MovesEl.innerHTML = `<span>Cost/100 Moves:</span> N/A`;
+        } else {
+            costPer100MovesEl.innerHTML = `<span>Cost/100 Moves:</span> $${costPer100MovesVal.toFixed(4)} ± $${moeCostPer100MovesVal.toFixed(4)}`;
+        }
+    }
 
     const costPerEloEl = document.getElementById('cost-per-elo');
     if (costPerEloEl) {
