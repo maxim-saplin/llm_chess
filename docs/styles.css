@@ -448,19 +448,120 @@ td sup {
     color: white;
 }
 
-/* Matrix visualization styles */
-.matrix-container {
+/* Cost/Elo Pareto visualization styles */
+.cost-elo-container {
     width: 100%;
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
     padding-bottom: 10px;
+    position: relative;
 }
 
-#player-matrix {
-    background-color: black;
+.cost-elo-container canvas {
+    background-color: #C0C0C0;
     border: 1px solid #ddd;
     box-shadow: 8px 8px black;
+    display: block;
+    max-width: 100%;
+}
+
+.chart-expand-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 4;
+    width: auto;
+    margin: 0;
+    padding: 6px 10px;
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 120ms ease-in-out;
+}
+
+button.chart-expand-button::after {
+    display: none;
+}
+
+.cost-elo-container:hover .chart-expand-button,
+.chart-expand-button:focus-visible {
+    opacity: 1;
+}
+
+button.chart-expand-button:hover {
+    top: 8px;
+    left: auto;
+    background-color: #808080;
+    color: #FFFFFF;
+}
+
+.cost-elo-container.cost-elo-expanded {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    box-sizing: border-box;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 38px 24px 24px;
+    overflow: auto;
+    justify-content: center;
+    align-items: center;
+    background-color: #0000AA;
+}
+
+.cost-elo-container.cost-elo-expanded canvas {
+    min-width: 0;
+    max-width: none;
+}
+
+.cost-elo-container.cost-elo-expanded .chart-expand-button {
+    top: 12px;
+    right: 16px;
+    opacity: 1;
+}
+
+.cost-elo-expanded button.chart-expand-button:hover {
+    top: 12px;
+    left: auto;
+}
+
+body.cost-elo-expanded-open {
+    overflow: hidden;
+}
+
+.cost-elo-legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 0 auto 20px;
+    font-size: 14px;
+}
+
+.legend-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 5px;
+    vertical-align: -1px;
+    border: 1px solid black;
+}
+
+.model-swatch {
+    background-color: #404040;
+}
+
+.effort-swatch {
+    background-color: #0064a0;
+}
+
+.frontier-swatch {
+    background-color: #ffff00;
+}
+
+.cost-elo-legend span {
+    white-space: nowrap;
 }
 
 /* Responsive styles for mobile devices */
@@ -522,13 +623,15 @@ td sup {
         margin: 5px 0;
     }
 
-    .matrix-container {
+    .cost-elo-container {
         width: 100%;
         overflow-x: auto;
+        justify-content: flex-start;
     }
 
-    #player-matrix {
-        min-width: 680px;
+    .cost-elo-container canvas {
+        min-width: 740px;
+        max-width: none;
     }
 
     /* Make leaderboard horizontally scrollable on mobile */

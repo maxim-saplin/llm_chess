@@ -21,6 +21,7 @@
         gtag('config', 'G-4SS6VHS4QF');
     </script>
     <script src="data.js"></script>
+    <script src="model_metadata.js"></script>
     <script src="script.js"></script>
     <script src="md.js"></script>
 </head>
@@ -158,27 +159,30 @@
         </div>
 
         <!-- ############################ -->
-        <!-- MATRIX VIEW                  -->
+        <!-- COST/ELO PARETO VIEW         -->
         <!-- ############################ -->
-        <div id="matrix-view" class="pane" style="display: none;">
-            <div class="matrix-container">
-                <canvas id="player-matrix" width="680" height="500"></canvas>
+        <div id="cost-elo-view" class="pane" style="display: none;">
+            <div class="cost-elo-container">
+                <canvas id="cost-elo-chart" width="740" height="600"
+                    aria-label="Cost/Game versus Elo Pareto chart" role="img"></canvas>
+                <button id="cost-elo-expand" class="chart-expand-button" type="button"
+                    aria-controls="cost-elo-chart" aria-expanded="false">Expand</button>
+            </div>
+            <div class="cost-elo-legend" aria-label="Chart legend">
+                <span><i class="legend-swatch model-swatch"></i>Models</span>
+                <span><i class="legend-swatch effort-swatch"></i>Effort variants</span>
+                <span><i class="legend-swatch frontier-swatch"></i>Pareto frontier</span>
             </div>
             <p class="descriptions">
-                <strong>MATRIX VISUALIZATION:</strong><br><br>
-                This plots shows LLM chess players based on two key metrics:<br><br>
-                <strong>- X-Axis:</strong> Game Duration (0-100%) - Shows how well models maintain correct communication
-                protocols throughout the game. Higher values indicate better instruction following ability.<br><br>
-                <strong>- Y-Axis:</strong> Win Rate (0-100%) - The metric is less strict than Win/Loss (Non-Interrupted)
-                used in the leaderboard as it ignores technichal losses due to poor instruction following. Higher values
-                indicate better chess strategy and decision making.<br><br>
-                <strong>INTERPRETATION:</strong><br><br>
-                - <strong>Top-Right:</strong> Models with both excellent chess skill and instruction following.<br>
-                - <strong>Top-Left:</strong> Models with good chess skill but struggle to maintain communication
-                protocol.<br>
-                - <strong>Bottom-Right:</strong> Models that follow instructions well but make poor chess moves.<br>
-                - <strong>Bottom-Left:</strong> Models that struggle with both chess strategy and following
-                instructions.<br><br>
+                <strong>COST/ELO PARETO VISUALIZATION:</strong><br><br>
+                This plots model chess performance against the estimated cost of one game.<br><br>
+                <strong>- X-Axis:</strong> Cost/Game on a logarithmic scale. Models farther left are cheaper to run.<br>
+                <strong>- Y-Axis:</strong> Estimated Elo. Models higher on the chart have stronger chess performance.<br>
+                <strong>- Effort variants:</strong> Lines connect runs from the same model family at different reasoning
+                efforts or thinking budgets. The displayed model name remains unchanged.<br>
+                <strong>- Pareto frontier:</strong> Highlighted points are not dominated by another model that costs less
+                or the same and has equal or higher Elo. The best cost/performance trade-offs sit on this frontier.<br>
+                Negative or missing Elo values and models without positive cost data are omitted from the chart.
             </p>
         </div>
         <!-- ############ -->

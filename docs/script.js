@@ -50,12 +50,12 @@ const navConfig = {
                 }
             }
         },
-        MATRIX: {
-            id: 'matrix',
-            title: 'Matrix',
-            elementId: 'matrix-view',
+        COST_ELO: {
+            id: 'cost_elo',
+            title: 'Cost/Elo',
+            elementId: 'cost-elo-view',
             onShow: function () {
-                initializeMatrixView();
+                initializeCostEloView();
             }
         },
         HOW_IT_WORKS: {
@@ -94,7 +94,7 @@ with a superscript asterisk in the leaderboard.</p>`;
             items: [
                 { title: 'Leaderboard', screen: 'leaderboard_new' },
                 { title: 'LB (extended)', screen: 'leaderboard_ext' },
-                { title: 'Matrix', screen: 'matrix' }
+                { title: 'Cost/Elo', screen: 'cost_elo' }
             ]
         }
     ]
@@ -112,11 +112,24 @@ function headerIndex(name) {
     return parsedCsvData.headers.indexOf(name);
 }
 
+function getModelMetadata(player) {
+    const fallback = {
+        mode_family: player,
+        reasoning_level: 'unknown'
+    };
+    if (typeof modelMetadata === 'undefined' || !modelMetadata || !modelMetadata.models) {
+        return fallback;
+    }
+
+    const canonicalName = (modelMetadata.aliases && modelMetadata.aliases[player]) || player;
+    return modelMetadata.models[canonicalName] || fallback;
+}
+
 
 const Screen = {
     LEADERBOARD_NEW: 'leaderboard_new',
     LEADERBOARD_EXT: 'leaderboard_ext',
-    MATRIX: 'matrix',
+    COST_ELO: 'cost_elo',
     HOW_IT_WORKS: 'how_it_works',
     NOTES: 'notes'
 };
@@ -137,6 +150,8 @@ let currentSortState = {
 
 let currentScreen = null;
 let allRows = []; // Will store row objects for sorting/drawing
+let costEloExpanded = false;
+let costEloRenderTimer = null;
 
 const csvIndices = {
     player: 0,
@@ -218,7 +233,13 @@ function parseCSVData() {
     // Parse rows
     let rowObjects = lines.slice(1).map((line, i) => {
         const cols = line.split(',');
-        return { originalIndex: i, cols };
+        const metadata = getModelMetadata(cols[csvIndices.player] || '');
+        return {
+            originalIndex: i,
+            cols,
+            modeFamily: metadata.mode_family,
+            reasoningLevel: metadata.reasoning_level
+        };
     });
 
     // Separate special rows and normal rows
@@ -230,7 +251,14 @@ function parseCSVData() {
             const cols = new Array(headers.length).fill('');
             cols[0] = name;
             cols[eIdx] = eloStr;
-            return { originalIndex: -1, cols, isBenchmark: true };
+            const metadata = getModelMetadata(name);
+            return {
+                originalIndex: -1,
+                cols,
+                isBenchmark: true,
+                modeFamily: metadata.mode_family,
+                reasoningLevel: metadata.reasoning_level
+            };
         }
         rowObjects = rowObjects.concat([
             makeRow('Magnus Carlsen', '2941.0'),
@@ -572,6 +600,33 @@ function getActiveColumns() {
     }
 }
 
+function collapseCostEloOverlay() {
+    costEloExpanded = false;
+    document.body.classList.remove('cost-elo-expanded-open');
+    const container = document.querySelector('.cost-elo-container');
+    if (container) container.classList.remove('cost-elo-expanded');
+    const button = document.getElementById('cost-elo-expand');
+    if (button) {
+        button.setAttribute('aria-expanded', 'false');
+        button.textContent = 'Expand';
+    }
+}
+
+function cleanupCostEloView() {
+    if (costEloRenderTimer !== null) {
+        clearTimeout(costEloRenderTimer);
+        costEloRenderTimer = null;
+    }
+    collapseCostEloOverlay();
+    const tooltip = document.getElementById('cost-elo-tooltip');
+    if (tooltip) tooltip.remove();
+    const canvas = document.getElementById('cost-elo-chart');
+    if (canvas) {
+        canvas.onmousemove = null;
+        canvas.onmouseleave = null;
+    }
+}
+
 function showPane(screenId) {
     const scrollPos = window.scrollY;
     const screenConfig = Object.values(navConfig.screens).find(s => s.id === screenId);
@@ -580,6 +635,11 @@ function showPane(screenId) {
         console.error(`Screen ${screenId} not found in configuration`);
         return;
     }
+
+    if (currentScreen === Screen.COST_ELO && screenId !== Screen.COST_ELO) {
+        cleanupCostEloView();
+    }
+    hidePopup();
 
     // Ensure CSV data is parsed if not already done
     if (parsedCsvData.rows.length === 0) {
@@ -831,7 +891,7 @@ function showPlayerDetailsPopup(row, columns) {
 
 function hidePopup() {
     const popup = document.getElementById('popup');
-    popup.style.display = 'none';
+    if (popup) popup.style.display = 'none';
 }
 
 // Create navigation elements dynamically
@@ -1159,19 +1219,24 @@ function setupColumnSelector() {
         }
     };
 
-    // Close dropdown when clicking outside
-    window.addEventListener('click', function (event) {
-        if (!dropdown.contains(event.target) && event.target !== btn) {
-            dropdown.classList.remove('show');
-        }
-    });
-
-    // Close dropdown with Escape key
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && dropdown.classList.contains('show')) {
-            dropdown.classList.remove('show');
-        }
-    });
+    // Bind dismissal handlers once; setupColumnSelector runs on every navigation.
+    if (!window.__columnSelectorDismissBound) {
+        window.__columnSelectorDismissBound = true;
+        window.addEventListener('click', function (event) {
+            const currentDropdown = document.getElementById('column-selector-dropdown');
+            const currentButton = document.getElementById('column-selector-btn');
+            if (currentDropdown && currentButton &&
+                !currentDropdown.contains(event.target) && event.target !== currentButton) {
+                currentDropdown.classList.remove('show');
+            }
+        });
+        document.addEventListener('keydown', function (event) {
+            const currentDropdown = document.getElementById('column-selector-dropdown');
+            if (event.key === 'Escape' && currentDropdown) {
+                currentDropdown.classList.remove('show');
+            }
+        });
+    }
 }
 
 function populateColumnOptions() {
@@ -1345,492 +1410,588 @@ function tryLoadSortStateFromStorage() {
     }
 }
 
-function initializeMatrixView() {
-    // Then render the matrix
-    setTimeout(renderPlayerMatrix, 0);
+function setCostEloExpanded(expanded) {
+    const container = document.querySelector('.cost-elo-container');
+    const button = document.getElementById('cost-elo-expand');
+    if (!container || !button) return;
+
+    costEloExpanded = expanded;
+    container.classList.toggle('cost-elo-expanded', expanded);
+    document.body.classList.toggle('cost-elo-expanded-open', expanded);
+    button.setAttribute('aria-expanded', String(expanded));
+    button.textContent = expanded ? 'Close' : 'Expand';
+    renderCostEloPareto();
 }
 
-// Function to render the player matrix visualization
-function renderPlayerMatrix() {
-    // Configuration
-    const config = {
-        padding: { top: 20, right: 50, bottom: 60, left: 80 },
-        height: 600,
-        pointRadius: 5,
-        hoverRadius: 10,
-        colors: {
-            background: '#C0C0C0',
-            axes: 'black',
-            gridLines: 'rgba(0, 0, 0, 0.2)',
-            points: '#404040',
-            pointHover: 'yellow',
-            labels: 'black'
-        },
-        fonts: {
-            axis: '14px "Web IBM VGA 8x16"',
-            title: '16px "Web IBM VGA 8x16"',
-            labels: '12px "Web IBM VGA 8x16"'
-        },
-        titles: {
-            x: 'Game Duration',
-            // y: 'Win/Loss (Non-Interrupted)'
-            y: 'Win Rate'
-        },
-        tooltip: {
-            style: {
-                position: 'fixed',
-                backgroundColor: '#333',
-                color: 'white',
-                padding: '8px',
-                boxShadow: '8px 8px black',
-                borderRadius: '5px',
-                border: 'none',
-                pointerEvents: 'none',
-                display: 'none',
-                zIndex: '1000',
-                fontSize: '14px',
-                fontFamily: '"Web IBM VGA 8x16", monospace'
+function initializeCostEloView() {
+    const button = document.getElementById('cost-elo-expand');
+    if (button && button.dataset.bound !== 'true') {
+        button.dataset.bound = 'true';
+        button.addEventListener('click', () => setCostEloExpanded(!costEloExpanded));
+    }
+    if (!window.__costEloEscapeBound) {
+        window.__costEloEscapeBound = true;
+        window.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && costEloExpanded) {
+                setCostEloExpanded(false);
             }
-        },
-        // Simple hardcoded list of models to label
-        labeledModels: ["gemini-2.5-pro-preview-03-25", "o3-medium", "o1-medium", "claude-v3-7-sonnet-thinking_1024", "o4-mini-medium", "o1-low", "o1-preview", "o3-mini-medium", "o1-mini", "deepseek-reasoner-r1", "claude-v3-5-sonnet-v1", "grok-2", "gemini-2.0-flash-lite-001"]
+        });
+    }
+    if (costEloRenderTimer !== null) {
+        clearTimeout(costEloRenderTimer);
+    }
+    costEloRenderTimer = setTimeout(() => {
+        costEloRenderTimer = null;
+        if (currentScreen === Screen.COST_ELO) {
+            renderCostEloPareto();
+        }
+    }, 0);
+}
+
+function getCostEloPoints() {
+    return parsedCsvData.normalRows
+        .filter(row => !row.isBenchmark)
+        .map(row => {
+            const columns = row.cols;
+            const cost = parseFloat(columns[csvIndices.average_game_cost]);
+            const elo = parseFloat(columns[csvIndices.elo]);
+            if (!Number.isFinite(cost) || cost <= 0 || !Number.isFinite(elo) || elo < 0) {
+                return null;
+            }
+
+            const pricePer1000Moves = parseFloat(columns[csvIndices.price_per_1000_moves]);
+            const costPer100Moves = Number.isFinite(pricePer1000Moves) ? pricePer1000Moves / 10 : NaN;
+            const costPerElo = elo > 0 ? (cost / elo) * 1000 : NaN;
+
+            return {
+                player: columns[csvIndices.player],
+                modeFamily: row.modeFamily || columns[csvIndices.player],
+                reasoningLevel: row.reasoningLevel || 'unknown',
+                cost,
+                costMoe: parseFloat(columns[csvIndices.moe_average_game_cost]),
+                costPer100Moves,
+                costPer100MovesMoe: parseFloat(columns[csvIndices.moe_price_per_1000_moves]) / 10,
+                costPerElo,
+                elo,
+                eloMoe: parseFloat(columns[csvIndices.elo_moe_95]),
+                totalGames: parseInt(columns[csvIndices.total_games], 10)
+            };
+        })
+        .filter(Boolean);
+}
+
+function getReasoningLevelRank(level) {
+    const normalized = String(level || 'unknown').toLowerCase();
+    const qualitativeRanks = {
+        none: 0,
+        unknown: 1,
+        default: 2,
+        low: 3,
+        medium: 4,
+        high: 5,
+        xhigh: 6
     };
+    if (Object.prototype.hasOwnProperty.call(qualitativeRanks, normalized)) {
+        return qualitativeRanks[normalized];
+    }
 
-    const canvas = document.getElementById('player-matrix');
-    const container = document.getElementById('matrix-view');
+    const budgetMatch = normalized.match(/^budget_(\d+)$/);
+    return budgetMatch ? 100 + parseInt(budgetMatch[1], 10) : 1;
+}
 
-    // Get the device pixel ratio
+function getEffortGroups(points) {
+    const grouped = new Map();
+    points.forEach(point => {
+        if (point.reasoningLevel === 'unknown') return;
+        if (!grouped.has(point.modeFamily)) {
+            grouped.set(point.modeFamily, []);
+        }
+        grouped.get(point.modeFamily).push(point);
+    });
+
+    return Array.from(grouped.values())
+        .map(group => group.sort((a, b) =>
+            (getReasoningLevelRank(a.reasoningLevel) - getReasoningLevelRank(b.reasoningLevel)) ||
+            a.reasoningLevel.localeCompare(b.reasoningLevel) ||
+            a.player.localeCompare(b.player)
+        ))
+        .filter(group => group.length > 1 &&
+            new Set(group.map(point => point.reasoningLevel)).size > 1);
+}
+
+function getParetoFrontier(points) {
+    return points
+        .filter(point => !points.some(other =>
+            other !== point &&
+            other.cost <= point.cost &&
+            other.elo >= point.elo &&
+            (other.cost < point.cost || other.elo > point.elo)
+        ))
+        .sort((a, b) => (a.cost - b.cost) || (b.elo - a.elo));
+}
+
+function getSparseChartLabels(points, frontier, effortGroups, maxLabels = 24) {
+    const frontierSet = new Set(frontier);
+    const groupEndpoints = new Set();
+    effortGroups.forEach(group => {
+        groupEndpoints.add(group[0]);
+        groupEndpoints.add(group[group.length - 1]);
+    });
+
+    const costs = points.map(point => Math.log10(point.cost));
+    const minLogCost = Math.min(...costs);
+    const maxLogCost = Math.max(...costs);
+    const costRange = Math.max(0.0001, maxLogCost - minLogCost);
+    const elos = points.map(point => point.elo);
+    const minElo = Math.min(...elos);
+    const eloRange = Math.max(1, Math.max(...elos) - minElo);
+    const candidates = [...points]
+        .filter(point => !frontierSet.has(point))
+        .sort((a, b) => {
+            const score = point => {
+                const costScore = (maxLogCost - Math.log10(point.cost)) / costRange;
+                const eloScore = (point.elo - minElo) / eloRange;
+                return (groupEndpoints.has(point) ? 300 : 0) +
+                    eloScore * 150 +
+                    costScore * 100 +
+                    (Number.isFinite(point.costPerElo) ? Math.max(0, 50 - point.costPerElo) : 0);
+            };
+            return score(b) - score(a);
+        });
+
+    // Frontier points are always named. Other labels earn a slot only when
+    // they are sufficiently separated from labels already selected.
+    const selected = [...frontier];
+    candidates.forEach(point => {
+        if (selected.length >= maxLabels) return;
+        const hasNearbyLabel = selected.some(other =>
+            Math.abs(other.x - point.x) < 72 &&
+            Math.abs(other.y - point.y) < 20
+        );
+        if (!hasNearbyLabel) selected.push(point);
+    });
+    return new Set(selected);
+}
+
+function getChartLabelText(player) {
+    const text = String(player || '');
+    return text.length > 27 ? `${text.slice(0, 24)}…` : text;
+}
+
+function getChartLabelPlacements(ctx, labelPoints, containerWidth, padding, chartHeight) {
+    const plotLeft = padding.left + 4;
+    const plotRight = containerWidth - 4;
+    const plotTop = padding.top + 4;
+    const plotBottom = padding.top + chartHeight - 4;
+    const labelHeight = 14;
+    const placements = [];
+
+    labelPoints.forEach((point, index) => {
+        const text = getChartLabelText(point.player);
+        const textWidth = ctx.measureText(text).width;
+        const xCandidates = point.x > containerWidth - textWidth - 18 ?
+            [point.x - textWidth - 8, point.x + 8] :
+            [point.x + 8, point.x - textWidth - 8];
+        const yOffsets = index % 2 ? [4, -18, 20, -34] : [-18, 4, -34, 20];
+
+        for (const xCandidate of xCandidates) {
+            for (const yOffset of yOffsets) {
+                const left = Math.max(plotLeft, Math.min(plotRight - textWidth, xCandidate));
+                const top = Math.max(plotTop, Math.min(plotBottom - labelHeight, point.y + yOffset));
+                const right = left + textWidth;
+                const bottom = top + labelHeight;
+                const overlaps = placements.some(existing =>
+                    left < existing.right + 4 &&
+                    right > existing.left - 4 &&
+                    top < existing.bottom + 3 &&
+                    bottom > existing.top - 3
+                );
+                if (!overlaps) {
+                    placements.push({ text, left, top, right, bottom, baseline: top + 11 });
+                    return;
+                }
+            }
+        }
+    });
+    return placements;
+}
+
+function countChartLabelOverlaps(placements) {
+    let overlapCount = 0;
+    for (let i = 0; i < placements.length; i++) {
+        for (let j = i + 1; j < placements.length; j++) {
+            const first = placements[i];
+            const second = placements[j];
+            if (first.left < second.right &&
+                first.right > second.left &&
+                first.top < second.bottom &&
+                first.bottom > second.top) {
+                overlapCount++;
+            }
+        }
+    }
+    return overlapCount;
+}
+
+function niceTickStep(range, targetCount) {
+    const rawStep = range / Math.max(1, targetCount);
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const normalized = rawStep / magnitude;
+    const factor = normalized >= 5 ? 10 : normalized >= 2 ? 5 : normalized >= 1 ? 2 : 1;
+    return factor * magnitude;
+}
+
+function formatChartMoney(value) {
+    if (!Number.isFinite(value)) return 'N/A';
+    if (value >= 1) return `$${value.toFixed(2)}`;
+    if (value >= 0.01) return `$${value.toFixed(3)}`;
+    return `$${value.toFixed(4)}`;
+}
+
+function formatChartNumber(value, decimals = 0) {
+    return Number.isFinite(value) ? value.toFixed(decimals) : 'N/A';
+}
+
+function escapeChartHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function renderCostEloPareto() {
+    const canvas = document.getElementById('cost-elo-chart');
+    const container = document.getElementById('cost-elo-view');
+    if (!canvas || !container) return;
+
+    const points = getCostEloPoints();
+    const frontier = getParetoFrontier(points);
+    const frontierSet = new Set(frontier);
+    const effortGroups = getEffortGroups(points);
+    const height = costEloExpanded ? Math.max(480, window.innerHeight - 72) : 600;
     const dpr = window.devicePixelRatio || 1;
-
-    // Set canvas dimensions accounting for device pixel ratio
-    const containerWidth = container.clientWidth;
-    canvas.style.width = containerWidth + 'px';
-    canvas.style.height = config.height + 'px';
-    canvas.width = containerWidth * dpr;
-    canvas.height = config.height * dpr;
-
+    const normalWidth = container.clientWidth || 740;
+    const containerWidth = costEloExpanded ?
+        Math.max(740, window.innerWidth - 48) :
+        Math.max(740, normalWidth);
+    const padding = { top: 35, right: 30, bottom: 75, left: 90 };
+    const chartWidth = Math.max(1, containerWidth - padding.left - padding.right);
+    const chartHeight = Math.max(1, height - padding.top - padding.bottom);
     const ctx = canvas.getContext('2d');
 
-    // Scale all drawing operations by the device pixel ratio
-    ctx.scale(dpr, dpr);
+    canvas.style.width = `${containerWidth}px`;
+    canvas.style.height = `${height}px`;
+    canvas.width = containerWidth * dpr;
+    canvas.height = height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const chartWidth = containerWidth - config.padding.left - config.padding.right;
-    const chartHeight = config.height - config.padding.top - config.padding.bottom;
+    const tooltipId = 'cost-elo-tooltip';
+    const oldTooltip = document.getElementById(tooltipId);
+    if (oldTooltip) oldTooltip.remove();
 
-    ctx.fillStyle = config.colors.background;
-    ctx.fillRect(0, 0, containerWidth, config.height);
-
-    // Use pre-parsed data instead of parsing again
-    const normalRows = parsedCsvData.normalRows;
-
-    // Use the default sort function from defaultSortFunctions to sort rows the same way as the leaderboard
-    const sortedRows = [...normalRows].sort((a, b) =>
-        defaultSortFunctions[Screen.LEADERBOARD_NEW](a.cols, b.cols));
-
-    // Get all player names (no top 10 limit)
-    const allPlayers = sortedRows.map(row => row.cols[csvIndices.player]);
-
-    // Map to the format needed for the visualization
-    const playerData = sortedRows.map(row => {
-        const cols = row.cols;
-        return {
-            player: cols[csvIndices.player],
-            // winLossNonInterrupted: parseFloat(cols[csvIndices.win_loss_non_interrupted]) || 0,
-            winRate: parseFloat(cols[csvIndices.player_wins]) / parseFloat(cols[csvIndices.total_games]) || 0,
-            gameDuration: parseFloat(cols[csvIndices.game_duration]) || 0,
-            averageMoves: parseFloat(cols[csvIndices.average_moves]) || 0,
-            moeAverageMoves: parseFloat(cols[csvIndices.moe_average_moves]) || 0,
-            gamesNotInterruptedPercent: parseFloat(cols[csvIndices.games_not_interrupted_percent]) || 0,
-            totalGames: parseFloat(cols[csvIndices.total_games]) || 0,
-            wins: parseFloat(cols[csvIndices.player_wins]) || 0,
-            losses: parseFloat(cols[csvIndices.opponent_wins]) || 0,
-            moeWins: parseFloat(cols[csvIndices.moe_black_llm_win_rate]) || 0,
-            moeLosses: parseFloat(cols[csvIndices.moe_black_llm_loss_rate]) || 0
-        };
+    const tooltip = document.createElement('div');
+    tooltip.id = tooltipId;
+    Object.assign(tooltip.style, {
+        position: 'fixed',
+        display: 'none',
+        zIndex: '2100',
+        maxWidth: '310px',
+        padding: '8px',
+        backgroundColor: '#333',
+        color: 'white',
+        boxShadow: '8px 8px black',
+        borderRadius: '5px',
+        pointerEvents: 'none',
+        textAlign: 'left',
+        fontSize: '14px',
+        fontFamily: '"Web IBM VGA 8x16", monospace'
     });
+    document.body.appendChild(tooltip);
 
-    // Draw axes
-    ctx.strokeStyle = config.colors.axes;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(config.padding.left, config.padding.top + chartHeight);
-    ctx.lineTo(config.padding.left + chartWidth, config.padding.top + chartHeight);
-    ctx.moveTo(config.padding.left, config.padding.top);
-    ctx.lineTo(config.padding.left, config.padding.top + chartHeight);
-    ctx.stroke();
-
-    // Draw grid lines
-    ctx.strokeStyle = config.colors.gridLines;
-    ctx.lineWidth = 1;
-
-    // X-axis grid lines and labels (0%, 20%, 40%, 60%, 80%, 100%)
-    for (let i = 0; i <= 5; i++) {
-        const x = config.padding.left + (chartWidth / 5) * i;
-        const value = i * 0.2;
-
-        ctx.beginPath();
-        ctx.moveTo(x, config.padding.top);
-        ctx.lineTo(x, config.padding.top + chartHeight);
-        ctx.stroke();
-
-        ctx.fillStyle = config.colors.axes;
-        ctx.font = config.fonts.axis;
+    function drawEmptyState() {
+        ctx.fillStyle = '#C0C0C0';
+        ctx.fillRect(0, 0, containerWidth, height);
+        ctx.fillStyle = 'black';
+        ctx.font = '16px "Web IBM VGA 8x16", monospace';
         ctx.textAlign = 'center';
-        ctx.fillText((value * 100).toFixed(0) + '%', x, config.padding.top + chartHeight + 25);
+        ctx.fillText('No models have valid positive cost and non-negative Elo data.', containerWidth / 2, height / 2);
     }
 
-    // Y-axis grid lines and labels (0%, 25%, 50%, 75%, 100%)
-    for (let i = 0; i <= 4; i++) {
-        const y = config.padding.top + chartHeight - (chartHeight / 4) * i;
-        const value = i * 0.25;
+    if (points.length === 0) {
+        drawEmptyState();
+        canvas.dataset.labelCount = '0';
+        canvas.dataset.labelOverlapCount = '0';
+        canvas.dataset.labelClipped = 'false';
+        canvas.dataset.effortGroupCount = '0';
+        canvas.dataset.highlightedFamily = '';
+        canvas.dataset.highlightedVariantCount = '0';
+        canvas.onmousemove = null;
+        canvas.onmouseleave = null;
+        return;
+    }
 
+    const costs = points.map(point => point.cost);
+    const elos = points.map(point => point.elo);
+    let logMin = Math.log10(Math.min(...costs));
+    let logMax = Math.log10(Math.max(...costs));
+    if (logMin === logMax) {
+        logMin -= 0.5;
+        logMax += 0.5;
+    }
+
+    const eloMin = Math.min(...elos);
+    const eloMax = Math.max(...elos);
+    const eloRange = Math.max(100, eloMax - eloMin);
+    const eloPadding = Math.max(50, eloRange * 0.08);
+    const yMin = Math.max(0, eloMin - eloPadding);
+    const yMax = eloMax + eloPadding;
+
+    const xForCost = cost => padding.left +
+        ((Math.log10(cost) - logMin) / (logMax - logMin)) * chartWidth;
+    const yForElo = elo => padding.top +
+        ((yMax - elo) / (yMax - yMin)) * chartHeight;
+
+    points.forEach(point => {
+        point.x = xForCost(point.cost);
+        point.y = yForElo(point.elo);
+        point.radius = frontierSet.has(point) ? 7 : 5;
+        point.isFrontier = frontierSet.has(point);
+    });
+    const effortGroupByPoint = new Map();
+    effortGroups.forEach(group => {
+        group.forEach(point => effortGroupByPoint.set(point, group));
+    });
+    const labelPoints = getSparseChartLabels(points, frontier, effortGroups);
+    canvas.dataset.labelCount = String(labelPoints.size);
+    canvas.dataset.effortGroupCount = String(effortGroups.length);
+
+    function getLogTicks() {
+        const ticks = [];
+        const firstExponent = Math.floor(logMin);
+        const lastExponent = Math.ceil(logMax);
+        for (let exponent = firstExponent; exponent <= lastExponent; exponent++) {
+            [1, 2, 5].forEach(multiplier => {
+                const value = multiplier * Math.pow(10, exponent);
+                if (value >= Math.pow(10, logMin) && value <= Math.pow(10, logMax)) {
+                    ticks.push(value);
+                }
+            });
+        }
+        return ticks.length ? ticks : [Math.pow(10, logMin), Math.pow(10, logMax)];
+    }
+
+    function getEloTicks() {
+        const step = niceTickStep(yMax - yMin, 5);
+        const first = Math.ceil(yMin / step) * step;
+        const ticks = [];
+        for (let value = first; value <= yMax + step * 0.01; value += step) {
+            ticks.push(value);
+        }
+        return ticks.length ? ticks : [yMin, yMax];
+    }
+
+    const logTicks = getLogTicks();
+    const eloTicks = getEloTicks();
+
+    function drawAxes() {
+        ctx.fillStyle = '#C0C0C0';
+        ctx.fillRect(0, 0, containerWidth, height);
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.18)';
+        ctx.lineWidth = 1;
+
+        logTicks.forEach(value => {
+            const x = xForCost(value);
+            ctx.beginPath();
+            ctx.moveTo(x, padding.top);
+            ctx.lineTo(x, padding.top + chartHeight);
+            ctx.stroke();
+        });
+        eloTicks.forEach(value => {
+            const y = yForElo(value);
+            ctx.beginPath();
+            ctx.moveTo(padding.left, y);
+            ctx.lineTo(padding.left + chartWidth, y);
+            ctx.stroke();
+        });
+
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(config.padding.left, y);
-        ctx.lineTo(config.padding.left + chartWidth, y);
+        ctx.moveTo(padding.left, padding.top);
+        ctx.lineTo(padding.left, padding.top + chartHeight);
+        ctx.lineTo(padding.left + chartWidth, padding.top + chartHeight);
         ctx.stroke();
 
-        ctx.fillStyle = config.colors.axes;
-        ctx.font = config.fonts.axis;
+        ctx.fillStyle = 'black';
+        ctx.font = '13px "Web IBM VGA 8x16", monospace';
+        ctx.textAlign = 'center';
+        logTicks.forEach(value => {
+            ctx.fillText(formatChartMoney(value), xForCost(value), padding.top + chartHeight + 24);
+        });
         ctx.textAlign = 'right';
-        ctx.fillText((value * 100).toFixed(0) + '%', config.padding.left - 10, y + 5);
+        eloTicks.forEach(value => {
+            ctx.fillText(String(Math.round(value)), padding.left - 10, yForElo(value) + 5);
+        });
+
+        ctx.font = '16px "Web IBM VGA 8x16", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Cost/Game (log scale)', padding.left + chartWidth / 2, height - 20);
+        ctx.save();
+        ctx.translate(24, padding.top + chartHeight / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('Elo', 0, 0);
+        ctx.restore();
     }
 
-    // Axis titles
-    ctx.fillStyle = config.colors.axes;
-    ctx.font = config.fonts.title;
-    ctx.textAlign = 'center';
+    function drawSeriesLines(hoveredPoint = null) {
+        const highlightedGroup = hoveredPoint ? effortGroupByPoint.get(hoveredPoint) : null;
+        ctx.lineWidth = 1.5;
+        effortGroups.forEach(group => {
+            if (group === highlightedGroup) return;
+            ctx.strokeStyle = 'rgba(0, 100, 160, 0.45)';
+            ctx.beginPath();
+            group.forEach((point, index) => {
+                if (index === 0) ctx.moveTo(point.x, point.y);
+                else ctx.lineTo(point.x, point.y);
+            });
+            ctx.stroke();
+        });
 
-    // X-axis title
-    ctx.fillText(config.titles.x, config.padding.left + chartWidth / 2, config.padding.top + chartHeight + 45);
-
-    // Y-axis title - rotated
-    ctx.save();
-    ctx.translate(config.padding.left - 50, config.padding.top + chartHeight / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText(config.titles.y, 0, 0);
-    ctx.restore();
-
-    // Store point data for hover detection
-    const points = [];
-
-    // Plot data points
-    playerData.forEach((player, _) => {
-        const x = config.padding.left + chartWidth * (player.gameDuration);
-        // const y = config.padding.top + chartHeight - chartHeight * (player.winLossNonInterrupted);
-        const y = config.padding.top + chartHeight - chartHeight * (player.winRate);
-
-        ctx.beginPath();
-        ctx.arc(x, y, config.pointRadius, 0, Math.PI * 2);
-        ctx.fillStyle = config.colors.points;
-        ctx.fill();
-
-        // Draw labels for selected models
-        if (config.labeledModels.includes(player.player)) {
-            ctx.fillStyle = config.colors.labels;
-            ctx.font = config.fonts.labels;
-
-            // Measure text width to determine if it will be clipped
-            const textWidth = ctx.measureText(player.player).width;
-            const rightEdgeX = config.padding.left + chartWidth;
-            const bottomEdgeY = config.padding.top + chartHeight;
-
-            // Determine text alignment and position
-            if (x + textWidth + 10 > rightEdgeX) {
-                // Too close to right edge, place text to the left
-                ctx.textAlign = 'right';
-                ctx.fillText(player.player, x - config.pointRadius - 5, y);
-            } else {
-                // Default: place text to the right
-                ctx.textAlign = 'left';
-                ctx.fillText(player.player, x + config.pointRadius + 5, y);
-            }
+        if (frontier.length > 1) {
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#8b0000';
+            ctx.beginPath();
+            frontier.forEach((point, index) => {
+                if (index === 0) ctx.moveTo(point.x, point.y);
+                else ctx.lineTo(point.x, point.y);
+            });
+            ctx.stroke();
         }
 
-        const point = {
-            x: x,
-            y: y,
-            radius: config.hoverRadius
-        };
-
-        for (const [key, value] of Object.entries(player)) {
-            point[key] = value;
+        if (highlightedGroup) {
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#ff8c00';
+            ctx.beginPath();
+            highlightedGroup.forEach((point, index) => {
+                if (index === 0) ctx.moveTo(point.x, point.y);
+                else ctx.lineTo(point.x, point.y);
+            });
+            ctx.stroke();
         }
-
-        points.push(point);
-    });
-
-    // Remove old tooltip if exists
-    const oldTooltip = document.getElementById('matrix-tooltip');
-    if (oldTooltip) {
-        document.body.removeChild(oldTooltip);
     }
 
-    // Create new tooltip element
-    const tooltipElement = document.createElement('div');
-    tooltipElement.id = 'matrix-tooltip';
-    Object.assign(tooltipElement.style, config.tooltip.style);
-    document.body.appendChild(tooltipElement);
+    function drawPoints(hoveredPoint = null) {
+        const highlightedGroup = hoveredPoint ? effortGroupByPoint.get(hoveredPoint) : null;
+        points.forEach(point => {
+            const isHovered = point === hoveredPoint;
+            const isVariantHighlighted = highlightedGroup && highlightedGroup.includes(point);
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, isHovered ? point.radius + 2 : point.radius, 0, Math.PI * 2);
+            ctx.fillStyle = isVariantHighlighted ? '#ff8c00' : (point.isFrontier ? '#ffff00' : '#404040');
+            ctx.fill();
+            ctx.strokeStyle = isVariantHighlighted || isHovered ? 'white' : 'black';
+            ctx.lineWidth = isHovered ? 3 : (isVariantHighlighted ? 2 : 1);
+            ctx.stroke();
+        });
 
-    let highlightedPoint = null;
+        ctx.font = '12px "Web IBM VGA 8x16", monospace';
+        ctx.fillStyle = 'black';
+        const labelPlacements = getChartLabelPlacements(
+            ctx,
+            labelPoints,
+            containerWidth,
+            padding,
+            chartHeight
+        );
+        canvas.dataset.labelCount = String(labelPlacements.length);
+        canvas.dataset.labelOverlapCount = String(countChartLabelOverlaps(labelPlacements));
+        canvas.dataset.labelClipped = String(labelPlacements.some(label =>
+            label.left < padding.left ||
+            label.right > containerWidth ||
+            label.top < padding.top ||
+            label.bottom > padding.top + chartHeight
+        ));
+        ctx.textAlign = 'left';
+        labelPlacements.forEach(label => {
+            ctx.fillText(label.text, label.left, label.baseline);
+        });
+    }
 
-    // Mouse move handler
-    canvas.addEventListener('mousemove', function (e) {
+    function draw(hoveredPoint = null) {
+        drawAxes();
+        drawSeriesLines(hoveredPoint);
+        drawPoints(hoveredPoint);
+    }
+
+    draw();
+
+    function getHoveredPoint(event) {
         const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+        const scaleX = containerWidth / Math.max(1, rect.width);
+        const scaleY = height / Math.max(1, rect.height);
+        const mouseX = (event.clientX - rect.left) * scaleX;
+        const mouseY = (event.clientY - rect.top) * scaleY;
+        let closest = null;
+        let closestDistance = Infinity;
 
-        let hoveredPoint = null;
-
-        // Find if we're hovering over a point
-        for (const point of points) {
-            const distance = Math.sqrt(
-                Math.pow(mouseX - point.x, 2) +
-                Math.pow(mouseY - point.y, 2)
-            );
-
-            if (distance <= point.radius) {
-                hoveredPoint = point;
-                break;
+        points.forEach(point => {
+            const distance = Math.hypot(mouseX - point.x, mouseY - point.y);
+            if (distance <= point.radius + 5 && distance < closestDistance) {
+                closest = point;
+                closestDistance = distance;
             }
+        });
+        return closest;
+    }
+
+    function updateTooltip(point, event) {
+        if (!point) {
+            tooltip.style.display = 'none';
+            return;
         }
 
-        // Only redraw if hover state changes
-        if ((hoveredPoint && !highlightedPoint) ||
-            (!hoveredPoint && highlightedPoint) ||
-            (hoveredPoint && highlightedPoint && hoveredPoint.player !== highlightedPoint.player)) {
+        const costMoe = Number.isFinite(point.costMoe) ? ` ± ${formatChartMoney(point.costMoe)}` : '';
+        const movesMoe = Number.isFinite(point.costPer100MovesMoe) ?
+            ` ± ${formatChartMoney(point.costPer100MovesMoe)}` : '';
+        const eloMoe = Number.isFinite(point.eloMoe) ? ` ± ${formatChartNumber(point.eloMoe, 1)}` : '';
+        const costPerElo = Number.isFinite(point.costPerElo) ? formatChartMoney(point.costPerElo) : 'N/A';
+        tooltip.innerHTML = `<span style="color: yellow; font-weight: bold">${escapeChartHtml(point.player)}</span><br>
+Mode family: ${escapeChartHtml(point.modeFamily)}<br>
+Reasoning level: ${escapeChartHtml(point.reasoningLevel)}<br>
+Elo: ${formatChartNumber(point.elo, 1)}${eloMoe}<br>
+Cost/Game: ${formatChartMoney(point.cost)}${costMoe}<br>
+Cost/100 Moves: ${formatChartMoney(point.costPer100Moves)}${movesMoe}<br>
+Cost/Elo: ${costPerElo}<br>
+Games: ${Number.isFinite(point.totalGames) ? point.totalGames : 'N/A'}`;
+        tooltip.style.display = 'block';
+        const maxLeft = Math.max(8, window.innerWidth - tooltip.offsetWidth - 8);
+        const maxTop = Math.max(8, window.innerHeight - tooltip.offsetHeight - 8);
+        tooltip.style.left = `${Math.min(event.clientX + 15, maxLeft)}px`;
+        tooltip.style.top = `${Math.min(event.clientY + 15, maxTop)}px`;
+    }
 
-            // Redraw the entire chart
-            ctx.clearRect(0, 0, containerWidth, config.height);
-
-            // Redraw background
-            ctx.fillStyle = config.colors.background;
-            ctx.fillRect(0, 0, containerWidth, config.height);
-
-            // Redraw axes
-            ctx.strokeStyle = config.colors.axes;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(config.padding.left, config.padding.top + chartHeight);
-            ctx.lineTo(config.padding.left + chartWidth, config.padding.top + chartHeight);
-            ctx.moveTo(config.padding.left, config.padding.top);
-            ctx.lineTo(config.padding.left, config.padding.top + chartHeight);
-            ctx.stroke();
-
-            // Redraw grid lines and labels
-            ctx.strokeStyle = config.colors.gridLines;
-            ctx.lineWidth = 1;
-
-            // X-axis grid lines and labels
-            for (let i = 0; i <= 5; i++) {
-                const x = config.padding.left + (chartWidth / 5) * i;
-                const value = i * 0.2;
-
-                ctx.beginPath();
-                ctx.moveTo(x, config.padding.top);
-                ctx.lineTo(x, config.padding.top + chartHeight);
-                ctx.stroke();
-
-                ctx.fillStyle = config.colors.axes;
-                ctx.font = config.fonts.axis;
-                ctx.textAlign = 'center';
-                ctx.fillText((value * 100).toFixed(0) + '%', x, config.padding.top + chartHeight + 25);
-            }
-
-            // Y-axis grid lines and labels
-            for (let i = 0; i <= 4; i++) {
-                const y = config.padding.top + chartHeight - (chartHeight / 4) * i;
-                const value = i * 0.25;
-
-                ctx.beginPath();
-                ctx.moveTo(config.padding.left, y);
-                ctx.lineTo(config.padding.left + chartWidth, y);
-                ctx.stroke();
-
-                ctx.fillStyle = config.colors.axes;
-                ctx.font = config.fonts.axis;
-                ctx.textAlign = 'right';
-                ctx.fillText((value * 100).toFixed(0) + '%', config.padding.left - 10, y + 5);
-            }
-
-            // Redraw axis titles
-            ctx.fillStyle = config.colors.axes;
-            ctx.font = config.fonts.title;
-            ctx.textAlign = 'center';
-
-            // X-axis title
-            ctx.fillText(config.titles.x, config.padding.left + chartWidth / 2, config.padding.top + chartHeight + 45);
-
-            // Y-axis title - rotated
-            ctx.save();
-            ctx.translate(config.padding.left - 50, config.padding.top + chartHeight / 2);
-            ctx.rotate(-Math.PI / 2);
-            ctx.fillText(config.titles.y, 0, 0);
-            ctx.restore();
-
-            // Draw all points and labels
-            points.forEach(point => {
-                const isHighlighted = hoveredPoint && point.player === hoveredPoint.player;
-
-                ctx.beginPath();
-                ctx.arc(point.x, point.y, config.pointRadius, 0, Math.PI * 2);
-                ctx.fillStyle = isHighlighted ? config.colors.pointHover : config.colors.points;
-                ctx.fill();
-
-                // Draw labels for selected models
-                if (config.labeledModels.includes(point.player)) {
-                    ctx.fillStyle = config.colors.labels;
-                    ctx.font = config.fonts.labels;
-
-                    // Measure text width to determine if it will be clipped
-                    const textWidth = ctx.measureText(point.player).width;
-                    const rightEdgeX = config.padding.left + chartWidth;
-
-                    // Determine text alignment and position
-                    if (point.x + textWidth + 10 > rightEdgeX) {
-                        // Too close to right edge, place text to the left
-                        ctx.textAlign = 'right';
-                        ctx.fillText(point.player, point.x - config.pointRadius - 5, point.y);
-                    } else {
-                        // Default: place text to the right
-                        ctx.textAlign = 'left';
-                        ctx.fillText(point.player, point.x + config.pointRadius + 5, point.y);
-                    }
-                }
-            });
-
-            // Update highlighted point reference
-            highlightedPoint = hoveredPoint;
-        }
-
-        // Update tooltip
-        if (hoveredPoint) {
-            tooltipElement.innerHTML = `<span style="color: yellow; font-weight: bold">${hoveredPoint.player}</span><br>
-Win Rate: ${(hoveredPoint.winRate * 100).toFixed(1)}%<br>
-Game duration: ${(hoveredPoint.gameDuration * 100).toFixed(1)}%<br>
-Average moves: ${hoveredPoint.averageMoves} ± ${hoveredPoint.moeAverageMoves}<br>
-Total games: ${hoveredPoint.totalGames}<br>
-Wins: ${hoveredPoint.wins} ± ${hoveredPoint.moeWins}<br>
-Losses: ${hoveredPoint.losses} ± ${hoveredPoint.moeLosses}<br>
-Non-interrupted games: ${hoveredPoint.gamesNotInterruptedPercent}%`;
-            tooltipElement.style.left = (e.clientX + 15) + 'px';
-            tooltipElement.style.top = (e.clientY - 15) + 'px';
-            tooltipElement.style.display = 'block';
-            tooltipElement.style.textAlign = 'left';
-        } else {
-            tooltipElement.style.display = 'none';
-        }
-    });
-
-    canvas.addEventListener('mouseleave', function () {
-        tooltipElement.style.display = 'none';
-
-        if (highlightedPoint) {
-            // Redraw the entire chart to its initial state
-            ctx.clearRect(0, 0, containerWidth, config.height);
-
-            // Redraw background
-            ctx.fillStyle = config.colors.background;
-            ctx.fillRect(0, 0, containerWidth, config.height);
-
-            // Redraw axes
-            ctx.strokeStyle = config.colors.axes;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(config.padding.left, config.padding.top + chartHeight);
-            ctx.lineTo(config.padding.left + chartWidth, config.padding.top + chartHeight);
-            ctx.moveTo(config.padding.left, config.padding.top);
-            ctx.lineTo(config.padding.left, config.padding.top + chartHeight);
-            ctx.stroke();
-
-            // Redraw grid lines and labels
-            ctx.strokeStyle = config.colors.gridLines;
-            ctx.lineWidth = 1;
-
-            // X-axis grid lines and labels
-            for (let i = 0; i <= 5; i++) {
-                const x = config.padding.left + (chartWidth / 5) * i;
-                const value = i * 0.2;
-
-                ctx.beginPath();
-                ctx.moveTo(x, config.padding.top);
-                ctx.lineTo(x, config.padding.top + chartHeight);
-                ctx.stroke();
-
-                ctx.fillStyle = config.colors.axes;
-                ctx.font = config.fonts.axis;
-                ctx.textAlign = 'center';
-                ctx.fillText((value * 100).toFixed(0) + '%', x, config.padding.top + chartHeight + 25);
-            }
-
-            // Y-axis grid lines and labels
-            for (let i = 0; i <= 4; i++) {
-                const y = config.padding.top + chartHeight - (chartHeight / 4) * i;
-                const value = i * 0.25;
-
-                ctx.beginPath();
-                ctx.moveTo(config.padding.left, y);
-                ctx.lineTo(config.padding.left + chartWidth, y);
-                ctx.stroke();
-
-                ctx.fillStyle = config.colors.axes;
-                ctx.font = config.fonts.axis;
-                ctx.textAlign = 'right';
-                ctx.fillText((value * 100).toFixed(0) + '%', config.padding.left - 10, y + 5);
-            }
-
-            // Redraw axis titles
-            ctx.fillStyle = config.colors.axes;
-            ctx.font = config.fonts.title;
-            ctx.textAlign = 'center';
-
-            // X-axis title
-            ctx.fillText(config.titles.x, config.padding.left + chartWidth / 2, config.padding.top + chartHeight + 45);
-
-            // Y-axis title - rotated
-            ctx.save();
-            ctx.translate(config.padding.left - 50, config.padding.top + chartHeight / 2);
-            ctx.rotate(-Math.PI / 2);
-            ctx.fillText(config.titles.y, 0, 0);
-            ctx.restore();
-
-            // Draw all points and labels in normal state
-            points.forEach(point => {
-                ctx.beginPath();
-                ctx.arc(point.x, point.y, config.pointRadius, 0, Math.PI * 2);
-                ctx.fillStyle = config.colors.points;
-                ctx.fill();
-
-                // Draw labels for selected models
-                if (config.labeledModels.includes(point.player)) {
-                    ctx.fillStyle = config.colors.labels;
-                    ctx.font = config.fonts.labels;
-
-                    // Measure text width to determine if it will be clipped
-                    const textWidth = ctx.measureText(point.player).width;
-                    const rightEdgeX = config.padding.left + chartWidth;
-
-                    // Determine text alignment and position
-                    if (point.x + textWidth + 10 > rightEdgeX) {
-                        // Too close to right edge, place text to the left
-                        ctx.textAlign = 'right';
-                        ctx.fillText(point.player, point.x - config.pointRadius - 5, point.y);
-                    } else {
-                        // Default: place text to the right
-                        ctx.textAlign = 'left';
-                        ctx.fillText(point.player, point.x + config.pointRadius + 5, point.y);
-                    }
-                }
-            });
-
-            highlightedPoint = null;
-        }
-    });
+    canvas.onmousemove = event => {
+        const hoveredPoint = getHoveredPoint(event);
+        const highlightedGroup = hoveredPoint ? effortGroupByPoint.get(hoveredPoint) : null;
+        canvas.dataset.highlightedFamily = highlightedGroup ? highlightedGroup[0].modeFamily : '';
+        canvas.dataset.highlightedVariantCount = highlightedGroup ? String(highlightedGroup.length) : '0';
+        draw(hoveredPoint);
+        updateTooltip(hoveredPoint, event);
+    };
+    canvas.onmouseleave = () => {
+        canvas.dataset.highlightedFamily = '';
+        canvas.dataset.highlightedVariantCount = '0';
+        draw();
+        updateTooltip(null);
+    };
 }
 
-// Add window resize handler to make the matrix responsive
+// Keep the chart responsive without accumulating event listeners.
 window.addEventListener('resize', function () {
-    if (currentScreen === Screen.MATRIX) {
-        renderPlayerMatrix();
+    if (currentScreen === Screen.COST_ELO) {
+        renderCostEloPareto();
     }
 });
 

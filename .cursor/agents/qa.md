@@ -1,6 +1,6 @@
 ---
 name: qa
-model: gpt-5.3-codex-high
+model: gpt-5.6-luna[context=272k,reasoning=max,fast=false]
 description: Use for QA
 ---
 

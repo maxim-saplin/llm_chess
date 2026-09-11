@@ -68,6 +68,11 @@ from functools import lru_cache
 
 import orjson
 
+try:
+    from data.model_metadata import write_docs_metadata_js
+except ModuleNotFoundError:  # pragma: no cover - supports direct script execution
+    from model_metadata import write_docs_metadata_js
+
 # `termination_reasons` is a dep-free module; importing from it is cheap. Importing
 # `llm_chess` here would cost ~3.5s because it drags in chess/autogen/matplotlib/etc.
 from termination_reasons import TerminationReason
@@ -132,6 +137,7 @@ DEFAULT_ELO_REFINED_CSV = ELO_REFINED_CSV
 # Docs output used by the public leaderboard web UI
 REPO_ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DOCS_DATA_JS = os.path.join(REPO_ROOT_DIR, "docs", "data.js")
+DOCS_MODEL_METADATA_JS = os.path.join(REPO_ROOT_DIR, "docs", "model_metadata.js")
 
 ELO_WHITE_ADVANTAGE = 35.0
 # If >0 and a model has at least this many Dragon games, compute Elo from Dragon-only blocks.
@@ -1414,6 +1420,7 @@ def sync_public_leaderboard_data_js() -> None:
         return
     ensure_elo_refined_cost_per_1000_elo_columns(ELO_REFINED_CSV)
     write_docs_data_js_from_csv(ELO_REFINED_CSV)
+    write_docs_metadata_js(MODELS_METADATA_CSV, DOCS_MODEL_METADATA_JS)
 
 
 # --------------------- Elo helpers ---------------------
