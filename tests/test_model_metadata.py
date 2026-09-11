@@ -5,6 +5,7 @@ import unittest
 
 from data.model_metadata import (
     load_metadata_rows,
+    normalize_release_date,
     split_model_identity,
     write_docs_metadata_js,
 )
@@ -25,6 +26,8 @@ class TestModelMetadata(unittest.TestCase):
         self.assertTrue(all(row["mode_family"] for row in rows))
         self.assertTrue(all(row["reasoning_level"] for row in rows))
         self.assertTrue(all("adaptive_thinking" not in row["reasoning_level"] for row in rows))
+        muse_row = next(row for row in rows if row["model"] == "muse-glimmer-30b@q4_k_m")
+        self.assertEqual(normalize_release_date(muse_row["date_released"]), "2026-08-01")
 
     def test_effort_and_anthropic_normalization(self):
         self.assertEqual(
@@ -63,6 +66,17 @@ class TestModelMetadata(unittest.TestCase):
             self.assertIn('"models"', javascript)
             self.assertIn('"claude-sonnet-5_adaptive-thinking-high"', javascript)
             self.assertIn('"claude-opus-4-5-20251101_thinking_16000"', javascript)
+            self.assertIn('"date_released": "2025-02-01"', javascript)
+            self.assertIn('"date_released": "2026-08-01"', javascript)
+            self.assertIn('"pricing_known": true', javascript)
+
+    def test_release_date_normalization(self):
+        self.assertEqual(normalize_release_date(" 2024-03"), "2024-03-01")
+        self.assertEqual(normalize_release_date("2025/7/9"), "2025-07-09")
+        self.assertEqual(normalize_release_date("2026"), "2026-01-01")
+        self.assertEqual(normalize_release_date("2024-02-30"), "")
+        self.assertEqual(normalize_release_date("0000-01-01"), "")
+        self.assertEqual(normalize_release_date("not-a-date"), "")
 
     def test_csv_header_is_read_without_changing_model_names(self):
         with open(METADATA_CSV, "r", encoding="utf-8", newline="") as metadata_file:

@@ -7,6 +7,7 @@ import json
 import os
 import re
 import tempfile
+from datetime import date as _date
 from typing import Dict, Iterable, List, Tuple
 
 
@@ -53,6 +54,28 @@ def _status_level(reasoning_status: str) -> str:
     if status == "not_reasoning":
         return "none"
     return "unknown"
+
+
+def normalize_release_date(value: str) -> str:
+    """Return a canonical ISO date for a release month/date, or ``""``."""
+    raw = str(value or "").strip()
+    year_only = re.fullmatch(r"(\d{4})", raw)
+    if year_only:
+        year = int(year_only.group(1))
+        return f"{year:04d}-01-01" if year >= 1 else ""
+
+    match = re.fullmatch(r"(\d{4})[-/.](\d{1,2})(?:[-/.](\d{1,2}))?", raw)
+    if not match:
+        return ""
+
+    year = int(match.group(1))
+    month = int(match.group(2))
+    day = int(match.group(3) or 1)
+    try:
+        _date(year, month, day)
+    except ValueError:
+        return ""
+    return f"{year:04d}-{month:02d}-{day:02d}"
 
 
 def split_model_identity(model: str, reasoning_status: str = "") -> Tuple[str, str]:
@@ -151,6 +174,11 @@ def write_docs_metadata_js(
         row["model"]: {
             "mode_family": row["mode_family"],
             "reasoning_level": row["reasoning_level"],
+            "date_released": normalize_release_date(row.get("date_released", "")),
+            "pricing_known": bool(
+                str(row.get("1m_prompt", "") or "").strip()
+                and str(row.get("1m_completion", "") or "").strip()
+            ),
         }
         for row in rows
         if row.get("model")

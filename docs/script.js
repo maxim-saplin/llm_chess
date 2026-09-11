@@ -58,6 +58,14 @@ const navConfig = {
                 initializeCostEloView();
             }
         },
+        LONGITUDINAL: {
+            id: 'longitudinal',
+            title: 'Longitudinal',
+            elementId: 'longitudinal-view',
+            onShow: function () {
+                initializeLongitudinalView();
+            }
+        },
         HOW_IT_WORKS: {
             id: 'how_it_works',
             title: 'How it works',
@@ -94,7 +102,8 @@ with a superscript asterisk in the leaderboard.</p>`;
             items: [
                 { title: 'Leaderboard', screen: 'leaderboard_new' },
                 { title: 'LB (extended)', screen: 'leaderboard_ext' },
-                { title: 'Cost/Elo', screen: 'cost_elo' }
+                { title: 'Cost/Elo', screen: 'cost_elo' },
+                { title: 'Longitudinal', screen: 'longitudinal' }
             ]
         }
     ]
@@ -115,7 +124,9 @@ function headerIndex(name) {
 function getModelMetadata(player) {
     const fallback = {
         mode_family: player,
-        reasoning_level: 'unknown'
+        reasoning_level: 'unknown',
+        date_released: '',
+        pricing_known: false
     };
     if (typeof modelMetadata === 'undefined' || !modelMetadata || !modelMetadata.models) {
         return fallback;
@@ -130,8 +141,18 @@ const Screen = {
     LEADERBOARD_NEW: 'leaderboard_new',
     LEADERBOARD_EXT: 'leaderboard_ext',
     COST_ELO: 'cost_elo',
+    LONGITUDINAL: 'longitudinal',
     HOW_IT_WORKS: 'how_it_works',
     NOTES: 'notes'
+};
+
+const SCREEN_ROUTES = {
+    [Screen.LEADERBOARD_NEW]: 'leaderboard',
+    [Screen.LEADERBOARD_EXT]: 'leaderboard-ext',
+    [Screen.COST_ELO]: 'cost-elo',
+    [Screen.LONGITUDINAL]: 'longitudinal',
+    [Screen.HOW_IT_WORKS]: 'how-it-works',
+    [Screen.NOTES]: 'notes'
 };
 
 // Special rows removed from display
@@ -152,6 +173,8 @@ let currentScreen = null;
 let allRows = []; // Will store row objects for sorting/drawing
 let costEloExpanded = false;
 let costEloRenderTimer = null;
+let longitudinalExpanded = false;
+let longitudinalRenderTimer = null;
 
 const csvIndices = {
     player: 0,
@@ -238,7 +261,9 @@ function parseCSVData() {
             originalIndex: i,
             cols,
             modeFamily: metadata.mode_family,
-            reasoningLevel: metadata.reasoning_level
+            reasoningLevel: metadata.reasoning_level,
+            releaseDate: metadata.date_released || '',
+            pricingKnown: metadata.pricing_known === true
         };
     });
 
@@ -257,7 +282,9 @@ function parseCSVData() {
                 cols,
                 isBenchmark: true,
                 modeFamily: metadata.mode_family,
-                reasoningLevel: metadata.reasoning_level
+                reasoningLevel: metadata.reasoning_level,
+                releaseDate: metadata.date_released || '',
+                pricingKnown: metadata.pricing_known === true
             };
         }
         rowObjects = rowObjects.concat([
@@ -612,6 +639,18 @@ function collapseCostEloOverlay() {
     }
 }
 
+function collapseLongitudinalOverlay() {
+    longitudinalExpanded = false;
+    document.body.classList.remove('longitudinal-expanded-open');
+    const container = document.querySelector('.longitudinal-container');
+    if (container) container.classList.remove('longitudinal-expanded');
+    const button = document.getElementById('longitudinal-expand');
+    if (button) {
+        button.setAttribute('aria-expanded', 'false');
+        button.textContent = 'Expand';
+    }
+}
+
 function cleanupCostEloView() {
     if (costEloRenderTimer !== null) {
         clearTimeout(costEloRenderTimer);
@@ -627,7 +666,53 @@ function cleanupCostEloView() {
     }
 }
 
-function showPane(screenId) {
+function getScreenFromRoute() {
+    let route = window.location.hash.replace(/^#/, '').trim();
+    if (!route) return null;
+    try {
+        route = decodeURIComponent(route);
+    } catch (error) {
+        return null;
+    }
+
+    const routedEntry = Object.entries(SCREEN_ROUTES)
+        .find(([, routeName]) => routeName === route);
+    if (routedEntry) return routedEntry[0];
+
+    // Accept internal screen IDs as aliases for copied or older links.
+    return Object.values(navConfig.screens).some(screen => screen.id === route) ? route : null;
+}
+
+function updateScreenRoute(screenId, replace = false) {
+    const route = SCREEN_ROUTES[screenId];
+    if (!route || window.location.hash === `#${route}`) return;
+    const method = replace ? 'replaceState' : 'pushState';
+    window.history[method]({}, '', `#${route}`);
+}
+
+function handleRouteChange() {
+    const routedScreen = getScreenFromRoute();
+    if (routedScreen) {
+        if (currentScreen !== routedScreen) {
+            showPane(routedScreen, { fromRoute: true });
+        }
+        return;
+    }
+
+    const fallback = Object.values(navConfig.screens).find(screen => screen.isDefault) ||
+        Object.values(navConfig.screens)[0];
+    if (fallback) {
+        if (currentScreen !== fallback.id) {
+            showPane(fallback.id, { fromRoute: true });
+        }
+        updateScreenRoute(fallback.id, true);
+    }
+}
+
+window.addEventListener('hashchange', handleRouteChange);
+window.addEventListener('popstate', handleRouteChange);
+
+function showPane(screenId, { fromRoute = false, replaceRoute = false } = {}) {
     const scrollPos = window.scrollY;
     const screenConfig = Object.values(navConfig.screens).find(s => s.id === screenId);
 
@@ -636,8 +721,15 @@ function showPane(screenId) {
         return;
     }
 
+    if (!fromRoute) {
+        updateScreenRoute(screenId, replaceRoute);
+    }
+
     if (currentScreen === Screen.COST_ELO && screenId !== Screen.COST_ELO) {
         cleanupCostEloView();
+    }
+    if (currentScreen === Screen.LONGITUDINAL && screenId !== Screen.LONGITUDINAL) {
+        cleanupLongitudinalView();
     }
     hidePopup();
 
@@ -962,12 +1054,18 @@ function isScreenInDropdown(screenId) {
 }
 
 function showDefaultScreen() {
+    const routedScreen = getScreenFromRoute();
+    if (routedScreen) {
+        showPane(routedScreen, { fromRoute: true });
+        return;
+    }
+
     const defaultScreen = Object.values(navConfig.screens).find(screen => screen.isDefault);
     if (defaultScreen) {
-        showPane(defaultScreen.id);
+        showPane(defaultScreen.id, { replaceRoute: true });
     } else {
         const firstScreen = Object.values(navConfig.screens)[0];
-        if (firstScreen) showPane(firstScreen.id);
+        if (firstScreen) showPane(firstScreen.id, { replaceRoute: true });
     }
 }
 
@@ -1578,7 +1676,15 @@ function getChartLabelText(player) {
     return text.length > 27 ? `${text.slice(0, 24)}…` : text;
 }
 
-function getChartLabelPlacements(ctx, labelPoints, containerWidth, padding, chartHeight) {
+function getChartLabelPlacements(
+    ctx,
+    labelPoints,
+    containerWidth,
+    padding,
+    chartHeight,
+    avoidPoints = [],
+    alternateOffsets = false
+) {
     const plotLeft = padding.left + 4;
     const plotRight = containerWidth - 4;
     const plotTop = padding.top + 4;
@@ -1586,13 +1692,15 @@ function getChartLabelPlacements(ctx, labelPoints, containerWidth, padding, char
     const labelHeight = 14;
     const placements = [];
 
-    labelPoints.forEach((point, index) => {
-        const text = getChartLabelText(point.player);
+    Array.from(labelPoints).forEach((point, index) => {
+        const text = point.labelText || getChartLabelText(point.player);
         const textWidth = ctx.measureText(text).width;
         const xCandidates = point.x > containerWidth - textWidth - 18 ?
             [point.x - textWidth - 8, point.x + 8] :
             [point.x + 8, point.x - textWidth - 8];
-        const yOffsets = index % 2 ? [4, -18, 20, -34] : [-18, 4, -34, 20];
+        const yOffsets = alternateOffsets && index % 2 ?
+            [4, -18, 20, -34, 36, -50] :
+            [-18, 4, -34, 20, -50, 36];
 
         for (const xCandidate of xCandidates) {
             for (const yOffset of yOffsets) {
@@ -1606,8 +1714,15 @@ function getChartLabelPlacements(ctx, labelPoints, containerWidth, padding, char
                     top < existing.bottom + 3 &&
                     bottom > existing.top - 3
                 );
-                if (!overlaps) {
-                    placements.push({ text, left, top, right, bottom, baseline: top + 11 });
+                const coversPoint = avoidPoints.some(otherPoint => {
+                    const radius = (otherPoint.radius || 4) + 2;
+                    return otherPoint.x + radius > left &&
+                        otherPoint.x - radius < right &&
+                        otherPoint.y + radius > top &&
+                        otherPoint.y - radius < bottom;
+                });
+                if (!overlaps && !coversPoint) {
+                    placements.push({ point, text, left, top, right, bottom, baseline: top + 11 });
                     return;
                 }
             }
@@ -1631,6 +1746,31 @@ function countChartLabelOverlaps(placements) {
         }
     }
     return overlapCount;
+}
+
+function chartLineIntersectsRect(x1, y1, x2, y2, rect) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    let entry = 0;
+    let exit = 1;
+
+    function clip(parameter, boundary) {
+        if (parameter === 0) return boundary >= 0;
+        const ratio = boundary / parameter;
+        if (parameter < 0) {
+            if (ratio > exit) return false;
+            if (ratio > entry) entry = ratio;
+        } else {
+            if (ratio < entry) return false;
+            if (ratio < exit) exit = ratio;
+        }
+        return true;
+    }
+
+    return clip(-dx, x1 - rect.left) &&
+        clip(dx, rect.right - x1) &&
+        clip(-dy, y1 - rect.top) &&
+        clip(dy, rect.bottom - y1);
 }
 
 function niceTickStep(range, targetCount) {
@@ -1988,10 +2128,642 @@ Games: ${Number.isFinite(point.totalGames) ? point.totalGames : 'N/A'}`;
     };
 }
 
+const longitudinalEloDefinition = {
+    label: 'Elo',
+    axisLabel: 'Elo',
+    direction: 'max',
+    getValue: columns => parseFloat(columns[csvIndices.elo]),
+    getMoe: columns => parseFloat(columns[csvIndices.elo_moe_95]),
+    formatValue: value => formatChartNumber(value, 1),
+    formatTick: value => String(Math.round(value))
+};
+
+function getLongitudinalTimestamp(year, monthIndex, day) {
+    const date = new Date(0);
+    date.setUTCFullYear(year, monthIndex, day);
+    date.setUTCHours(0, 0, 0, 0);
+    return date.getTime();
+}
+
+function parseLongitudinalDate(value) {
+    const raw = String(value || '').trim();
+    const match = raw.match(/^(\d{4})-(\d{2})(?:-(\d{2}))?$/);
+    if (!match) return null;
+
+    const year = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const day = parseInt(match[3] || '1', 10);
+    if (year < 1 || month < 1 || month > 12 || day < 1 || day > 31) return null;
+
+    const timestamp = getLongitudinalTimestamp(year, month - 1, day);
+    const parsedDate = new Date(timestamp);
+    if (!Number.isFinite(timestamp) ||
+        parsedDate.getUTCFullYear() !== year ||
+        parsedDate.getUTCMonth() !== month - 1 ||
+        parsedDate.getUTCDate() !== day) {
+        return null;
+    }
+
+    const quarter = Math.floor((month - 1) / 3) + 1;
+    return {
+        raw,
+        timestamp,
+        monthTimestamp: getLongitudinalTimestamp(year, month - 1, 1),
+        monthLabel: `${year}-${String(month).padStart(2, '0')}`,
+        quarterLabel: `${year} Q${quarter}`
+    };
+}
+
+function getLongitudinalPoints() {
+    const definition = longitudinalEloDefinition;
+    return parsedCsvData.normalRows
+        .filter(row => !row.isBenchmark)
+        .map(row => {
+            const release = parseLongitudinalDate(row.releaseDate);
+            if (!release) return null;
+
+            const value = definition.getValue(row.cols);
+            if (!Number.isFinite(value)) return null;
+            if (value < 0) return null;
+
+            const rawMoe = definition.getMoe(row.cols);
+            const moe = Number.isFinite(rawMoe) && rawMoe >= 0 ? rawMoe : 0;
+
+            return {
+                player: row.cols[csvIndices.player],
+                modeFamily: row.modeFamily || row.cols[csvIndices.player],
+                reasoningLevel: row.reasoningLevel || 'unknown',
+                releaseDate: release.raw,
+                releaseLabel: release.monthLabel,
+                quarterLabel: release.quarterLabel,
+                firstEvaluationDate: row.cols[1] || '',
+                timestamp: release.monthTimestamp,
+                releaseTimestamp: release.timestamp,
+                value,
+                moe,
+                elo: parseFloat(row.cols[csvIndices.elo]),
+                eloMoe: parseFloat(row.cols[csvIndices.elo_moe_95]),
+                cost: parseFloat(row.cols[csvIndices.average_game_cost]),
+                costMoe: parseFloat(row.cols[csvIndices.moe_average_game_cost]),
+                gameDuration: parseFloat(row.cols[csvIndices.game_duration]) * 100,
+                gameDurationMoe: parseFloat(row.cols[csvIndices.moe_game_duration]) * 100,
+                totalGames: parseInt(row.cols[csvIndices.total_games], 10),
+                pricingKnown: row.pricingKnown
+            };
+        })
+        .filter(Boolean)
+        .sort((a, b) =>
+            (a.timestamp - b.timestamp) ||
+            (a.releaseTimestamp - b.releaseTimestamp) ||
+            a.player.localeCompare(b.player)
+        );
+}
+
+function getLongitudinalRecords(points) {
+    const bestByTimestamp = new Map();
+    points.forEach(point => {
+        const current = bestByTimestamp.get(point.timestamp);
+        if (!current ||
+            point.value > current.value ||
+            (point.value === current.value && point.releaseTimestamp > current.releaseTimestamp)) {
+            bestByTimestamp.set(point.timestamp, point);
+        }
+    });
+
+    let best = -Infinity;
+    const records = [];
+    [...bestByTimestamp.values()]
+        .sort((a, b) => a.timestamp - b.timestamp)
+        .forEach(point => {
+            if (point.value <= best) return;
+            best = point.value;
+            records.push(point);
+        });
+    return records;
+}
+
+function getLongitudinalLabelText(point) {
+    let text = String(point.player || '');
+    // Keep effort suffixes while removing dated snapshots from compact labels.
+    text = text.replace(/[-_]20\d{2}-\d{2}-\d{2}/g, '');
+    if (text.length > 25) {
+        text = `${text.slice(0, 19)}…${text.slice(-5)}`;
+    }
+    return text;
+}
+
+function getLongitudinalLabels(points, records, maxLabels = 22) {
+    const recordSet = new Set(records);
+    const minTimestamp = Math.min(...points.map(point => point.timestamp));
+    const maxTimestamp = Math.max(...points.map(point => point.timestamp));
+    const timestampRange = Math.max(1, maxTimestamp - minTimestamp);
+    const minElo = Math.min(...points.map(point => point.value));
+    const eloRange = Math.max(1, Math.max(...points.map(point => point.value)) - minElo);
+    const bucketBest = new Map();
+
+    points.forEach(point => {
+        const current = bucketBest.get(point.timestamp);
+        if (!current || point.value > current.value) {
+            bucketBest.set(point.timestamp, point);
+        }
+    });
+
+    const ranked = [...points].sort((a, b) => {
+        const score = point =>
+            (recordSet.has(point) ? 1000 : 0) +
+            (bucketBest.get(point.timestamp) === point ? 260 : 0) +
+            ((point.value - minElo) / eloRange) * 180 +
+            ((point.timestamp - minTimestamp) / timestampRange) * 90;
+        return score(b) - score(a) ||
+            (b.value - a.value) ||
+            a.player.localeCompare(b.player);
+    });
+    const selected = [...records];
+    ranked.forEach(point => {
+        if (selected.length < maxLabels && !selected.includes(point)) {
+            selected.push(point);
+        }
+    });
+    return new Set(selected.slice(0, maxLabels));
+}
+
+function getLongitudinalDateTicks(minTimestamp, maxTimestamp) {
+    const startDate = new Date(minTimestamp);
+    const endDate = new Date(maxTimestamp);
+    const startMonth = startDate.getUTCFullYear() * 12 + startDate.getUTCMonth();
+    const endMonth = endDate.getUTCFullYear() * 12 + endDate.getUTCMonth();
+    const spanMonths = Math.max(1, endMonth - startMonth);
+    const interval = spanMonths > 36 ? 6 : spanMonths > 18 ? 3 : spanMonths > 9 ? 2 : 1;
+    const firstMonth = Math.floor(startMonth / interval) * interval;
+    const ticks = [];
+
+    for (let monthIndex = firstMonth; monthIndex <= endMonth + interval; monthIndex += interval) {
+        const year = Math.floor(monthIndex / 12);
+        const month = monthIndex % 12;
+        const timestamp = getLongitudinalTimestamp(year, month, 1);
+        if (timestamp < minTimestamp || timestamp > maxTimestamp) continue;
+        const yearLabel = String(year).padStart(4, '0');
+        ticks.push({
+            timestamp,
+            label: `${yearLabel}-${String(month + 1).padStart(2, '0')}`
+        });
+    }
+    return ticks;
+}
+
+function getLongitudinalAxisBounds(points) {
+    const lowerValues = points.map(point => Math.max(0, point.value - point.moe));
+    const upperValues = points.map(point => point.value + point.moe);
+    const rawMax = Math.max(...upperValues, 1);
+
+    const rawMin = Math.min(...lowerValues, 0);
+    const rawRange = Math.max(100, rawMax - rawMin);
+    return {
+        min: Math.max(0, rawMin - rawRange * 0.05),
+        max: rawMax + rawRange * 0.08
+    };
+}
+
+function renderLongitudinal() {
+    const canvas = document.getElementById('longitudinal-chart');
+    const pane = document.getElementById('longitudinal-view');
+    const chartHost = pane ? pane.querySelector('.longitudinal-container') : null;
+    if (!canvas || !pane || !chartHost) return;
+
+    const definition = longitudinalEloDefinition;
+    const points = getLongitudinalPoints();
+    const records = getLongitudinalRecords(points);
+    const recordSet = new Set(records);
+    const labels = getLongitudinalLabels(points, records);
+    const status = document.getElementById('longitudinal-status');
+    const modelRows = parsedCsvData.normalRows.filter(row => !row.isBenchmark);
+    const datedRows = modelRows.filter(row => parseLongitudinalDate(row.releaseDate));
+    const undatedCount = modelRows.length - datedRows.length;
+    const missingEloCount = datedRows.filter(row => !Number.isFinite(parseFloat(row.cols[csvIndices.elo]))).length;
+    const negativeEloCount = datedRows.filter(row => {
+        const elo = parseFloat(row.cols[csvIndices.elo]);
+        return Number.isFinite(elo) && elo < 0;
+    }).length;
+    const omittedCount = modelRows.length - points.length;
+    const omissionParts = [
+        undatedCount ? `${undatedCount} undated` : '',
+        missingEloCount ? `${missingEloCount} missing Elo` : '',
+        negativeEloCount ? `${negativeEloCount} negative Elo` : ''
+    ].filter(Boolean);
+    if (status) {
+        status.textContent = points.length ?
+            `${points.length} model results plotted; ${omittedCount} omitted` +
+            (omissionParts.length ? ` (${omissionParts.join(', ')})` : '') + '.' :
+            'No dated model results with valid non-negative Elo are available.';
+    }
+
+    const height = longitudinalExpanded ? Math.max(480, window.innerHeight - 72) : 600;
+    const dpr = window.devicePixelRatio || 1;
+    const minimumWidth = window.innerWidth <= 768 ? 900 : 740;
+    const containerWidth = longitudinalExpanded ?
+        Math.max(740, window.innerWidth - 48) :
+        Math.max(minimumWidth, chartHost.clientWidth || minimumWidth);
+    const padding = { top: 38, right: 34, bottom: 78, left: 92 };
+    const chartWidth = Math.max(1, containerWidth - padding.left - padding.right);
+    const chartHeight = Math.max(1, height - padding.top - padding.bottom);
+    const ctx = canvas.getContext('2d');
+
+    canvas.style.width = `${containerWidth}px`;
+    canvas.style.height = `${height}px`;
+    canvas.width = containerWidth * dpr;
+    canvas.height = height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const oldTooltip = document.getElementById('longitudinal-tooltip');
+    if (oldTooltip) oldTooltip.remove();
+    const tooltip = document.createElement('div');
+    tooltip.id = 'longitudinal-tooltip';
+    Object.assign(tooltip.style, {
+        position: 'fixed',
+        display: 'none',
+        zIndex: '2100',
+        maxWidth: '330px',
+        padding: '8px',
+        backgroundColor: '#333',
+        color: 'white',
+        boxShadow: '8px 8px black',
+        borderRadius: '5px',
+        pointerEvents: 'none',
+        textAlign: 'left',
+        fontSize: '14px',
+        fontFamily: '"Web IBM VGA 8x16", monospace'
+    });
+    document.body.appendChild(tooltip);
+
+    function drawEmptyState() {
+        ctx.fillStyle = '#C0C0C0';
+        ctx.fillRect(0, 0, containerWidth, height);
+        ctx.fillStyle = 'black';
+        ctx.font = '16px "Web IBM VGA 8x16", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('No dated model results with valid non-negative Elo are available.', containerWidth / 2, height / 2);
+    }
+
+    if (!points.length) {
+        drawEmptyState();
+        tooltip.remove();
+        canvas.dataset.longitudinalPointCount = '0';
+        canvas.dataset.longitudinalRecordCount = '0';
+        canvas.dataset.longitudinalLabelCount = '0';
+        canvas.dataset.longitudinalLabelOverlapCount = '0';
+        canvas.dataset.longitudinalLabelClipped = 'false';
+        canvas.onmousemove = null;
+        canvas.onmouseleave = null;
+        return;
+    }
+
+    const timestamps = points.map(point => point.timestamp);
+    let minTimestamp = Math.min(...timestamps);
+    let maxTimestamp = Math.max(...timestamps);
+    if (minTimestamp === maxTimestamp) {
+        minTimestamp -= 90 * 24 * 60 * 60 * 1000;
+        maxTimestamp += 90 * 24 * 60 * 60 * 1000;
+    } else {
+        const timePadding = Math.max(
+            15 * 24 * 60 * 60 * 1000,
+            (maxTimestamp - minTimestamp) * 0.04
+        );
+        minTimestamp -= timePadding;
+        maxTimestamp += timePadding;
+    }
+
+    const yBounds = getLongitudinalAxisBounds(points);
+    const yRange = Math.max(1, yBounds.max - yBounds.min);
+    const xForTimestamp = timestamp =>
+        padding.left + ((timestamp - minTimestamp) / (maxTimestamp - minTimestamp)) * chartWidth;
+    const yForValue = value =>
+        padding.top + ((yBounds.max - Math.max(yBounds.min, Math.min(yBounds.max, value))) / yRange) * chartHeight;
+
+    points.forEach(point => {
+        point.x = xForTimestamp(point.timestamp);
+        point.y = yForValue(point.value);
+        point.radius = recordSet.has(point) ? 6 : 4.5;
+        point.labelText = getLongitudinalLabelText(point);
+    });
+
+    const dateTicks = getLongitudinalDateTicks(minTimestamp, maxTimestamp);
+    const yStep = niceTickStep(yRange, 5);
+    const yTicks = [];
+    for (let value = Math.ceil(yBounds.min / yStep) * yStep;
+        value <= yBounds.max + yStep * 0.01;
+        value += yStep) {
+        yTicks.push(value);
+    }
+
+    function drawAxes() {
+        ctx.fillStyle = '#C0C0C0';
+        ctx.fillRect(0, 0, containerWidth, height);
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.18)';
+        ctx.lineWidth = 1;
+
+        dateTicks.forEach(tick => {
+            const x = xForTimestamp(tick.timestamp);
+            ctx.beginPath();
+            ctx.moveTo(x, padding.top);
+            ctx.lineTo(x, padding.top + chartHeight);
+            ctx.stroke();
+        });
+        yTicks.forEach(value => {
+            const y = yForValue(value);
+            ctx.beginPath();
+            ctx.moveTo(padding.left, y);
+            ctx.lineTo(padding.left + chartWidth, y);
+            ctx.stroke();
+        });
+
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, padding.top);
+        ctx.lineTo(padding.left, padding.top + chartHeight);
+        ctx.lineTo(padding.left + chartWidth, padding.top + chartHeight);
+        ctx.stroke();
+
+        ctx.fillStyle = 'black';
+        ctx.font = '12px "Web IBM VGA 8x16", monospace';
+        ctx.textAlign = 'center';
+        dateTicks.forEach(tick => {
+            ctx.fillText(tick.label, xForTimestamp(tick.timestamp), padding.top + chartHeight + 22);
+        });
+        ctx.textAlign = 'right';
+        yTicks.forEach(value => {
+            ctx.fillText(definition.formatTick(value), padding.left - 10, yForValue(value) + 5);
+        });
+
+        ctx.font = '16px "Web IBM VGA 8x16", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Release month', padding.left + chartWidth / 2, height - 20);
+        ctx.save();
+        ctx.translate(24, padding.top + chartHeight / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText(definition.axisLabel, 0, 0);
+        ctx.restore();
+    }
+
+    function drawUncertaintyBand() {
+        if (!records.length) return;
+        const upper = records.map(point => ({
+            x: point.x,
+            y: yForValue(point.value + point.moe)
+        }));
+        const lower = records.slice().reverse().map(point => ({
+            x: point.x,
+            y: yForValue(point.value - point.moe)
+        }));
+
+        ctx.fillStyle = 'rgba(80, 80, 80, 0.22)';
+        ctx.beginPath();
+        ctx.moveTo(upper[0].x, upper[0].y);
+        upper.slice(1).forEach(point => ctx.lineTo(point.x, point.y));
+        lower.forEach(point => ctx.lineTo(point.x, point.y));
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(80, 80, 80, 0.65)';
+        ctx.lineWidth = 1;
+        records.forEach(point => {
+            if (!point.moe) return;
+            const yTop = yForValue(point.value + point.moe);
+            const yBottom = yForValue(point.value - point.moe);
+            ctx.beginPath();
+            ctx.moveTo(point.x, yTop);
+            ctx.lineTo(point.x, yBottom);
+            ctx.moveTo(point.x - 4, yTop);
+            ctx.lineTo(point.x + 4, yTop);
+            ctx.moveTo(point.x - 4, yBottom);
+            ctx.lineTo(point.x + 4, yBottom);
+            ctx.stroke();
+        });
+    }
+
+    function drawRecordLine() {
+        if (records.length < 2) return;
+        ctx.strokeStyle = '#8b0000';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        records.forEach((point, index) => {
+            if (index === 0) ctx.moveTo(point.x, point.y);
+            else ctx.lineTo(point.x, point.y);
+        });
+        ctx.stroke();
+    }
+
+    function drawPoints(hoveredPoint = null) {
+        points.forEach(point => {
+            const isHovered = point === hoveredPoint;
+            const isRecord = recordSet.has(point);
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, isHovered ? point.radius + 2 : point.radius, 0, Math.PI * 2);
+            ctx.fillStyle = isHovered ? '#ff8c00' : (isRecord ? '#ffff00' : '#404040');
+            ctx.fill();
+            ctx.strokeStyle = isHovered || isRecord ? '#8b0000' : 'black';
+            ctx.lineWidth = isHovered ? 3 : 1;
+            ctx.stroke();
+        });
+
+        ctx.font = '12px "Web IBM VGA 8x16", monospace';
+        ctx.fillStyle = 'black';
+        const placements = getChartLabelPlacements(
+            ctx,
+            labels,
+            containerWidth,
+            padding,
+            chartHeight,
+            points,
+            true
+        );
+        canvas.dataset.longitudinalLabelCount = String(placements.length);
+        canvas.dataset.longitudinalLabelOverlapCount = String(countChartLabelOverlaps(placements));
+        canvas.dataset.longitudinalLabelClipped = String(placements.some(label =>
+            label.left < padding.left ||
+            label.right > containerWidth ||
+            label.top < padding.top ||
+            label.bottom > padding.top + chartHeight
+        ));
+        placements.forEach(label => {
+            const point = label.point;
+            const anchorX = point.x < label.left ? label.left :
+                point.x > label.right ? label.right : point.x;
+            const anchorY = point.y < label.top ? label.top :
+                point.y > label.bottom ? label.bottom : point.y;
+            const lineCrossesOtherLabel = placements.some(other => {
+                if (other === label) return false;
+                return chartLineIntersectsRect(
+                    point.x,
+                    point.y,
+                    anchorX,
+                    anchorY,
+                    {
+                        left: other.left - 3,
+                        top: other.top - 2,
+                        right: other.right + 3,
+                        bottom: other.bottom + 2
+                    }
+                );
+            });
+            if (Math.hypot(point.x - anchorX, point.y - anchorY) > 8 && !lineCrossesOtherLabel) {
+                ctx.strokeStyle = recordSet.has(point) ?
+                    'rgba(139, 0, 0, 0.65)' :
+                    'rgba(0, 0, 0, 0.45)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(point.x, point.y);
+                ctx.lineTo(anchorX, anchorY);
+                ctx.stroke();
+            }
+        });
+        placements.forEach(label => {
+            ctx.fillStyle = recordSet.has(label.point) ?
+                'rgba(255, 246, 150, 0.88)' :
+                'rgba(224, 224, 224, 0.82)';
+            ctx.fillRect(label.left - 3, label.top - 1, label.right - label.left + 6, 16);
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(label.left - 3, label.top - 1, label.right - label.left + 6, 16);
+        });
+        ctx.fillStyle = 'black';
+        ctx.textAlign = 'left';
+        placements.forEach(label => ctx.fillText(label.text, label.left, label.baseline));
+    }
+
+    function draw(hoveredPoint = null) {
+        drawAxes();
+        drawUncertaintyBand();
+        drawRecordLine();
+        drawPoints(hoveredPoint);
+    }
+
+    draw();
+    canvas.dataset.longitudinalPointCount = String(points.length);
+    canvas.dataset.longitudinalRecordCount = String(records.length);
+
+    function getHoveredPoint(event) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = containerWidth / Math.max(1, rect.width);
+        const scaleY = height / Math.max(1, rect.height);
+        const mouseX = (event.clientX - rect.left) * scaleX;
+        const mouseY = (event.clientY - rect.top) * scaleY;
+        let closest = null;
+        let closestDistance = Infinity;
+
+        points.forEach(point => {
+            const distance = Math.hypot(mouseX - point.x, mouseY - point.y);
+            if (distance <= point.radius + 6 && distance < closestDistance) {
+                closest = point;
+                closestDistance = distance;
+            }
+        });
+        return closest;
+    }
+
+    function updateTooltip(point, event) {
+        if (!point) {
+            tooltip.style.display = 'none';
+            return;
+        }
+
+        const eloMoe = Number.isFinite(point.eloMoe) && point.eloMoe > 0 ?
+            ` ± ${formatChartNumber(point.eloMoe, 1)}` : '';
+        const costMoe = Number.isFinite(point.costMoe) && point.costMoe > 0 ?
+            ` ± ${formatChartMoney(point.costMoe)}` : '';
+        const durationMoe = Number.isFinite(point.gameDurationMoe) && point.gameDurationMoe > 0 ?
+            ` ± ${formatChartNumber(point.gameDurationMoe, 1)}%` : '';
+        tooltip.innerHTML = `<span style="color: yellow; font-weight: bold">${escapeChartHtml(point.player)}</span><br>
+Release: ${escapeChartHtml(point.releaseLabel)} (${escapeChartHtml(point.quarterLabel)})<br>
+Mode family: ${escapeChartHtml(point.modeFamily)}<br>
+Reasoning level: ${escapeChartHtml(point.reasoningLevel)}<br>
+Elo: ${formatChartNumber(point.elo, 1)}${eloMoe}<br>
+Cost/Game: ${formatChartMoney(point.cost)}${costMoe}<br>
+Game Duration: ${formatChartNumber(point.gameDuration, 1)}%${durationMoe}<br>
+First evaluation: ${escapeChartHtml(point.firstEvaluationDate || 'N/A')}<br>
+Games: ${Number.isFinite(point.totalGames) ? point.totalGames : 'N/A'}`;
+        tooltip.style.display = 'block';
+        const maxLeft = Math.max(8, window.innerWidth - tooltip.offsetWidth - 8);
+        const maxTop = Math.max(8, window.innerHeight - tooltip.offsetHeight - 8);
+        tooltip.style.left = `${Math.min(event.clientX + 15, maxLeft)}px`;
+        tooltip.style.top = `${Math.min(event.clientY + 15, maxTop)}px`;
+    }
+
+    canvas.onmousemove = event => {
+        const hoveredPoint = getHoveredPoint(event);
+        draw(hoveredPoint);
+        updateTooltip(hoveredPoint, event);
+    };
+    canvas.onmouseleave = () => {
+        draw();
+        updateTooltip(null);
+    };
+}
+
+function scheduleLongitudinalRender() {
+    if (longitudinalRenderTimer !== null) {
+        clearTimeout(longitudinalRenderTimer);
+    }
+    longitudinalRenderTimer = setTimeout(() => {
+        longitudinalRenderTimer = null;
+        if (currentScreen === Screen.LONGITUDINAL) {
+            renderLongitudinal();
+        }
+    }, 0);
+}
+
+function setLongitudinalExpanded(expanded) {
+    const container = document.querySelector('.longitudinal-container');
+    const button = document.getElementById('longitudinal-expand');
+    if (!container || !button) return;
+
+    longitudinalExpanded = expanded;
+    container.classList.toggle('longitudinal-expanded', expanded);
+    document.body.classList.toggle('longitudinal-expanded-open', expanded);
+    button.setAttribute('aria-expanded', String(expanded));
+    button.textContent = expanded ? 'Close' : 'Expand';
+    renderLongitudinal();
+}
+
+function initializeLongitudinalView() {
+    const button = document.getElementById('longitudinal-expand');
+    if (button && button.dataset.bound !== 'true') {
+        button.dataset.bound = 'true';
+        button.addEventListener('click', () => setLongitudinalExpanded(!longitudinalExpanded));
+    }
+    if (!window.__longitudinalEscapeBound) {
+        window.__longitudinalEscapeBound = true;
+        window.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && longitudinalExpanded) {
+                setLongitudinalExpanded(false);
+            }
+        });
+    }
+    scheduleLongitudinalRender();
+}
+
+function cleanupLongitudinalView() {
+    if (longitudinalRenderTimer !== null) {
+        clearTimeout(longitudinalRenderTimer);
+        longitudinalRenderTimer = null;
+    }
+    collapseLongitudinalOverlay();
+    const tooltip = document.getElementById('longitudinal-tooltip');
+    if (tooltip) tooltip.remove();
+    const canvas = document.getElementById('longitudinal-chart');
+    if (canvas) {
+        canvas.onmousemove = null;
+        canvas.onmouseleave = null;
+    }
+}
+
 // Keep the chart responsive without accumulating event listeners.
 window.addEventListener('resize', function () {
     if (currentScreen === Screen.COST_ELO) {
         renderCostEloPareto();
+    }
+    if (currentScreen === Screen.LONGITUDINAL) {
+        renderLongitudinal();
     }
 });
 

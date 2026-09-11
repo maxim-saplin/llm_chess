@@ -185,6 +185,37 @@
                 Negative or missing Elo values and models without positive cost data are omitted from the chart.
             </p>
         </div>
+        <!-- ############################ -->
+        <!-- LONGITUDINAL INSIGHTS VIEW   -->
+        <!-- ############################ -->
+        <div id="longitudinal-view" class="pane" style="display: none;">
+            <div class="longitudinal-container">
+                <canvas id="longitudinal-chart" width="900" height="600"
+                    aria-label="Elo by model release month longitudinal chart" role="img"></canvas>
+                <button id="longitudinal-expand" class="chart-expand-button" type="button"
+                    aria-controls="longitudinal-chart" aria-expanded="false">Expand</button>
+            </div>
+            <p id="longitudinal-status" class="chart-status" aria-live="polite"></p>
+            <div class="longitudinal-legend" aria-label="Longitudinal chart legend">
+                <span><i class="legend-swatch longitudinal-model-swatch"></i>Models</span>
+                <span><i class="legend-swatch longitudinal-record-swatch"></i>Running record</span>
+                <span><i class="legend-swatch longitudinal-band-swatch"></i>95% margin of error</span>
+            </div>
+            <p class="descriptions">
+                <strong>LONGITUDINAL INSIGHTS:</strong><br><br>
+                This release timeline compares model-level benchmark results by the model's release date. It is a
+                cross-sectional view of model generations, not a repeated measurement of the same model over time.<br><br>
+                <strong>- Metric:</strong> The Y-axis shows estimated Elo; higher values indicate stronger chess
+                performance.<br>
+                <strong>- Running record:</strong> The line connects successive best-so-far Elo models.
+                The gray band shows the reported 95% margin of error around those measured points; it is not a fitted trend
+                confidence interval.<br>
+                <strong>- X-Axis:</strong> Release month is fixed to preserve the model-development timeline. Every
+                model remains an individual hoverable point.
+                Undated models are omitted.
+                Negative or missing Elo values are also omitted.
+            </p>
+        </div>
         <!-- ############ -->
         <!-- HOW IT WORKS -->
         <!-- ############ -->

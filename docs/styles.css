@@ -484,6 +484,7 @@ button.chart-expand-button::after {
 }
 
 .cost-elo-container:hover .chart-expand-button,
+.longitudinal-container:hover .chart-expand-button,
 .chart-expand-button:focus-visible {
     opacity: 1;
 }
@@ -564,6 +565,93 @@ body.cost-elo-expanded-open {
     white-space: nowrap;
 }
 
+.longitudinal-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+    padding-bottom: 10px;
+    overflow-x: auto;
+    position: relative;
+}
+
+.longitudinal-container canvas {
+    background-color: #C0C0C0;
+    border: 1px solid #ddd;
+    box-shadow: 8px 8px black;
+    display: block;
+    max-width: none;
+    box-sizing: border-box;
+}
+
+.longitudinal-container.longitudinal-expanded {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    box-sizing: border-box;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 38px 24px 24px;
+    overflow: auto;
+    justify-content: center;
+    align-items: center;
+    background-color: #0000AA;
+}
+
+.longitudinal-container.longitudinal-expanded canvas {
+    min-width: 0;
+    max-width: none;
+}
+
+.longitudinal-container.longitudinal-expanded .chart-expand-button {
+    top: 12px;
+    right: 16px;
+    opacity: 1;
+}
+
+.longitudinal-expanded button.chart-expand-button:hover {
+    top: 12px;
+    left: auto;
+}
+
+body.longitudinal-expanded-open {
+    overflow: hidden;
+}
+
+.chart-status {
+    min-height: 18px;
+    margin: 0 auto 12px;
+    color: #FFFFFF;
+    font-size: 14px;
+    text-align: center;
+}
+
+.longitudinal-legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 0 auto 20px;
+    font-size: 14px;
+}
+
+.longitudinal-legend span {
+    white-space: nowrap;
+}
+
+.longitudinal-model-swatch {
+    background-color: #404040;
+}
+
+.longitudinal-record-swatch {
+    background-color: #8b0000;
+}
+
+.longitudinal-band-swatch {
+    background-color: rgba(80, 80, 80, 0.45);
+}
+
 /* Responsive styles for mobile devices */
 @media (max-width: 768px) {
     body {
@@ -632,6 +720,14 @@ body.cost-elo-expanded-open {
     .cost-elo-container canvas {
         min-width: 740px;
         max-width: none;
+    }
+
+    .longitudinal-container {
+        justify-content: flex-start;
+    }
+
+    .longitudinal-container canvas {
+        min-width: 900px;
     }
 
     /* Make leaderboard horizontally scrollable on mobile */
