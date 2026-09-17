@@ -117,7 +117,7 @@ Edit globals in `llm_chess.py` or pass via `run_multiple_games.py`:
       - If `65% <= S < 80%`, move up 1 level. If `80% <= S < 90%`, move up 2 levels. If `S >= 90%`, move up 3 levels.
       - If the model is at `100%` wins on its strongest tested level, treat the current Elo as under-resolved and keep raising Dragon until the strongest-level score drops back near `35%` to `65%`.
   - **Stockfish**: Strong engine; install separately.
-  - **TypeSafe Jev**: Constrained Choice player via TypeSafe System One (not a dialog LLM). Set `PlayerType.TYPESAFE_JEV`, provide `TYPESAFE_API_KEY`, optional `TYPESAFE_MODEL` (default `jev-latest`). Each move: FEN + side → Choice over legal UCI (SAN criteria) → `make_move {uci}`. Token usage from each System One response is accumulated into game `usage_stats` (input billed at $0.042/1M tokens; output free).
+  - **TypeSafe Jev**: Constrained Choice player via TypeSafe System One (not a dialog LLM). Set `PlayerType.TYPESAFE_JEV`, provide `TYPESAFE_API_KEY`, optional `TYPESAFE_MODEL` (default `jev-latest`). See [TypeSafe Jev request / response](#typesafe-jev-request--response) for the per-move I/O shape. Usage is accumulated into game `usage_stats` (input $0.042/1M tokens; output free).
 
 ## Processing Logs
 
@@ -156,6 +156,150 @@ From refined CSV/leaderboard:
 Primary sort: Elo (DESC), then Win/Loss (DESC), Duration (DESC), Tokens (ASC). Dragon-tested models marked with *.
 
 Matrix View (in leaderboard): Win Rate (skill) vs. Duration (following) for 2D clustering.
+
+
+## TypeSafe Jev request / response
+
+Jev is **not** a chat model. There is no multi-turn `get_board` / `get_legal_moves` dialog. For each ply, `TypeSafeJevAgent` makes **one** TypeSafe System One call (`POST /v1/systemone` via `typesafe-sdk`), then returns a single Proxy action string: `make_move <uci>`.
+
+Batch helpers: `run_jev_vs_random.py`, `run_jev_vs_dragon.py` (need `TYPESAFE_API_KEY` in `.env`).
+
+### Simplified schema
+
+```text
+Runner (per ply)
+  │
+  ├─ state: { fen, side_to_move }          # board snapshot
+  ├─ model: "jev-latest"                   # or TYPESAFE_MODEL / pinned id
+  └─ questions.move: Choice
+        instructions: "best legal move…"
+        criteria: { "<uci>": "<SAN>", … }  # ≤255 legal options
+        │
+        ▼  TypeSafe System One (Jev)
+        │
+Response
+  ├─ answers.move: { type, choice, probabilities, confidence }
+  │                 choice ∈ criteria keys (UCI)
+  └─ usage: { input_tokens, output_tokens }
+        │
+        ▼
+Agent → Proxy:  "make_move <uci>"
+```
+
+Wire field names match the API (`answers`). The Python SDK also exposes `response.choices["move"]` as a filtered view of Choice answers; this repo reads `response.choices["move"].choice`.
+
+### Detailed per-move exchange
+
+**1. Build inputs from `python-chess`**
+
+| Field | Source | Notes |
+|-------|--------|--------|
+| `state.fen` | `board.fen()` | Full FEN including side, castling, EP, clocks |
+| `state.side_to_move` | `"white"` / `"black"` from `board.turn` | Redundant with FEN; kept explicit for the model |
+| `questions.move.criteria` | `{ move.uci(): board.san(move) for move in board.legal_moves }` | Keys = UCI (what we play); values = SAN (human-readable criteria text) |
+| Cap | `len(criteria) ≤ 255` | TypeSafe Choice limit; rare chess positions can exceed this (agent errors out today) |
+
+**2. Example request** (Black to move after `1. e4`, abbreviated criteria)
+
+Equivalent JSON body sent to `https://api.typesafe.ai/v1/systemone`:
+
+```json
+{
+  "model": "jev-latest",
+  "state": {
+    "fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+    "side_to_move": "black"
+  },
+  "questions": {
+    "move": {
+      "type": "choice",
+      "instructions": "Choose the best legal chess move for the side to move. Options are UCI moves; descriptions are SAN.",
+      "criteria": {
+        "e7e5": "e5",
+        "c7c5": "c5",
+        "g8f6": "Nf6",
+        "b8c6": "Nc6",
+        "d7d5": "d5"
+      }
+    }
+  }
+}
+```
+
+In code (`custom_agents.TypeSafeJevAgent._system_one_move`):
+
+```python
+from typesafe_sdk import Choice, TypeSafeClient
+
+state = {"fen": board.fen(), "side_to_move": "black"}  # or "white"
+criteria = {m.uci(): board.san(m) for m in board.legal_moves}  # full legal set
+
+with TypeSafeClient(model="jev-latest") as client:
+    response = client.system_one(
+        state=state,
+        questions={
+            "move": Choice(
+                instructions=(
+                    "Choose the best legal chess move for the side to move. "
+                    "Options are UCI moves; descriptions are SAN."
+                ),
+                criteria=criteria,
+            ),
+        },
+    )
+
+uci = response.choices["move"].choice   # must be a key in criteria
+# → agent returns: f"make_move {uci}"
+```
+
+Auth: `TYPESAFE_API_KEY` (SDK default). Model: constructor arg, else `TYPESAFE_MODEL`, else `jev-latest`.
+
+**3. Example response** (illustrative probabilities; real values vary)
+
+```json
+{
+  "model": "jev-latest",
+  "answers": {
+    "move": {
+      "type": "choice",
+      "choice": "e7e5",
+      "confidence": 0.72,
+      "probabilities": {
+        "e7e5": 0.41,
+        "c7c5": 0.28,
+        "g8f6": 0.18,
+        "b8c6": 0.08,
+        "d7d5": 0.05
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 1840,
+    "output_tokens": 420
+  }
+}
+```
+
+| Response field | Use in llm_chess |
+|----------------|------------------|
+| `answers.move.choice` | Selected UCI; validated ∈ `criteria`, then `make_move {uci}` |
+| `answers.move.probabilities` | Not logged today (available on the SDK object) |
+| `answers.move.confidence` | Not logged today |
+| `usage.input_tokens` | Added to `total_prompt_tokens`; cost `× $0.042 / 1M` |
+| `usage.output_tokens` | Added to `total_completion_tokens`; **not billed** (price 0 in `models_metadata.csv`) |
+
+**4. What the Proxy / game log sees**
+
+Unlike dialog LLMs, the Autogen `.txt` trace only shows the thin wrapper (`make_move e7e5`). There is no free-text board dump from Jev. Per-game JSON still records `player_black.model` (e.g. `jev-latest`), `accumulated_reply_time_seconds`, and top-level `usage_stats.black` with token totals and cost.
+
+**5. Contrast with dialog LLMs**
+
+| | Dialog LLM (`LLM_BLACK`) | TypeSafe Jev |
+|--|--------------------------|--------------|
+| Protocol | Multi-turn Proxy chat | One System One call / ply |
+| Board access | `get_current_board` / `get_legal_moves` | FEN + full legal Choice in the request |
+| Move output | Free-text `make_move <uci>` (must parse) | Typed `choice` ∈ UCI keys |
+| Failure mode | Illegal / unparseable → wrong_actions | Missing/illegal choice → retry or `None` |
 
 ## Sample Dialog (Single Move)
 
