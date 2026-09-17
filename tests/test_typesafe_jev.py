@@ -25,6 +25,8 @@ class TestTypeSafeJevAgent(unittest.TestCase):
         self.assertEqual(agent.board, board)
         self.assertEqual(agent.make_move_action, "make_move")
         self.assertEqual(agent.model, "jev-latest")
+        self.assertEqual(agent.total_prompt_tokens, 0)
+        self.assertEqual(agent.total_cost, 0.0)
 
     @patch("typesafe_sdk.TypeSafeClient")
     @patch("typesafe_sdk.Choice")
@@ -41,6 +43,7 @@ class TestTypeSafeJevAgent(unittest.TestCase):
         mock_choice_answer.choice = "e2e4"
         mock_response = MagicMock()
         mock_response.choices = {"move": mock_choice_answer}
+        mock_response.usage = None
 
         mock_client = MagicMock()
         mock_client.system_one.return_value = mock_response
@@ -61,6 +64,40 @@ class TestTypeSafeJevAgent(unittest.TestCase):
         criteria = mock_choice.call_args.kwargs["criteria"]
         self.assertIn("e2e4", criteria)
         self.assertEqual(criteria["e2e4"], "e4")
+
+    @patch("typesafe_sdk.TypeSafeClient")
+    @patch("typesafe_sdk.Choice")
+    def test_generate_reply_accumulates_usage_and_cost(self, mock_choice, mock_client_cls):
+        board = chess.Board()
+        agent = TypeSafeJevAgent(
+            name="JevAgent",
+            board=board,
+            make_move_action="make_move",
+            model="jev-test",
+        )
+
+        mock_choice_answer = MagicMock()
+        mock_choice_answer.choice = "e2e4"
+        mock_usage = MagicMock()
+        mock_usage.input_tokens = 1000
+        mock_usage.output_tokens = 200
+        mock_response = MagicMock()
+        mock_response.choices = {"move": mock_choice_answer}
+        mock_response.usage = mock_usage
+
+        mock_client = MagicMock()
+        mock_client.system_one.return_value = mock_response
+        mock_client.__enter__.return_value = mock_client
+        mock_client.__exit__.return_value = False
+        mock_client_cls.return_value = mock_client
+
+        reply = agent.generate_reply(messages=[{"content": "Your turn"}])
+        self.assertEqual(reply, "make_move e2e4")
+        self.assertEqual(agent.total_prompt_tokens, 1000)
+        self.assertEqual(agent.total_completion_tokens, 200)
+        self.assertEqual(agent.total_tokens, 1200)
+        self.assertAlmostEqual(agent.total_cost, 1000 * 0.042 / 1_000_000)
+        self.assertEqual(agent.usage_model_name, "jev-test")
 
     @patch("typesafe_sdk.TypeSafeClient")
     def test_generate_reply_api_error_returns_none(self, mock_client_cls):

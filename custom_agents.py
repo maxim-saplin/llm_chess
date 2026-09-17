@@ -545,6 +545,9 @@ class TypeSafeJevAgent(GameAgent):
     # Choice questions accept at most 255 options (TypeSafe API limit).
     MAX_CHOICE_OPTIONS = 255
 
+    # TypeSafe bills input only; docs: $0.042 / 1M input tokens, output free.
+    INPUT_USD_PER_MTOK = 0.042
+
     def __init__(
         self,
         board,
@@ -556,7 +559,13 @@ class TypeSafeJevAgent(GameAgent):
         super().__init__(*args, **kwargs)
         self.board = board
         self.make_move_action = make_move_action
-        self.model = model
+        self.model = model or os.environ.get("TYPESAFE_MODEL", "jev-latest")
+        # Used by generate_game_stats when total_*_tokens are present (avoids labeling as "non").
+        self.usage_model_name = self.model
+        self.total_prompt_tokens = 0
+        self.total_completion_tokens = 0
+        self.total_tokens = 0
+        self.total_cost = 0.0
 
     def generate_reply(
         self,
@@ -591,6 +600,7 @@ class TypeSafeJevAgent(GameAgent):
                 "side_to_move": side,
             }
             model = self.model or os.environ.get("TYPESAFE_MODEL", "jev-latest")
+            self.usage_model_name = model
 
             with TypeSafeClient(model=model) as client:
                 response = client.system_one(
@@ -605,6 +615,16 @@ class TypeSafeJevAgent(GameAgent):
                         ),
                     },
                 )
+
+            usage = getattr(response, "usage", None)
+            if usage is not None:
+                in_tok = int(getattr(usage, "input_tokens", 0) or 0)
+                out_tok = int(getattr(usage, "output_tokens", 0) or 0)
+                self.total_prompt_tokens += in_tok
+                self.total_completion_tokens += out_tok
+                self.total_tokens += in_tok + out_tok
+                # Output tokens are free per TypeSafe pricing.
+                self.total_cost += in_tok * (self.INPUT_USD_PER_MTOK / 1_000_000)
 
             uci = response.choices["move"].choice
             return f"{self.make_move_action} {uci}"

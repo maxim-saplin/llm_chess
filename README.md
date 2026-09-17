@@ -117,7 +117,7 @@ Edit globals in `llm_chess.py` or pass via `run_multiple_games.py`:
       - If `65% <= S < 80%`, move up 1 level. If `80% <= S < 90%`, move up 2 levels. If `S >= 90%`, move up 3 levels.
       - If the model is at `100%` wins on its strongest tested level, treat the current Elo as under-resolved and keep raising Dragon until the strongest-level score drops back near `35%` to `65%`.
   - **Stockfish**: Strong engine; install separately.
-  - **TypeSafe Jev**: Constrained Choice player via TypeSafe System One (not a dialog LLM). Set `PlayerType.TYPESAFE_JEV`, provide `TYPESAFE_API_KEY`, optional `TYPESAFE_MODEL` (default `jev-latest`). Each move: FEN + side → Choice over legal UCI (SAN criteria) → `make_move {uci}`.
+  - **TypeSafe Jev**: Constrained Choice player via TypeSafe System One (not a dialog LLM). Set `PlayerType.TYPESAFE_JEV`, provide `TYPESAFE_API_KEY`, optional `TYPESAFE_MODEL` (default `jev-latest`). Each move: FEN + side → Choice over legal UCI (SAN criteria) → `make_move {uci}`. Token usage from each System One response is accumulated into game `usage_stats` (input billed at $0.042/1M tokens; output free).
 
 ## Processing Logs
 
