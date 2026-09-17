@@ -479,20 +479,29 @@ def _model_label_from_run_json(run_dir: str) -> str | None:
         llm_configs = md.get("llm_configs") or {}
 
         side_key = None
-        if player_types.get("black_player_type") in ("LLM_BLACK", "LLM_NON"):
+        if player_types.get("black_player_type") in ("LLM_BLACK", "LLM_NON", "TYPESAFE_JEV"):
             side_key = "black"
-        elif player_types.get("white_player_type") in ("LLM_WHITE", "LLM_NON"):
+        elif player_types.get("white_player_type") in ("LLM_WHITE", "LLM_NON", "TYPESAFE_JEV"):
             side_key = "white"
         else:
             side_key = "black"
 
         side_cfg = llm_configs.get(side_key)
-        if not isinstance(side_cfg, dict):
-            return None
+        base_model = None
+        reasoning = None
+        thinking_budget = None
+        if isinstance(side_cfg, dict):
+            base_model = side_cfg.get("model")
+            reasoning = side_cfg.get("reasoning_effort")
+            thinking_budget = side_cfg.get("thinking_budget")
 
-        base_model = side_cfg.get("model")
-        reasoning = side_cfg.get("reasoning_effort")
-        thinking_budget = side_cfg.get("thinking_budget")
+        # Fallback: engine-style TypeSafe Jev stores model under chess_engines.
+        if not base_model:
+            engines = md.get("chess_engines") or {}
+            jev = engines.get("typesafe_jev") if isinstance(engines, dict) else None
+            if isinstance(jev, dict) and jev.get("model"):
+                base_model = jev.get("model")
+
         if not base_model:
             return None
         return _compose_model_label(base_model, reasoning, thinking_budget)

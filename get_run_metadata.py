@@ -201,6 +201,13 @@ def collect_run_metadata(
     ):
         llm_configs_section["black"] = _simplify_llm_config(llm_config_black)
 
+    # TypeSafe Jev is not an Autogen LLM, but refined-CSV recovers the model via
+    # llm_configs.{black|white}.model — mirror chess_engines.typesafe_jev.model there.
+    if llm_chess.black_player_type == llm_chess.PlayerType.TYPESAFE_JEV:
+        llm_configs_section["black"] = {"model": llm_chess.typesafe_model}
+    if llm_chess.white_player_type == llm_chess.PlayerType.TYPESAFE_JEV:
+        llm_configs_section["white"] = {"model": llm_chess.typesafe_model}
+
     if not llm_configs_section:
         llm_configs_section = None
 

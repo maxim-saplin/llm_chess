@@ -373,7 +373,7 @@ def run(
             time_limit=dragon_time_per_move,
         ),
         PlayerType.TYPESAFE_JEV: TypeSafeJevAgent(
-            name="TypeSafe_Jev_White",
+            name="Player_White",
             board=board,
             make_move_action=make_move_action,
             model=typesafe_model,
@@ -418,7 +418,7 @@ def run(
             time_limit=dragon_time_per_move,
         ),
         PlayerType.TYPESAFE_JEV: TypeSafeJevAgent(
-            name="TypeSafe_Jev_Black",
+            name="Player_Black",
             board=board,
             make_move_action=make_move_action,
             model=typesafe_model,

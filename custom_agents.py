@@ -567,6 +567,63 @@ class TypeSafeJevAgent(GameAgent):
         self.total_tokens = 0
         self.total_cost = 0.0
 
+    def _system_one_move(self) -> str:
+        """Call TypeSafe System One and return a validated make_move action string."""
+        from typesafe_sdk import Choice, TypeSafeClient
+
+        legal_moves = list(self.board.legal_moves)
+        if len(legal_moves) > self.MAX_CHOICE_OPTIONS:
+            # TODO: TypeSafe Choice allows at most 255 options; chess positions
+            # can theoretically exceed that. Need a multi-step / beam strategy.
+            raise RuntimeError(
+                f"TypeSafe Jev: {len(legal_moves)} legal moves "
+                f"exceed Choice limit of {self.MAX_CHOICE_OPTIONS}"
+            )
+
+        if not legal_moves:
+            raise RuntimeError("TypeSafe Jev: no legal moves")
+
+        criteria = {move.uci(): self.board.san(move) for move in legal_moves}
+        side = "white" if self.board.turn == chess.WHITE else "black"
+        state = {
+            "fen": self.board.fen(),
+            "side_to_move": side,
+        }
+        model = self.model or os.environ.get("TYPESAFE_MODEL", "jev-latest")
+        self.usage_model_name = model
+
+        with TypeSafeClient(model=model) as client:
+            response = client.system_one(
+                state=state,
+                questions={
+                    "move": Choice(
+                        instructions=(
+                            "Choose the best legal chess move for the side to move. "
+                            "Options are UCI moves; descriptions are SAN."
+                        ),
+                        criteria=criteria,
+                    ),
+                },
+            )
+
+        usage = getattr(response, "usage", None)
+        if usage is not None:
+            in_tok = int(getattr(usage, "input_tokens", 0) or 0)
+            out_tok = int(getattr(usage, "output_tokens", 0) or 0)
+            self.total_prompt_tokens += in_tok
+            self.total_completion_tokens += out_tok
+            self.total_tokens += in_tok + out_tok
+            # Output tokens are free per TypeSafe pricing.
+            self.total_cost += in_tok * (self.INPUT_USD_PER_MTOK / 1_000_000)
+
+        uci = response.choices["move"].choice
+        if uci not in criteria:
+            raise RuntimeError(
+                f"TypeSafe Jev returned UCI '{uci}' not in legal criteria "
+                f"({len(criteria)} options)"
+            )
+        return f"{self.make_move_action} {uci}"
+
     def generate_reply(
         self,
         messages: Optional[List[Dict[str, Any]]] = None,
@@ -576,61 +633,25 @@ class TypeSafeJevAgent(GameAgent):
         if self.should_terminate(messages):
             return None
 
-        try:
-            from typesafe_sdk import Choice, TypeSafeClient
-
-            legal_moves = list(self.board.legal_moves)
-            if len(legal_moves) > self.MAX_CHOICE_OPTIONS:
-                # TODO: TypeSafe Choice allows at most 255 options; chess positions
-                # can theoretically exceed that. Need a multi-step / beam strategy.
-                print(
-                    f"Error using TypeSafe Jev: {len(legal_moves)} legal moves "
-                    f"exceed Choice limit of {self.MAX_CHOICE_OPTIONS}"
-                )
+        # Retry + timing (GameAgent.generate_reply is not used because we override it).
+        for attempt in range(self.max_retries + 1):
+            try:
+                start_time = time.time()
+                reply = self._system_one_move()
+                self.accumulated_reply_time_seconds += time.time() - start_time
+                return reply
+            except Exception as e:
+                print(f"Error using TypeSafe Jev: {e}")
+                if attempt < self.max_retries and is_retryable_error(e):
+                    delay = self.retry_delay * (2**attempt)
+                    print(
+                        f"\033[93mRetrying TypeSafe Jev in {delay:.1f}s "
+                        f"(attempt {attempt + 1}/{self.max_retries})\033[0m"
+                    )
+                    time.sleep(delay)
+                    continue
                 return None
-
-            if not legal_moves:
-                print("Error using TypeSafe Jev: no legal moves")
-                return None
-
-            criteria = {move.uci(): self.board.san(move) for move in legal_moves}
-            side = "white" if self.board.turn == chess.WHITE else "black"
-            state = {
-                "fen": self.board.fen(),
-                "side_to_move": side,
-            }
-            model = self.model or os.environ.get("TYPESAFE_MODEL", "jev-latest")
-            self.usage_model_name = model
-
-            with TypeSafeClient(model=model) as client:
-                response = client.system_one(
-                    state=state,
-                    questions={
-                        "move": Choice(
-                            instructions=(
-                                "Choose the best legal chess move for the side to move. "
-                                "Options are UCI moves; descriptions are SAN."
-                            ),
-                            criteria=criteria,
-                        ),
-                    },
-                )
-
-            usage = getattr(response, "usage", None)
-            if usage is not None:
-                in_tok = int(getattr(usage, "input_tokens", 0) or 0)
-                out_tok = int(getattr(usage, "output_tokens", 0) or 0)
-                self.total_prompt_tokens += in_tok
-                self.total_completion_tokens += out_tok
-                self.total_tokens += in_tok + out_tok
-                # Output tokens are free per TypeSafe pricing.
-                self.total_cost += in_tok * (self.INPUT_USD_PER_MTOK / 1_000_000)
-
-            uci = response.choices["move"].choice
-            return f"{self.make_move_action} {uci}"
-        except Exception as e:
-            print(f"Error using TypeSafe Jev: {e}")
-            return None
+        return None
 
 
 class NonGameAgent(GameAgent):
