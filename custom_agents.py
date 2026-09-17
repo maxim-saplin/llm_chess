@@ -1,4 +1,5 @@
 import copy
+import os
 import random
 import time  # Add this import
 import re
@@ -526,6 +527,89 @@ class ChessEngineDragonAgent(GameAgent):
                 return f"{self.make_move_action} {move.uci()}"
         except Exception as e:
             print(f"Error using Dragon engine: {e}")
+            return None
+
+
+
+class TypeSafeJevAgent(GameAgent):
+    """
+    Engine-style chess agent using TypeSafe System One (Jev), not a dialog LLM.
+
+    Builds state from FEN + side to move, asks a Choice over all legal UCI moves
+    (criteria = SAN), and returns `make_move {uci}`.
+
+    Auth uses TYPESAFE_API_KEY (SDK default). Model from `model` or TYPESAFE_MODEL
+    (default: jev-latest).
+    """
+
+    # Choice questions accept at most 255 options (TypeSafe API limit).
+    MAX_CHOICE_OPTIONS = 255
+
+    def __init__(
+        self,
+        board,
+        make_move_action: str,
+        model: Optional[str] = None,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.board = board
+        self.make_move_action = make_move_action
+        self.model = model
+
+    def generate_reply(
+        self,
+        messages: Optional[List[Dict[str, Any]]] = None,
+        sender: Optional[ConversableAgent] = None,
+        **kwargs: Any,
+    ) -> Union[str, Dict, None]:
+        if self.should_terminate(messages):
+            return None
+
+        try:
+            from typesafe_sdk import Choice, TypeSafeClient
+
+            legal_moves = list(self.board.legal_moves)
+            if len(legal_moves) > self.MAX_CHOICE_OPTIONS:
+                # TODO: TypeSafe Choice allows at most 255 options; chess positions
+                # can theoretically exceed that. Need a multi-step / beam strategy.
+                print(
+                    f"Error using TypeSafe Jev: {len(legal_moves)} legal moves "
+                    f"exceed Choice limit of {self.MAX_CHOICE_OPTIONS}"
+                )
+                return None
+
+            if not legal_moves:
+                print("Error using TypeSafe Jev: no legal moves")
+                return None
+
+            criteria = {move.uci(): self.board.san(move) for move in legal_moves}
+            side = "white" if self.board.turn == chess.WHITE else "black"
+            state = {
+                "fen": self.board.fen(),
+                "side_to_move": side,
+            }
+            model = self.model or os.environ.get("TYPESAFE_MODEL", "jev-latest")
+
+            with TypeSafeClient(model=model) as client:
+                response = client.system_one(
+                    state=state,
+                    questions={
+                        "move": Choice(
+                            instructions=(
+                                "Choose the best legal chess move for the side to move. "
+                                "Options are UCI moves; descriptions are SAN."
+                            ),
+                            criteria=criteria,
+                        ),
+                    },
+                )
+
+            uci = response.choices["move"].choice
+            return f"{self.make_move_action} {uci}"
+        except Exception as e:
+            print(f"Error using TypeSafe Jev: {e}")
             return None
 
 

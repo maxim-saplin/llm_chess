@@ -159,6 +159,7 @@ def collect_run_metadata(
         pt in (
             llm_chess.PlayerType.CHESS_ENGINE_STOCKFISH,
             llm_chess.PlayerType.CHESS_ENGINE_DRAGON,
+            llm_chess.PlayerType.TYPESAFE_JEV,
         )
         for pt in (llm_chess.white_player_type, llm_chess.black_player_type)
     )
@@ -177,6 +178,9 @@ def collect_run_metadata(
                 "reset_history": llm_chess.reset_dragon_history,
                 "level": llm_chess.dragon_level,
                 "time_per_move": llm_chess.dragon_time_per_move,
+            },
+            "typesafe_jev": {
+                "model": llm_chess.typesafe_model,
             },
         }
 

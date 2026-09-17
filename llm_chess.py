@@ -1,3 +1,4 @@
+import os
 import time
 import traceback
 import chess
@@ -9,6 +10,7 @@ from custom_agents import (
     AutoReplyAgent,
     ChessEngineStockfishAgent,
     ChessEngineDragonAgent,
+    TypeSafeJevAgent,
     NonGameAgent,
     build_termination_predicate,
 )
@@ -31,6 +33,7 @@ class PlayerType(Enum):
     CHESS_ENGINE_STOCKFISH = 5
     CHESS_ENGINE_DRAGON = 6  # Add this new entry for Dragon engine
     LLM_NON = 7  # Represents a mixture of agents player using multiple LLMs
+    TYPESAFE_JEV = 8  # TypeSafe System One (Jev) constrained Choice player — not a dialog LLM
 
 
 white_player_type = PlayerType.RANDOM_PLAYER
@@ -101,6 +104,10 @@ dragon_path = "./dragon/dragon-osx"  # Path to Komodo Dragon executable
 reset_dragon_history = True  # If True, Dragon will get no history before making a move
 dragon_level = 1  # Skill level (1-25) for Komodo Dragon
 dragon_time_per_move = 0.1  # Time limit (in seconds) for Dragon to think per move
+
+# TypeSafe Jev (System One) — constrained Choice over legal UCI, not a chat LLM.
+# Auth: TYPESAFE_API_KEY in the environment (SDK default). Model: TYPESAFE_MODEL (default jev-latest).
+typesafe_model = os.environ.get("TYPESAFE_MODEL", "jev-latest")
 
 ## Actions
 
@@ -365,6 +372,13 @@ def run(
             level=dragon_level,
             time_limit=dragon_time_per_move,
         ),
+        PlayerType.TYPESAFE_JEV: TypeSafeJevAgent(
+            name="TypeSafe_Jev_White",
+            board=board,
+            make_move_action=make_move_action,
+            model=typesafe_model,
+            is_termination_msg=is_termination_message,
+        ),
         PlayerType.LLM_NON: NonGameAgent(
             name="Player_Non_White",
             system_message="",
@@ -402,6 +416,13 @@ def run(
             is_termination_msg=is_termination_message,
             level=dragon_level,
             time_limit=dragon_time_per_move,
+        ),
+        PlayerType.TYPESAFE_JEV: TypeSafeJevAgent(
+            name="TypeSafe_Jev_Black",
+            board=board,
+            make_move_action=make_move_action,
+            model=typesafe_model,
+            is_termination_msg=is_termination_message,
         ),
         PlayerType.LLM_NON: NonGameAgent(
             name="Player_Non_Black",

@@ -86,7 +86,7 @@ Edit globals in `llm_chess.py` or pass via `run_multiple_games.py`:
 - Use `azure` for classic Azure chat-completions deployments.
 - Use `azure_responses` for Azure deployments that require the Responses API. Keep `AZURE_OPENAI_ENDPOINT_*` at the resource root such as `https://your-resource.openai.azure.com`; the runtime will normalize it to the Responses base path automatically.
 
-- `white_player_type` / `black_player_type`: `RANDOM_PLAYER`, `LLM`, `CHESS_ENGINE_DRAGON`, `CHESS_ENGINE_STOCKFISH`.
+- `white_player_type` / `black_player_type`: `RANDOM_PLAYER`, `LLM`, `CHESS_ENGINE_DRAGON`, `CHESS_ENGINE_STOCKFISH`, `TYPESAFE_JEV`.
 - `enable_reflection`: Enable "reflect" action for strategic thinking (extra tokens).
 - `use_fen_board`: Use FEN notation instead of Unicode board (default: False).
 - `max_game_moves`: Max moves (default: 200).
@@ -117,6 +117,7 @@ Edit globals in `llm_chess.py` or pass via `run_multiple_games.py`:
       - If `65% <= S < 80%`, move up 1 level. If `80% <= S < 90%`, move up 2 levels. If `S >= 90%`, move up 3 levels.
       - If the model is at `100%` wins on its strongest tested level, treat the current Elo as under-resolved and keep raising Dragon until the strongest-level score drops back near `35%` to `65%`.
   - **Stockfish**: Strong engine; install separately.
+  - **TypeSafe Jev**: Constrained Choice player via TypeSafe System One (not a dialog LLM). Set `PlayerType.TYPESAFE_JEV`, provide `TYPESAFE_API_KEY`, optional `TYPESAFE_MODEL` (default `jev-latest`). Each move: FEN + side → Choice over legal UCI (SAN criteria) → `make_move {uci}`.
 
 ## Processing Logs
 

@@ -334,6 +334,9 @@ def _engine_id_and_level(
             else llm_chess.dragon_level
         )
         return ("dragon", int(level))
+    if player_type == llm_chess.PlayerType.TYPESAFE_JEV:
+        # No skill level; use 0 as a placeholder for folder naming.
+        return ("typesafe-jev", 0)
     return None
 
 
