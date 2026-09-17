@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 import json
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import cairosvg
 import io
 import numpy as np
 from moviepy.editor import ImageSequenceClip
@@ -443,8 +442,61 @@ _frames = []
 _fig = plt.figure()
 
 
+
+def _import_cairosvg():
+    """Lazy-load cairosvg; preload Homebrew libcairo so Mac venvs find it without DYLD_*.
+
+    Batch runners keep visualize_board=False, so this is never needed for Jev/random/Dragon
+    evals — only for interactive board video capture.
+    """
+    import ctypes
+    import sys
+    from pathlib import Path
+
+    candidates = []
+    if sys.platform == "darwin":
+        candidates.extend(
+            [
+                Path("/opt/homebrew/lib/libcairo.2.dylib"),
+                Path("/usr/local/lib/libcairo.2.dylib"),
+            ]
+        )
+        brew = os.environ.get("HOMEBREW_PREFIX")
+        if brew:
+            candidates.insert(0, Path(brew) / "lib" / "libcairo.2.dylib")
+    else:
+        candidates.extend(
+            [
+                Path("/usr/lib/x86_64-linux-gnu/libcairo.so.2"),
+                Path("/usr/lib/aarch64-linux-gnu/libcairo.so.2"),
+                Path("/usr/lib64/libcairo.so.2"),
+            ]
+        )
+
+    last_err: Exception | None = None
+    for lib in candidates:
+        if not lib.exists():
+            continue
+        try:
+            ctypes.CDLL(str(lib))
+            break
+        except OSError as e:
+            last_err = e
+
+    try:
+        import cairosvg
+    except OSError as e:
+        hint = (
+            "Install cairo (e.g. `brew install cairo`) or set "
+            "DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib before launching Python."
+        )
+        raise OSError(f"{e}\n{hint}") from e
+    return cairosvg
+
+
 def display_board(board, move):
     """Display the board and capture the frame."""
+    cairosvg = _import_cairosvg()
     svg = chess.svg.board(
         board,
         arrows=[(move.from_square, move.to_square)],
