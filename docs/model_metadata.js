@@ -1209,6 +1209,18 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "none"
     },
+    "jev-1.13.0": {
+      "date_released": "2026-09-01",
+      "mode_family": "jev-1.13.0",
+      "pricing_known": true,
+      "reasoning_level": "none"
+    },
+    "jev-latest": {
+      "date_released": "2026-09-01",
+      "mode_family": "jev-latest",
+      "pricing_known": true,
+      "reasoning_level": "none"
+    },
     "k2-think@iq4_xs": {
       "date_released": "2025-09-01",
       "mode_family": "k2-think@iq4_xs",
