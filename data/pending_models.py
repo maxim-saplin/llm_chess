@@ -7,7 +7,8 @@ Run from the repo root:
 Columns (headers wrap across two lines):
 
     model | vs rand | vs dragon | wins vs rand | wins vs dragon |
-          vs random errors | vs dragon errors | last game date | has error | has metadata
+          vs random errors | vs dragon errors | last game date | has error | has metadata |
+          max dragon lvl | games vs max | win vs max
 
 - ``wins vs rand`` / ``wins vs dragon``: absolute count of games where
   ``winner in ("Player_Black", "NoN_Synthesizer")`` in the respective log tree.
@@ -91,6 +92,9 @@ class ModelStats:
     errors_dragon: int = 0
     wins_rand: int = 0
     wins_dragon: int = 0
+    max_dragon_level: int | None = None
+    games_vs_max: int = 0
+    wins_vs_max: int = 0
     last_time: str = ""  # raw "YYYY.MM.DD_HH:MM" from time_started
 
 
@@ -258,8 +262,10 @@ def _aggregate_stats(
         if _folder_path_filtered(folder):
             continue
         # Mirrors load_game_logs' "skip conservatively" behaviour for dragon runs.
-        if _white_opponent_from_run_dir(str(folder)) is None:
+        opponent = _white_opponent_from_run_dir(str(folder))
+        if opponent is None:
             continue
+        dragon_level = int(opponent.rsplit("-", 1)[1])
         model = _folder_canonical_model(folder, logs[0][1])
         if model is None or model in FILTER_OUT_MODELS:
             continue
@@ -286,6 +292,13 @@ def _aggregate_stats(
         s.games_dragon += games
         s.errors_dragon += errors
         s.wins_dragon += wins
+        if s.max_dragon_level is None or dragon_level > s.max_dragon_level:
+            s.max_dragon_level = dragon_level
+            s.games_vs_max = games
+            s.wins_vs_max = wins
+        elif dragon_level == s.max_dragon_level:
+            s.games_vs_max += games
+            s.wins_vs_max += wins
         if last_time > s.last_time:
             s.last_time = last_time
         kept_dragon[folder] = logs
@@ -427,8 +440,8 @@ def main() -> None:
     pending = sorted(set(stats.keys()) - published - filtered)
 
     header_lines = [
-        ["model", "vs",   "vs",     "wins",    "wins",      "vs random", "vs dragon", "last",      "has",   "has"],
-        ["",      "rand", "dragon", "vs rand", "vs dragon", "errors",    "errors",    "game date", "error", "metadata"],
+        ["model", "vs",   "vs",     "wins",    "wins",      "vs random", "vs dragon", "last",      "has",   "has",      "max dragon", "games", "win"],
+        ["",      "rand", "dragon", "vs rand", "vs dragon", "errors",    "errors",    "game date", "error", "metadata", "lvl",         "vs max", "vs max"],
     ]
     n_cols = len(header_lines[0])
 
@@ -448,6 +461,9 @@ def main() -> None:
             last_date,
             "yes" if err_total > 0 else "no",
             "yes" if model in with_metadata else "no",
+            str(s.max_dragon_level) if s.max_dragon_level is not None else "-",
+            str(s.games_vs_max),
+            str(s.wins_vs_max),
         ])
 
     widths: list[int] = []

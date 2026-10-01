@@ -1,0 +1,88 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2026.09.27_08:12",
+            "log_folder_relative": "_logs/engine_vs_llm/dragon-lvl-2/Ternary-Bonsai-2-27B-gguf-TQ1_0-high/2026-09-27-08-12-21",
+            "num_repetitions": 10,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "CHESS_ENGINE_DRAGON",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 0,
+            "dialog_turn_delay": 0,
+            "max_api_retries": 6,
+            "api_retry_delay": 0,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "chess_engines": {
+            "stockfish": {
+                "path": "/opt/homebrew/bin/stockfish",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            },
+            "dragon": {
+                "path": "dragon/dragon-linux",
+                "reset_history": true,
+                "level": 2,
+                "time_per_move": 0.1
+            }
+        },
+        "llm_configs": {
+            "black": {
+                "model": "Ternary-Bonsai-2-27B-gguf:TQ1_0",
+                "api_type": "local",
+                "api_key": "REDACTED",
+                "timeout": 1800,
+                "reasoning_effort": "high"
+            }
+        }
+    },
+    "total_games": 10,
+    "white_wins": 4,
+    "black_wins": 3,
+    "draws": 3,
+    "total_moves": 1105,
+    "reasons": {
+        "Too many wrong actions": 3,
+        "Checkmate": 4,
+        "Stalemate": 1,
+        "Max moves reached": 2
+    },
+    "player_white": {
+        "name": "Chess_Engine_Dragon_White",
+        "model": "",
+        "total_material": 112,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 11.2,
+        "std_dev_material": 13.693469652031625
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "Ternary-Bonsai-2-27B-gguf:TQ1_0",
+        "total_material": 231,
+        "wrong_moves": 93,
+        "wrong_actions": 1,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 23.1,
+        "std_dev_material": 13.61739084161622
+    },
+    "average_moves": 110.5,
+    "std_dev_moves": 70.54903731920561
+}

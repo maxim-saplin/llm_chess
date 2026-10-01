@@ -1,0 +1,85 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2026.09.26_22:13",
+            "log_folder_relative": "_logs/engine_vs_llm/dragon-lvl-14/anthropic.claude-opus-5-5-high/2026-09-26-22-13-03",
+            "num_repetitions": 10,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "CHESS_ENGINE_DRAGON",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 7,
+            "dialog_turn_delay": 7,
+            "max_api_retries": 6,
+            "api_retry_delay": 1800,
+            "random_print_board": false,
+            "visualize_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "chess_engines": {
+            "stockfish": {
+                "path": "/opt/homebrew/bin/stockfish",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            },
+            "dragon": {
+                "path": "dragon/dragon-linux",
+                "reset_history": true,
+                "level": 14,
+                "time_per_move": 0.1
+            }
+        },
+        "llm_configs": {
+            "black": {
+                "model": "anthropic.claude-opus-5-5",
+                "api_type": "oai_comp_endpoint",
+                "api_key": "REDACTED",
+                "timeout": 1800,
+                "reasoning_effort": "high"
+            }
+        }
+    },
+    "total_games": 10,
+    "white_wins": 8,
+    "black_wins": 2,
+    "draws": 0,
+    "total_moves": 930,
+    "reasons": {
+        "Checkmate": 10
+    },
+    "player_white": {
+        "name": "Chess_Engine_Dragon_White",
+        "model": "",
+        "total_material": 149,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 14.9,
+        "std_dev_material": 9.550450832872295
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "anthropic.claude-opus-5-5",
+        "total_material": 66,
+        "wrong_moves": 2,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 6.6,
+        "std_dev_material": 5.89161362540952
+    },
+    "average_moves": 93.0,
+    "std_dev_moves": 41.060930335295616
+}
