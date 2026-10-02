@@ -4,7 +4,7 @@ import re
 import datetime
 import statistics
 from typing import Optional, Dict, Tuple
-from utils import setup_console_logging, get_llms
+from utils import extract_reasoning_effort, setup_console_logging, get_llms
 from get_run_metadata import collect_run_metadata, write_run_metadata
 import llm_chess
 
@@ -29,15 +29,15 @@ def run_games():
     #       "frequency_penalty": float | None,
     #       "presence_penalty": float | None,
     #   },
-    #   "reasoning_effort": str,         # Optional (openai/azure/xai/local only): "low" | "medium" | "high".
+    #   "reasoning_effort": str,         # Optional when supported by the selected provider/endpoint.
     #   "thinking_budget": int,          # Optional (anthropic only). Enables thinking mode with given budget tokens.
     #   "provider_overrides": { ... },   # Optional. Merged into config_list[0] (e.g., base_url, api_version, etc.).
     # }
     #
     # Provider-specific quirks applied by get_llms:
-    # - If reasoning_effort is set for provider in (openai, azure, xai, local):
-    #   - config["config_list"][0]["reasoning_effort"] = value
-    #   - top-level temperature is REMOVED (top_p is kept)
+    # - Chat Completions paths put reasoning_effort in config_list[0].extra_body.
+    # - The Responses API uses extra_body.reasoning.effort.
+    # - Top-level temperature is removed when reasoning_effort is set (top_p is kept).
     #
     # - If thinking_budget is set for provider == anthropic:
     #   - config["config_list"][0]["thinking"] = {"type": "enabled", "budget_tokens": thinking_budget}
@@ -288,7 +288,7 @@ def _extract_llm_model_and_suffix(cfg: Optional[Dict]) -> str:
     """Return model name with suffixes based on reasoning_effort and thinking budget.
 
     Suffix rules:
-    - add '-<reasoning_effort>' if present (low|medium|high)
+    - add '-<reasoning_effort>' if present
     - add '-tb_<budget>' if thinking enabled with budget_tokens
     Order: reasoning first, then thinking budget.
     """
@@ -298,7 +298,7 @@ def _extract_llm_model_and_suffix(cfg: Optional[Dict]) -> str:
     model_name = _slugify(provider_conf.get("model", "unknown"))
 
     suffix_parts = []
-    reasoning = provider_conf.get("reasoning_effort")
+    reasoning = extract_reasoning_effort(provider_conf)
     if isinstance(reasoning, str) and reasoning:
         suffix_parts.append(reasoning)
 

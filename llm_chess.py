@@ -12,7 +12,13 @@ from custom_agents import (
     NonGameAgent,
     build_termination_predicate,
 )
-from utils import calculate_material_count, generate_game_stats, get_llms, display_store_game_video_and_stats
+from utils import (
+    calculate_material_count,
+    generate_game_stats,
+    get_llms,
+    display_store_game_video_and_stats,
+    normalize_reasoning_effort_config,
+)
 # Re-export so existing `from llm_chess import TerminationReason` callers keep working.
 # The canonical definition lives in termination_reasons.py (intentionally dep-free) so
 # lightweight consumers like data/get_refined_csv.py can skip llm_chess's heavy import chain.
@@ -62,7 +68,7 @@ default_hyperparams = {
 }
 
 
-reasoning_effort = None # Default is None, used with OpenAI models low, medium, or high
+reasoning_effort = None  # Default is None; OpenAI-compatible APIs receive this via extra_body.
 
 thinking_budget = None # Default is None, if set will enable extended thinking with Anthropic models, min 1024 for Claude 3.7
 
@@ -198,6 +204,10 @@ def run(
         if llm_config_black is None:
             llm_config_black = _llm_config_black
 
+    # Normalize raw configs supplied by callers as well as configs built by get_llms.
+    llm_config_white = normalize_reasoning_effort_config(llm_config_white)
+    llm_config_black = normalize_reasoning_effort_config(llm_config_black)
+
     if non_llm_configs_white is None:
         non_llm_configs_white = [
             {**llm_config_white, "temperature": 0.0},
@@ -208,6 +218,13 @@ def run(
             {**llm_config_black, "temperature": 0.0},
             {**llm_config_black, "temperature": 1.0},
         ]
+
+    non_llm_configs_white = [
+        normalize_reasoning_effort_config(config) for config in non_llm_configs_white
+    ]
+    non_llm_configs_black = [
+        normalize_reasoning_effort_config(config) for config in non_llm_configs_black
+    ]
 
     time_started = time.strftime("%Y.%m.%d_%H:%M")
 

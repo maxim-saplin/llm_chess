@@ -84,8 +84,8 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
     def test_reasoning_effort_propagation(self):
         """Test that reasoning_effort parameter is properly applied."""
 
-        # Define reasoning effort
-        reasoning_effort = "high"
+        # Use a value outside AG2 0.14.0's typed Literal to verify the extra_body path.
+        reasoning_effort = "max"
 
         # Get LLM configs with reasoning effort
         black_config = {"reasoning_effort": reasoning_effort}
@@ -95,21 +95,40 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         )
 
         # Run game with reasoning effort config
-        game_stats, _, _ = llm_chess.run(
+        game_stats, _, player_black = llm_chess.run(
             log_dir=None,
             llm_config_white=llm_config_white,
             llm_config_black=llm_config_black
         )
 
-        # Azure (white) config should include reasoning_effort in its inner config
-        cfg = llm_config_black
-        inner_white = cfg["config_list"][0]
-        self.assertEqual(inner_white.get("reasoning_effort"), reasoning_effort)
-        # Because reasoning_effort was set, top-level temperature should be removed
-        self.assertNotIn("temperature", cfg)
+        # The app config stores the value in extra_body and preserves temperature suppression.
+        provider_conf = llm_config_black["config_list"][0]
+        self.assertEqual(provider_conf.get("extra_body"), {"reasoning_effort": reasoning_effort})
+        self.assertNotIn("reasoning_effort", provider_conf)
+        self.assertNotIn("temperature", llm_config_black)
+        self.assertEqual(
+            player_black.llm_config.config_list[0].get("extra_body"),
+            {"reasoning_effort": reasoning_effort},
+        )
+
+        # AG2/OpenAI SDK should send the value as a top-level request body field.
+        root_url = get_mock_base_url().rsplit("/v1", 1)[0]
+        request_body = requests.get(f"{root_url}/last-request", timeout=10).json()["body"]
+        self.assertEqual(request_body.get("reasoning_effort"), reasoning_effort)
+        self.assertNotIn("extra_body", request_body)
+        self.assertNotIn("temperature", request_body)
 
         self.assertIsNotNone(game_stats["winner"])
         self.assertIsNotNone(game_stats["reason"])
+        self.assertIn("black", game_stats["usage_stats"])
+        self.assertGreater(
+            sum(
+                stats.get("total_tokens", 0)
+                for key, stats in game_stats["usage_stats"]["black"].items()
+                if key != "total_cost" and isinstance(stats, dict)
+            ),
+            0,
+        )
 
     def test_thinking_budget_propagation(self):
         """Test that thinking_budget parameter is properly applied."""

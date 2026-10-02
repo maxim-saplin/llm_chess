@@ -11,6 +11,7 @@ app = FastAPI()
 
 USE_THINKING = True
 CALL_COUNT = 0
+LAST_REQUEST = None
 SCENARIO_TYPE = "default"  # Can be: "default", "wrong_actions", "max_turns", "max_moves", "invalid_action", "non", "non_max_turns", "non_max_moves"
 
 class ChatCompletionRequest(BaseModel):
@@ -155,8 +156,10 @@ class MockChessBot:
 chess_bot = MockChessBot()
 
 @app.post("/v1/chat/completions")
-async def create_chat_completion(request: ChatCompletionRequest):
+async def create_chat_completion(request: ChatCompletionRequest, raw_request: Request):
     try:
+        global LAST_REQUEST
+        LAST_REQUEST = await raw_request.json()
         response = chess_bot.generate_reply(request.messages)
         
         return ChatCompletionResponse(
@@ -174,13 +177,18 @@ async def create_chat_completion(request: ChatCompletionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/last-request")
+async def get_last_request():
+    return {"body": LAST_REQUEST}
+
 @app.post("/v1/reset")
 async def reset_server_state(request: Request):
     try:
         data = await request.json()
-        global CALL_COUNT, USE_THINKING, SCENARIO_TYPE
+        global CALL_COUNT, LAST_REQUEST, USE_THINKING, SCENARIO_TYPE
 
         CALL_COUNT = 0
+        LAST_REQUEST = None
         USE_THINKING = data.get("useThinking", False)
         SCENARIO_TYPE = data.get("scenarioType", "default")
         

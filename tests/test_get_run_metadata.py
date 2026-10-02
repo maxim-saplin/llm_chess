@@ -110,6 +110,44 @@ class TestRunMetadata(unittest.TestCase):
         # Ensure redaction still active
         self.assertEqual(md["llm_configs"]["white"]["api_key"], "REDACTED")
 
+    def test_reasoning_effort_from_extra_body_keeps_metadata_shape(self):
+        llm_chess.white_player_type = llm_chess.PlayerType.LLM_WHITE
+        llm_chess.black_player_type = llm_chess.PlayerType.LLM_BLACK
+
+        cfg_w = {
+            "config_list": [
+                {
+                    "model": "chat-model",
+                    "api_type": "openai",
+                    "api_key": "SECRET",
+                    "extra_body": {"reasoning_effort": "max"},
+                }
+            ]
+        }
+        cfg_b = {
+            "config_list": [
+                {
+                    "model": "responses-model",
+                    "api_type": "responses",
+                    "api_key": "SECRET",
+                    "extra_body": {"reasoning": {"effort": "high", "summary": "auto"}},
+                }
+            ]
+        }
+
+        md = collect_run_metadata(
+            log_folder_relative=self.log_folder,
+            num_repetitions=1,
+            store_individual_logs=False,
+            llm_config_white=cfg_w,
+            llm_config_black=cfg_b,
+        )
+
+        self.assertEqual(md["llm_configs"]["white"]["reasoning_effort"], "max")
+        self.assertEqual(md["llm_configs"]["black"]["reasoning_effort"], "high")
+        self.assertNotIn("extra_body", md["llm_configs"]["white"])
+        self.assertNotIn("extra_body", md["llm_configs"]["black"])
+
     def test_api_type_inference_from_base_url(self):
         # Ensure both sides treated as LLMs so llm_configs is populated
         llm_chess.white_player_type = llm_chess.PlayerType.LLM_WHITE

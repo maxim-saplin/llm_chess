@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from enum import Enum
 
 import llm_chess
-from utils import infer_api_type_for_metadata
+from utils import extract_reasoning_effort, infer_api_type_for_metadata
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -81,9 +81,10 @@ def _simplify_llm_config(config: Dict[str, Any]) -> Dict[str, Any]:
         if budget is not None:
             simplified["thinking_budget"] = budget
 
-    # Reasoning effort should come from provider-level section only
-    if "reasoning_effort" in provider_conf and provider_conf["reasoning_effort"] is not None:
-        simplified["reasoning_effort"] = provider_conf["reasoning_effort"]
+    # Keep the established metadata shape regardless of request-body storage format.
+    reasoning_effort = extract_reasoning_effort(provider_conf)
+    if reasoning_effort is not None:
+        simplified["reasoning_effort"] = reasoning_effort
 
     # Hyper-parameters may also appear at the top level
     for key in _HYPERPARAM_KEYS:

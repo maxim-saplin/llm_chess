@@ -65,6 +65,107 @@ def infer_api_type_for_metadata(provider_conf: Dict[str, Any]) -> Optional[str]:
     except Exception:
         return None
 
+def extract_reasoning_effort(provider_conf: Dict[str, Any]) -> Any:
+    """Read reasoning effort from current extra_body configs or legacy direct fields."""
+    effort = provider_conf.get("reasoning_effort")
+    if effort is not None:
+        return effort
+
+    extra_body = provider_conf.get("extra_body")
+    if not isinstance(extra_body, dict):
+        return None
+
+    effort = extra_body.get("reasoning_effort")
+    if effort is not None:
+        return effort
+
+    reasoning = extra_body.get("reasoning")
+    if isinstance(reasoning, dict):
+        return reasoning.get("effort")
+    return None
+
+
+_REQUEST_BODY_REASONING_API_TYPES = {"openai", "azure", "responses", "groq", "cerebras"}
+
+
+def _provider_conf_with_reasoning_effort(provider_conf: Dict[str, Any], effort: Any) -> Dict[str, Any]:
+    """Set effort using raw request bodies for configured chat/Responses APIs."""
+    api_type = provider_conf.get("api_type") or "openai"
+    normalized_conf = provider_conf.copy()
+
+    if api_type not in _REQUEST_BODY_REASONING_API_TYPES:
+        normalized_conf["reasoning_effort"] = effort
+        return normalized_conf
+
+    normalized_conf.pop("reasoning_effort", None)
+    extra_body = normalized_conf.get("extra_body")
+    if extra_body is None:
+        extra_body = {}
+    elif isinstance(extra_body, dict):
+        extra_body = extra_body.copy()
+    else:
+        raise ValueError("extra_body must be a dictionary to set reasoning_effort")
+
+    if api_type == "responses":
+        reasoning = extra_body.get("reasoning")
+        if reasoning is None:
+            reasoning = {}
+        elif isinstance(reasoning, dict):
+            reasoning = reasoning.copy()
+        else:
+            raise ValueError("extra_body['reasoning'] must be a dictionary for the Responses API")
+        reasoning["effort"] = effort
+        extra_body["reasoning"] = reasoning
+    else:
+        extra_body["reasoning_effort"] = effort
+
+    normalized_conf["extra_body"] = extra_body
+    return normalized_conf
+
+
+def normalize_reasoning_effort_config(config: Dict[str, Any]) -> Dict[str, Any]:
+    """Move typed AG2 reasoning fields into raw request bodies where supported.
+
+    Chat-style APIs use ``extra_body.reasoning_effort``; the Responses API uses
+    ``extra_body.reasoning.effort``. Other provider clients retain their native
+    config field. The input config is not mutated.
+    """
+    if not isinstance(config, dict):
+        return config
+
+    config_list = config.get("config_list")
+    if not isinstance(config_list, list):
+        return config
+
+    normalized_list = list(config_list)
+    changed = False
+
+    for index, provider_conf in enumerate(config_list):
+        if (
+            not isinstance(provider_conf, dict)
+            or provider_conf.get("reasoning_effort") is None
+        ):
+            continue
+
+        api_type = provider_conf.get("api_type") or "openai"
+        if api_type not in _REQUEST_BODY_REASONING_API_TYPES:
+            continue
+
+        normalized_list[index] = _provider_conf_with_reasoning_effort(
+            provider_conf, provider_conf["reasoning_effort"]
+        )
+        changed = True
+
+    if not changed:
+        return config
+
+    normalized_config = config.copy()
+    normalized_config["config_list"] = normalized_list
+    # Match the existing reasoning-mode behavior when normalizing a raw config.
+    normalized_config.pop("temperature", None)
+    return normalized_config
+
+
 def _merge_hyperparams(model_params: Optional[Dict]) -> Dict:
     """Return a copy of per-model hyperparams (no defaults here by design)."""
     merged: Dict = {}
@@ -111,11 +212,15 @@ def _apply_model_specific_config(config: Dict, model_params: Dict, provider_type
 
     # Provider-specific features
     if provider_type in ("openai", "azure", "azure_responses", "xai", "local", "groq", "cerebras"):
-        if model_params and "reasoning_effort" in model_params:
-            # Store reasoning_effort inside the provider-specific entry (matches get_llms_autogen)
+        if model_params and model_params.get("reasoning_effort") is not None:
+            # Use raw request fields for OpenAI-compatible APIs; keep custom clients native.
             if config.get("config_list"):
-                config["config_list"][0]["reasoning_effort"] = model_params["reasoning_effort"]
-            # Remove temperature when reasoning_effort is used (top_p is kept just like in get_llms_autogen)
+                config["config_list"][0] = _provider_conf_with_reasoning_effort(
+                    config["config_list"][0], model_params["reasoning_effort"]
+                )
+        config = normalize_reasoning_effort_config(config)
+        if config.get("config_list") and extract_reasoning_effort(config["config_list"][0]) is not None:
+            # Remove temperature when reasoning_effort is used (top_p is preserved).
             merged_hyperparams.pop("temperature", None)
     elif provider_type == "anthropic":
         if model_params and "thinking_budget" in model_params:
