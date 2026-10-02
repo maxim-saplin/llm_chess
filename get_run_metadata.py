@@ -148,7 +148,6 @@ def collect_run_metadata(
         "max_api_retries": llm_chess.max_api_retries,
         "api_retry_delay": llm_chess.api_retry_delay,
         "random_print_board": llm_chess.random_print_board,
-        "visualize_board": llm_chess.visualize_board,
         "remove_text": llm_chess.remove_text,
     }
 
@@ -245,4 +244,3 @@ def write_run_metadata(metadata: Dict[str, Any], path: str):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=4)
-

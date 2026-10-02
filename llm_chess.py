@@ -12,7 +12,7 @@ from custom_agents import (
     NonGameAgent,
     build_termination_predicate,
 )
-from utils import calculate_material_count, generate_game_stats, get_llms, display_board, display_store_game_video_and_stats
+from utils import calculate_material_count, generate_game_stats, get_llms, display_store_game_video_and_stats
 # Re-export so existing `from llm_chess import TerminationReason` callers keep working.
 # The canonical definition lives in termination_reasons.py (intentionally dep-free) so
 # lightweight consumers like data/get_refined_csv.py can skip llm_chess's heavy import chain.
@@ -53,8 +53,6 @@ api_retry_delay = 2.0  # Base delay in seconds between retries (uses exponential
 random_print_board = (
     False  # if set to True the random player will also print it's board to Console
 )
-visualize_board = False  # You can skip board visualization (animated board in popup window) to speed up execution
-
 # Default hyperparameters are temperature 0.3, top_p 1.0
 # o1-mini fails with any temp params other than 1.0 or not present, R1 distil recomends 0.5-0.7, kimi-k1.5-preview 0.3
 # For thinking mode (temperature will be removed automatically if thinking_budget is set):
@@ -163,10 +161,6 @@ def make_move(move: str):
     san_move = san_board.san(move_obj)
     san_moves.append(san_move)
     
-    # Visualize the board if enabled
-    if visualize_board:
-        display_board(board, move_obj)
-
 def run(
     log_dir="_logs",
     llm_config_white=None,

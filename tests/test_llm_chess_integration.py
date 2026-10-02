@@ -22,7 +22,6 @@ class TestRandomVsRandomGame(unittest.TestCase):
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
         llm_chess.black_player_type = PlayerType.RANDOM_PLAYER
         llm_chess.max_game_moves = 10  # Test exactly 10 turns
-        llm_chess.visualize_board = False  # Disable visualization
         llm_chess.throttle_delay = 0  # No delays needed for testing
         llm_chess.dialog_turn_delay = 0
         llm_chess.random_print_board = False
@@ -73,7 +72,6 @@ class TestLLMvsRandomGame(_MockServerTestCaseBase):
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
         llm_chess.black_player_type = PlayerType.LLM_BLACK
         llm_chess.max_game_moves = 10
-        llm_chess.visualize_board = False
         llm_chess.throttle_delay = 0
         llm_chess.dialog_turn_delay = 0
         llm_chess.random_print_board = False
@@ -435,7 +433,6 @@ class TestRandomVsStockfishGame(unittest.TestCase):
         llm_chess.black_player_type = PlayerType.CHESS_ENGINE_STOCKFISH
         llm_chess.stockfish_level = 20
         llm_chess.max_game_moves = 50 
-        llm_chess.visualize_board = False
         llm_chess.throttle_delay = 0
         llm_chess.dialog_turn_delay = 0
         llm_chess.random_print_board = False
@@ -480,7 +477,6 @@ class TestRandomVsNonGame(_MockServerTestCaseBase):
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
         llm_chess.black_player_type = PlayerType.LLM_NON
         llm_chess.max_game_moves = 10 
-        llm_chess.visualize_board = False
         llm_chess.throttle_delay = 0
         llm_chess.dialog_turn_delay = 0
         llm_chess.random_print_board = False
@@ -662,7 +658,6 @@ class TestRandomVsDragonGame(unittest.TestCase):
         # Override global variables for testing
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
         llm_chess.black_player_type = PlayerType.CHESS_ENGINE_DRAGON  # Need to add this to PlayerType enum
-        llm_chess.visualize_board = False
         llm_chess.throttle_delay = 0
         llm_chess.dialog_turn_delay = 0
         llm_chess.random_print_board = False
@@ -729,7 +724,6 @@ class TestAggregateResults(_MockServerTestCaseBase):
         llm_chess.white_player_type = PlayerType.RANDOM_PLAYER
         llm_chess.black_player_type = PlayerType.LLM_BLACK
         llm_chess.max_game_moves = 2
-        llm_chess.visualize_board = False
         llm_chess.throttle_delay = 0
         llm_chess.dialog_turn_delay = 0
 

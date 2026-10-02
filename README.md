@@ -27,6 +27,7 @@ See the [live leaderboard](https://maxim-saplin.github.io/llm_chess/) for rankin
    # Using uv (recommended)
    uv sync
    ```
+   For the data-analysis notebooks, use `uv sync --group dev --extra analysis`.
 
 3. **Install dependencies**:
    ```
@@ -51,7 +52,7 @@ Run a single chess simulation:
 uv run llm-chess
 ```
 - Default: Random Player (white) vs. LLM (black).
-- Logs saved to `_logs/` with JSON details and optional video recordings.
+- Logs saved to `_logs/` with JSON details.
 
 ### Multiple Games
 For benchmarking, run multiple simulations:

@@ -54,6 +54,7 @@ class TestRunMetadata(unittest.TestCase):
         # Validate top-level keys
         self.assertTrue({"metadata", "player_types", "config", "llm_configs"}.issubset(md.keys()))
         self.assertNotIn("chess_engines", md)
+        self.assertNotIn("visualize_board", md["config"])
 
         # API key redaction (both sides present)
         self.assertEqual(md["llm_configs"]["white"]["api_key"], "REDACTED")
@@ -209,7 +210,6 @@ class TestRunScenarios(_MockServerTestCaseBase):
 
     def setUp(self):
         # Common fast-run flags
-        llm_chess.visualize_board = False
         llm_chess.throttle_delay = 0
         llm_chess.dialog_turn_delay = 0
         llm_chess.max_game_moves = self.max_moves_for_tests

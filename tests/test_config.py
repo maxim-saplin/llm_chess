@@ -23,7 +23,6 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         llm_chess.white_player_type = llm_chess.PlayerType.RANDOM_PLAYER
         llm_chess.black_player_type = llm_chess.PlayerType.LLM_BLACK
         llm_chess.max_game_moves = 2
-        llm_chess.visualize_board = False
         llm_chess.throttle_delay = 0
         llm_chess.dialog_turn_delay = 0
         llm_chess.random_print_board = False
@@ -225,4 +224,3 @@ class TestConfigurationPropagation(_MockServerTestCaseBase):
         self.assertLessEqual(game_stats["number_of_moves"], 4)
         self.assertEqual(game_stats["player_black"]["wrong_moves"], 0)
         self.assertEqual(game_stats["player_black"]["wrong_actions"], 0)
-

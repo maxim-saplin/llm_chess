@@ -74,7 +74,7 @@ except ModuleNotFoundError:  # pragma: no cover - supports direct script executi
     from model_metadata import write_docs_metadata_js
 
 # `termination_reasons` is a dep-free module; importing from it is cheap. Importing
-# `llm_chess` here would cost ~3.5s because it drags in chess/autogen/matplotlib/etc.
+# `llm_chess` here would cost ~3.5s because it drags in chess/autogen/etc.
 from termination_reasons import TerminationReason
 
 # `tabulate` is only used by the two `print_*_leaderboard` functions. Defer its

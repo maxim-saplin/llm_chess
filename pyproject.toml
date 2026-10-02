@@ -9,12 +9,9 @@ description = "LLM Chess benchmark: agentic chess games to evaluate reasoning an
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
 dependencies = [
-  "ag2[anthropic,cerebras,gemini,groq,mistral,openai]==0.11.2",
-  "cairosvg==2.7.1",
+  "ag2[anthropic,cerebras,gemini,groq,mistral,openai]==0.14.0",
   "chess==1.11.2",
   "fastapi==0.115.11",
-  "matplotlib==3.10.0",
-  "moviepy==1.0.3",
   "orjson",
   "pandas",
   "prettytable",
@@ -22,6 +19,11 @@ dependencies = [
   "scipy",
   "tabulate",
   "uvicorn==0.34.0",
+]
+
+[project.optional-dependencies]
+analysis = [
+  "matplotlib==3.10.0",
   "seaborn",
 ]
 
@@ -47,7 +49,5 @@ py-modules = [
   "utils",
 ]
 packages = ["data"]
-
-
 
 

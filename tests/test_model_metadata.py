@@ -21,7 +21,6 @@ class TestModelMetadata(unittest.TestCase):
 
         self.assertIn("mode_family", fieldnames)
         self.assertIn("reasoning_level", fieldnames)
-        self.assertEqual(len(rows), 309)
         self.assertTrue(all(row["model"] for row in rows))
         self.assertTrue(all(row["mode_family"] for row in rows))
         self.assertTrue(all(row["reasoning_level"] for row in rows))

@@ -2,8 +2,8 @@
 
 Isolated into its own tiny module so lightweight consumers (e.g. log refiners,
 offline analysis scripts) can read these constants without paying the ~3.5s
-import cost of `llm_chess`, which transitively pulls in `autogen`, `matplotlib`,
-`moviepy`, Google Cloud AI Platform, etc.
+import cost of `llm_chess`, which transitively pulls in `autogen`, Google Cloud
+AI Platform, etc.
 
 `llm_chess.TerminationReason` is re-exported from this module, so existing
 callers that do `from llm_chess import TerminationReason` keep working

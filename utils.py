@@ -6,13 +6,7 @@ from typing import Any
 from pprint import pprint
 from dotenv import load_dotenv
 import json
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import cairosvg
-import io
-import numpy as np
-from moviepy.editor import ImageSequenceClip
-import chess.svg
+import chess
 from typing import Optional, Dict, Tuple
 from urllib.parse import urlsplit, urlunsplit
 
@@ -439,68 +433,19 @@ def generate_game_stats(
 
 load_dotenv()
 
-_frames = []
-_fig = plt.figure()
-
-
-def display_board(board, move):
-    """Display the board and capture the frame."""
-    svg = chess.svg.board(
-        board,
-        arrows=[(move.from_square, move.to_square)],
-        fill={move.from_square: "gray"},
-        size=200,
-    )
-    png_data = cairosvg.svg2png(bytestring=svg.encode("utf-8"), dpi=200)
-    img = mpimg.imread(io.BytesIO(png_data), format="png")
-
-    plt.imshow(img)
-    plt.axis("off")
-    _fig.set_dpi(200)
-    plt.pause(0.1)
-
-    _fig.canvas.draw()
-    io_buf = io.BytesIO()
-    _fig.savefig(io_buf, format="raw", dpi=200)
-    io_buf.seek(0)
-    frame = np.reshape(
-        np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
-        newshape=(int(_fig.bbox.bounds[3]), int(_fig.bbox.bounds[2]), -1),
-    )
-    _frames.append(frame)
-    plt.clf()
-
-
-def save_video(filename):
-    """Save the captured frames to a video file."""
-    if _frames:
-        clip = ImageSequenceClip(_frames, fps=1)
-        if os.path.exists(
-            filename
-        ):  # if running automated games they can complete within same second
-            base, ext = os.path.splitext(filename)
-            import time
-
-            timestamp = int(time.time() * 1000)
-            filename = f"{base}_{timestamp}{ext}"
-        clip.write_videofile(filename, codec="libx264")
-    else:
-        print("No frames to save to a video file")
-
-
 def display_store_game_video_and_stats(game_stats, log_dir="_logs"):
     # 1) Gather usage summaries
     white_summary = gather_usage_summary([game_stats["player_white"]])
     black_summary = gather_usage_summary([game_stats["player_black"]])
 
-    # 2) Save results to file and video
-    _save_game_to_file_and_video(game_stats, log_dir)
+    # 2) Save results to file
+    _save_game_to_file(game_stats, log_dir)
 
     # 3) Print outcome
     _print_game_outcome(game_stats, white_summary, black_summary)
 
 
-def _save_game_to_file_and_video(game_stats, log_dir):
+def _save_game_to_file(game_stats, log_dir):
     if log_dir is None:
         return
         
@@ -525,13 +470,6 @@ def _save_game_to_file_and_video(game_stats, log_dir):
     with open(log_filename, "w") as log_file:
         json.dump(game_stats_copy, log_file, indent=4)
     
-    # Only create video directory if there are frames to save
-    if _frames:
-        video_dir = f"{log_dir}/videos"
-        os.makedirs(video_dir, exist_ok=True)
-        save_video(f"{video_dir}/{game_stats['time_started']}.mp4")
-
-
 def _print_game_outcome(game_stats, white_summary, black_summary):
     print("\033[92m\nGAME OVER\n\033[0m")
     print(f"\033[92m{game_stats['winner']} wins due to {game_stats['reason']}.\033[0m")
