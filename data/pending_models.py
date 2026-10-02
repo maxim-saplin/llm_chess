@@ -52,7 +52,7 @@ from data.get_refined_csv import (  # noqa: E402
     _model_label_from_run_json,
     _white_opponent_from_run_dir,
 )
-from llm_chess import TerminationReason  # noqa: E402
+from termination_reasons import TerminationReason  # noqa: E402
 
 RAND_DIR = ROOT / "_logs" / "rand_vs_llm"
 ENGINE_DIR = ROOT / "_logs" / "engine_vs_llm"
