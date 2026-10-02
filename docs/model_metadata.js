@@ -9,6 +9,12 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "default"
     },
+    "Ternary-Bonsai-2-27B-gguf:TQ1_0-high": {
+      "date_released": "2026-09-17",
+      "mode_family": "Ternary-Bonsai-2-27B-gguf:TQ1_0",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
     "agents-a1@q4_k_m": {
       "date_released": "2026-07-01",
       "mode_family": "agents-a1@q4_k_m",
@@ -207,6 +213,12 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "budget_16000"
     },
+    "claude-opus-5-5-high": {
+      "date_released": "2026-09-01",
+      "mode_family": "claude-opus-5-5",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
     "claude-opus-5_adaptive-thinking-high": {
       "date_released": "2026-04-01",
       "mode_family": "claude-opus-5",
@@ -254,6 +266,12 @@ const modelMetadata = {
       "mode_family": "claude-sonnet-5",
       "pricing_known": true,
       "reasoning_level": "none"
+    },
+    "claude-sonnet-5-5-high": {
+      "date_released": "2026-09-01",
+      "mode_family": "claude-sonnet-5-5",
+      "pricing_known": true,
+      "reasoning_level": "high"
     },
     "claude-sonnet-5_adaptive-thinking-high": {
       "date_released": "2026-02-01",
@@ -1046,6 +1064,42 @@ const modelMetadata = {
       "mode_family": "gpt-6-astra-2026-09-03",
       "pricing_known": true,
       "reasoning_level": "xhigh"
+    },
+    "gpt-6-luna-2026-09-22-high": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6-luna-2026-09-22",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
+    "gpt-6-luna-2026-09-22-max": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6-luna-2026-09-22-max",
+      "pricing_known": true,
+      "reasoning_level": "default"
+    },
+    "gpt-6-luna-2026-09-22-xhigh": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6-luna-2026-09-22",
+      "pricing_known": true,
+      "reasoning_level": "xhigh"
+    },
+    "gpt-6-sol-2026-09-22-high": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6-sol-2026-09-22",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
+    "gpt-6-sol-2026-09-22-xhigh": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6-sol-2026-09-22",
+      "pricing_known": true,
+      "reasoning_level": "xhigh"
+    },
+    "gpt-6.1-sol-2026-09-29-high": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6.1-sol-2026-09-29",
+      "pricing_known": true,
+      "reasoning_level": "high"
     },
     "gpt-oss-120b": {
       "date_released": "2025-08-01",
