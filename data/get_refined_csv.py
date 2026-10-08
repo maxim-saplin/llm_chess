@@ -187,9 +187,8 @@ FILTER_OUT_MODELS = [
     "claude-opus-4-7@default", # Google Cloud is not definitive regarding reasoning defaults
     "qwen3.6-35b-a3b@q4_k_m", # can't get it ran in reasonable time, alomst every move is full context gen
 
-    "anthropic.claude-sonnet-5-5-high", # too few
     "gpt-6.1-sol-2026-09-29-xhigh", # too few
-    "gpt-6-sol-2026-09-22-xhigh", # too few
+    "gpt-6-luna-2026-09-22-max", # too few
 
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
 ]
