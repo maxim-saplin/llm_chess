@@ -1695,9 +1695,11 @@ function getChartLabelPlacements(
     Array.from(labelPoints).forEach((point, index) => {
         const text = point.labelText || getChartLabelText(point.player);
         const textWidth = ctx.measureText(text).width;
-        const xCandidates = point.x > containerWidth - textWidth - 18 ?
-            [point.x - textWidth - 8, point.x + 8] :
-            [point.x + 8, point.x - textWidth - 8];
+        const canFitLeft = point.x - textWidth - 10 >= plotLeft;
+        const preferLeft = point.preferLeft ?? (point.isFrontier && !point.isApex);
+        const xCandidates = (preferLeft && canFitLeft) || (point.x > containerWidth - textWidth - 18) ?
+            [point.x - textWidth - 10, point.x + 10] :
+            [point.x + 10, point.x - textWidth - 10];
         const yOffsets = alternateOffsets && index % 2 ?
             [4, -18, 20, -34, 36, -50] :
             [-18, 4, -34, 20, -50, 36];
@@ -1715,11 +1717,12 @@ function getChartLabelPlacements(
                     bottom > existing.top - 3
                 );
                 const coversPoint = avoidPoints.some(otherPoint => {
+                    if (otherPoint === point) return false;
                     const radius = (otherPoint.radius || 4) + 2;
-                    return otherPoint.x + radius > left &&
-                        otherPoint.x - radius < right &&
-                        otherPoint.y + radius > top &&
-                        otherPoint.y - radius < bottom;
+                    return otherPoint.x + radius > left - 3 &&
+                        otherPoint.x - radius < right + 3 &&
+                        otherPoint.y + radius > top - 1 &&
+                        otherPoint.y - radius < bottom + 1;
                 });
                 if (!overlaps && !coversPoint) {
                     placements.push({ point, text, left, top, right, bottom, baseline: top + 11 });
@@ -1893,11 +1896,14 @@ function renderCostEloPareto() {
     const yForElo = elo => padding.top +
         ((yMax - elo) / (yMax - yMin)) * chartHeight;
 
+    const apexPoint = frontier.length > 0 ? frontier[frontier.length - 1] : null;
     points.forEach(point => {
         point.x = xForCost(point.cost);
         point.y = yForElo(point.elo);
         point.radius = frontierSet.has(point) ? 7 : 5;
         point.isFrontier = frontierSet.has(point);
+        point.isApex = (point === apexPoint);
+        point.preferLeft = point.isFrontier && !point.isApex;
     });
     const effortGroupByPoint = new Map();
     effortGroups.forEach(group => {
@@ -2043,7 +2049,9 @@ function renderCostEloPareto() {
             labelPoints,
             containerWidth,
             padding,
-            chartHeight
+            chartHeight,
+            points,
+            true
         );
         canvas.dataset.labelCount = String(labelPlacements.length);
         canvas.dataset.labelOverlapCount = String(countChartLabelOverlaps(labelPlacements));
@@ -2053,6 +2061,53 @@ function renderCostEloPareto() {
             label.top < padding.top ||
             label.bottom > padding.top + chartHeight
         ));
+
+        labelPlacements.forEach(label => {
+            const point = label.point;
+            const anchorX = point.x < label.left ? label.left :
+                point.x > label.right ? label.right : point.x;
+            const anchorY = point.y < label.top ? label.top :
+                point.y > label.bottom ? label.bottom : point.y;
+            const lineCrossesOtherLabel = labelPlacements.some(other => {
+                if (other === label) return false;
+                return chartLineIntersectsRect(
+                    point.x,
+                    point.y,
+                    anchorX,
+                    anchorY,
+                    {
+                        left: other.left - 3,
+                        top: other.top - 2,
+                        right: other.right + 3,
+                        bottom: other.bottom + 2
+                    }
+                );
+            });
+            if (Math.hypot(point.x - anchorX, point.y - anchorY) > 8 && !lineCrossesOtherLabel) {
+                ctx.strokeStyle = point.isFrontier ?
+                    'rgba(139, 0, 0, 0.75)' :
+                    'rgba(0, 0, 0, 0.45)';
+                ctx.lineWidth = point.isFrontier ? 1.5 : 1;
+                ctx.beginPath();
+                ctx.moveTo(point.x, point.y);
+                ctx.lineTo(anchorX, anchorY);
+                ctx.stroke();
+            }
+        });
+
+        labelPlacements.forEach(label => {
+            ctx.fillStyle = label.point.isFrontier ?
+                'rgba(255, 246, 150, 0.92)' :
+                'rgba(224, 224, 224, 0.85)';
+            ctx.fillRect(label.left - 3, label.top - 1, label.right - label.left + 6, 16);
+            ctx.strokeStyle = label.point.isFrontier ?
+                'rgba(139, 0, 0, 0.75)' :
+                'rgba(0, 0, 0, 0.55)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(label.left - 3, label.top - 1, label.right - label.left + 6, 16);
+        });
+
+        ctx.fillStyle = 'black';
         ctx.textAlign = 'left';
         labelPlacements.forEach(label => {
             ctx.fillText(label.text, label.left, label.baseline);
