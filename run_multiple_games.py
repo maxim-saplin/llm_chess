@@ -11,9 +11,9 @@ import llm_chess
 
 # Launch settings - edit these for a new experiment
 NUM_REPETITIONS = 10
-REASONING_EFFORT = "high"
+REASONING_EFFORT = "max"
 WHITE_PLAYER_TYPE = llm_chess.PlayerType.CHESS_ENGINE_DRAGON
-ENGINE_LEVEL = 7
+ENGINE_LEVEL = 8
 
 def run_games():
     # ---------------------------------------------------------------------------
