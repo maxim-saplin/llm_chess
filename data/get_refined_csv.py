@@ -187,9 +187,6 @@ FILTER_OUT_MODELS = [
     "claude-opus-4-7@default", # Google Cloud is not definitive regarding reasoning defaults
     "qwen3.6-35b-a3b@q4_k_m", # can't get it ran in reasonable time, alomst every move is full context gen
 
-    "gpt-6.1-sol-2026-09-29-xhigh", # too few
-    "gpt-6-luna-2026-09-22-max", # too few
-
     "ignore",  # models marked to be ignored via MODEL_OVERRIDES
 ]
 
@@ -294,9 +291,36 @@ ALIASES: dict[str, str] = {
     "gpt-5.4-mini-2026-03-17-low": "gpt-5.4-mini-low",
     "gpt-5.4-mini-2026-03-17-medium": "gpt-5.4-mini-medium",
     "gpt-5.4-mini-2026-03-17-high": "gpt-5.4-mini-high",
+    "gpt-5.4-nano-2026-03-17-low": "gpt-5.4-nano-low",
+    "gpt-5.4-nano-2026-03-17-medium": "gpt-5.4-nano-medium",
+    "gpt-5.4-nano-2026-03-17-high": "gpt-5.4-nano-high",
     "gpt-5.5-2026-04-24-low": "gpt-5.5-low",
     "gpt-5.5-2026-04-24-medium": "gpt-5.5-medium",
     "gpt-5.5-2026-04-24-high": "gpt-5.5-high",
+    "gpt-5.6-luna-2026-07-09-low": "gpt-5.6-luna-low",
+    "gpt-5.6-luna-2026-07-09-medium": "gpt-5.6-luna-medium",
+    "gpt-5.6-luna-2026-07-09-high": "gpt-5.6-luna-high",
+    "gpt-5.6-luna-2026-07-09-xhigh": "gpt-5.6-luna-xhigh",
+    "gpt-5.6-sol-2026-07-09-low": "gpt-5.6-sol-low",
+    "gpt-5.6-sol-2026-07-09-medium": "gpt-5.6-sol-medium",
+    "gpt-5.6-sol-2026-07-09-high": "gpt-5.6-sol-high",
+    "gpt-5.6-sol-2026-07-09-xhigh": "gpt-5.6-sol-xhigh",
+    "gpt-5.6-terra-2026-07-09-low": "gpt-5.6-terra-low",
+    "gpt-5.6-terra-2026-07-09-medium": "gpt-5.6-terra-medium",
+    "gpt-5.6-terra-2026-07-09-high": "gpt-5.6-terra-high",
+    "gpt-5.6-terra-2026-07-09-xhigh": "gpt-5.6-terra-xhigh",
+
+    # OpenAI GPT-6 / GPT-6.1 families (single-snapshot dated aliases)
+    "gpt-6-astra-2026-09-03-high": "gpt-6-astra-high",
+    "gpt-6-astra-2026-09-03-xhigh": "gpt-6-astra-xhigh",
+    "gpt-6-astra-2026-09-03-max": "gpt-6-astra-max",
+    "gpt-6-luna-2026-09-22-high": "gpt-6-luna-high",
+    "gpt-6-luna-2026-09-22-xhigh": "gpt-6-luna-xhigh",
+    "gpt-6-luna-2026-09-22-max": "gpt-6-luna-max",
+    "gpt-6-sol-2026-09-22-high": "gpt-6-sol-high",
+    "gpt-6-sol-2026-09-22-xhigh": "gpt-6-sol-xhigh",
+    "gpt-6.1-sol-2026-09-29-high": "gpt-6.1-sol-high",
+    "gpt-6.1-sol-2026-09-29-xhigh": "gpt-6.1-sol-xhigh",
 
     # OpenAI GPT-4.x family (single-snapshot)
     "gpt-4.1-2025-04-14": "gpt-4.1",
@@ -351,6 +375,7 @@ ALIASES: dict[str, str] = {
     "claude-opus-4-5-20251101": "claude-opus-4-5",
     # Upstream metadata uses a hyphen (not underscore) before the thinking suffix for 4-5 opus.
     "claude-opus-4-5-20251101-thinking_16000": "claude-opus-4-5-thinking_16000",
+    "claude-opus-4-5-20251101_thinking_16000": "claude-opus-4-5-thinking_16000",
     "claude-haiku-4-5-20251001": "claude-haiku-4-5",
     "claude-haiku-4-5-20251001_thinking_16000": "claude-haiku-4-5_thinking_16000",
 
