@@ -153,6 +153,18 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "budget_16000"
     },
+    "claude-haiku-5-5-high": {
+      "date_released": "2026-10-01",
+      "mode_family": "claude-haiku-5-5",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
+    "claude-haiku-5-5-max": {
+      "date_released": "2026-10-01",
+      "mode_family": "claude-haiku-5-5-max",
+      "pricing_known": true,
+      "reasoning_level": "default"
+    },
     "claude-opus-4": {
       "date_released": "2025-05-01",
       "mode_family": "claude-opus-4",
@@ -957,6 +969,18 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "high"
     },
+    "gpt-5.4-nano-low": {
+      "date_released": "2026-03-01",
+      "mode_family": "gpt-5.4-nano",
+      "pricing_known": true,
+      "reasoning_level": "low"
+    },
+    "gpt-5.4-nano-medium": {
+      "date_released": "2026-03-01",
+      "mode_family": "gpt-5.4-nano",
+      "pricing_known": true,
+      "reasoning_level": "medium"
+    },
     "gpt-5.5-high": {
       "date_released": "2026-04-01",
       "mode_family": "gpt-5.5",
@@ -999,6 +1023,30 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "xhigh"
     },
+    "gpt-5.6-luna-high": {
+      "date_released": "2026-07-01",
+      "mode_family": "gpt-5.6-luna",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
+    "gpt-5.6-luna-low": {
+      "date_released": "2026-07-01",
+      "mode_family": "gpt-5.6-luna",
+      "pricing_known": true,
+      "reasoning_level": "low"
+    },
+    "gpt-5.6-luna-medium": {
+      "date_released": "2026-07-01",
+      "mode_family": "gpt-5.6-luna",
+      "pricing_known": true,
+      "reasoning_level": "medium"
+    },
+    "gpt-5.6-luna-xhigh": {
+      "date_released": "2026-07-01",
+      "mode_family": "gpt-5.6-luna",
+      "pricing_known": true,
+      "reasoning_level": "xhigh"
+    },
     "gpt-5.6-sol-2026-07-09-high": {
       "date_released": "2026-07-01",
       "mode_family": "gpt-5.6-sol-2026-07-09",
@@ -1020,6 +1068,30 @@ const modelMetadata = {
     "gpt-5.6-sol-2026-07-09-xhigh": {
       "date_released": "2026-07-01",
       "mode_family": "gpt-5.6-sol-2026-07-09",
+      "pricing_known": true,
+      "reasoning_level": "xhigh"
+    },
+    "gpt-5.6-sol-high": {
+      "date_released": "2026-07-01",
+      "mode_family": "gpt-5.6-sol",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
+    "gpt-5.6-sol-low": {
+      "date_released": "2026-07-01",
+      "mode_family": "gpt-5.6-sol",
+      "pricing_known": true,
+      "reasoning_level": "low"
+    },
+    "gpt-5.6-sol-medium": {
+      "date_released": "2026-07-01",
+      "mode_family": "gpt-5.6-sol",
+      "pricing_known": true,
+      "reasoning_level": "medium"
+    },
+    "gpt-5.6-sol-xhigh": {
+      "date_released": "2026-07-01",
+      "mode_family": "gpt-5.6-sol",
       "pricing_known": true,
       "reasoning_level": "xhigh"
     },
@@ -1047,6 +1119,30 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "xhigh"
     },
+    "gpt-5.6-terra-high": {
+      "date_released": "2026-07-01",
+      "mode_family": "gpt-5.6-terra",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
+    "gpt-5.6-terra-low": {
+      "date_released": "2026-07-01",
+      "mode_family": "gpt-5.6-terra",
+      "pricing_known": true,
+      "reasoning_level": "low"
+    },
+    "gpt-5.6-terra-medium": {
+      "date_released": "2026-07-01",
+      "mode_family": "gpt-5.6-terra",
+      "pricing_known": true,
+      "reasoning_level": "medium"
+    },
+    "gpt-5.6-terra-xhigh": {
+      "date_released": "2026-07-01",
+      "mode_family": "gpt-5.6-terra",
+      "pricing_known": true,
+      "reasoning_level": "xhigh"
+    },
     "gpt-6-astra-2026-09-03-high": {
       "date_released": "2026-09-01",
       "mode_family": "gpt-6-astra-2026-09-03",
@@ -1062,6 +1158,24 @@ const modelMetadata = {
     "gpt-6-astra-2026-09-03-xhigh": {
       "date_released": "2026-09-01",
       "mode_family": "gpt-6-astra-2026-09-03",
+      "pricing_known": true,
+      "reasoning_level": "xhigh"
+    },
+    "gpt-6-astra-high": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6-astra",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
+    "gpt-6-astra-max": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6-astra-max",
+      "pricing_known": true,
+      "reasoning_level": "default"
+    },
+    "gpt-6-astra-xhigh": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6-astra",
       "pricing_known": true,
       "reasoning_level": "xhigh"
     },
@@ -1083,6 +1197,24 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "xhigh"
     },
+    "gpt-6-luna-high": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6-luna",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
+    "gpt-6-luna-max": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6-luna-max",
+      "pricing_known": true,
+      "reasoning_level": "default"
+    },
+    "gpt-6-luna-xhigh": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6-luna",
+      "pricing_known": true,
+      "reasoning_level": "xhigh"
+    },
     "gpt-6-sol-2026-09-22-high": {
       "date_released": "2026-09-01",
       "mode_family": "gpt-6-sol-2026-09-22",
@@ -1095,11 +1227,41 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "xhigh"
     },
+    "gpt-6-sol-high": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6-sol",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
+    "gpt-6-sol-xhigh": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6-sol",
+      "pricing_known": true,
+      "reasoning_level": "xhigh"
+    },
     "gpt-6.1-sol-2026-09-29-high": {
       "date_released": "2026-09-01",
       "mode_family": "gpt-6.1-sol-2026-09-29",
       "pricing_known": true,
       "reasoning_level": "high"
+    },
+    "gpt-6.1-sol-2026-09-29-xhigh": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6.1-sol-2026-09-29",
+      "pricing_known": true,
+      "reasoning_level": "xhigh"
+    },
+    "gpt-6.1-sol-high": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6.1-sol",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
+    "gpt-6.1-sol-xhigh": {
+      "date_released": "2026-09-01",
+      "mode_family": "gpt-6.1-sol",
+      "pricing_known": true,
+      "reasoning_level": "xhigh"
     },
     "gpt-oss-120b": {
       "date_released": "2025-08-01",
