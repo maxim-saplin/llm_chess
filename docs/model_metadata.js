@@ -429,6 +429,12 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "none"
     },
+    "deepseek-v4.1-flash-2026-09-10-high": {
+      "date_released": "2026-09-10",
+      "mode_family": "deepseek-v4.1-flash-2026-09-10",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
     "gemini-1.5-flash-001": {
       "date_released": "2024-05-01",
       "mode_family": "gemini-1.5-flash-001",
@@ -591,6 +597,12 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "medium"
     },
+    "gemini-4-argon-high": {
+      "date_released": "2026-10-13",
+      "mode_family": "gemini-4-argon",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
     "gemma-2-27b-it@q6_k_l": {
       "date_released": "2024-06-01",
       "mode_family": "gemma-2-27b-it@q6_k_l",
@@ -626,6 +638,18 @@ const modelMetadata = {
       "mode_family": "glm-4.7-flash@q4",
       "pricing_known": true,
       "reasoning_level": "default"
+    },
+    "glm-5.3-flash-high": {
+      "date_released": "2026-09-01",
+      "mode_family": "glm-5.3-flash",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
+    "glm-5.3-high": {
+      "date_released": "2026-09-01",
+      "mode_family": "glm-5.3",
+      "pricing_known": true,
+      "reasoning_level": "high"
     },
     "google_gemma-3-12b-it@iq4_xs": {
       "date_released": "2025-03-01",
@@ -1416,6 +1440,12 @@ const modelMetadata = {
     "grok-4.6-high": {
       "date_released": "2026-08-01",
       "mode_family": "grok-4.6",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
+    "grok-4.7-high": {
+      "date_released": "2026-09-21",
+      "mode_family": "grok-4.7",
       "pricing_known": true,
       "reasoning_level": "high"
     },
