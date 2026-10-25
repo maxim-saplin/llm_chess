@@ -1,0 +1,49 @@
+{
+    "time_started": "2026.10.23_07:26",
+    "winner": "Chess_Engine_Dragon_White",
+    "reason": "Too many wrong actions",
+    "number_of_moves": 20,
+    "player_white": {
+        "name": "Chess_Engine_Dragon_White",
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "get_board_count": 0,
+        "get_legal_moves_count": 0,
+        "make_move_count": 10,
+        "accumulated_reply_time_seconds": 0.0,
+        "model": "N/A"
+    },
+    "material_count": {
+        "white": 34,
+        "black": 33
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "wrong_moves": 0,
+        "wrong_actions": 6,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "get_board_count": 10,
+        "get_legal_moves_count": 8,
+        "make_move_count": 9,
+        "accumulated_reply_time_seconds": 1241.336,
+        "model": "inception/mercury-3"
+    },
+    "usage_stats": {
+        "white": {
+            "total_cost": 0
+        },
+        "black": {
+            "total_cost": 0,
+            "inception/mercury-3": {
+                "cost": 0,
+                "prompt_tokens": 9209,
+                "completion_tokens": 611620,
+                "total_tokens": 620829
+            }
+        }
+    },
+    "pgn": "[Event \"Chess Game\"]\n[Date \"2026.10.23\"]\n[White \"Player White\"]\n[Black \"Player Black\"]\n[Result \"1-0\"]\n\n1. Nh3 e5 2. d4 exd4 3. Bg5 Nf6 4. Bxf6 Qxf6 5. g3 d5 \n6. Nf4 Bb4+ 7. c3 dxc3 8. Qa4+ Qc6 9. Qxb4 c2 10. Nc3  1-0"
+}

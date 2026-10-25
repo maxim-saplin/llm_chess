@@ -1,0 +1,84 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2026.10.22_22:41",
+            "log_folder_relative": "_logs/engine_vs_llm/dragon-lvl-11/inception-mercury-3/2026-10-22-22-41-46",
+            "num_repetitions": 10,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "CHESS_ENGINE_DRAGON",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 1,
+            "dialog_turn_delay": 1,
+            "max_api_retries": 6,
+            "api_retry_delay": 1800,
+            "random_print_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "chess_engines": {
+            "stockfish": {
+                "path": "/opt/homebrew/bin/stockfish",
+                "reset_history": true,
+                "level": 1,
+                "time_per_move": 0.1
+            },
+            "dragon": {
+                "path": "dragon/dragon-linux",
+                "reset_history": true,
+                "level": 11,
+                "time_per_move": 0.1
+            }
+        },
+        "llm_configs": {
+            "black": {
+                "model": "inception/mercury-3",
+                "api_type": "openrouter",
+                "api_key": "REDACTED",
+                "timeout": 1800
+            }
+        }
+    },
+    "total_games": 10,
+    "white_wins": 8,
+    "black_wins": 2,
+    "draws": 0,
+    "total_moves": 763,
+    "reasons": {
+        "Checkmate": 9,
+        "Too many wrong actions": 1
+    },
+    "player_white": {
+        "name": "Chess_Engine_Dragon_White",
+        "model": "",
+        "total_material": 176,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 17.6,
+        "std_dev_material": 10.72069649478677
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "inception/mercury-3",
+        "total_material": 124,
+        "wrong_moves": 2,
+        "wrong_actions": 33,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 12.4,
+        "std_dev_material": 9.045563676312396
+    },
+    "average_moves": 76.3,
+    "std_dev_moves": 41.20153718815193
+}

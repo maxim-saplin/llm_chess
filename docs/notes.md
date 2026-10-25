@@ -1,3 +1,9 @@
+# October 21, 2026: Empty completion response handling
+
+AutoGen's `TypeError: 'NoneType' object is not iterable` while extracting an OpenAI-compatible response is now treated as a retryable empty-completion failure. The retry uses a separate 2-second exponential backoff (rather than inheriting potentially long rate-limit delays); if the configured retry budget is exhausted, the turn remains a technical failure and the game is not counted as a successful completion.
+
+A historical log audit found 12 such failures for `inception/mercury-3` at high reasoning effort, routed through OpenRouter, across five output files. The exact outputs are no longer present in the working tree, so no failure rate can be calculated from the surviving artifacts. The model/run breakdown and related-but-distinct blank-content API errors are documented in [the empty-response error audit](empty-response-error-audit.md).
+
 # April 28, 2026: Timeout, hyperparams
 
 Starting from April 28, the default per-LLM call timeout has been increased to 1800 seconds (30 minutes), up from the previous 600 seconds (10 minutes). Timeout issues are treated as losses, and these losses mostly affected OpenAI reasoning models at high reasoning levels (e.g., o3-medium, o4-mini-high). The rationale is that if a model fails to respond within an adequate period, it is considered a model failure. However, it has recently become apparent that this limit might punish models for infrastructure issues rather than model capability. For example, when testing locally on a PC with an RTX 4090 and Qwen 3.6 27B at 30 tokens/sec, an LLM call would time out if the model decided to spend 20k tokens thinking (even though VRAM could handle a 100k token context). Hence, for practical reasons, the LLM API call timeout has been increased to allow for more variance in speed. For example, at 90 tokens/sec, GPT-5.4 can generate the designed 128k max output within the timeout.

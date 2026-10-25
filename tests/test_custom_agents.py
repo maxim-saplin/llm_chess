@@ -523,6 +523,64 @@ class TestRetryLogic(unittest.TestCase):
         with patch.object(self.agent.__class__.__bases__[0], 'generate_reply', return_value="Success"):
             result = self.agent.generate_reply(messages=[{"content": "test"}])
             self.assertEqual(result, "Success")
+
+    def test_retry_on_empty_response_choices_error(self):
+        """Retry AutoGen's TypeError for a response with choices=None."""
+        # A separate short delay avoids inheriting long rate-limit backoffs.
+        self.agent.retry_delay = 1800
+        call_count = 0
+
+        def mock_generate_reply(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                raise TypeError("'NoneType' object is not iterable")
+            return "Success after retry"
+
+        with patch.object(self.agent.__class__.__bases__[0], 'generate_reply', side_effect=mock_generate_reply):
+            with patch('custom_agents.time.sleep') as mock_sleep, patch('builtins.print'):
+                result = self.agent.generate_reply(messages=[{"content": "test"}])
+
+        self.assertEqual(result, "Success after retry")
+        self.assertEqual(call_count, 2)
+        mock_sleep.assert_called_once_with(2.0)
+
+    def test_empty_response_error_stops_after_max_retries(self):
+        """Persistent empty responses raise the original error after the retry budget."""
+        call_count = 0
+
+        def mock_generate_reply(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            raise TypeError("'NoneType' object is not iterable")
+
+        with patch.object(self.agent.__class__.__bases__[0], 'generate_reply', side_effect=mock_generate_reply):
+            with patch('custom_agents.time.sleep') as mock_sleep, patch('builtins.print'):
+                with self.assertRaisesRegex(TypeError, "NoneType.*iterable"):
+                    self.agent.generate_reply(messages=[{"content": "test"}])
+
+        self.assertEqual(call_count, self.agent.max_retries + 1)
+        self.assertEqual(
+            [sleep_call.args[0] for sleep_call in mock_sleep.call_args_list],
+            [2.0, 4.0, 8.0],
+        )
+
+    def test_unrelated_type_error_is_not_retried(self):
+        """Only the exact missing-choices error is treated as transient."""
+        call_count = 0
+
+        def mock_generate_reply(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            raise TypeError("unsupported operand type")
+
+        with patch.object(self.agent.__class__.__bases__[0], 'generate_reply', side_effect=mock_generate_reply):
+            with patch('custom_agents.time.sleep') as mock_sleep, patch('builtins.print'):
+                with self.assertRaisesRegex(TypeError, "unsupported operand"):
+                    self.agent.generate_reply(messages=[{"content": "test"}])
+
+        self.assertEqual(call_count, 1)
+        mock_sleep.assert_not_called()
     
     def test_retry_on_openai_internal_server_error(self):
         """Test that openai.InternalServerError triggers retries."""
@@ -629,6 +687,8 @@ class TestRetryLogic(unittest.TestCase):
         
         retryable_error = MockInternalServerError("Service is not available")
         self.assertTrue(is_retryable_error(retryable_error))
+        self.assertTrue(is_retryable_error(TypeError("'NoneType' object is not iterable")))
+        self.assertFalse(is_retryable_error(TypeError("unsupported operand type")))
         
         # Test retryable exception by message
         class GenericError(Exception):

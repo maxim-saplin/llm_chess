@@ -1449,6 +1449,12 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "high"
     },
+    "inception/mercury-3-high": {
+      "date_released": "2026-10-16",
+      "mode_family": "inception/mercury-3",
+      "pricing_known": true,
+      "reasoning_level": "high"
+    },
     "internlm3-8b-instruct": {
       "date_released": "2025-01-01",
       "mode_family": "internlm3-8b-instruct",

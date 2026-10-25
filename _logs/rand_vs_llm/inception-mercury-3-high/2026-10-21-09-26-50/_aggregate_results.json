@@ -1,0 +1,70 @@
+{
+    "run_metadata": {
+        "metadata": {
+            "time_started_formatted": "2026.10.21_09:26",
+            "log_folder_relative": "_logs/rand_vs_llm/inception-mercury-3-high/2026-10-21-09-26-50",
+            "num_repetitions": 20,
+            "store_individual_logs": true,
+            "python_version": "3.12.3"
+        },
+        "player_types": {
+            "white_player_type": "RANDOM_PLAYER",
+            "black_player_type": "LLM_BLACK"
+        },
+        "config": {
+            "enable_reflection": false,
+            "board_representation_mode": "UNICODE_ONLY",
+            "rotate_board_for_white": false,
+            "max_game_moves": 200,
+            "max_llm_turns": 10,
+            "max_failed_attempts": 3,
+            "throttle_delay": 1,
+            "dialog_turn_delay": 1,
+            "max_api_retries": 6,
+            "api_retry_delay": 1800,
+            "random_print_board": false,
+            "remove_text": "^.*?(?:</think>|\u25c1/think\u25b7|</reasoning>)\\s*"
+        },
+        "llm_configs": {
+            "black": {
+                "model": "inception/mercury-3",
+                "api_type": "openrouter",
+                "api_key": "REDACTED",
+                "timeout": 1800,
+                "reasoning_effort": "high"
+            }
+        }
+    },
+    "total_games": 20,
+    "white_wins": 0,
+    "black_wins": 20,
+    "draws": 0,
+    "total_moves": 558,
+    "reasons": {
+        "Checkmate": 20
+    },
+    "player_white": {
+        "name": "Random_Player",
+        "model": "",
+        "total_material": 420,
+        "wrong_moves": 0,
+        "wrong_actions": 0,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 21.0,
+        "std_dev_material": 10.161848153497317
+    },
+    "player_black": {
+        "name": "Player_Black",
+        "model": "inception/mercury-3",
+        "total_material": 776,
+        "wrong_moves": 3,
+        "wrong_actions": 28,
+        "reflections_used": 0,
+        "reflections_used_before_board": 0,
+        "avg_material": 38.8,
+        "std_dev_material": 2.9664793948382653
+    },
+    "average_moves": 27.9,
+    "std_dev_moves": 11.670475568716126
+}

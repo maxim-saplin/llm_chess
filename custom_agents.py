@@ -9,8 +9,21 @@ from autogen import ConversableAgent
 from typing import Any, Dict, List, Optional, Union, Callable
 
 
+def is_empty_response_error(exception) -> bool:
+    """Identify AutoGen's failure when a response has ``choices=None``."""
+    return (
+        isinstance(exception, TypeError)
+        and str(exception) == "'NoneType' object is not iterable"
+    )
+
+
 def is_retryable_error(exception) -> bool:
-    """Check if an exception is retryable based on its error message."""
+    """Check if an exception is retryable based on its type or error message."""
+    # AutoGen raises this while extracting response.choices when a provider returns
+    # a response without usable choices. Retry this exact failure, not arbitrary TypeErrors.
+    if is_empty_response_error(exception):
+        return True
+
     # Check specific error messages, LOWER CASE
     error_message = str(exception).lower()
     retryable_messages = [
@@ -37,6 +50,7 @@ class GameAgent(ConversableAgent):
         max_retries=3,
         retry_delay=2.0,
         *args,
+        empty_response_retry_delay=2.0,
         **kwargs,
     ):
         """
@@ -45,7 +59,8 @@ class GameAgent(ConversableAgent):
         Parameters:
             dialog_turn_delay (int): The delay (in seconds) before the agent responds during a dialog turn. Set to 0.
             max_retries (int): Maximum number of retries for API errors. Default is 3.
-            retry_delay (float): Base delay in seconds between retries. Uses exponential backoff. Default is 2.0.
+            retry_delay (float): Base delay in seconds between API retries. Uses exponential backoff. Default is 2.0.
+            empty_response_retry_delay (float): Base delay for missing-response retries. Default is 2.0.
         """
         super().__init__(*args, **kwargs)
         # Initialize the counter for wrong moves made by the agent.
@@ -65,6 +80,7 @@ class GameAgent(ConversableAgent):
         # Retry configuration
         self.max_retries = max_retries
         self.retry_delay = retry_delay
+        self.empty_response_retry_delay = empty_response_retry_delay
 
     def prep_to_move(self):
         """
@@ -98,8 +114,14 @@ class GameAgent(ConversableAgent):
 
             except Exception as e:
                 if attempt < self.max_retries and is_retryable_error(e):
-                    # Calculate exponential backoff delay
-                    delay = self.retry_delay * (2**attempt)
+                    # Missing choices are usually a transient response issue; don't
+                    # inherit potentially very long rate-limit backoffs for those.
+                    base_delay = (
+                        self.empty_response_retry_delay
+                        if is_empty_response_error(e)
+                        else self.retry_delay
+                    )
+                    delay = base_delay * (2**attempt)
                     print(f"\033[93mAPI error on attempt {attempt + 1}/{self.max_retries} for {self.name}: {str(e)}\033[0m")
                     print(f"\033[93mRetrying in {delay:.1f} seconds...\033[0m")
                     time.sleep(delay)
