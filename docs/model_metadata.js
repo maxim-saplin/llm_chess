@@ -1449,9 +1449,15 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "high"
     },
-    "inception/mercury-3-high": {
-      "date_released": "2026-10-16",
-      "mode_family": "inception/mercury-3",
+    "inception-mercury-3": {
+      "date_released": "2026-10-19",
+      "mode_family": "inception-mercury-3",
+      "pricing_known": true,
+      "reasoning_level": "default"
+    },
+    "inception-mercury-3-high": {
+      "date_released": "2026-10-19",
+      "mode_family": "inception-mercury-3",
       "pricing_known": true,
       "reasoning_level": "high"
     },
@@ -1718,6 +1724,12 @@ const modelMetadata = {
       "mode_family": "magistral-small",
       "pricing_known": true,
       "reasoning_level": "none"
+    },
+    "mercury-3-high": {
+      "date_released": "2026-10-19",
+      "mode_family": "mercury-3",
+      "pricing_known": true,
+      "reasoning_level": "high"
     },
     "mercury-coder-small": {
       "date_released": "2025-04-01",
