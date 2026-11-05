@@ -324,6 +324,7 @@ ALIASES: dict[str, str] = {
     "gpt-6-sol-2026-09-22-xhigh": "gpt-6-sol-xhigh",
     "gpt-6.1-sol-2026-09-29-high": "gpt-6.1-sol-high",
     "gpt-6.1-sol-2026-09-29-xhigh": "gpt-6.1-sol-xhigh",
+    "gpt-6.1-terra-2026-10-26-high" : "gpt-6.1-terra-high",
 
     # OpenAI GPT-4.x family (single-snapshot)
     "gpt-4.1-2025-04-14": "gpt-4.1",
