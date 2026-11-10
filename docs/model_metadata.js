@@ -1293,6 +1293,12 @@ const modelMetadata = {
       "pricing_known": true,
       "reasoning_level": "high"
     },
+    "gpt-6.1-terra-xhigh": {
+      "date_released": "2026-11-01",
+      "mode_family": "gpt-6.1-terra",
+      "pricing_known": true,
+      "reasoning_level": "xhigh"
+    },
     "gpt-oss-120b": {
       "date_released": "2025-08-01",
       "mode_family": "gpt-oss-120b",
