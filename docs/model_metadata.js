@@ -1288,13 +1288,13 @@ const modelMetadata = {
       "reasoning_level": "xhigh"
     },
     "gpt-6.1-terra-high": {
-      "date_released": "2026-11-01",
+      "date_released": "2026-10-01",
       "mode_family": "gpt-6.1-terra",
       "pricing_known": true,
       "reasoning_level": "high"
     },
     "gpt-6.1-terra-xhigh": {
-      "date_released": "2026-11-01",
+      "date_released": "2026-10-01",
       "mode_family": "gpt-6.1-terra",
       "pricing_known": true,
       "reasoning_level": "xhigh"
@@ -1808,6 +1808,18 @@ const modelMetadata = {
       "mode_family": "mistral-small-instruct",
       "pricing_known": true,
       "reasoning_level": "none"
+    },
+    "muse-ember-max": {
+      "date_released": "2026-11-01",
+      "mode_family": "muse-ember-max",
+      "pricing_known": true,
+      "reasoning_level": "default"
+    },
+    "muse-ember-xhigh": {
+      "date_released": "2026-11-01",
+      "mode_family": "muse-ember",
+      "pricing_known": true,
+      "reasoning_level": "xhigh"
     },
     "muse-glimmer-30b@q4_k_m": {
       "date_released": "2026-08-01",
